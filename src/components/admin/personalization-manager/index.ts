@@ -1,0 +1,1 @@
+export { ProductPersonalizationManager } from "./ProductPersonalizationManager";

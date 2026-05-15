@@ -1,0 +1,21 @@
+title = "Promo Gifts — Gitleaks Config"
+
+# ─── Valores públicos conhecidos ──────────────────────────────────────────────
+# A Supabase publishable key (formato sb_publishable_*) é explicitamente
+# projetada para ser embutida em código de browser (prefixo VITE_).
+# Aparece nos bundles de produção — não é um segredo operacional.
+# RLS restringe o que a chave pode acessar; sem ela o app não inicializa.
+#
+# Registrada aqui para evitar falso-positivo no workflow de CI (e2e.yml)
+# onde o valor é usado como fallback quando o secret do repositório não está
+# configurado. Ver issue #167.
+# ──────────────────────────────────────────────────────────────────────────────
+
+[allowlist]
+description = "Chaves publishable do Supabase (valores públicos embutidos nos bundles)"
+regexes = [
+  # Fallback público no e2e.yml — chave publishable do projeto doufsxqlfjyuvxuezpln
+  '''sb_publishable_tjH5qAbZ0e5HTTd872NijQ_s9m6JvYU''',
+  # URL do projeto Supabase (pública — aparece em todas as chamadas de rede)
+  '''doufsxqlfjyuvxuezpln\.supabase\.co''',
+]

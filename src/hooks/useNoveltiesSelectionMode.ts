@@ -1,0 +1,65 @@
+/**
+ * useNoveltiesSelectionMode — Bulk-selection hook for the Novidades module.
+ *
+ * Thin wrapper around useEntitySelectionMode<NoveltyWithDetails>. Supplies
+ * the entity → Product converter; everything else lives in the generic.
+ */
+import type { NoveltyWithDetails } from "@/hooks/useNovelties";
+import type { Product } from "@/hooks/useProducts";
+import {
+  useEntitySelectionMode,
+} from "@/hooks/useEntitySelectionMode";
+
+interface UseNoveltiesSelectionModeParams {
+  selectionMode: boolean;
+  filteredProducts: NoveltyWithDetails[];
+}
+
+/**
+ * Converts NoveltyWithDetails to Product (minimum fields required by BulkVariantWizard).
+ */
+export function noveltyToProduct(n: NoveltyWithDetails): Product {
+  return {
+    id: n.product_id,
+    name: n.product_name,
+    description: n.product_description,
+    category_id: n.category_id,
+    category_name: n.category_name,
+    price: n.base_price || 0,
+    image_url: n.product_image || undefined,
+    images: n.product_image ? [n.product_image] : [],
+    sku: n.product_sku || "",
+    stock: 0,
+    created_at: n.detected_at,
+    colors: [],
+    materials: [],
+    supplier_reference: n.supplier_product_code,
+    brand: null,
+    is_active: n.is_active,
+    minQuantity: 1,
+    stockStatus: "in-stock",
+    featured: n.is_highlighted,
+    newArrival: true,
+    onSale: false,
+    isKit: false,
+    gender: null,
+    category: { id: n.category_id || "", name: n.category_name || "" },
+    supplier: { id: n.supplier_id || "", name: n.supplier_name || "" },
+    tags: { featured: n.is_highlighted, newArrival: true, onSale: false, isKit: false },
+  } as Product;
+}
+
+export function useNoveltiesSelectionMode({
+  selectionMode,
+  filteredProducts,
+}: UseNoveltiesSelectionModeParams) {
+  const sel = useEntitySelectionMode<NoveltyWithDetails>({
+    selectionMode,
+    filteredProducts,
+    entityToProduct: noveltyToProduct,
+  });
+
+  // Original hook also exposed `noveltyToProduct` in its return shape for
+  // legacy callers; preserve that for backwards compatibility.
+  return { ...sel, noveltyToProduct };
+}

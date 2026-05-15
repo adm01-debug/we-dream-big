@@ -1,0 +1,1 @@
+-- Migration applied directly to production. Placeholder file created to satisfy local/remote version check.

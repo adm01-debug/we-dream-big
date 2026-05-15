@@ -1,0 +1,58 @@
+import { cn } from "@/lib/utils";
+import { Building2 } from "lucide-react";
+
+interface AvatarLogoProps {
+  name?: string | null;
+  logoUrl?: string | null;
+  size?: "sm" | "md" | "lg" | "xl";
+  className?: string;
+  fallbackClassName?: string;
+}
+
+export function AvatarLogo({ 
+  name, 
+  logoUrl, 
+  size = "md", 
+  className,
+  fallbackClassName 
+}: AvatarLogoProps) {
+  const sizeClasses = {
+    sm: "w-7 h-7 text-[10px]",
+    md: "w-8 h-8 text-xs",
+    lg: "w-10 h-10 text-sm",
+    xl: "w-12 h-12 text-base",
+  };
+
+  const dim = sizeClasses[size];
+
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt={name || "Company logo"}
+        className={cn(
+          dim,
+          "rounded-full object-cover bg-background border border-border flex-shrink-0",
+          className
+        )}
+        loading="lazy"
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = 'none';
+          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+        }}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        dim,
+        "rounded-full flex items-center justify-center font-bold text-primary-foreground bg-primary flex-shrink-0",
+        fallbackClassName || className
+      )}
+    >
+      {name ? name.substring(0, 2).toUpperCase() : <Building2 className="h-1/2 w-1/2" />}
+    </div>
+  );
+}

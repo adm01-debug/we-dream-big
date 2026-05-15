@@ -1,0 +1,13 @@
+CREATE INDEX IF NOT EXISTS idx_cart_templates_user_id ON public.cart_templates(user_id);
+CREATE INDEX IF NOT EXISTS idx_commission_entries_order_id ON public.commission_entries(order_id);
+CREATE INDEX IF NOT EXISTS idx_commission_rules_seller_id ON public.commission_rules(seller_id);
+CREATE INDEX IF NOT EXISTS idx_expert_conversations_seller_id ON public.expert_conversations(seller_id);
+CREATE INDEX IF NOT EXISTS idx_expert_messages_conversation_id ON public.expert_messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_kit_share_tokens_kit_id ON public.kit_share_tokens(kit_id);
+CREATE INDEX IF NOT EXISTS idx_magic_up_generations_user_id ON public.magic_up_generations(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_quote_id ON public.orders(quote_id);
+CREATE INDEX IF NOT EXISTS idx_product_group_members_product_group_id ON public.product_group_members(product_group_id);
+CREATE INDEX IF NOT EXISTS idx_quote_approval_tokens_seller_id ON public.quote_approval_tokens(seller_id);
+CREATE INDEX IF NOT EXISTS idx_seller_cart_items_cart_id ON public.seller_cart_items(cart_id);
+CREATE INDEX IF NOT EXISTS idx_seller_carts_seller_id ON public.seller_carts(seller_id);
+CREATE INDEX IF NOT EXISTS idx_web_vitals_user_id ON public.web_vitals(user_id);

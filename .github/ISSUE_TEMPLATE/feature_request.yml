@@ -1,0 +1,52 @@
+name: 🚀 Feature Request
+description: Sugerir nova funcionalidade ou melhoria
+title: "[FEAT] "
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qual problema isso resolve?
+      description: Descreva o problema ou processo atual que motiva a feature.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solução proposta
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridade
+      options:
+        - "🔴 Alta - bloqueia operação"
+        - "🟠 Média - ganho relevante"
+        - "🟢 Baixa - nice to have"
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: Sistema(s) envolvido(s)
+      multiple: true
+      options:
+        - Bitrix24
+        - Supabase
+        - n8n
+        - Evolution API / WhatsApp
+        - Bling
+        - Cloudflare
+        - Frontend
+        - Outro
+  - type: input
+    id: origin_pr
+    attributes:
+      label: PR de origem (se aplicável)
+      description: Se esta feature foi proposta durante uma PR, referencie aqui.
+      placeholder: "#152"

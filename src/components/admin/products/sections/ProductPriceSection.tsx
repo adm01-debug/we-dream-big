@@ -1,0 +1,113 @@
+/**
+ * Price & Stock section
+ */
+import { Input } from '@/components/ui/input';
+import { FieldLabel, SectionCard, type FormSectionProps } from '../ProductFormHelpers';
+import { Tag } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface Props extends FormSectionProps {
+  supplierMarkup: number | null;
+  costPriceDisplay: string;
+  salePriceDisplay: string;
+  onCostPriceDisplayChange: (v: string) => void;
+  onSalePriceDisplayChange: (v: string) => void;
+  onSalePriceManualEdit: () => void;
+}
+
+export function ProductPriceSection({
+  register, setValue, watch, errors, numericProps,
+  supplierMarkup, costPriceDisplay, salePriceDisplay,
+  onCostPriceDisplayChange, onSalePriceDisplayChange, onSalePriceManualEdit,
+}: Props) {
+  const salePrice = watch('sale_price') ?? 0;
+  const suggestedPrice = watch('suggested_price') ?? 0;
+
+  return (
+    <SectionCard
+      id="price"
+      title="Preço e Estoque"
+      icon={Tag}
+      subtitle={`Preço atual: R$ ${salePrice.toFixed(2)}${supplierMarkup ? ` · Markup ${supplierMarkup}%` : ''}`}
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <FieldLabel htmlFor="cost_price" hint={supplierMarkup ? `Markup do fornecedor: ${supplierMarkup}%. Preço sugerido e venda serão calculados automaticamente.` : 'Informe o preço de custo do produto'}>Preço Custo (R$)</FieldLabel>
+          <Input
+            id="cost_price"
+            type="text"
+            inputMode="decimal"
+            value={costPriceDisplay}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/[^0-9.,]/g, '');
+              onCostPriceDisplayChange(raw);
+              const num = parseFloat(raw.replace(',', '.'));
+              if (!isNaN(num)) setValue('cost_price', num);
+            }}
+            onBlur={(e) => {
+              const num = parseFloat(e.target.value.replace(',', '.'));
+              if (!isNaN(num)) onCostPriceDisplayChange(num.toFixed(2));
+            }}
+            className="h-9"
+          />
+        </div>
+        <div>
+          <FieldLabel htmlFor="suggested_price" hint="Calculado automaticamente pelo markup do fornecedor. Valor de referência (não editável).">Preço Sugerido (R$)</FieldLabel>
+          <Input id="suggested_price" type="text" value={suggestedPrice.toFixed(2)} className="h-9 bg-muted/50 cursor-not-allowed" readOnly tabIndex={-1} />
+        </div>
+        <div>
+          <FieldLabel htmlFor="sale_price" required hint="Inicia com o valor sugerido pelo markup, mas pode ser editado livremente.">Preço Venda (R$)</FieldLabel>
+          <Input
+            id="sale_price"
+            type="text"
+            inputMode="decimal"
+            value={salePriceDisplay}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/[^0-9.,]/g, '');
+              onSalePriceDisplayChange(raw);
+              const num = parseFloat(raw.replace(',', '.'));
+              if (!isNaN(num)) setValue('sale_price', num);
+              onSalePriceManualEdit();
+            }}
+            onBlur={(e) => {
+              const num = parseFloat(e.target.value.replace(',', '.'));
+              if (!isNaN(num)) onSalePriceDisplayChange(num.toFixed(2));
+            }}
+            className={cn('h-9', errors.sale_price && 'border-destructive')}
+          />
+          {errors.sale_price && <p className="text-[10px] text-destructive mt-1">{errors.sale_price.message}</p>}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div>
+          <FieldLabel htmlFor="stock_quantity" hint="Quantidade atual em estoque. Atualizado automaticamente por sincronizações.">Estoque</FieldLabel>
+          <Input id="stock_quantity" {...numericProps('stock_quantity')} min="0" className="h-9" />
+        </div>
+        <div>
+          <FieldLabel htmlFor="product_type" hint="Produto unitário, kit montado ou embalagem avulsa">Tipo</FieldLabel>
+          <select
+            id="product_type"
+            {...register('product_type', {
+              onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
+                setValue('is_kit', e.target.value === 'kit');
+              },
+            })}
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="product">Produto Unitário</option>
+            <option value="kit">Kit</option>
+            <option value="packaging">Embalagem</option>
+          </select>
+        </div>
+        <div>
+          <FieldLabel htmlFor="min_quantity" hint="Quantidade mínima que o cliente precisa comprar desse produto no pedido">Qtd. Mín. Venda</FieldLabel>
+          <Input id="min_quantity" {...numericProps('min_quantity')} min="1" className="h-9" />
+        </div>
+        <div>
+          <FieldLabel htmlFor="min_order_quantity" hint="Quantidade mínima exigida pelo fornecedor para compra/reposição">Qtd. Mín. Compra</FieldLabel>
+          <Input id="min_order_quantity" {...numericProps('min_order_quantity')} min="0" className="h-9" />
+        </div>
+      </div>
+    </SectionCard>
+  );
+}

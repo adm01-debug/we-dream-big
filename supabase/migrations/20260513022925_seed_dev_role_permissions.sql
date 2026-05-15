@@ -1,0 +1,2 @@
+-- Migration 20260513022925 applied directly to production database.
+-- Stub file created to keep Supabase CLI in sync with remote schema_migrations.

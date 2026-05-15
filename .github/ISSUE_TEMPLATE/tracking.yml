@@ -1,0 +1,69 @@
+name: 📌 Tracking / Discussion
+description: Issue de rastreamento — dívida técnica, decisão estratégica, follow-up de PR
+title: "[Tracking] "
+labels: ["tracking", "tech-debt"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: TL;DR
+      description: Resumo em 2-3 frases do que está sendo rastreado e por quê
+    validations:
+      required: true
+  - type: input
+    id: origin_pr
+    attributes:
+      label: PR de origem
+      description: |
+        ⚠️ **OBRIGATÓRIO para tracking issues** — qual PR descobriu/criou este trabalho?
+        Padrão do projeto: tracking issues sempre têm cross-reference bidirecional com PR.
+      placeholder: "#152"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto detalhado
+      description: O que foi descoberto, quais arquivos/sistemas afetados, evidências (logs, queries SQL, screenshots)
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Opções estratégicas (se discussion)
+      description: |
+        Se for uma decisão a tomar, liste as opções com pros/contras:
+        - **Opção A** — Manter como está. Pros/Contras
+        - **Opção B** — ... 
+        - **Opção C** — ...
+      placeholder: "(opcional se for puramente tracking de tech-debt)"
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of Done
+      description: |
+        Critérios objetivos para fechar esta issue. Use checkboxes:
+        - [ ] Decidir abordagem
+        - [ ] Implementar
+        - [ ] Validar em staging
+        - [ ] Remover workaround temporário
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridade
+      options:
+        - "🔴 Alta - bloqueia outras decisões"
+        - "🟠 Média - próximo ciclo"
+        - "🟢 Baixa - quando der"
+    validations:
+      required: true
+  - type: textarea
+    id: docs
+    attributes:
+      label: Documentação relacionada
+      description: Links para docs/, ADRs, ou outras issues que dão contexto
+      placeholder: |
+        - `docs/redeploy/REDEPLOY-T2.5-FOLLOWUP.md`
+        - Refs #155

@@ -1,0 +1,309 @@
+/**
+ * stockFetcher — Busca paginada e processamento de dados de estoque
+ */
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
+import {
+  type VariantStock,
+  type ProductStockSummary,
+  type StockAlert,
+  type FutureStockEntry,
+  calculateStockStatus,
+  calculateDaysUntilStockout,
+  calculateAvailableStock,
+  aggregateVariantsToProduct,
+} from '@/types/stock';
+import { generateStockAlerts } from './stockAlerts';
+
+// ============================================
+// TIPOS PARA API EXTERNA
+// ============================================
+
+interface ExternalProductWithVariants {
+  id: string;
+  name: string;
+  sku?: string;
+  min_quantity?: number;
+  stock_quantity?: number;
+  updated_at?: string;
+  category_id?: string;
+  supplier_id?: string;
+  brand?: string;
+}
+
+interface ExternalVariantStock {
+  id: string;
+  product_id: string;
+  sku?: string;
+  name?: string;
+  color_id?: string;
+  color_name?: string;
+  color_hex?: string;
+  color_code?: string;
+  stock_quantity: number;
+  is_active?: boolean;
+  updated_at?: string;
+}
+
+interface ExternalSupplierSource {
+  id: string;
+  variant_id: string;
+  supplier_id?: string;
+  supplier_sku?: string;
+  quantity: number;
+  reserved_quantity?: number;
+  next_quantity_1?: number | null;
+  next_date_1?: string | null;
+  next_quantity_2?: number | null;
+  next_date_2?: string | null;
+  next_quantity_3?: number | null;
+  next_date_3?: string | null;
+  is_active?: boolean;
+  updated_at?: string;
+}
+
+export function toNumber(value: unknown, fallback = 0): number {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+// ============================================
+// BUSCA PAGINADA
+// ============================================
+
+export async function fetchPaginatedFromBridge<T extends { id: string }>(
+  table: string,
+  select: string,
+  pageSize = 1000,
+  maxRecords = 100000,
+  filters?: Record<string, unknown>
+): Promise<T[]> {
+  const all: T[] = [];
+  let offset = 0;
+  let lastFirstId: string | undefined;
+  let totalCount: number | null = null;
+
+  while (all.length < maxRecords) {
+    // Always request countMode on first page to know total records
+    const body: Record<string, unknown> = {
+      table, operation: 'select', select, limit: pageSize, offset, filters,
+    };
+    if (offset === 0) {
+      body.countMode = 'exact';
+    }
+
+    const { data, error } = await supabase.functions.invoke('external-db-bridge', { body });
+
+    if (error) {
+      console.error(`[Stock] Erro ao buscar ${table}:`, error);
+      break;
+    }
+
+    const records = (data?.data?.records ?? []) as T[];
+    const count = data?.data?.count as number | null;
+
+    // Capture total count from first request
+    if (offset === 0 && count !== null) {
+      totalCount = count;
+    }
+
+    if (records.length === 0) break;
+
+    if (records[0]?.id === lastFirstId) {
+      logger.warn(`[Stock] Paginação ignorando offset em ${table}; parando.`);
+      break;
+    }
+    lastFirstId = records[0]?.id;
+
+    all.push(...records);
+    offset += records.length;
+
+    // Use totalCount (from first page) to know when we're done
+    if (totalCount !== null && offset >= totalCount) break;
+    // Fallback: if no count available and we got fewer than we got last time, stop
+    // NOTE: Do NOT compare against pageSize since the bridge may cap the actual limit
+    if (totalCount === null && records.length === 0) break;
+  }
+
+  logger.log(`[Stock] ${table}: carregados ${all.length}/${totalCount ?? '?'} registros`);
+  return all;
+}
+
+// ============================================
+// PROCESSAMENTO DE DADOS
+// ============================================
+
+function buildFutureEntries(
+  supplierSource: ExternalSupplierSource,
+  productId: string,
+  variantId: string,
+  colorName?: string,
+  productName?: string,
+  productSku?: string
+): FutureStockEntry[] {
+  const entries: FutureStockEntry[] = [];
+  const pairs = [
+    { q: supplierSource.next_quantity_1, d: supplierSource.next_date_1, suffix: '1', status: 'confirmed' as const },
+    { q: supplierSource.next_quantity_2, d: supplierSource.next_date_2, suffix: '2', status: 'pending' as const },
+    { q: supplierSource.next_quantity_3, d: supplierSource.next_date_3, suffix: '3', status: 'pending' as const },
+  ];
+  for (const { q, d, suffix, status } of pairs) {
+    if (q && d) {
+      entries.push({
+        id: `${supplierSource.id}-${suffix}`, productId, variantId,
+        colorName, productName, productSku,
+        expectedQuantity: q, expectedDate: d,
+        source: 'purchase_order', status,
+        createdAt: supplierSource.updated_at || new Date().toISOString(),
+        updatedAt: supplierSource.updated_at || new Date().toISOString(),
+      });
+    }
+  }
+  return entries;
+}
+
+export async function fetchAndProcessStockData(): Promise<{
+  productStocks: ProductStockSummary[];
+  alerts: StockAlert[];
+  futureStock: FutureStockEntry[];
+}> {
+  const [allProducts, allVariants, allSupplierSources, allCategories, allSuppliers] = await Promise.all([
+    fetchPaginatedFromBridge<ExternalProductWithVariants>(
+      'products', 'id,name,sku,min_quantity,stock_quantity,updated_at,category_id,supplier_id,brand', 1000, 100000, { active: true }
+    ),
+    fetchPaginatedFromBridge<ExternalVariantStock>(
+      'product_variants', 'id,product_id,sku,name,color_id,color_name,color_hex,color_code,stock_quantity,is_active,updated_at', 1000, 100000, { is_active: true }
+    ),
+    fetchPaginatedFromBridge<ExternalSupplierSource>(
+      'variant_supplier_sources', 'id,variant_id,supplier_id,supplier_sku,quantity,next_quantity_1,next_date_1,next_quantity_2,next_date_2,next_quantity_3,next_date_3,is_active,updated_at', 1000, 100000, { is_active: true }
+    ),
+    fetchPaginatedFromBridge<{ id: string; name: string }>(
+      'categories', 'id,name', 1000, 100000
+    ),
+    fetchPaginatedFromBridge<{ id: string; name: string; code?: string }>(
+      'suppliers', 'id,name,code', 1000, 100000
+    ),
+  ]);
+
+  // Build lookup maps for category and supplier names
+  const categoryMap = new Map<string, string>();
+  allCategories.forEach(c => categoryMap.set(c.id, c.name));
+  const supplierMap = new Map<string, string>();
+  allSuppliers.forEach(s => supplierMap.set(s.id, s.name));
+
+  logger.log(`[Stock] Carregados: ${allProducts.length} produtos, ${allVariants.length} variantes, ${allSupplierSources.length} sources`);
+
+  const variantsByProduct = new Map<string, ExternalVariantStock[]>();
+  allVariants.forEach(v => {
+    if (!v.product_id) return;
+    const existing = variantsByProduct.get(v.product_id) || [];
+    existing.push(v);
+    variantsByProduct.set(v.product_id, existing);
+  });
+
+  const sourcesByVariant = new Map<string, ExternalSupplierSource>();
+  allSupplierSources.forEach(s => {
+    if (!s.variant_id) return;
+    const existing = sourcesByVariant.get(s.variant_id);
+    if (!existing || (s.updated_at && existing.updated_at && s.updated_at > existing.updated_at)) {
+      sourcesByVariant.set(s.variant_id, s);
+    }
+  });
+
+  const futureEntries: FutureStockEntry[] = [];
+
+  if (allProducts.length === 0) {
+    return { productStocks: [], alerts: [], futureStock: [] };
+  }
+
+  const summaries: ProductStockSummary[] = allProducts.map(product => {
+    const productVariants = variantsByProduct.get(product.id) || [];
+    const variants: VariantStock[] = [];
+
+    if (productVariants.length > 0) {
+      productVariants.forEach(pv => {
+        const supplierSource = sourcesByVariant.get(pv.id);
+        const currentStock = supplierSource
+          ? toNumber(supplierSource.quantity, toNumber(pv.stock_quantity, 0))
+          : toNumber(pv.stock_quantity, 0);
+        const minStock = product.min_quantity || 10;
+        const reservedStock = supplierSource ? toNumber(supplierSource.reserved_quantity, 0) : 0;
+        let inTransitStock = 0;
+
+        if (supplierSource) {
+          if (supplierSource.next_quantity_1) inTransitStock += supplierSource.next_quantity_1;
+          if (supplierSource.next_quantity_2) inTransitStock += supplierSource.next_quantity_2;
+          if (supplierSource.next_quantity_3) inTransitStock += supplierSource.next_quantity_3;
+          futureEntries.push(...buildFutureEntries(supplierSource, product.id, pv.id, pv.color_name || undefined, product.name, product.sku));
+        }
+
+        const availableStock = calculateAvailableStock(currentStock, reservedStock);
+        const status = calculateStockStatus(currentStock, minStock, undefined, inTransitStock);
+
+        variants.push({
+          id: pv.id, productId: product.id, variantId: pv.id,
+          variantSku: pv.sku || `${product.sku}-${pv.color_code || 'VAR'}`,
+          colorId: pv.color_id, colorName: pv.color_name || 'Padrão', colorHex: pv.color_hex,
+          currentStock, minStock, reservedStock, inTransitStock, availableStock, status,
+          daysUntilStockout: calculateDaysUntilStockout(availableStock),
+          futureStock: inTransitStock > 0 ? inTransitStock : undefined,
+          futureStockDate: supplierSource?.next_date_1 || undefined,
+          updatedAt: pv.updated_at || product.updated_at || new Date().toISOString(),
+        });
+      });
+
+      // Fallback: estoque no nível do produto
+      const productLevelStock = toNumber(product.stock_quantity, 0);
+      const sumVariantStock = variants.reduce((sum, v) => sum + toNumber(v.currentStock, 0), 0);
+
+      if (sumVariantStock === 0 && productLevelStock > 0) {
+        const minStock = product.min_quantity || 10;
+        if (variants.length === 1) {
+          variants[0] = {
+            ...variants[0],
+            currentStock: productLevelStock,
+            availableStock: calculateAvailableStock(productLevelStock, variants[0].reservedStock),
+            status: calculateStockStatus(productLevelStock, minStock),
+            daysUntilStockout: calculateDaysUntilStockout(productLevelStock),
+          };
+        } else {
+          const availableStock = calculateAvailableStock(productLevelStock, 0);
+          variants.push({
+            id: `${product.id}::product_total`, productId: product.id,
+            variantId: `${product.id}::product_total`, variantSku: product.sku || 'PROD',
+            colorName: 'Total do Produto', currentStock: productLevelStock, minStock,
+            reservedStock: 0, inTransitStock: 0, availableStock,
+            status: calculateStockStatus(productLevelStock, minStock),
+            daysUntilStockout: calculateDaysUntilStockout(availableStock),
+            updatedAt: product.updated_at || new Date().toISOString(),
+          });
+        }
+      }
+    } else {
+      const currentStock = toNumber(product.stock_quantity, 0);
+      const minStock = product.min_quantity || 10;
+      const availableStock = calculateAvailableStock(currentStock, 0);
+      variants.push({
+        id: product.id, productId: product.id, variantId: product.id,
+        variantSku: product.sku || 'PROD', colorName: 'Padrão',
+        currentStock, minStock, reservedStock: 0, inTransitStock: 0, availableStock,
+        status: calculateStockStatus(currentStock, minStock),
+        daysUntilStockout: calculateDaysUntilStockout(availableStock),
+        updatedAt: product.updated_at || new Date().toISOString(),
+      });
+    }
+
+    const aggregated = aggregateVariantsToProduct(variants);
+    const categoryName = product.category_id ? categoryMap.get(product.category_id) : undefined;
+    const supplierName = product.supplier_id ? supplierMap.get(product.supplier_id) : (product.brand || undefined);
+    return {
+      productId: product.id, productName: product.name, productSku: product.sku || '',
+      categoryName, supplierName,
+      ...aggregated,
+    };
+  });
+
+  const alerts = generateStockAlerts(summaries);
+  logger.log(`[Stock] Processados ${summaries.length} produtos com ${futureEntries.length} previsões`);
+  return { productStocks: summaries, alerts, futureStock: futureEntries };
+}

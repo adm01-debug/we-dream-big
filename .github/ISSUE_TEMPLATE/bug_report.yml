@@ -1,0 +1,72 @@
+name: 🐛 Bug Report
+description: Reportar um problema reproduzível
+title: "[BUG] "
+labels: ["bug", "triage"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição do bug
+      description: O que está acontecendo? Seja específico.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Como reproduzir
+      description: Passos exatos para reproduzir.
+      placeholder: |
+        1. Vá para ...
+        2. Clique em ...
+        3. Veja o erro ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento esperado
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severidade
+      options:
+        - "🔴 Crítico - produção parada / dados em risco"
+        - "🟠 Alto - funcionalidade principal afetada"
+        - "🟡 Médio - workaround disponível"
+        - "🟢 Baixo - cosmético / melhoria"
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: Sistema afetado
+      multiple: true
+      options:
+        - Bitrix24
+        - Supabase
+        - n8n
+        - Evolution API / WhatsApp
+        - Bling
+        - Cloudflare
+        - Frontend
+        - Outro
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: Cole logs relevantes ou anexe prints.
+      render: shell
+  - type: input
+    id: origin_pr
+    attributes:
+      label: PR de origem (se aplicável)
+      description: |
+        Se este bug foi descoberto durante uma PR (ex: review, CI, smoke test), referencie aqui.
+        Padrão do projeto: toda issue tem cross-reference para a PR que a descobriu.
+      placeholder: "#152"
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto adicional

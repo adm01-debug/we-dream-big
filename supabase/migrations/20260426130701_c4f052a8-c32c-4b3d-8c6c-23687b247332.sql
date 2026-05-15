@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public._rls_test_as(uuid, text);

@@ -1,0 +1,147 @@
+/**
+ * DiscountApprovalQueue — fila administrativa de solicitações de desconto pendentes.
+ */
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, XCircle, ShieldAlert } from "lucide-react";
+import { toast } from "sonner";
+
+export function DiscountApprovalQueue() {
+  const qc = useQueryClient();
+  const [notes, setNotes] = useState<Record<string, string>>({});
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["discount-approval-queue"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        // rls-allow: admin-only via has_role; RLS filtra
+        .from("discount_approval_requests")
+        .select("*, quotes:quote_id(quote_number, client_name, client_company, total, subtotal, discount_percent, negotiation_markup_percent, real_subtotal, real_discount_percent)")
+        .eq("status", "pending")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const respond = useMutation({
+    mutationFn: async ({ id, approved }: { id: string; approved: boolean }) => {
+      const { data: u } = await supabase.auth.getUser();
+      const { error } = await supabase
+        // rls-allow: admin-only via has_role; RLS filtra
+        .from("discount_approval_requests")
+        .update({
+          status: approved ? "approved" : "rejected",
+          admin_id: u.user?.id ?? null,
+          admin_notes: notes[id] ?? null,
+          responded_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Resposta registrada");
+      qc.invalidateQueries({ queryKey: ["discount-approval-queue"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  if (isLoading) {
+    return <div className="space-y-3">{[0, 1].map((i) => <Skeleton key={i} className="h-32" />)}</div>;
+  }
+
+  if (!data?.length) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <ShieldAlert className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+          <p className="text-sm text-muted-foreground">Nenhuma solicitação pendente.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {data.map((req) => {
+        const quote = (req as { quotes?: {
+          quote_number?: string;
+          client_name?: string;
+          client_company?: string;
+          total?: number;
+          subtotal?: number;
+          discount_percent?: number;
+          negotiation_markup_percent?: number;
+          real_subtotal?: number;
+          real_discount_percent?: number;
+        } }).quotes;
+        const markup = Number(quote?.negotiation_markup_percent ?? 0);
+        const apparent = Number(quote?.discount_percent ?? 0);
+        const realPct = Number(quote?.real_discount_percent ?? req.requested_discount_percent);
+        const hasMarkup = markup > 0;
+        return (
+          <Card key={req.id}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center justify-between gap-2 flex-wrap">
+                <span>Orçamento {quote?.quote_number ?? "—"}</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  {hasMarkup && (
+                    <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
+                      Aparente {apparent.toFixed(1)}%
+                    </Badge>
+                  )}
+                  <Badge variant="destructive" title={hasMarkup ? `Real: ${realPct.toFixed(2)}% · Aparente: ${apparent.toFixed(1)}% · Markup: +${markup.toFixed(1)}%` : undefined}>
+                    {hasMarkup ? `Real ${realPct.toFixed(1)}%` : `${realPct.toFixed(1)}%`} (limite {req.max_allowed_percent}%)
+                  </Badge>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Cliente: <strong>{quote?.client_name || quote?.client_company || "—"}</strong>
+                {quote?.total !== null && <> · Total: <strong>R$ {Number(quote.total).toFixed(2)}</strong></>}
+              </p>
+              {hasMarkup && (
+                <div className="text-xs bg-warning/5 border border-warning/20 rounded-md p-2 space-y-0.5">
+                  <p className="font-medium text-warning">⚠️ Margem de negociação aplicada (+{markup.toFixed(1)}%)</p>
+                  <p className="text-muted-foreground">
+                    Cliente vê subtotal R$ {Number(quote?.subtotal ?? 0).toFixed(2)} com {apparent.toFixed(1)}% off.
+                    Real: R$ {Number(quote?.real_subtotal ?? 0).toFixed(2)} → desconto efetivo <strong>{realPct.toFixed(2)}%</strong>.
+                  </p>
+                </div>
+              )}
+              {req.seller_notes && (
+                <p className="text-sm bg-muted/40 rounded p-2">📝 {req.seller_notes}</p>
+              )}
+              <Textarea
+                placeholder="Notas (opcional)"
+                value={notes[req.id] ?? ""}
+                onChange={(e) => setNotes({ ...notes, [req.id]: e.target.value })}
+                rows={2}
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                  onClick={() => respond.mutate({ id: req.id, approved: false })}
+                  disabled={respond.isPending}
+                >
+                  <XCircle className="h-4 w-4 mr-2" /> Recusar
+                </Button>
+                <Button onClick={() => respond.mutate({ id: req.id, approved: true })} disabled={respond.isPending}>
+                  <CheckCircle2 className="h-4 w-4 mr-2" /> Aprovar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}

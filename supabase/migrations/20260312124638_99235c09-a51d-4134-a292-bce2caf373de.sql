@@ -1,0 +1,1 @@
+UPDATE user_roles SET role = 'admin' WHERE user_id = (SELECT user_id FROM profiles WHERE email = 'adm01@promobrindes.com.br');

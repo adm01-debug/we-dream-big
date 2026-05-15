@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Users can manage org order items" ON public.order_items;

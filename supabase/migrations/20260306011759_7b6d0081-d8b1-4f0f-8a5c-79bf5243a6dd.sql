@@ -1,0 +1,1 @@
+UPDATE public.seller_carts SET status = 'novo' WHERE status = 'draft';

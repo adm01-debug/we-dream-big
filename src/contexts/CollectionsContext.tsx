@@ -1,0 +1,64 @@
+import React, { createContext, useContext, type ReactNode, useCallback } from "react";
+import { useCollections, type Collection, type CollectionVariantInfo, type CollectionProductItem } from "@/hooks/useCollections";
+import { useProductsContext } from "@/contexts/ProductsContext";
+import { type Product } from "@/hooks/useProducts";
+
+interface CollectionsContextType {
+  collections: Collection[];
+  isLoaded: boolean;
+  createCollection: (
+    name: string,
+    description?: string,
+    color?: string,
+    icon?: string,
+    clientId?: string | null,
+    clientName?: string | null
+  ) => Collection;
+  updateCollection: (
+    id: string,
+    updates: Partial<Omit<Collection, "id" | "createdAt">>
+  ) => void;
+  deleteCollection: (id: string) => void;
+  addProductToCollection: (collectionId: string, productId: string, variant?: CollectionVariantInfo, priceAtSave?: number | null) => void;
+  removeProductFromCollection: (collectionId: string, productId: string) => void;
+  addProductToMultipleCollections: (productId: string, collectionIds: string[], variant?: CollectionVariantInfo) => void;
+  restoreFromTrash: (collectionId: string, productId: string) => Promise<boolean>;
+  reorderProducts: (collectionId: string, orderedProductIds: string[]) => void;
+  updateProductNotes: (collectionId: string, productId: string, notes: string) => void;
+  getCollectionProducts: (collectionId: string) => Product[];
+  getCollectionProductItems: (collectionId: string) => CollectionProductItem[];
+  getCollectionProductVariant: (collectionId: string, productId: string) => CollectionVariantInfo | undefined;
+  getProductCollections: (productId: string) => Collection[];
+  isProductInCollection: (productId: string, collectionId: string) => boolean;
+  defaultColors: string[];
+  defaultIcons: string[];
+}
+
+const CollectionsContext = createContext<CollectionsContextType | undefined>(undefined);
+
+export function CollectionsProvider({ children }: { children: ReactNode }) {
+  const collectionsHook = useCollections();
+  const { getProductsByIds } = useProductsContext();
+
+  const getCollectionProducts = useCallback(
+    (collectionId: string): Product[] =>
+      collectionsHook.getCollectionProductsFromMap(collectionId, getProductsByIds),
+    [collectionsHook.getCollectionProductsFromMap, getProductsByIds]
+  );
+
+  return (
+    <CollectionsContext.Provider
+      value={{ ...collectionsHook, getCollectionProducts }}
+    >
+      {children}
+    </CollectionsContext.Provider>
+  );
+}
+
+export function useCollectionsContext() {
+  const context = useContext(CollectionsContext);
+  if (context === undefined) {
+    throw new Error("useCollectionsContext must be used within a CollectionsProvider");
+  }
+  return context;
+}

@@ -1,0 +1,137 @@
+/**
+ * PromobrindProduct type + helper functions.
+ */
+
+export interface PromobrindProduct {
+  id: string;
+  name: string;
+  sku: string;
+  sale_price?: number | null;
+  /** @deprecated Use sale_price */
+  base_price?: number | null;
+  image_url: string | null;
+  images: string[] | null;
+  primary_image_url: string | null;
+  og_image_url?: string | null;
+  category_id: string | null;
+  main_category_id: string | null;
+  supplier_id: string | null;
+  supplier_reference: string | null;
+  supplier_name?: string | null;
+  description: string | null;
+  short_description: string | null;
+  meta_description?: string | null;
+  brand: string | null;
+  is_active: boolean;
+  active: boolean;
+  stock_quantity?: number | null;
+  colors?: Array<string | { name: string; hex?: string; stock?: number }> | null;
+  materials?: Array<string | Record<string, unknown>> | null;
+  dimensions?: string | null;
+  min_quantity?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  height_cm?: number | null;
+  width_cm?: number | null;
+  length_cm?: number | null;
+  diameter_cm?: number | null;
+  weight_g?: number | null;
+  capacity_ml?: number | null;
+  packing_type?: string | null;
+  packing_classification?: string | null;
+  has_commercial_packaging?: boolean | null;
+  repacking_type?: string | null;
+  packaging_context?: string | null;
+  box_image?: string | null;
+  box_width_mm?: number | null;
+  box_height_mm?: number | null;
+  box_length_mm?: number | null;
+  box_weight_kg?: number | null;
+  box_quantity?: number | null;
+  box_volume_cm3?: number | null;
+  product_videos?: Array<{
+    id: string;
+    url_stream: string | null;
+    url_hls: string | null;
+    url_thumbnail: string | null;
+    url_original: string | null;
+    source_youtube_id: string | null;
+    video_type: string | null;
+    display_order: number;
+    is_primary: boolean;
+    title: string | null;
+  }> | null;
+  is_featured?: boolean | null;
+  is_bestseller?: boolean | null;
+  is_new?: boolean | null;
+  is_on_sale?: boolean | null;
+  is_kit?: boolean | null;
+  gender?: string | null;
+  category_name?: string | null;
+  tags?: Record<string, unknown> | null;
+  price_updated_at?: string | null;
+  price_freshness_threshold_days?: number | null;
+  kit_components?: Array<{
+    id: string; component_name: string | null; component_code: string | null;
+    component_product_id: string | null; component_sku: string | null;
+    quantity: number | null; display_order: number | null;
+    is_optional: boolean | null; is_packaging: boolean | null;
+    is_replaceable: boolean | null; allows_personalization: boolean | null;
+    material: string | null; primary_image_url: string | null;
+    height_mm: number | null; width_mm: number | null; length_mm: number | null;
+    weight_g: number | null; notes: string | null;
+  }> | null;
+}
+
+export function getProductImageUrl(product: PromobrindProduct): string | null {
+  return product.primary_image_url || product.image_url || (product.images?.[0] ?? null);
+}
+
+export function getProductPrice(product: PromobrindProduct): number {
+  return product.sale_price ?? product.base_price ?? 0;
+}
+
+export function getProductStock(product: PromobrindProduct): number {
+  return product.stock_quantity || 0;
+}
+
+// Select field constants
+// NOTE: `price_updated_at` is the SSOT for price freshness — populated via
+// trigger on the external Promobrind DB whenever any price field changes.
+// `price_freshness_threshold_days` does NOT exist in the external DB and was
+// removed from all selects to eliminate "column does not exist" errors.
+export const PRODUCT_SELECT_FIELDS_WITH_SALE =
+  'id, name, sku, sale_price, cost_price, images, primary_image_url, ' +
+  'category_id, main_category_id, supplier_id, supplier_reference, description, ' +
+  'short_description, meta_description, brand, is_active, active, stock_quantity, colors, ' +
+  'materials, dimensions, min_quantity, created_at, updated_at, price_updated_at, ' +
+  'is_featured, is_bestseller, is_new, is_on_sale, is_kit, gender, ' +
+  'height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml, ' +
+  'packing_type, packing_classification, has_commercial_packaging, repacking_type, packaging_context, ' +
+  'box_image, box_width_mm, box_height_mm, box_length_mm, box_weight_kg, box_quantity, box_volume_cm3';
+
+export const PRODUCT_SELECT_FIELDS_LEGACY =
+  'id, name, sku, cost_price, images, primary_image_url, ' +
+  'category_id, main_category_id, supplier_id, supplier_reference, description, ' +
+  'short_description, meta_description, brand, is_active, active, stock_quantity, colors, ' +
+  'materials, dimensions, min_quantity, created_at, updated_at, price_updated_at, ' +
+  'is_featured, is_bestseller, is_new, is_on_sale, is_kit, ' +
+  'height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml, ' +
+  'packing_type, packing_classification, has_commercial_packaging, repacking_type, packaging_context, ' +
+  'box_image, box_width_mm, box_height_mm, box_length_mm, box_weight_kg, box_quantity, box_volume_cm3';
+
+export const PRODUCT_SELECT_FIELDS_DETAIL =
+  'id, name, sku, sale_price, cost_price, images, primary_image_url, ' +
+  'category_id, main_category_id, supplier_id, supplier_reference, description, ' +
+  'short_description, meta_description, brand, is_active, active, stock_quantity, colors, ' +
+  'materials, dimensions, min_quantity, created_at, updated_at, price_updated_at, ' +
+  'is_featured, is_bestseller, is_new, is_on_sale, is_kit, tags, ' +
+  'height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml, ' +
+  'packing_type, packing_classification, has_commercial_packaging, repacking_type, packaging_context, ' +
+  'box_image, box_width_mm, box_height_mm, box_length_mm, box_weight_kg, box_quantity, box_volume_cm3';
+
+// #2: also trigger fallback when orderBy hits a missing column
+export function shouldFallbackSelect(err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /(sale_price|base_price|image_url|supplier_name|category_name|product_videos|selected_images|gender|price_updated_at|price_freshness_threshold_days|does not exist|não existe|undefined column|column .+ does not exist|could not identify an ordering operator|order by)/i.test(msg);
+}

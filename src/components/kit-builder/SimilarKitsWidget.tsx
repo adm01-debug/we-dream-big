@@ -1,0 +1,84 @@
+/**
+ * SimilarKitsWidget — sidebar do Kit Builder mostrando até 3 templates
+ * semelhantes ao kit atual (overlap >=30% por SKU).
+ */
+import { useNavigate } from 'react-router-dom';
+import * as Lucide from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useSimilarKits } from '@/hooks/useSimilarKits';
+import { formatCurrency } from '@/lib/kit-builder';
+import { Sparkles } from 'lucide-react';
+
+interface Props {
+  currentSkus: string[];
+  excludeId?: string;
+}
+
+function getIcon(name: string) {
+  const I = (Lucide as unknown as Record<string, Lucide.LucideIcon>)[name];
+  return I ?? Lucide.Package;
+}
+
+export function SimilarKitsWidget({ currentSkus, excludeId }: Props) {
+  const navigate = useNavigate();
+  const { data, isLoading } = useSimilarKits({ currentSkus, excludeId });
+
+  if (currentSkus.length === 0) return null;
+
+  return (
+    <Card className="border-dashed">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-1.5">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          Kits semelhantes
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {isLoading && (
+          <>
+            <Skeleton className="h-14 w-full rounded-md" />
+            <Skeleton className="h-14 w-full rounded-md" />
+          </>
+        )}
+        {!isLoading && (data ?? []).length === 0 && (
+          <p className="text-xs text-muted-foreground">
+            Nenhum template parecido. Continue montando — sua criação é única!
+          </p>
+        )}
+        {(data ?? []).map(({ template, ratio, overlap }) => {
+          const Icon = getIcon(template.icon);
+          return (
+            <button
+              key={template.id}
+              onClick={() => navigate(`/montar-kit?template=${template.id}`)}
+              className="w-full text-left rounded-md border p-2 hover:bg-accent/50 transition-colors flex items-center gap-2"
+            >
+              <div
+                className="h-8 w-8 rounded-md flex items-center justify-center shrink-0"
+                style={{ backgroundColor: `${template.color}22`, color: template.color }}
+              >
+                <Icon className="h-4 w-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1">
+                  <p className="text-xs font-medium truncate">{template.name}</p>
+                  {template.tag && (
+                    <Badge variant="outline" className="text-[9px] h-4 px-1">
+                      {template.tag}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  {Math.round(ratio * 100)}% em comum · {overlap} itens · {formatCurrency(template.total_price)}
+                </p>
+              </div>
+            </button>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}

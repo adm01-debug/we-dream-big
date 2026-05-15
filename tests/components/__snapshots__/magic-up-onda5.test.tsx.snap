@@ -1,0 +1,879 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MagicUpVariationComparator snapshots > snapshot — empate de scores [70, 90, 90] mantém badge única no índice 1 1`] = `
+<section
+  aria-label="Comparador de variações"
+  class="rounded-lg border bg-card p-3"
+  data-testid="magic-up-variation-comparator"
+>
+  <div
+    class="mb-2 flex items-center justify-between gap-2"
+  >
+    <p
+      class="text-sm font-semibold"
+    >
+      Comparar variações
+    </p>
+    <div
+      aria-label="Melhor score entre variações: 90"
+      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 active:scale-95 cursor-default border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-soft"
+    >
+      Melhor score: 
+      90
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-2 gap-2 sm:grid-cols-3"
+    data-testid="variation-list"
+    role="list"
+  >
+    <div
+      class="overflow-hidden rounded-lg border border-primary ring-2 ring-primary/20"
+      data-testid="variation-item-1"
+      data-variation-index="0"
+      role="listitem"
+    >
+      <button
+        aria-current="true"
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 1, score 70"
+        aria-pressed="true"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="true"
+        data-testid="variation-card-1"
+        data-variation-index="0"
+        data-winner="false"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 1"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/a.png"
+          />
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              1
+            </span>
+            <span
+              aria-label="Score 70 de 100"
+              class="text-xs font-semibold text-primary"
+            >
+              70
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 1 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-1"
+          data-variation-index="0"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+    <div
+      class="overflow-hidden rounded-lg border border-border hover:border-primary/40"
+      data-testid="variation-item-2"
+      data-variation-index="1"
+      role="listitem"
+    >
+      <button
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 2, score 90, melhor score"
+        aria-pressed="false"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="false"
+        data-testid="variation-card-2"
+        data-variation-index="1"
+        data-winner="true"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 2"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/b.png"
+          />
+          <div
+            aria-label="Melhor score"
+            class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 active:scale-95 cursor-default border-transparent bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-soft hover:-translate-y-0.5 active:translate-y-0 absolute left-1 top-1 text-[10px]"
+          >
+            Melhor score
+          </div>
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              2
+            </span>
+            <span
+              aria-label="Score 90 de 100"
+              class="text-xs font-semibold text-primary"
+            >
+              90
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 2 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-2"
+          data-variation-index="1"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+    <div
+      class="overflow-hidden rounded-lg border border-border hover:border-primary/40"
+      data-testid="variation-item-3"
+      data-variation-index="2"
+      role="listitem"
+    >
+      <button
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 3, score 90"
+        aria-pressed="false"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="false"
+        data-testid="variation-card-3"
+        data-variation-index="2"
+        data-winner="false"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 3"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/c.png"
+          />
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              3
+            </span>
+            <span
+              aria-label="Score 90 de 100"
+              class="text-xs font-semibold text-primary"
+            >
+              90
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 3 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-3"
+          data-variation-index="2"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+`;
+
+exports[`MagicUpVariationComparator snapshots > snapshot — estado base com 3 variações e scores distintos 1`] = `
+<section
+  aria-label="Comparador de variações"
+  class="rounded-lg border bg-card p-3"
+  data-testid="magic-up-variation-comparator"
+>
+  <div
+    class="mb-2 flex items-center justify-between gap-2"
+  >
+    <p
+      class="text-sm font-semibold"
+    >
+      Comparar variações
+    </p>
+    <div
+      aria-label="Melhor score entre variações: 92"
+      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 active:scale-95 cursor-default border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-soft"
+    >
+      Melhor score: 
+      92
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-2 gap-2 sm:grid-cols-3"
+    data-testid="variation-list"
+    role="list"
+  >
+    <div
+      class="overflow-hidden rounded-lg border border-primary ring-2 ring-primary/20"
+      data-testid="variation-item-1"
+      data-variation-index="0"
+      role="listitem"
+    >
+      <button
+        aria-current="true"
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 1, score 70"
+        aria-pressed="true"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="true"
+        data-testid="variation-card-1"
+        data-variation-index="0"
+        data-winner="false"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 1"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/a.png"
+          />
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              1
+            </span>
+            <span
+              aria-label="Score 70 de 100"
+              class="text-xs font-semibold text-primary"
+            >
+              70
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 1 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-1"
+          data-variation-index="0"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+    <div
+      class="overflow-hidden rounded-lg border border-border hover:border-primary/40"
+      data-testid="variation-item-2"
+      data-variation-index="1"
+      role="listitem"
+    >
+      <button
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 2, score 85"
+        aria-pressed="false"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="false"
+        data-testid="variation-card-2"
+        data-variation-index="1"
+        data-winner="false"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 2"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/b.png"
+          />
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              2
+            </span>
+            <span
+              aria-label="Score 85 de 100"
+              class="text-xs font-semibold text-primary"
+            >
+              85
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 2 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-2"
+          data-variation-index="1"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+    <div
+      class="overflow-hidden rounded-lg border border-border hover:border-primary/40"
+      data-testid="variation-item-3"
+      data-variation-index="2"
+      role="listitem"
+    >
+      <button
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 3, score 92, melhor score"
+        aria-pressed="false"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="false"
+        data-testid="variation-card-3"
+        data-variation-index="2"
+        data-winner="true"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 3"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/c.png"
+          />
+          <div
+            aria-label="Melhor score"
+            class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 active:scale-95 cursor-default border-transparent bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-soft hover:-translate-y-0.5 active:translate-y-0 absolute left-1 top-1 text-[10px]"
+          >
+            Melhor score
+          </div>
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              3
+            </span>
+            <span
+              aria-label="Score 92 de 100"
+              class="text-xs font-semibold text-primary"
+            >
+              92
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 3 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-3"
+          data-variation-index="2"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+`;
+
+exports[`MagicUpVariationComparator snapshots > snapshot — scores ausentes exibe placeholders e nenhum vencedor (sem badge) 1`] = `
+<section
+  aria-label="Comparador de variações"
+  class="rounded-lg border bg-card p-3"
+  data-testid="magic-up-variation-comparator"
+>
+  <div
+    class="mb-2 flex items-center justify-between gap-2"
+  >
+    <p
+      class="text-sm font-semibold"
+    >
+      Comparar variações
+    </p>
+    <div
+      aria-label="Melhor score entre variações: indisponível"
+      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 active:scale-95 cursor-default border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-soft"
+    >
+      Melhor score: 
+      —
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-2 gap-2 sm:grid-cols-3"
+    data-testid="variation-list"
+    role="list"
+  >
+    <div
+      class="overflow-hidden rounded-lg border border-primary ring-2 ring-primary/20"
+      data-testid="variation-item-1"
+      data-variation-index="0"
+      role="listitem"
+    >
+      <button
+        aria-current="true"
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 1"
+        aria-pressed="true"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="true"
+        data-testid="variation-card-1"
+        data-variation-index="0"
+        data-winner="false"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 1"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/a.png"
+          />
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              1
+            </span>
+            <span
+              aria-label="Score indisponível"
+              class="text-xs font-semibold text-primary"
+            >
+              —
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 1 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-1"
+          data-variation-index="0"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+    <div
+      class="overflow-hidden rounded-lg border border-border hover:border-primary/40"
+      data-testid="variation-item-2"
+      data-variation-index="1"
+      role="listitem"
+    >
+      <button
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 2"
+        aria-pressed="false"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="false"
+        data-testid="variation-card-2"
+        data-variation-index="1"
+        data-winner="false"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 2"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/b.png"
+          />
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              2
+            </span>
+            <span
+              aria-label="Score indisponível"
+              class="text-xs font-semibold text-primary"
+            >
+              —
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 2 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-2"
+          data-variation-index="1"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+    <div
+      class="overflow-hidden rounded-lg border border-border hover:border-primary/40"
+      data-testid="variation-item-3"
+      data-variation-index="2"
+      role="listitem"
+    >
+      <button
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 3"
+        aria-pressed="false"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="false"
+        data-testid="variation-card-3"
+        data-variation-index="2"
+        data-winner="false"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 3"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/c.png"
+          />
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              3
+            </span>
+            <span
+              aria-label="Score indisponível"
+              class="text-xs font-semibold text-primary"
+            >
+              —
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 3 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-3"
+          data-variation-index="2"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+`;
+
+exports[`MagicUpVariationComparator snapshots > snapshot — variação ativa em activeIndex=1 1`] = `
+<section
+  aria-label="Comparador de variações"
+  class="rounded-lg border bg-card p-3"
+  data-testid="magic-up-variation-comparator"
+>
+  <div
+    class="mb-2 flex items-center justify-between gap-2"
+  >
+    <p
+      class="text-sm font-semibold"
+    >
+      Comparar variações
+    </p>
+    <div
+      aria-label="Melhor score entre variações: 92"
+      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 active:scale-95 cursor-default border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-soft"
+    >
+      Melhor score: 
+      92
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-2 gap-2 sm:grid-cols-3"
+    data-testid="variation-list"
+    role="list"
+  >
+    <div
+      class="overflow-hidden rounded-lg border border-border hover:border-primary/40"
+      data-testid="variation-item-1"
+      data-variation-index="0"
+      role="listitem"
+    >
+      <button
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 1, score 70"
+        aria-pressed="false"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="false"
+        data-testid="variation-card-1"
+        data-variation-index="0"
+        data-winner="false"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 1"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/a.png"
+          />
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              1
+            </span>
+            <span
+              aria-label="Score 70 de 100"
+              class="text-xs font-semibold text-primary"
+            >
+              70
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 1 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-1"
+          data-variation-index="0"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+    <div
+      class="overflow-hidden rounded-lg border border-primary ring-2 ring-primary/20"
+      data-testid="variation-item-2"
+      data-variation-index="1"
+      role="listitem"
+    >
+      <button
+        aria-current="true"
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 2, score 85"
+        aria-pressed="true"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="true"
+        data-testid="variation-card-2"
+        data-variation-index="1"
+        data-winner="false"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 2"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/b.png"
+          />
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              2
+            </span>
+            <span
+              aria-label="Score 85 de 100"
+              class="text-xs font-semibold text-primary"
+            >
+              85
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 2 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-2"
+          data-variation-index="1"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+    <div
+      class="overflow-hidden rounded-lg border border-border hover:border-primary/40"
+      data-testid="variation-item-3"
+      data-variation-index="2"
+      role="listitem"
+    >
+      <button
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        aria-label="Selecionar variação 3, score 92, melhor score"
+        aria-pressed="false"
+        class="group block w-full text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-active="false"
+        data-testid="variation-card-3"
+        data-variation-index="2"
+        data-winner="true"
+        type="button"
+      >
+        <div
+          class="relative aspect-square bg-muted"
+        >
+          <img
+            alt="Variação 3"
+            class="h-full w-full object-cover"
+            loading="lazy"
+            src="https://example.com/c.png"
+          />
+          <div
+            aria-label="Melhor score"
+            class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 active:scale-95 cursor-default border-transparent bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-soft hover:-translate-y-0.5 active:translate-y-0 absolute left-1 top-1 text-[10px]"
+          >
+            Melhor score
+          </div>
+        </div>
+        <div
+          class="space-y-1 p-2"
+        >
+          <div
+            class="flex items-center justify-between gap-1"
+          >
+            <span
+              class="text-xs font-medium"
+            >
+              Variação 
+              3
+            </span>
+            <span
+              aria-label="Score 92 de 100"
+              class="text-xs font-semibold text-primary"
+            >
+              92
+            </span>
+          </div>
+        </div>
+      </button>
+      <div
+        class="px-2 pb-2"
+      >
+        <button
+          aria-label="Marcar variação 3 como vencedora"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.96] hover:-translate-y-0.5 hover:shadow-lg hover:bg-primary/10 hover:text-primary font-bold active:bg-primary/20 rounded-lg px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          data-testid="variation-winner-button-3"
+          data-variation-index="2"
+        >
+          Marcar vencedora
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+`;

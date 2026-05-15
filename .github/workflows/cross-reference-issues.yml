@@ -1,0 +1,200 @@
+# Auto cross-reference entre PRs e issues
+#
+# O que faz:
+# 1. Quando uma PR é aberta/atualizada que menciona "Closes #N" ou "Refs #N":
+#    → adiciona comentário na issue #N informando que existe PR linkada
+# 2. Quando uma PR é mergeada que linka issues:
+#    → adiciona comentário final na issue informando o merge SHA
+# 3. Quando uma issue NOVA é criada que menciona "PR de origem #N":
+#    → adiciona comentário na PR #N referenciando a issue
+#
+# Padrão do projeto:
+# Toda issue de tracking/tech-debt deve ter cross-reference bidirecional com PR.
+# Esta action garante automaticamente.
+
+name: Cross-reference PR ↔ Issue
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, closed]
+  issues:
+    types: [opened, edited]
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
+jobs:
+  cross-reference:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cross-reference on PR events
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            const title = pr.title || '';
+
+            // Extrai referências a issues do body via keywords reconhecidas:
+            // Closes / Fixes / Resolves / Refs / References / Part of
+            const issueRefs = new Set();
+            const keywordPattern = /(?:closes|fixes|resolves|refs|references|part of)\s+#(\d+)/gi;
+            for (const m of body.matchAll(keywordPattern)) {
+              issueRefs.add(parseInt(m[1], 10));
+            }
+
+            if (issueRefs.size === 0) {
+              core.info(`PR #${pr.number} não menciona issues via keyword reconhecida. Nenhum cross-ref necessário.`);
+              return;
+            }
+
+            const isMerged = pr.merged === true;
+
+            for (const issueNum of issueRefs) {
+              try {
+                // Verifica se #N é issue (não PR — eles compartilham numeração)
+                const { data: issue } = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNum,
+                });
+
+                if (issue.pull_request) {
+                  core.info(`#${issueNum} é uma PR, não issue. Pulando.`);
+                  continue;
+                }
+
+                // Marker idempotente — diferenciamos comentário "PR linkada" vs "PR mergeada"
+                const markerOpen = `<!-- cross-ref-bot:pr-${pr.number}:opened -->`;
+                const markerMerged = `<!-- cross-ref-bot:pr-${pr.number}:merged -->`;
+
+                const { data: comments } = await github.rest.issues.listComments({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNum,
+                  per_page: 100,
+                });
+
+                const hasOpenedComment = comments.some(c => c.body && c.body.includes(markerOpen));
+                const hasMergedComment = comments.some(c => c.body && c.body.includes(markerMerged));
+
+                let commentBody = null;
+                if (isMerged && !hasMergedComment) {
+                  const mergeSha = pr.merge_commit_sha ? pr.merge_commit_sha.substring(0, 10) : 'n/a';
+                  const mergedAt = pr.merged_at ? new Date(pr.merged_at).toISOString() : 'n/a';
+                  commentBody = [
+                    markerMerged,
+                    '## ✅ PR linkada foi mergeada',
+                    '',
+                    `PR **#${pr.number}** (${title}) foi mergeada em \`main\`.`,
+                    '',
+                    `- Merge SHA: \`${mergeSha}\``,
+                    `- Autor: @${pr.user.login}`,
+                    `- Mergeada em: ${mergedAt}`,
+                    '',
+                    'Se esta issue era tracked-only e está completa, considere fechar.'
+                  ].join('\n');
+                } else if (!isMerged && !hasOpenedComment) {
+                  const stateLabel = pr.state.toUpperCase() + (pr.draft ? ' (draft)' : '');
+                  commentBody = [
+                    markerOpen,
+                    '## 🔗 Cross-reference automática',
+                    '',
+                    `PR **#${pr.number}** (${title}) referencia esta issue.`,
+                    '',
+                    `- Estado: \`${stateLabel}\``,
+                    `- Autor: @${pr.user.login}`,
+                    `- Branch: \`${pr.head.ref}\``,
+                    '',
+                    'Quando a PR for mergeada, esta issue receberá um comentário de confirmação.'
+                  ].join('\n');
+                }
+
+                if (commentBody) {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNum,
+                    body: commentBody,
+                  });
+                  core.info(`✅ Comentário cross-ref adicionado em #${issueNum} (${isMerged ? 'merged' : 'opened'})`);
+                } else {
+                  core.info(`Comentário cross-ref já existe em #${issueNum}, pulando (idempotente).`);
+                }
+              } catch (err) {
+                if (err.status === 404) {
+                  core.warning(`Issue #${issueNum} não encontrada (referenciada por PR #${pr.number}).`);
+                } else {
+                  core.error(`Erro ao processar #${issueNum}: ${err.message}`);
+                }
+              }
+            }
+
+      - name: Cross-reference on Issue events
+        if: github.event_name == 'issues' && github.event.action == 'opened'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+
+            // Extrai "PR de origem #NNN" do template
+            const originPrMatch = body.match(/PR de origem[^\n]*\n+\s*#?(\d+)/i) ||
+                                  body.match(/origem[^#\n]*#(\d+)/i);
+
+            if (!originPrMatch) {
+              core.info(`Issue #${issue.number} não declara PR de origem. Sem cross-ref automática.`);
+              return;
+            }
+
+            const prNum = parseInt(originPrMatch[1], 10);
+
+            try {
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNum,
+              });
+
+              // Marker idempotente — evita duplicação em re-runs
+              const marker = `<!-- cross-ref-bot:issue-${issue.number} -->`;
+
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNum,
+                per_page: 100,
+              });
+
+              const exists = comments.some(c => c.body && c.body.includes(marker));
+              if (exists) {
+                core.info(`Cross-ref já existe em PR #${prNum} para issue #${issue.number}. Pulando (idempotente).`);
+                return;
+              }
+
+              const commentBody = [
+                marker,
+                '## 🔗 Cross-reference automática',
+                '',
+                `Esta PR descobriu/criou a issue **#${issue.number}** (${issue.title}).`,
+                '',
+                'A issue ficará rastreável como follow-up deste trabalho. Quando resolvida, será fechada com referência a esta PR.'
+              ].join('\n');
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNum,
+                body: commentBody,
+              });
+              core.info(`✅ Cross-ref adicionada em PR #${prNum} referenciando issue #${issue.number}`);
+            } catch (err) {
+              if (err.status === 404) {
+                core.warning(`PR #${prNum} (origem declarada) não encontrada.`);
+              } else {
+                core.error(`Erro: ${err.message}`);
+              }
+            }

@@ -1,0 +1,146 @@
+name: Deploy Edge Functions
+
+# Faz deploy das edge functions para o Supabase doufsxqlfjyuvxuezpln (Gestão de Produtos).
+# Execução: manual via Actions UI ou automático em push para main com mudanças em supabase/functions/**.
+#
+# Pré-requisito: secret SUPABASE_ACCESS_TOKEN configurado no repo
+# (Settings → Secrets and variables → Actions → New repository secret).
+# Gere o token em https://supabase.com/dashboard/account/tokens
+
+on:
+  workflow_dispatch:
+    inputs:
+      function_name:
+        description: 'Nome de uma função específica (vazio = todas)'
+        required: false
+        type: string
+      dry_run:
+        description: 'Apenas listar funções, sem fazer deploy'
+        required: false
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/**'
+      - '!supabase/functions/**/*.test.ts'
+      - '!supabase/functions/tests/**'
+      - '!supabase/functions/README.md'
+
+env:
+  SUPABASE_PROJECT_REF: doufsxqlfjyuvxuezpln
+
+permissions:
+  contents: read
+
+jobs:
+  list-functions:
+    name: Detect functions to deploy
+    runs-on: ubuntu-latest
+    outputs:
+      functions: ${{ steps.detect.outputs.functions }}
+      count: ${{ steps.detect.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect edge functions
+        id: detect
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd supabase/functions
+
+          if [[ -n "${{ inputs.function_name || '' }}" ]]; then
+            FN="${{ inputs.function_name }}"
+            if [[ ! -d "$FN" ]]; then
+              echo "❌ Pasta $FN não existe em supabase/functions/" >&2
+              exit 1
+            fi
+            if [[ ! -f "$FN/index.ts" ]]; then
+              echo "❌ $FN não tem index.ts" >&2
+              exit 1
+            fi
+            echo "functions=[\"$FN\"]" >> "$GITHUB_OUTPUT"
+            echo "count=1" >> "$GITHUB_OUTPUT"
+          else
+            mapfile -t FNS < <(find . -maxdepth 2 -name 'index.ts' -type f \
+              | sed 's|^\./||;s|/index\.ts$||' \
+              | grep -vE '^(_shared|tests)' \
+              | sort)
+            COUNT=${#FNS[@]}
+            JSON=$(printf '%s\n' "${FNS[@]}" | jq -R . | jq -sc .)
+            echo "functions=$JSON" >> "$GITHUB_OUTPUT"
+            echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Summary
+        shell: bash
+        run: |
+          echo "## 📦 Edge Functions detectadas: ${{ steps.detect.outputs.count }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '${{ steps.detect.outputs.functions }}' \
+            | jq -r '.[]' \
+            | sed 's/^/- /' >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy ${{ matrix.fn }}
+    needs: list-functions
+    if: ${{ !inputs.dry_run && needs.list-functions.outputs.count != '0' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        fn: ${{ fromJSON(needs.list-functions.outputs.functions) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+
+      - name: Deploy ${{ matrix.fn }}
+        id: deploy
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${SUPABASE_ACCESS_TOKEN:-}" ]]; then
+            echo "❌ Secret SUPABASE_ACCESS_TOKEN não configurado" >&2
+            echo "Vá em https://supabase.com/dashboard/account/tokens, gere um token," >&2
+            echo "e adicione em Settings → Secrets → Actions" >&2
+            exit 1
+          fi
+          
+          echo "Deploying ${{ matrix.fn }} to project $SUPABASE_PROJECT_REF..."
+          supabase functions deploy "${{ matrix.fn }}" \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --use-api 2>&1 | tee deploy.log
+
+      - name: Mark step status
+        if: always()
+        shell: bash
+        run: |
+          if [[ "${{ steps.deploy.outcome }}" == "success" ]]; then
+            echo "✅ ${{ matrix.fn }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "❌ ${{ matrix.fn }}" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  verify:
+    name: Verify deployment
+    needs: [list-functions, deploy]
+    if: always() && !inputs.dry_run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Final summary
+        shell: bash
+        run: |
+          echo "## 🏁 Deployment concluído" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Total de funções processadas: **${{ needs.list-functions.outputs.count }}**" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Verifique status em:" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://supabase.com/dashboard/project/${{ env.SUPABASE_PROJECT_REF }}/functions" >> "$GITHUB_STEP_SUMMARY"

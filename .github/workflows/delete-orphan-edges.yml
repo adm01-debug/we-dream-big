@@ -1,0 +1,165 @@
+# Delete Orphan Edge Functions
+#
+# Workflow manual (workflow_dispatch) que remove edge functions zumbis
+# do projeto Supabase doufsxqlfjyuvxuezpln. A lista padrão são as 6 edges
+# auditadas em docs/historico/orphan-edges-2026-05-10.md, mas pode ser
+# estendida via input `extraEdges` (CSV) para deletar edges adicionais.
+#
+# Como usar:
+#   1. GitHub → Actions → "Delete Orphan Edge Functions" → Run workflow
+#   2. (Opcional) Em `extraEdges`, passar uma lista CSV de edges extras a deletar.
+#      Exemplo: "quote-public-view,generate-mockup-nanobanana"
+#   3. Primeira execução: deixar dryRun=true (default) — só lista o que faria
+#   4. Segunda execução: dryRun=false E digitar DELETE no campo confirm
+#
+# Pré-requisito: secret SUPABASE_ACCESS_TOKEN já está configurado no repo
+# (mesmo secret usado por deploy-edge-functions.yml).
+
+name: Delete Orphan Edge Functions
+
+on:
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Dry run (apenas lista o que seria deletado, não deleta)'
+        type: boolean
+        default: true
+      confirm:
+        description: 'Digite DELETE para confirmar (ignorado se dryRun=true)'
+        type: string
+        required: false
+        default: ''
+      extraEdges:
+        description: 'Edges adicionais a deletar, separadas por vírgula (opcional)'
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  delete:
+    name: Delete orphan edges
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate confirmation gate
+        if: ${{ inputs.dryRun == false }}
+        run: |
+          if [[ "${{ inputs.confirm }}" != "DELETE" ]]; then
+            echo "::error::Para deletar de verdade, digite exatamente DELETE no campo 'confirm'."
+            echo "::error::Recebido: '${{ inputs.confirm }}'"
+            exit 1
+          fi
+          echo "✅ Confirmação aceita. Procedendo com a remoção real."
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+
+      - name: Verify SUPABASE_ACCESS_TOKEN
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [[ -z "${SUPABASE_ACCESS_TOKEN:-}" ]]; then
+            echo "::error::Secret SUPABASE_ACCESS_TOKEN não configurado no repo."
+            echo "::error::Configurar em Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          echo "Token presente (length=${#SUPABASE_ACCESS_TOKEN})."
+
+      - name: Delete orphan edges
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: doufsxqlfjyuvxuezpln
+          DRY_RUN: ${{ inputs.dryRun }}
+          EXTRA_EDGES: ${{ inputs.extraEdges }}
+        run: |
+          set -euo pipefail
+
+          # Lista padrão das 6 edges órfãs auditadas em 10/mai/2026
+          ORPHANS=(
+            super-processor
+            quick-task
+            create_user
+            product-search-v2
+            product-classifier
+            guardrails-ml
+          )
+
+          # Adiciona edges extras passadas via input (CSV)
+          if [[ -n "${EXTRA_EDGES// /}" ]]; then
+            IFS=',' read -ra EXTRAS <<< "$EXTRA_EDGES"
+            for extra in "${EXTRAS[@]}"; do
+              # Trim whitespace
+              trimmed="$(echo "$extra" | xargs)"
+              if [[ -n "$trimmed" ]]; then
+                ORPHANS+=("$trimmed")
+              fi
+            done
+          fi
+
+          echo "=============================================="
+          echo " Orphan Edge Functions Cleanup"
+          echo "=============================================="
+          echo "Project ref: $PROJECT_REF"
+          echo "Dry run:     $DRY_RUN"
+          echo "Extra edges: ${EXTRA_EDGES:-<none>}"
+          echo "Total:       ${#ORPHANS[@]} edge functions"
+          echo "=============================================="
+          echo ""
+
+          PASS=0
+          FAIL=0
+          SKIP=0
+
+          for fn in "${ORPHANS[@]}"; do
+            echo "--- $fn ---"
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "  🔍 [DRY RUN] supabase functions delete $fn --project-ref $PROJECT_REF"
+              SKIP=$((SKIP+1))
+            else
+              if supabase functions delete "$fn" --project-ref "$PROJECT_REF" 2>&1; then
+                echo "  ✅ Deleted: $fn"
+                PASS=$((PASS+1))
+              else
+                echo "  ⚠️  Failed (talvez já não exista): $fn"
+                FAIL=$((FAIL+1))
+              fi
+            fi
+            echo ""
+          done
+
+          echo "=============================================="
+          echo " Summary"
+          echo "=============================================="
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "DRY RUN — nenhuma edge function foi de fato deletada."
+            echo "Skipped (would-delete): $SKIP"
+            echo ""
+            echo "Para deletar de verdade, rode novamente com:"
+            echo "  dryRun = false"
+            echo "  confirm = DELETE"
+          else
+            echo "Deleted successfully: $PASS"
+            echo "Failed:               $FAIL"
+            if [[ $FAIL -gt 0 ]]; then
+              echo "::warning::Algumas edges falharam ao deletar (podem já não existir)."
+            fi
+          fi
+
+      - name: Post-delete validation hint
+        if: ${{ inputs.dryRun == false && success() }}
+        run: |
+          echo "## Próximos passos"
+          echo ""
+          echo "1. Validar via Supabase MCP que as edges sumiram:"
+          echo "   MCP \`SUPABASE - GESTÃO DE PRODUTOS:list_edge_functions\`"
+          echo ""
+          echo "2. Conferir que ai_function_routing não tem entradas órfãs:"
+          echo "   SQL: SELECT function_name FROM public.ai_function_routing"
+          echo "        WHERE function_name IN ('super-processor', ...);"
+          echo ""
+          echo "3. Atualizar memória/notes do projeto: edges removidas em $(date -u +%Y-%m-%d)."

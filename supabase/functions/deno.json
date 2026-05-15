@@ -1,0 +1,16 @@
+{
+  "//": "Config para deno check em todas edge functions. Default Deno 2.x assumiria",
+  "//comment": "node_modules/ porque existe package.json na raiz, mas as edges importam via",
+  "//npm-syntax": "'npm:zod@x' diretamente (Supabase pattern). nodeModulesDir=none força",
+  "//behavior": "Deno a usar seu cache local em vez de exigir node_modules.",
+  "nodeModulesDir": "none",
+  "lock": false,
+  "//imports": "Import map: redireciona esm.sh → npm: para evitar falhas de TLS/rede no CI.",
+  "imports": {
+    "https://esm.sh/zod@3.23.8": "npm:zod@3.23.8",
+    "https://esm.sh/@supabase/supabase-js@2.45.0": "npm:@supabase/supabase-js@2.45.0",
+    "https://esm.sh/@supabase/supabase-js@2.49.1": "npm:@supabase/supabase-js@2.49.1",
+    "https://esm.sh/@supabase/supabase-js@2.49.4": "npm:@supabase/supabase-js@2.49.4",
+    "https://esm.sh/@supabase/supabase-js@2.95.0": "npm:@supabase/supabase-js@2.95.0"
+  }
+}

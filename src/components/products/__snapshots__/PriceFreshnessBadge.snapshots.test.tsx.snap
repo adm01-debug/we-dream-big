@@ -1,0 +1,1648 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for compact variant with aging status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço próximo do limite de validade. Última atualização do fornecedor em 02 de abril de 2026, há 31 dias. Recomendamos confirmar antes de fechar o orçamento."
+          class="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-300 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+          role="status"
+          tabindex="0"
+          title="Preço próximo do limite de validade. Última atualização do fornecedor em 02 de abril de 2026, há 31 dias. Recomendamos confirmar antes de fechar o orçamento."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-clock h-3 w-3"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <polyline
+              points="12 6 12 12 16 14"
+            />
+          </svg>
+          <span
+            class="tabular-nums"
+          >
+            há 1m
+            <span
+              class="text-muted-foreground"
+            >
+               · em 02/04/2026
+            </span>
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Próximo do limite
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · há 31 dias
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 02/04/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (02 de abril de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 02/04/2026, 09:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Recomendamos confirmar o valor antes de fechar o orçamento.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for compact variant with fresh status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço atualizado pelo fornecedor em 03 de maio de 2026, hoje."
+          class="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+          role="status"
+          tabindex="0"
+          title="Preço atualizado pelo fornecedor em 03 de maio de 2026, hoje."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-check-circle2 h-3 w-3"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m9 12 2 2 4-4"
+            />
+          </svg>
+          <span
+            class="tabular-nums"
+          >
+            hoje
+            <span
+              class="text-muted-foreground"
+            >
+               · em 03/05/2026
+            </span>
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Atualizado
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · hoje
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 03/05/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (03 de maio de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 03/05/2026, 06:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for compact variant with stale status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Atenção: preço possivelmente defasado. Última atualização do fornecedor em 03 de março de 2026, há 61 dias. Confirme o valor antes de enviar o orçamento ao cliente."
+          class="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-300 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+          role="status"
+          tabindex="0"
+          title="Atenção: preço possivelmente defasado. Última atualização do fornecedor em 03 de março de 2026, há 61 dias. Confirme o valor antes de enviar o orçamento ao cliente."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-alert-triangle h-3 w-3"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
+            />
+            <path
+              d="M12 9v4"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+          <span
+            class="tabular-nums"
+          >
+            há 2m
+            <span
+              class="text-muted-foreground"
+            >
+               · em 03/03/2026
+            </span>
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Possivelmente defasado
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · (há 61 dias)
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 03/03/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (03 de março de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 03/03/2026, 09:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+          <div
+            class="leading-snug text-amber-600 dark:text-amber-400"
+          >
+            Confirme o valor com o fornecedor antes de enviar o orçamento ao cliente.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for compact variant with unknown status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço com data de atualização não informada pelo fornecedor. Confirme o valor antes de enviar o orçamento."
+          class="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+          role="status"
+          tabindex="0"
+          title="Preço com data de atualização não informada pelo fornecedor. Confirme o valor antes de enviar o orçamento."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-help-circle h-3 w-3"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+          <span
+            class="tabular-nums"
+          >
+            —
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Sem informação
+            </span>
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            O fornecedor não informou a data da última atualização deste preço.
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for confirmed state 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço confirmado por você agora"
+          class="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-400"
+          role="status"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-shield-check h-3.5 w-3.5 shrink-0"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"
+            />
+            <path
+              d="m9 12 2 2 4-4"
+            />
+          </svg>
+          <span>
+            Confirmado com fornecedor
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="font-semibold"
+          >
+            Preço confirmado com fornecedor
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Você validou este preço agora. O alerta de preço defasado fica suprimido neste contexto até o próximo recálculo.
+          </div>
+          <div
+            class="flex flex-col gap-1.5"
+          >
+            <div
+              class="flex items-center gap-1.5"
+            >
+              <span
+                class="font-semibold"
+              >
+                Possivelmente defasado
+              </span>
+              <span
+                class="text-muted-foreground"
+              >
+                · (há 61 dias)
+              </span>
+            </div>
+            <div
+              class="leading-snug"
+            >
+              <span
+                class="text-muted-foreground"
+              >
+                Atualizado
+              </span>
+               
+              <span
+                class="tabular-nums font-medium"
+              >
+                em 03/03/2026
+              </span>
+              <span
+                class="text-muted-foreground"
+              >
+                 (03 de março de 2026)
+              </span>
+            </div>
+            <div
+              class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+            >
+              Hora local: 03/03/2026, 09:00
+            </div>
+            <div
+              class="leading-snug text-muted-foreground"
+            >
+              Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+            </div>
+            <div
+              class="leading-snug text-amber-600 dark:text-amber-400"
+            >
+              Confirme o valor com o fornecedor antes de enviar o orçamento ao cliente.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for icon-only variant with aging status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço próximo do limite de validade. Última atualização do fornecedor em 02 de abril de 2026, há 31 dias. Recomendamos confirmar antes de fechar o orçamento."
+          class="inline-flex items-center justify-center text-amber-700 dark:text-amber-300 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+          role="status"
+          tabindex="0"
+          title="Preço próximo do limite de validade. Última atualização do fornecedor em 02 de abril de 2026, há 31 dias. Recomendamos confirmar antes de fechar o orçamento."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-clock h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <polyline
+              points="12 6 12 12 16 14"
+            />
+          </svg>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Próximo do limite
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · há 31 dias
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 02/04/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (02 de abril de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 02/04/2026, 09:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Recomendamos confirmar o valor antes de fechar o orçamento.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for icon-only variant with fresh status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço atualizado pelo fornecedor em 03 de maio de 2026, hoje."
+          class="inline-flex items-center justify-center text-emerald-700 dark:text-emerald-400 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+          role="status"
+          tabindex="0"
+          title="Preço atualizado pelo fornecedor em 03 de maio de 2026, hoje."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-check-circle2 h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m9 12 2 2 4-4"
+            />
+          </svg>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Atualizado
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · hoje
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 03/05/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (03 de maio de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 03/05/2026, 06:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for icon-only variant with stale status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Atenção: preço possivelmente defasado. Última atualização do fornecedor em 03 de março de 2026, há 61 dias. Confirme o valor antes de enviar o orçamento ao cliente."
+          class="inline-flex items-center justify-center text-amber-700 dark:text-amber-300 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+          role="status"
+          tabindex="0"
+          title="Atenção: preço possivelmente defasado. Última atualização do fornecedor em 03 de março de 2026, há 61 dias. Confirme o valor antes de enviar o orçamento ao cliente."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-alert-triangle h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
+            />
+            <path
+              d="M12 9v4"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Possivelmente defasado
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · (há 61 dias)
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 03/03/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (03 de março de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 03/03/2026, 09:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+          <div
+            class="leading-snug text-amber-600 dark:text-amber-400"
+          >
+            Confirme o valor com o fornecedor antes de enviar o orçamento ao cliente.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for icon-only variant with unknown status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço com data de atualização não informada pelo fornecedor. Confirme o valor antes de enviar o orçamento."
+          class="inline-flex items-center justify-center text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+          role="status"
+          tabindex="0"
+          title="Preço com data de atualização não informada pelo fornecedor. Confirme o valor antes de enviar o orçamento."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-help-circle h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Sem informação
+            </span>
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            O fornecedor não informou a data da última atualização deste preço.
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for inline variant with aging status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço próximo do limite de validade. Última atualização do fornecedor em 02 de abril de 2026, há 31 dias. Recomendamos confirmar antes de fechar o orçamento."
+          class="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-300"
+          role="status"
+          title="Preço próximo do limite de validade. Última atualização do fornecedor em 02 de abril de 2026, há 31 dias. Recomendamos confirmar antes de fechar o orçamento."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-clock h-3.5 w-3.5 shrink-0"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <polyline
+              points="12 6 12 12 16 14"
+            />
+          </svg>
+          <span>
+            Atualizado há 31 dias
+            <span
+              class="text-muted-foreground tabular-nums"
+            >
+               · em 02/04/2026
+            </span>
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Próximo do limite
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · há 31 dias
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 02/04/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (02 de abril de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 02/04/2026, 09:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Recomendamos confirmar o valor antes de fechar o orçamento.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for inline variant with fresh status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço atualizado pelo fornecedor em 03 de maio de 2026, hoje."
+          class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400"
+          role="status"
+          title="Preço atualizado pelo fornecedor em 03 de maio de 2026, hoje."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-check-circle2 h-3.5 w-3.5 shrink-0"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m9 12 2 2 4-4"
+            />
+          </svg>
+          <span>
+            Atualizado hoje
+            <span
+              class="text-muted-foreground tabular-nums"
+            >
+               · em 03/05/2026
+            </span>
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Atualizado
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · hoje
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 03/05/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (03 de maio de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 03/05/2026, 06:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for inline variant with stale status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Atenção: preço possivelmente defasado. Última atualização do fornecedor em 03 de março de 2026, há 61 dias. Confirme o valor antes de enviar o orçamento ao cliente."
+          class="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-300"
+          role="status"
+          title="Atenção: preço possivelmente defasado. Última atualização do fornecedor em 03 de março de 2026, há 61 dias. Confirme o valor antes de enviar o orçamento ao cliente."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-alert-triangle h-3.5 w-3.5 shrink-0"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
+            />
+            <path
+              d="M12 9v4"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+          <span>
+            Preço pode estar defasado (há 61 dias)
+            <span
+              class="text-muted-foreground tabular-nums"
+            >
+               · em 03/03/2026
+            </span>
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Possivelmente defasado
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · (há 61 dias)
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 03/03/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (03 de março de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 03/03/2026, 09:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+          <div
+            class="leading-snug text-amber-600 dark:text-amber-400"
+          >
+            Confirme o valor com o fornecedor antes de enviar o orçamento ao cliente.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for inline variant with unknown status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço com data de atualização não informada pelo fornecedor. Confirme o valor antes de enviar o orçamento."
+          class="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+          role="status"
+          title="Preço com data de atualização não informada pelo fornecedor. Confirme o valor antes de enviar o orçamento."
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-help-circle h-3.5 w-3.5 shrink-0"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+          <span>
+            Data de atualização não informada
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Sem informação
+            </span>
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            O fornecedor não informou a data da última atualização deste preço.
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for pdp variant with aging status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço próximo do limite de validade. Última atualização do fornecedor em 02 de abril de 2026, há 31 dias. Recomendamos confirmar antes de fechar o orçamento."
+          class="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300"
+          role="status"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-clock h-3.5 w-3.5 shrink-0"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <polyline
+              points="12 6 12 12 16 14"
+            />
+          </svg>
+          <span
+            class="tabular-nums"
+          >
+            Atualizado em 02/04/2026
+            <span
+              class="text-amber-700/70 dark:text-amber-300/70"
+            >
+               · há 31 dias
+            </span>
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Próximo do limite
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · há 31 dias
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 02/04/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (02 de abril de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 02/04/2026, 09:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Recomendamos confirmar o valor antes de fechar o orçamento.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for pdp variant with fresh status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço atualizado pelo fornecedor em 03 de maio de 2026, hoje."
+          class="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-400"
+          role="status"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-check-circle2 h-3.5 w-3.5 shrink-0"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m9 12 2 2 4-4"
+            />
+          </svg>
+          <span
+            class="tabular-nums"
+          >
+            Atualizado em 03/05/2026
+            <span
+              class="text-emerald-700/70 dark:text-emerald-400/70"
+            >
+               · hoje
+            </span>
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Atualizado
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · hoje
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 03/05/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (03 de maio de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 03/05/2026, 06:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for pdp variant with stale status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <div
+          aria-label="Atenção: preço possivelmente defasado. Última atualização do fornecedor em 03 de março de 2026, há 61 dias. Confirme o valor antes de enviar o orçamento ao cliente."
+          class="inline-flex items-start gap-2.5 rounded-xl border-[1.5px] border-amber-300 bg-amber-100/80 px-3.5 py-2.5 text-amber-900 dark:border-amber-500/60 dark:bg-amber-500/15 dark:text-amber-200"
+          role="status"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-alert-triangle h-4 w-4 shrink-0 mt-0.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
+            />
+            <path
+              d="M12 9v4"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+          <div
+            class="flex flex-col gap-0.5 leading-tight"
+          >
+            <span
+              class="font-display font-semibold text-sm"
+            >
+              Preço pode estar defasado
+            </span>
+            <span
+              class="text-xs text-amber-800/90 dark:text-amber-200/80 tabular-nums"
+            >
+              Última atualização em 03/03/2026 (há 61 dias)
+            </span>
+            <span
+              class="text-[11px] text-amber-800/80 dark:text-amber-200/70"
+            >
+              Confirme com o fornecedor antes de fechar o orçamento.
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Possivelmente defasado
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+              · (há 61 dias)
+            </span>
+          </div>
+          <div
+            class="leading-snug"
+          >
+            <span
+              class="text-muted-foreground"
+            >
+              Atualizado
+            </span>
+             
+            <span
+              class="tabular-nums font-medium"
+            >
+              em 03/03/2026
+            </span>
+            <span
+              class="text-muted-foreground"
+            >
+               (03 de março de 2026)
+            </span>
+          </div>
+          <div
+            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
+          >
+            Hora local: 03/03/2026, 09:00
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+          <div
+            class="leading-snug text-amber-600 dark:text-amber-400"
+          >
+            Confirme o valor com o fornecedor antes de enviar o orçamento ao cliente.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot for pdp variant with unknown status 1`] = `
+<DocumentFragment>
+  <div>
+    <div>
+      <div>
+        <span
+          aria-label="Preço com data de atualização não informada pelo fornecedor. Confirme o valor antes de enviar o orçamento."
+          class="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-border bg-muted/50 px-3 py-1 text-xs font-medium text-muted-foreground"
+          role="status"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-help-circle h-3.5 w-3.5 shrink-0"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+          <span>
+            Data de atualização não informada
+          </span>
+        </span>
+      </div>
+      <div
+        data-testid="tooltip-content"
+      >
+        <div
+          class="flex flex-col gap-1.5"
+        >
+          <div
+            class="flex items-center gap-1.5"
+          >
+            <span
+              class="font-semibold"
+            >
+              Sem informação
+            </span>
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            O fornecedor não informou a data da última atualização deste preço.
+          </div>
+          <div
+            class="leading-snug text-muted-foreground"
+          >
+            Regra: até 30 dias = atualizado · 31–60 dias = próximo do limite · acima de 60 dias = possivelmente defasado.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

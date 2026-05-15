@@ -1,0 +1,22 @@
+-- ============================================================================
+-- SUPERSEDED MIGRATION — NÃO APLICAR
+-- ============================================================================
+--
+-- Esta migration estava marcada como "PREPARED but NOT YET APPLIED" desde
+-- 07/mai/2026 e foi CONSOLIDADA pela Onda 9 (B-8 da auditoria de 10/mai):
+--
+--   ✅ supabase/migrations/20260514173516_onda9_drop_public_token_failures_and_orphan_functions.sql
+--
+-- A migration de 14/mai/2026 17:35 UTC fez TUDO que esta deveria fazer e
+-- mais um pouco (limpou funções órfãs auto_block_extreme_offenders e
+-- cleanup_security_logs que dependiam de public_token_failures).
+--
+-- O arquivo é mantido aqui apenas pelo timestamp histórico (20260507161547)
+-- não pode ser apagado sem quebrar referências. O conteúdo foi neutralizado
+-- pra evitar re-aplicação acidental.
+--
+-- VEJA: docs/hardening/ONDA-9-DROP-PUBLIC-TOKEN-TABLES.md
+-- ============================================================================
+
+-- No-op. Migration consolidada pela Onda 9.
+SELECT 1;

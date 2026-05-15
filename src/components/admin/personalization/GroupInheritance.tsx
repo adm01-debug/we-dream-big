@@ -1,0 +1,148 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Link, Unlink, Copy, Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { untypedFrom } from "@/lib/supabase-untyped";
+import { toast } from "sonner";
+import type { ProductGroupMember, Technique } from "./usePersonalizationData";
+
+interface GroupInheritanceProps {
+  productMembership: ProductGroupMember;
+  selectedProduct: string;
+  techniques: Technique[] | undefined;
+  toggleGroupRules: (params: { id: string; use_group_rules: boolean }) => void;
+}
+
+export function GroupInheritance({ productMembership, selectedProduct, techniques, toggleGroupRules }: GroupInheritanceProps) {
+  const queryClient = useQueryClient();
+  const [isCopying, setIsCopying] = useState(false);
+  const isUsingGroupRules = productMembership.use_group_rules;
+
+  const copyGroupRulesToProduct = async () => {
+    setIsCopying(true);
+    try {
+      const { data: groupComponents } = await untypedFrom("product_group_components")
+        .select("*")
+        .eq("product_group_id", productMembership.product_group_id);
+
+      if (!groupComponents?.length) { toast.error("Grupo não possui componentes configurados"); return; }
+
+      await supabase.from("product_components").delete().eq("product_id", selectedProduct);
+
+      for (const gc of groupComponents) {
+        const { data: newComp, error: compError } = await supabase
+          .from("product_components")
+          .insert({ product_id: selectedProduct, component_code: gc.component_code, component_name: gc.component_name, is_personalizable: gc.is_personalizable, is_active: gc.is_active, sort_order: gc.sort_order })
+          .select().single();
+        if (compError) throw compError;
+
+        const { data: groupLocations } = await untypedFrom("product_group_locations").select("*").eq("group_component_id", gc.id);
+        if (groupLocations?.length) {
+          for (const gl of groupLocations) {
+            const { data: newLoc, error: locError } = await untypedFrom("product_component_locations")
+              .insert({ component_id: newComp.id, location_code: gl.location_code, location_name: gl.location_name, max_width_cm: gl.max_width_cm, max_height_cm: gl.max_height_cm, max_area_cm2: gl.max_area_cm2, area_image_url: gl.area_image_url, is_active: gl.is_active })
+              .select().single();
+            if (locError) throw locError;
+
+            const { data: groupTechs } = await untypedFrom("product_group_location_techniques").select("*").eq("group_location_id", gl.id);
+            if (groupTechs?.length) {
+              for (const gt of groupTechs) {
+                const tech = techniques?.find((t) => t.id === gt.technique_id);
+                await untypedFrom("product_component_location_techniques")
+                  .insert({ component_location_id: newLoc.id, technique_id: gt.technique_id, composed_code: `${gc.component_code}-${gl.location_code}-${tech?.code || ""}`, max_colors: gt.max_colors, is_default: gt.is_default, is_active: gt.is_active });
+              }
+            }
+          }
+        }
+      }
+
+      await supabase.from("product_group_members").update({ use_group_rules: false }).eq("id", productMembership.id);
+      queryClient.invalidateQueries({ queryKey: ["product-components"] });
+      queryClient.invalidateQueries({ queryKey: ["component-locations"] });
+      queryClient.invalidateQueries({ queryKey: ["location-techniques"] });
+      queryClient.invalidateQueries({ queryKey: ["product-membership"] });
+      toast.success("Regras do grupo copiadas!");
+    } catch (error) {
+      console.error("Error copying rules:", error);
+      toast.error("Erro ao copiar regras do grupo");
+    } finally {
+      setIsCopying(false);
+    }
+  };
+
+  return (
+    <>
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                {isUsingGroupRules ? <Link className="h-5 w-5 text-primary" /> : <Unlink className="h-5 w-5 text-muted-foreground" />}
+              </div>
+              <div>
+                <CardTitle className="text-lg">Grupo: {productMembership.product_group?.group_name}</CardTitle>
+                <CardDescription>{isUsingGroupRules ? "Este produto herda as regras do grupo" : "Este produto usa regras customizadas"}</CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {isUsingGroupRules ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" disabled={isCopying}>
+                      {isCopying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Copy className="h-4 w-4 mr-2" />}Customizar
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Customizar regras do produto?</AlertDialogTitle>
+                      <AlertDialogDescription>Isso irá copiar todas as regras do grupo para este produto, permitindo que você as modifique individualmente.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={copyGroupRulesToProduct}>Copiar e Customizar</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline"><Link className="h-4 w-4 mr-2" />Voltar para Grupo</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Voltar a usar regras do grupo?</AlertDialogTitle>
+                      <AlertDialogDescription>Isso irá descartar as regras customizadas. Esta ação não pode ser desfeita.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => toggleGroupRules({ id: productMembership.id, use_group_rules: true })}>Usar Regras do Grupo</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {isUsingGroupRules && (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Link className="h-12 w-12 mx-auto mb-4 text-primary opacity-50" />
+            <h3 className="font-display text-lg font-medium mb-2">Usando regras do grupo</h3>
+            <p className="text-muted-foreground mb-4">
+              Este produto está herdando as configurações do grupo <strong>{productMembership.product_group?.group_name}</strong>.
+            </p>
+            <p className="text-sm text-muted-foreground">Clique em "Customizar" acima para criar regras específicas.</p>
+          </CardContent>
+        </Card>
+      )}
+    </>
+  );
+}

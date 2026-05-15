@@ -1,0 +1,231 @@
+import { useState, useCallback } from "react";
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Plus, Play, Pause, Workflow, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { STEP_TYPES } from "./workflowConstants";
+import { SortableStep } from "./WorkflowStepCard";
+import { WorkflowEditDialog } from "./WorkflowEditDialog";
+
+// Types
+export interface WorkflowStep {
+  id: string;
+  name: string;
+  type: "agent" | "tool" | "condition" | "output";
+  description: string;
+  agentModel?: string;
+  prompt?: string;
+  config: Record<string, unknown>;
+}
+
+export interface WorkflowDefinition {
+  id: string;
+  name: string;
+  description: string;
+  steps: WorkflowStep[];
+  status: "draft" | "active" | "paused";
+}
+
+export function WorkflowCanvas() {
+  const [workflow, setWorkflow] = useState<WorkflowDefinition>({
+    id: crypto.randomUUID(),
+    name: "Novo Workflow",
+    description: "Orquestração multiagente",
+    steps: [],
+    status: "draft",
+  });
+
+  const [editDialog, setEditDialog] = useState<WorkflowStep | null>(null);
+  const [editForm, setEditForm] = useState<Partial<WorkflowStep>>({});
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setWorkflow((prev) => {
+      const oldIndex = prev.steps.findIndex((s) => s.id === active.id);
+      const newIndex = prev.steps.findIndex((s) => s.id === over.id);
+      return { ...prev, steps: arrayMove(prev.steps, oldIndex, newIndex) };
+    });
+  }, []);
+
+  const addStep = (type: WorkflowStep["type"]) => {
+    const typeLabel = STEP_TYPES.find((t) => t.value === type)?.label || type;
+    const newStep: WorkflowStep = {
+      id: crypto.randomUUID(),
+      name: `${typeLabel} ${workflow.steps.length + 1}`,
+      type,
+      description: "",
+      agentModel: type === "agent" ? "google/gemini-2.5-flash" : undefined,
+      prompt: type === "agent" ? "" : undefined,
+      config: {},
+    };
+    setWorkflow((prev) => ({ ...prev, steps: [...prev.steps, newStep] }));
+    toast.success(`Etapa "${typeLabel}" adicionada`);
+  };
+
+  const deleteStep = (id: string) => {
+    setWorkflow((prev) => ({ ...prev, steps: prev.steps.filter((s) => s.id !== id) }));
+  };
+
+  const duplicateStep = (step: WorkflowStep) => {
+    const newStep = { ...step, id: crypto.randomUUID(), name: `${step.name} (cópia)` };
+    setWorkflow((prev) => ({ ...prev, steps: [...prev.steps, newStep] }));
+    toast.success("Etapa duplicada");
+  };
+
+  const openEdit = (step: WorkflowStep) => {
+    setEditForm({ ...step });
+    setEditDialog(step);
+  };
+
+  const saveEdit = () => {
+    if (!editDialog || !editForm) return;
+    setWorkflow((prev) => ({
+      ...prev,
+      steps: prev.steps.map((s) => s.id === editDialog.id ? { ...s, ...editForm } as WorkflowStep : s),
+    }));
+    setEditDialog(null);
+    toast.success("Etapa atualizada");
+  };
+
+  const statusColor = {
+    draft: "bg-muted text-muted-foreground",
+    active: "bg-primary/10 text-primary",
+    paused: "bg-warning/10 text-warning",
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Workflow Header */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-primary/10">
+                <Workflow className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <Input
+                  value={workflow.name}
+                  onChange={(e) => setWorkflow((p) => ({ ...p, name: e.target.value }))}
+                  className="text-lg font-bold border-none p-0 h-auto focus-visible:ring-0 bg-transparent"
+                />
+                <Input
+                  value={workflow.description}
+                  onChange={(e) => setWorkflow((p) => ({ ...p, description: e.target.value }))}
+                  className="text-sm text-muted-foreground border-none p-0 h-auto focus-visible:ring-0 bg-transparent mt-0.5"
+                  placeholder="Descrição do workflow..."
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge className={cn("text-xs", statusColor[workflow.status])}>
+                {workflow.status === "draft" ? "Rascunho" : workflow.status === "active" ? "Ativo" : "Pausado"}
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWorkflow((p) => ({ ...p, status: p.status === "active" ? "paused" : "active" }))}
+              >
+                {workflow.status === "active" ? <><Pause className="h-4 w-4 mr-1" />Pausar</> : <><Play className="h-4 w-4 mr-1" />Ativar</>}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Add Step Toolbar */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-sm font-medium text-muted-foreground mr-1">Adicionar:</span>
+        {STEP_TYPES.map((type) => {
+          const Icon = type.icon;
+          return (
+            <Button
+              key={type.value}
+              variant="outline"
+              size="sm"
+              onClick={() => addStep(type.value as WorkflowStep["type"])}
+              className={cn("gap-1.5", type.border, "hover:bg-muted/50")}
+            >
+              <Icon className={cn("h-4 w-4", type.color)} />
+              {type.label}
+            </Button>
+          );
+        })}
+      </div>
+
+      {/* Canvas */}
+      <Card className="border-border/50 min-h-[300px]">
+        <CardContent className="p-6">
+          {workflow.steps.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="p-4 rounded-full bg-muted/50 mb-4">
+                <Sparkles className="h-10 w-10 text-muted-foreground" />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-muted-foreground">Canvas vazio</h3>
+              <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+                Adicione etapas para criar seu fluxo de orquestração multiagente. Arraste para reordenar.
+              </p>
+              <Button variant="outline" size="sm" className="mt-4" onClick={() => addStep("agent")}>
+                <Plus className="h-4 w-4 mr-1" />Adicionar primeira etapa
+              </Button>
+            </div>
+          ) : (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={workflow.steps.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-8">
+                  {workflow.steps.map((step, index) => (
+                    <SortableStep
+                      key={step.id}
+                      step={step}
+                      index={index}
+                      totalSteps={workflow.steps.length}
+                      onEdit={openEdit}
+                      onDelete={deleteStep}
+                      onDuplicate={duplicateStep}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Step summary */}
+      {workflow.steps.length > 0 && (
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span>{workflow.steps.length} etapa{workflow.steps.length > 1 ? "s" : ""}</span>
+          <span>•</span>
+          <span>{workflow.steps.filter((s) => s.type === "agent").length} agente(s)</span>
+          <span>•</span>
+          <span>{workflow.steps.filter((s) => s.type === "tool").length} ferramenta(s)</span>
+        </div>
+      )}
+
+      {/* Edit Step Dialog */}
+      <WorkflowEditDialog
+        step={editDialog}
+        form={editForm}
+        onFormChange={setEditForm}
+        onSave={saveEdit}
+        onClose={() => setEditDialog(null)}
+      />
+    </div>
+  );
+}

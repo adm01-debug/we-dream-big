@@ -1,0 +1,75 @@
+project_id = "doufsxqlfjyuvxuezpln"
+
+[functions.crm-db-bridge]
+verify_jwt = false
+
+[functions.ai-recommendations]
+verify_jwt = false
+
+[functions.external-db-inspect]
+verify_jwt = false
+
+[functions.image-proxy]
+verify_jwt = false
+
+[functions.webhook-dispatcher]
+verify_jwt = false
+
+[functions.webhook-inbound]
+verify_jwt = false
+
+[functions.mcp-server]
+verify_jwt = false
+
+[functions.connections-auto-test]
+verify_jwt = false
+
+[functions.e2e-cleanup]
+verify_jwt = false
+
+# Cron functions — autenticadas via x-cron-secret (vault-based, ver _shared/dispatcher-auth.ts)
+# Não usam JWT do Supabase Auth porque pg_cron não tem usuário/sessão.
+# Segurança: header x-cron-secret comparado em tempo constante com vault.CRON_SECRET.
+
+[functions.cleanup-notifications]
+verify_jwt = false
+
+[functions.cleanup-novelties]
+verify_jwt = false
+
+[functions.collections-watcher]
+verify_jwt = false
+
+[functions.comparison-price-watcher]
+verify_jwt = false
+
+[functions.connections-health-check]
+verify_jwt = false
+
+[functions.favorites-watcher]
+verify_jwt = false
+
+[functions.ownership-audit]
+verify_jwt = false
+
+[functions.process-queue]
+verify_jwt = false
+
+[functions.process-scheduled-reports]
+verify_jwt = false
+
+[functions.quote-followup-reminders]
+verify_jwt = false
+
+[functions.send-digest]
+verify_jwt = false
+
+[functions.send-notification]
+verify_jwt = false
+
+[functions.send-scheduled-reports]
+verify_jwt = false
+
+[auth]
+enable_signup = false
+enable_anonymous_sign_ins = false

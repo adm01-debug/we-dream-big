@@ -1,0 +1,62 @@
+import { useLocation, Link } from "react-router-dom";
+import { useEffect } from "react";
+import { PageSEO } from "@/components/seo/PageSEO";
+import { Home, ArrowLeft, Gift } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const NotFound = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+  }, [location.pathname]);
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background p-4" data-testid="app-not-found">
+      <PageSEO title="Página não encontrada" noIndex />
+      <div className="text-center max-w-md mx-auto space-y-8">
+        {/* Branding */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-14 w-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <Gift className="h-7 w-7 text-primary" />
+          </div>
+          <span className="font-display text-sm font-semibold text-muted-foreground tracking-wide uppercase">
+            Promo Gifts
+          </span>
+        </div>
+
+        <div className="space-y-3">
+          <h1 data-testid="page-title-404" className="text-7xl font-bold font-display bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+            404
+          </h1>
+          <p className="text-xl font-medium text-foreground">
+            Página não encontrada
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            A página <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">{location.pathname}</code> não existe ou foi movida.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button asChild variant="default" size="lg" className="gap-2">
+            <Link to="/">
+              <Home className="h-4 w-4" />
+              Ir para o início
+            </Link>
+          </Button>
+          <Button variant="outline" size="lg" className="gap-2" onClick={() => window.history.back()}>
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+        </div>
+
+        {/* Decorative line */}
+        <div className="pt-4">
+          <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-border to-transparent" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default NotFound;

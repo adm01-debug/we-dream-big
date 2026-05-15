@@ -1,0 +1,207 @@
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { PageSEO } from "@/components/seo/PageSEO";
+import { QuoteKanbanBoard } from "@/components/quotes/QuoteKanbanBoard";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ArrowLeft,
+  Plus,
+  LayoutGrid,
+  List,
+  BarChart3,
+  Building2,
+} from "lucide-react";
+import { useQuotes } from "@/hooks/useQuotes";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+
+interface Client {
+  id: string;
+  name: string;
+}
+
+export default function QuotesKanbanPage() {
+  const navigate = useNavigate();
+  const { quotes, isLoading } = useQuotes();
+  const [selectedClientId, setSelectedClientId] = useState<string>("all");
+  const [clients, setClients] = useState<Client[]>([]);
+
+  // Fetch clients for filter
+  useEffect(() => {
+    const fetchClients = async () => {
+      const { data } = await supabase
+        .from("bitrix_clients")
+        .select("id, name")
+        .order("name");
+      setClients(data || []);
+    };
+    fetchClients();
+  }, []);
+
+  // Get unique clients from quotes
+  const quotesClients = useMemo(() => {
+    const clientMap = new Map<string, string>();
+    quotes.forEach((q) => {
+      if (q.client_id && q.client_name) {
+        clientMap.set(q.client_id, q.client_name);
+      }
+    });
+    return Array.from(clientMap, ([id, name]) => ({ id, name }));
+  }, [quotes]);
+
+  const filteredQuotes = useMemo(() => {
+    if (selectedClientId === "all") return quotes;
+    return quotes.filter((q) => q.client_id === selectedClientId);
+  }, [quotes, selectedClientId]);
+
+  const selectedClientName = useMemo(() => {
+    if (selectedClientId === "all") return null;
+    return clients.find((c) => c.id === selectedClientId)?.name ||
+      quotesClients.find((c) => c.id === selectedClientId)?.name ||
+      null;
+  }, [selectedClientId, clients, quotesClients]);
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
+          <Skeleton className="h-10 w-64" />
+          <div className="flex gap-4 overflow-x-auto">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="min-w-[280px] h-[500px]" />
+            ))}
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  return (
+    <MainLayout>
+      <PageSEO title="Kanban de Orçamentos" description="Visualize e gerencie orçamentos no formato Kanban." path="/orcamentos/kanban" noIndex />
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon" aria-label="Voltar"
+              onClick={() => navigate("/orcamentos")}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 data-testid="page-title-orcamentos-funil" className="font-display text-2xl font-bold text-foreground">
+                Funil de Orçamentos
+              </h1>
+              <p className="text-muted-foreground">
+                Arraste os cartões para alterar o status
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Client Filter */}
+            <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+              <SelectTrigger className="w-[200px]">
+                <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Todos os clientes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os clientes</SelectItem>
+                {(clients.length > 0 ? clients : quotesClients).map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
+                    {client.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* View Switchers */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/orcamentos")}
+            >
+              <List className="h-4 w-4 mr-2" />
+              Lista
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled
+            >
+              <LayoutGrid className="h-4 w-4 mr-2" />
+              Kanban
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/orcamentos/dashboard")}
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Dashboard
+            </Button>
+
+            <Button onClick={() => navigate("/orcamentos/novo")}>
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Orçamento
+            </Button>
+          </div>
+        </div>
+
+        {/* Active Client Filter Badge */}
+        {selectedClientName && (
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="gap-2 py-1.5 px-3">
+              <Building2 className="h-3.5 w-3.5" />
+              Filtrando por: {selectedClientName}
+              <button
+                onClick={() => setSelectedClientId("all")}
+                className="ml-1 hover:text-destructive"
+              >
+                ×
+              </button>
+            </Badge>
+          </div>
+        )}
+
+        {/* Kanban Board */}
+        <QuoteKanbanBoard quotes={filteredQuotes} />
+
+        {/* Legend */}
+        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-muted/50" />
+            <span>Rascunho → Pendente/Enviado</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-amber-500/50" />
+            <span>Aguardando Aprovação (desconto acima do limite)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-warning/50" />
+            <span>Pendente → Rascunho/Enviado/Expirado</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-info/50" />
+            <span>Enviado → Aprovado/Rejeitado/Pendente/Expirado</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-success/50" />
+            <span>Aprovado/Rejeitado → Enviado (reverter)</span>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}

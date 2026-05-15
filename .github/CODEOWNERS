@@ -1,0 +1,20 @@
+# Donos de código — Promo Brindes
+# Ref: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-security/customizing-your-repository/about-code-owners
+#
+# Sintaxe: <padrão>  <@usuário ou @org/team>
+# A última regra que casa vence.
+
+# Default — qualquer arquivo
+*                           @adm01-debug
+
+# Áreas críticas — revisão obrigatória
+/.github/                   @adm01-debug
+/supabase/migrations/       @adm01-debug
+/supabase/functions/        @adm01-debug
+*.yaml                      @adm01-debug
+*.yml                       @adm01-debug
+.coderabbit.yaml            @adm01-debug
+.env.example                @adm01-debug
+package.json                @adm01-debug
+pnpm-lock.yaml              @adm01-debug
+package-lock.json           @adm01-debug

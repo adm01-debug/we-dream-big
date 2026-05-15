@@ -1,0 +1,90 @@
+{
+  "publico": {
+    "valid": [
+      "/login"
+    ],
+    "invalid": [
+      "/produtos",
+      "/orcamentos/std-quote-789",
+      "/orcamentos/another-quote-456",
+      "/admin/usuarios",
+      "/admin/cadastros/produto/std-prod-123/variante/std-var-001",
+      "/orcamentos/non-existent-777/itens/invalid-item-999"
+    ]
+  },
+  "agente": {
+    "valid": [
+      "/produtos",
+      "/orcamentos",
+      "/orcamentos/std-quote-789",
+      "/orcamentos/std-quote-789/editar",
+      "/orcamentos/std-quote-789/itens/std-item-456"
+    ],
+    "invalid": [
+      "/orcamentos/invalid-id-auto",
+      "/orcamentos/invalid-id-auto/editar",
+      "/orcamentos/invalid-id-auto/itens/std-item-456",
+      "/orcamentos/std-quote-789/itens/invalid-itemId-auto",
+      "/orcamentos/invalid-id-all-auto/itens/invalid-itemId-all-auto",
+      "/admin/usuarios",
+      "/admin/cadastros",
+      "/admin/telemetria",
+      "/rota-fantasma",
+      "/orcamentos/inexistente-123"
+    ]
+  },
+  "supervisor": {
+    "valid": [
+      "/produtos",
+      "/orcamentos",
+      "/orcamentos/std-quote-789",
+      "/orcamentos/std-quote-789/editar",
+      "/orcamentos/std-quote-789/itens/std-item-456",
+      "/admin/usuarios",
+      "/admin/cadastros",
+      "/admin/cadastros/produto/std-prod-123",
+      "/admin/cadastros/produto/std-prod-123/variante/std-var-001"
+    ],
+    "invalid": [
+      "/orcamentos/invalid-id-auto",
+      "/orcamentos/invalid-id-auto/editar",
+      "/orcamentos/invalid-id-auto/itens/std-item-456",
+      "/orcamentos/std-quote-789/itens/invalid-itemId-auto",
+      "/orcamentos/invalid-id-all-auto/itens/invalid-itemId-all-auto",
+      "/admin/cadastros/produto/invalid-id-auto",
+      "/admin/cadastros/produto/invalid-id-auto/variante/std-var-001",
+      "/admin/cadastros/produto/std-prod-123/variante/invalid-variantId-auto",
+      "/admin/cadastros/produto/invalid-id-all-auto/variante/invalid-variantId-all-auto",
+      "/admin/telemetria",
+      "/admin/telemetria/invalid-id-123",
+      "/admin/non-existent-area"
+    ]
+  },
+  "dev": {
+    "valid": [
+      "/produtos",
+      "/orcamentos",
+      "/orcamentos/std-quote-789",
+      "/orcamentos/std-quote-789/editar",
+      "/orcamentos/std-quote-789/itens/std-item-456",
+      "/admin/usuarios",
+      "/admin/cadastros",
+      "/admin/cadastros/produto/std-prod-123",
+      "/admin/cadastros/produto/std-prod-123/variante/std-var-001",
+      "/admin/telemetria",
+      "/admin/seguranca",
+      "/admin/workflows"
+    ],
+    "invalid": [
+      "/orcamentos/invalid-id-auto",
+      "/orcamentos/invalid-id-auto/editar",
+      "/orcamentos/invalid-id-auto/itens/std-item-456",
+      "/orcamentos/std-quote-789/itens/invalid-itemId-auto",
+      "/orcamentos/invalid-id-all-auto/itens/invalid-itemId-all-auto",
+      "/admin/cadastros/produto/invalid-id-auto",
+      "/admin/cadastros/produto/invalid-id-auto/variante/std-var-001",
+      "/admin/cadastros/produto/std-prod-123/variante/invalid-variantId-auto",
+      "/admin/cadastros/produto/invalid-id-all-auto/variante/invalid-variantId-all-auto"
+    ]
+  }
+}

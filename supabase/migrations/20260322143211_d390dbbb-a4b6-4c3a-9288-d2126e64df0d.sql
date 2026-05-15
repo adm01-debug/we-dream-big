@@ -1,0 +1,1 @@
+ALTER TABLE public.custom_kits ADD COLUMN IF NOT EXISTS kit_type text NOT NULL DEFAULT 'montado';

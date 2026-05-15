@@ -1,0 +1,1 @@
+ALTER TABLE public.seller_carts ALTER COLUMN status SET DEFAULT 'novo';

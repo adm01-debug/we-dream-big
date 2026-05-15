@@ -1,0 +1,111 @@
+/* App-level styles */
+@import './styles/design-polish.css';
+@import './styles/performance-polish.css';
+@import './styles/animations.css';
+@import './styles/responsive.css';
+@import './styles/motion-tokens.css';
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10%); }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 3s infinite ease-in-out;
+}
+
+/* Reset problematic defaults */
+#root {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  min-height: 100vh;
+}
+
+/* Safe area support for mobile */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better focus for accessibility */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Hide focus when using mouse */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Disable pull-to-refresh on mobile */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Touch action for better mobile performance */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Tap highlight removal for iOS */
+.tap-highlight-transparent {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent text selection on interactive elements */
+.select-none-interaction {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Fix for iOS input zoom */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Prevent horizontal scroll */
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Smooth transitions for theme/skin changes — applied globally during switch */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.3s ease,
+              fill 0.3s ease, stroke 0.3s ease, box-shadow 0.4s ease,
+              outline-color 0.3s ease !important;
+}
+
+/* Legacy class kept for backward compatibility */
+.theme-transition {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: ease-out;
+  transition-duration: 0.15s;
+}
+
+/* Disable transitions for performance during interactions */
+.no-transition * {
+  transition: none !important;
+}
