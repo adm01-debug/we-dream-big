@@ -3,13 +3,24 @@ name: Deploy to Vercel
 # Build e deploy automático para Vercel a cada push em main.
 # PRs geram preview deploys; main vai para produção.
 #
-# Pré-requisitos (Settings → Secrets and variables → Actions → New repository secret):
+# === GitHub Secrets necessários (Settings → Secrets and variables → Actions) ===
+#
+# Vercel:
 #   - VERCEL_TOKEN     → https://vercel.com/account/tokens
 #   - VERCEL_ORG_ID    → cat .vercel/project.json (após `vercel link` local)
 #   - VERCEL_PROJECT_ID→ idem
 #
-# Variáveis de ambiente do build (VITE_*) devem estar configuradas no painel
-# do Vercel → Project → Settings → Environment Variables.
+# App (injetados no build do Vite):
+#   - VITE_SUPABASE_URL
+#   - VITE_SUPABASE_PUBLISHABLE_KEY
+#   - VITE_SUPABASE_PROJECT_ID
+#   - VITE_EXTERNAL_SUPABASE_URL
+#   - VITE_EXTERNAL_SUPABASE_ANON_KEY
+#   - VITE_CRM_SUPABASE_URL          (opcional)
+#   - VITE_CRM_SUPABASE_ANON_KEY     (opcional)
+#
+# Secrets server-side (edge functions) NÃO entram aqui — vão no painel
+# Supabase → Edge Functions → Secrets do projeto principal.
 
 on:
   push:
@@ -28,6 +39,14 @@ concurrency:
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  # Variáveis VITE_* lidas pelo `vite build` durante o vercel build
+  VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+  VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+  VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+  VITE_EXTERNAL_SUPABASE_URL: ${{ secrets.VITE_EXTERNAL_SUPABASE_URL }}
+  VITE_EXTERNAL_SUPABASE_ANON_KEY: ${{ secrets.VITE_EXTERNAL_SUPABASE_ANON_KEY }}
+  VITE_CRM_SUPABASE_URL: ${{ secrets.VITE_CRM_SUPABASE_URL }}
+  VITE_CRM_SUPABASE_ANON_KEY: ${{ secrets.VITE_CRM_SUPABASE_ANON_KEY }}
 
 jobs:
   deploy:
