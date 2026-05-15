@@ -176,7 +176,8 @@ jobs:
         if: failure() && github.ref == 'refs/heads/main' && steps.prev.outputs.url != ''
         run: |
           PREV="${{ steps.prev.outputs.url }}"
-          echo "↩️  Rolling back to: $PREV"
+          REQ_ID="gh-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA:0:7}"
+          echo "↩️  Rolling back to: $PREV (correlationId=$REQ_ID)"
           vercel rollback "$PREV" --yes --token=${{ secrets.VERCEL_TOKEN }}
           {
             echo "## ⚠️ Rollback executado"
@@ -184,6 +185,8 @@ jobs:
             echo "O deploy/smoke check falhou. Produção revertida para:"
             echo ""
             echo "\`$PREV\`"
+            echo ""
+            echo "**correlationId:** \`$REQ_ID\` — busque por este ID nos logs da Vercel para encontrar a request exata que falhou."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Deploy to Vercel (preview)
