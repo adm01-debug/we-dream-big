@@ -44,6 +44,8 @@ export function McpAuditFilters({ filters, onChange, onExport, onReload, counts 
             <SelectItem value="mcp_key.updated">Editada</SelectItem>
             <SelectItem value="mcp_key.revoked">Revogada</SelectItem>
             <SelectItem value="mcp_key.scope_escalated">Escalada p/ FULL</SelectItem>
+            <SelectItem value="mcp_key.auto_revoked">Auto-revogada</SelectItem>
+
           </SelectContent>
         </Select>
 

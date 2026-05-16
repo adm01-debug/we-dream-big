@@ -18,6 +18,7 @@ const META: Record<string, { label: string; Icon: typeof KeyRound; tone: string 
     Icon: AlertTriangle,
     tone: 'text-destructive',
   },
+  'mcp_key.auto_revoked': { label: 'Auto-revogada', Icon: XCircle, tone: 'text-destructive' },
 };
 
 interface Props {

@@ -12,6 +12,8 @@ export type AuditAction =
   | 'mcp_key.updated'
   | 'mcp_key.revoked'
   | 'mcp_key.scope_escalated'
+  | 'mcp_key.auto_revoked'
+
   | 'mcp_key.issue_denied'
   | 'mcp_key.issue_error'
   | 'mcp_key.revoke_denied'
