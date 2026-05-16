@@ -44,6 +44,11 @@ export default function SSOCallbackPage() {
     if (handledRef.current) return;
     handledRef.current = true;
 
+    // A página de callback é a SSOT do estado de loading a partir daqui —
+    // limpa o marcador `__oauth_pending` para que /login não restaure spinner
+    // velho caso o usuário volte (e.g. via back-button durante o redirect).
+    clearOAuthPending();
+
     const tracer = new AuthFlowTracer();
     tracer.step('mount');
     authDebugUrl(`sso-callback:${tracer.flowId}`);
