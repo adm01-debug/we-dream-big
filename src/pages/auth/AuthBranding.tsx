@@ -259,8 +259,8 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         const translateY = (mousePos.y + scrollY) * a.depth;
 
         // Órbita circular suave (circularOrbit) — Sincronizada via delay negativo
-        const orbitDuration = 18 / config.speed;
-        
+        const orbitDuration = 25 / config.speed;
+
         return (
           <div
             key={`astro-${a.id}`}
