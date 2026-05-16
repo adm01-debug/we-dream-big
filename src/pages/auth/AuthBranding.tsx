@@ -8,34 +8,53 @@ import astronautSvg from "@/assets/astronaut.svg";
 
 interface RocketData { id: number; left: number; size: number; duration: number; rotation: number; scale: number; }
 interface PlanetData { id: number; left: number; top: number; size: number; duration: number; type: number; delay: number; }
-interface AstronautData { id: number; left: number; top: number; size: number; duration: number; delay: number; rotation: number; }
+interface AstronautData { id: number; left: number; top: number; size: number; rotation: number; zIndex: number; depth: number; }
 interface StarData { id: number; size: number; top: number; left: number; breathingDur: number; breathingDelay: number; driftDur: number; }
 
 export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) => {
   const [rockets, setRockets] = useState<RocketData[]>([]);
   const [planets, setPlanets] = useState<PlanetData[]>([]);
   const [astronauts, setAstronauts] = useState<AstronautData[]>([]);
-  const nextIdRef = useRef(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  
+  // Parâmetros controláveis
+  const [config, setConfig] = useState({
+    astroCount: 4,
+    speed: 0.2, // 0.1 a 1.0
+    spacing: 1.0, // Multiplicador de distância
+    showControls: false
+  });
 
-  // Pool de estrelas estável e estático fora do ciclo de renderização para garantir 0 saltos
+  const nextIdRef = useRef(0);
   const starsRef = useRef<StarData[]>([]);
+
+  // Mouse parallax tracker
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
   
   if (starsRef.current.length === 0) {
     starsRef.current = [...Array(100)].map((_, i) => ({
       id: i,
-      size: 0.8 + (i % 3) * 0.4, // Tamanhos variados sutilmente
-      top: ((i * 137.7) % 100), // Distribuição pseudo-aleatória determinística
+      size: 0.8 + (i % 3) * 0.4,
+      top: ((i * 137.7) % 100),
       left: ((i * 149.3) % 100),
-      // Sincronização respiratória: Delays mínimos para unificar o movimento do conjunto
       breathingDur: 14, 
-      breathingDelay: (i % 4) * 0.05, // Offset quase imperceptível para evitar aspecto robótico
+      breathingDelay: (i % 4) * 0.05,
       driftDur: 120 + (i % 40),
     }));
   }
 
   const activeStars = isFull ? starsRef.current : starsRef.current.slice(0, 50);
 
-  const spawnRocket = useCallback((isInitial = false) => {
+  const spawnRocket = useCallback(() => {
     const id = nextIdRef.current++;
     const newRocket: RocketData = {
       id,
@@ -53,7 +72,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
 
   useEffect(() => {
     const rocketInterval = setInterval(() => spawnRocket(), 4000);
-    // Gerar planetas e astronautas apenas uma vez
+    
     setPlanets([...Array(5)].map((_, i) => ({
       id: i,
       left: 10 + (i * 18),
@@ -64,21 +83,26 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       delay: Math.random() * 5,
     })));
     
-    // 4 astronautas com tamanhos diferentes (profundidade) e bem espaçados
-    const astronautLayout = [
-      { left: 12, top: 18, size: 55,  duration: 90, rotation: -8 },  // fundo (pequeno/distante)
-      { left: 78, top: 28, size: 85,  duration: 110, rotation: 12 }, // meio
-      { left: 22, top: 68, size: 120, duration: 130, rotation: -15 },// frente
-      { left: 70, top: 75, size: 160, duration: 150, rotation: 20 }, // bem na frente (grande)
+    // Layout base para astronautas escalável
+    const baseLayout = [
+      { left: 15, top: 20, depth: 0.3, rotation: -8, zIndex: 5 },  // Fundo
+      { left: 75, top: 30, depth: 0.5, rotation: 12, zIndex: 10 }, // Meio
+      { left: 25, top: 65, depth: 0.8, rotation: -15, zIndex: 15 },// Frente
+      { left: 65, top: 70, depth: 1.2, rotation: 20, zIndex: 20 }, // Bem frente
+      { left: 45, top: 45, depth: 0.6, rotation: 45, zIndex: 12 }, // Extra 1
+      { left: 10, top: 85, depth: 0.4, rotation: -30, zIndex: 8 },  // Extra 2
     ];
-    setAstronauts(astronautLayout.map((a, i) => ({
+
+    setAstronauts(baseLayout.slice(0, config.astroCount).map((a, i) => ({
       id: i,
       ...a,
-      delay: i * 2,
+      // Aplicar multiplicador de espaçamento
+      left: 50 + (a.left - 50) * config.spacing,
+      top: 50 + (a.top - 50) * config.spacing,
     })));
 
     return () => clearInterval(rocketInterval);
-  }, [spawnRocket]);
+  }, [spawnRocket, config.astroCount, config.spacing]);
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
@@ -131,35 +155,115 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         />
       ))}
 
-      {/* Floating Astronauts — 4 com profundidade, movimento bem lento */}
-      {astronauts.map(a => {
-        // Opacidade baseada no tamanho para reforçar profundidade
-        const opacity = 0.35 + Math.min(a.size / 200, 0.55);
+      {/* Floating Astronauts — Sincronizados, Menores e com Parallax */}
+      {astronauts.map((a, i) => {
+        // Tamanhos reduzidos e escala baseada na profundidade (0.3 a 1.2)
+        const baseSize = 40; 
+        const size = baseSize * a.depth;
+        
+        // Opacidade reduzida para "escurecer" e destacar menos
+        const opacity = 0.15 + (a.depth * 0.25);
+        
+        // Cálculo do Parallax baseado no mouse e profundidade
+        const translateX = mousePos.x * a.depth;
+        const translateY = mousePos.y * a.depth;
+
+        // Movimento circular unificado (mesma fase de respiração/flutuação)
+        // 14 segundos para sincronizar com as estrelas, ajustado pelo multiplicador de velocidade
+        const cycleDuration = 14 / config.speed;
+
         return (
           <div
             key={`astro-${a.id}`}
-            className="absolute"
+            className="absolute transition-transform duration-700 ease-out"
             style={{
               left: `${a.left}%`,
               top: `${a.top}%`,
               opacity,
-              animation: `floatMovement ${a.duration}s ease-in-out ${a.delay}s infinite alternate`,
-              willChange: "transform",
-              filter: `drop-shadow(0 0 ${a.size / 8}px rgba(6, 135, 255, 0.25))`,
+              zIndex: a.zIndex,
+              // Parallax + Movimento Circular Sincronizado
+              transform: `translate3d(${translateX}px, ${translateY}px, 0)`,
+              willChange: "transform, opacity",
             }}
           >
-            <img
-              src={astronautSvg}
-              alt=""
+            <div
               style={{
-                width: a.size,
-                height: a.size,
-                transform: `rotate(${a.rotation}deg)`,
+                animation: `synchronizedCircle ${cycleDuration}s linear infinite`,
+                filter: `brightness(0.6) drop-shadow(0 0 ${size / 10}px rgba(6, 135, 255, 0.15))`,
               }}
-            />
+            >
+              <img
+                src={astronautSvg}
+                alt=""
+                style={{
+                  width: size,
+                  height: size,
+                  transform: `rotate(${a.rotation}deg)`,
+                }}
+              />
+            </div>
           </div>
         );
       })}
+
+      {/* Interface de Controles em Tempo Real (Apenas para Dev/Preview) */}
+      <div className="absolute top-4 left-4 z-50 pointer-events-auto">
+        <button 
+          onClick={() => setConfig(prev => ({ ...prev, showControls: !prev.showControls }))}
+          className="p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg border border-white/20 text-white/40 hover:text-white transition-all group"
+        >
+          <SlidersHorizontal className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+        </button>
+
+        {config.showControls && (
+          <div className="mt-3 p-5 bg-black/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl w-64 animate-motion-pop">
+            <h4 className="text-white font-bold mb-4 flex items-center gap-2">
+              <Rocket className="w-4 h-4 text-orange" /> Parâmetros de Cena
+            </h4>
+            
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-[10px] text-white/50 mb-1 uppercase tracking-wider">
+                  <span>Astronautas</span>
+                  <span>{config.astroCount}</span>
+                </div>
+                <input 
+                  type="range" min="1" max="6" step="1"
+                  value={config.astroCount}
+                  onChange={(e) => setConfig(prev => ({ ...prev, astroCount: parseInt(e.target.value) }))}
+                  className="w-full accent-orange"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-[10px] text-white/50 mb-1 uppercase tracking-wider">
+                  <span>Velocidade</span>
+                  <span>{config.speed.toFixed(1)}x</span>
+                </div>
+                <input 
+                  type="range" min="0.1" max="2.0" step="0.1"
+                  value={config.speed}
+                  onChange={(e) => setConfig(prev => ({ ...prev, speed: parseFloat(e.target.value) }))}
+                  className="w-full accent-orange"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-[10px] text-white/50 mb-1 uppercase tracking-wider">
+                  <span>Espaçamento</span>
+                  <span>{config.spacing.toFixed(1)}x</span>
+                </div>
+                <input 
+                  type="range" min="0.5" max="1.5" step="0.1"
+                  value={config.spacing}
+                  onChange={(e) => setConfig(prev => ({ ...prev, spacing: parseFloat(e.target.value) }))}
+                  className="w-full accent-orange"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Rockets rising from bottom to top */}
       {rockets.map((r) => (

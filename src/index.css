@@ -24,6 +24,14 @@
   }
 }
 
+@keyframes synchronizedCircle {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(15px, 10px) rotate(2deg); }
+  50% { transform: translate(0, 20px) rotate(0deg); }
+  75% { transform: translate(-15px, 10px) rotate(-2deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
 /* ═══ NUCLEAR SCROLL LOCK PREVENTION ═══
    Radix UI / react-remove-scroll sets data-scroll-locked on html/body
    and applies overflow:hidden, position:fixed, etc. 
