@@ -74,6 +74,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
             left: `${p.left}%`,
             top: `${p.top}%`,
             animation: `zigzagMovement ${p.duration}s ease-in-out ${p.delay}s infinite alternate`,
+            willChange: "transform",
             background: p.type === 0 
               ? 'radial-gradient(circle at 30% 30%, #1E3A8A, #030712)' 
               : p.type === 1 
