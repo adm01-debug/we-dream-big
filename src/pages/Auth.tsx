@@ -491,7 +491,7 @@ export default function Auth() {
                       </div>
                     </div>
 
-                    <SocialLoginButtons onError={handleSocialError} />
+                    <SocialLoginButtons onError={handleSocialError} retryRef={googleRetryRef} />
                   </form>
                 </CardContent>
               </>
