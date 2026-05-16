@@ -131,10 +131,30 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
     }));
 
     return () => clearInterval(rocketInterval);
-  }, [spawnRocket, config.astroCount, config.spacing]);
+  }, [spawnRocket, config.astroCount, config.spacing, config.individualAstronauts]);
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
+      {/* Background Deep Space Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0)_0%,rgba(2,6,23,0.5)_100%)]" />
+
+      {/* Space Dust Layer - Profundidade Extra */}
+      <div className="absolute inset-0 opacity-30">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={`dust-${i}`}
+            className="absolute rounded-full bg-white/40"
+            style={{
+              width: '1px',
+              height: '1px',
+              top: `${(i * 17) % 100}%`,
+              left: `${(i * 23) % 100}%`,
+              animation: `starDrift ${60 + (i % 20)}s linear infinite alternate`,
+            }}
+          />
+        ))}
+      </div>
+
       {/* Dynamic Stars - Otimizado com camadas de animação separadas */}
       {activeStars.map((star) => (
         <div
@@ -185,7 +205,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       ))}
 
       {/* Floating Astronauts — Sincronizados, Menores e com Parallax Mouse + Scroll */}
-      {!config.reducedMotion && astronauts.map((a, i) => {
+      {!config.reducedMotion && astronauts.map((a, idx) => {
         // Tamanhos reduzidos e escala baseada na profundidade, perfil global e ajuste individual
         const baseSize = 35; 
         const size = baseSize * a.depth * config.depthProfile * (a.individualScale ?? 1.0);
@@ -193,13 +213,14 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         // Opacidade baseada no perfil global, profundidade e ajuste individual
         const opacity = (0.12 + (a.depth * 0.2)) * config.depthProfile * (a.individualOpacity ?? 1.0);
         
-        // Parallax Mouse + Scroll baseado na profundidade
+        // Parallax Mouse + Scroll baseado na profundidade (com suavização adicional)
         const translateX = mousePos.x * a.depth;
         const translateY = (mousePos.y + scrollY) * a.depth;
 
-        // Movimento circular (órbita suave) — Duração fixa p/ sincronia
+        // Órbita circular suave (circularOrbit) — Sincronizada via delay negativo
+        // 18s é o ciclo padrão. Sincronizamos todos os astronautas no mesmo ciclo.
         const orbitDuration = 18 / config.speed;
-
+        
         return (
           <div
             key={`astro-${a.id}`}
@@ -215,18 +236,22 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
           >
             <div
               style={{
-                // Usamos animação CSS para órbita suave e constante
-                animation: `orbitSmooth ${orbitDuration}s linear infinite`,
-                filter: `brightness(0.55) drop-shadow(0 0 ${size / 12}px rgba(6, 135, 255, 0.12))`,
+                // circularOrbit rotaciona e move. Sincronizamos o delay para que todos comecem no mesmo ponto do ciclo.
+                animation: `circularOrbit ${orbitDuration}s linear infinite`,
+                // Mesma fase de respiração e flutuação para todos (sincronia absoluta)
+                animationDelay: `0s`, 
+                filter: `brightness(0.55) drop-shadow(0 0 ${size / 10}px rgba(6, 135, 255, 0.15))`,
               }}
             >
               <img
                 src={astronautSvg}
                 alt=""
+                className="animate-pulse" // Adiciona um efeito de "respiração" sutil e suave
                 style={{
                   width: size,
                   height: size,
                   transform: `rotate(${a.rotation}deg)`,
+                  animationDuration: `${orbitDuration / 2}s`, // Sincroniza pulso com metade do ciclo da órbita
                 }}
               />
             </div>
