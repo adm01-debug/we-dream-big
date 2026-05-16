@@ -64,6 +64,7 @@ export default function Auth() {
   }, [location.state, searchParams]);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginStatus, setLoginStatus] = useState<'idle' | 'success'>('idle');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [ipBlocked, setIpBlocked] = useState(false);
   const [blockedIP, setBlockedIP] = useState<string | null>(null);
@@ -167,12 +168,16 @@ export default function Auth() {
 
       await logLoginAttempt(email, userId, true);
 
+      setLoginStatus('success');
       toast({
         title: 'Bem-vindo!',
         description: 'Login realizado com sucesso',
       });
 
-      navigate(resolveRedirectTargetCb(), { replace: true });
+      // Aguarda o feedback visual de sucesso antes de navegar
+      setTimeout(() => {
+        navigate(resolveRedirectTargetCb(), { replace: true });
+      }, 600);
       return true;
     } catch (error) {
       console.error('Validation error:', error);
@@ -234,6 +239,28 @@ export default function Auth() {
     );
   }
 
+  if (user && !authLoading && !isSubmitting) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#0A0D14] text-white">
+        <Starfield />
+        <div className="z-10 flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
+          <div className="relative">
+            <div className="h-20 w-20 rounded-2xl bg-orange flex items-center justify-center shadow-2xl shadow-orange/40 animate-pulse">
+              <Gift className="h-10 w-10 text-orange-foreground" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-success flex items-center justify-center ring-4 ring-[#0A0D14]">
+              <RotateCw className="h-3 w-3 text-white animate-spin-slow" />
+            </div>
+          </div>
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-display font-bold">Você já está conectado</h2>
+            <p className="text-white/60 text-sm">Redirecionando para sua área segura...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main
       className="relative flex min-h-screen overflow-hidden bg-[#0A0D14]"
@@ -259,6 +286,7 @@ export default function Auth() {
       />
       {/* Left side - Branding */}
       <AuthBrandingPanel />
+
 
       {/* Right side - Auth Form */}
       <div className="relative z-10 flex flex-1 items-center justify-center p-6 lg:p-12">
@@ -485,17 +513,24 @@ export default function Auth() {
                       data-testid="login-submit"
                       variant="orange"
                       className="h-12 w-full text-base font-semibold shadow-lg shadow-orange/25 transition-all duration-300 hover:shadow-xl hover:shadow-orange/30"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Entrando...
-                        </>
-                      ) : (
-                        'Entrar'
-                      )}
-                    </Button>
+                        disabled={isSubmitting || loginStatus === 'success'}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Entrando...
+                          </>
+                        ) : loginStatus === 'success' ? (
+                          <>
+                            <div className="flex items-center gap-2 animate-in zoom-in duration-300">
+                              <Gift className="h-4 w-4" />
+                              <span>Pronto!</span>
+                            </div>
+                          </>
+                        ) : (
+                          'Entrar'
+                        )}
+                      </Button>
 
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
