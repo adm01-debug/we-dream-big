@@ -29,8 +29,12 @@ const SLOW_REDIRECT_MS = 6000;
 const REDIRECT_TIMEOUT_MS = 15000;
 
 interface SocialLoginButtonsProps {
-  /** Disparado quando o login social falha — habilita fallback para e-mail/senha. */
-  onError?: (message: string) => void;
+  /**
+   * Disparado quando o login social falha — habilita fallback para e-mail/senha.
+   * `opts.autoFallback`: true quando a falha foi por timeout/silencioso, indicando
+   * que o pai deve automaticamente focar o formulário de e-mail (sem exigir clique).
+   */
+  onError?: (message: string, opts?: { autoFallback?: boolean }) => void;
   /**
    * Ref mutável onde o componente publica a função `retry()`.
    * Permite que o pai (banner de erro) reexecute o fluxo Google sem
