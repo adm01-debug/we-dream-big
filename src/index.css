@@ -38,7 +38,19 @@
   to { transform: rotate(360deg) translateX(15px) rotate(-360deg); }
 }
 
-/* Removida duplicata de breathingStar - definição oficial está no final do arquivo */
+/* Respiração estelar (Brilho e Escala) */
+@keyframes breathingStar {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+    filter: brightness(0.6) blur(0.2px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+    filter: brightness(1.4) blur(0px);
+  }
+}
 
 @keyframes starDrift {
   from { transform: translate3d(0, 0, 0); }
