@@ -291,7 +291,7 @@ export default function Auth() {
         role="main"
         aria-label="Carregando autenticação"
       >
-        <Loader2 className="h-8 w-8 animate-spin text-orange" />
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
       </main>
     );
   }
@@ -302,7 +302,7 @@ export default function Auth() {
         <SpaceScene />
         <div className="z-10 flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
           <div className="relative">
-            <AppLogo showText={false} iconClassName="h-20 w-20 rounded-2xl shadow-orange/40 animate-pulse" />
+            <AppLogo showText={false} iconClassName="h-20 w-20 rounded-2xl shadow-white/20 animate-pulse" />
             <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-success flex items-center justify-center ring-4 ring-[#030508]">
               <RotateCw className="h-3 w-3 text-white animate-spin-slow" />
             </div>
@@ -495,7 +495,7 @@ export default function Auth() {
                           type="email"
                           placeholder="seu@email.com"
                           autoComplete="email"
-                          className="border-border bg-input pl-10 focus:border-orange focus:ring-orange"
+                          className="border-border bg-input pl-10 focus:border-white focus:ring-white"
                           {...loginForm.register('email')}
                           ref={(el) => {
                             loginForm.register('email').ref(el);
@@ -522,14 +522,14 @@ export default function Auth() {
                           type={showPassword ? 'text' : 'password'}
                           placeholder="••••••••"
                           autoComplete="current-password"
-                          className="border-border bg-input pl-10 pr-10 focus:border-orange focus:ring-orange"
+                          className="border-border bg-input pl-10 pr-10 focus:border-white focus:ring-white"
                           {...loginForm.register('password')}
                         />
                         <button
                           type="button"
                           data-testid="login-password-toggle"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -mr-2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-orange"
+                          className="absolute right-3 top-1/2 -mr-2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-white"
                           aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                         >
                           {showPassword ? (
