@@ -188,8 +188,8 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
               top: `${(i * 17) % 100}%`,
               left: `${(i * 23) % 100}%`,
               animation: `starDrift ${60 + (i % 20)}s linear infinite alternate`,
-              backgroundColor: i % 5 === 0 ? '#FB923C' : i % 7 === 0 ? '#60A5FA' : 'rgba(255,255,255,0.4)',
-              boxShadow: i % 5 === 0 ? '0 0 4px #FB923C' : i % 7 === 0 ? '0 0 4px #60A5FA' : 'none',
+              backgroundColor: i % 5 === 0 ? '#3b82f6' : i % 7 === 0 ? '#60A5FA' : 'rgba(255,255,255,0.4)',
+              boxShadow: i % 5 === 0 ? '0 0 4px #3b82f6' : i % 7 === 0 ? '0 0 4px #60A5FA' : 'none',
               opacity: i % 3 === 0 ? 0.4 : 0.2,
             }}
           />
