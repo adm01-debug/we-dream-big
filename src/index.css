@@ -236,11 +236,11 @@ html[data-scroll-locked] body {
     --primary-glow: 217 91% 74%;
     --primary-foreground: 217 91% 6%;
 
-    --orange: 24 100% 58%;
-    --orange-hover: 24 100% 64%;
-    --orange-active: 24 100% 70%;
-    --orange-glow: 24 100% 72%;
-    --orange-foreground: 24 100% 6%;
+    --orange: 217 91% 60%;
+    --orange-hover: 217 91% 66%;
+    --orange-active: 217 91% 72%;
+    --orange-glow: 217 91% 74%;
+    --orange-foreground: 217 91% 6%;
 
     /* Funcionais — versões mais saturadas para fundos escuros */
     --success: 142 90% 48%;
