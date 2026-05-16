@@ -29,7 +29,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 
-// Mock useSecretsManager to avoid async leaks during tests
+// Mock hooks that use network/Supabase to avoid async leaks during tests
 vi.mock('@/hooks/useSecretsManager', () => ({
   useSecretsManager: () => ({
     secrets: [],
@@ -41,6 +41,36 @@ vi.mock('@/hooks/useSecretsManager', () => ({
     getRotationHistory: vi.fn().mockResolvedValue([]),
     refreshCache: vi.fn(),
   }),
+}));
+
+vi.mock('@/hooks/usePasswordResetRequests', () => ({
+  usePasswordResetRequests: () => ({
+    requests: [],
+    pendingCount: 0,
+    isLoading: false,
+    approve: vi.fn(),
+    reject: vi.fn(),
+  }),
+}));
+
+vi.mock('@/components/admin/users/useUserManagement', () => ({
+  useUserManagement: () => ({
+    users: [],
+    isLoading: false,
+    updatingUserId: null,
+    fetchUsers: vi.fn(),
+    handleRoleChange: vi.fn(),
+    handleCreateUser: vi.fn(),
+    handleDeleteUser: vi.fn(),
+    handleSaveEdit: vi.fn(),
+    handleAvatarUpload: vi.fn(),
+    handleRemoveAvatar: vi.fn(),
+  }),
+}));
+
+// Mock DevAccessAuditAlert to avoid internal queries
+vi.mock('@/components/admin/DevAccessAuditAlert', () => ({
+  DevAccessAuditAlert: () => <div data-testid="dev-audit-alert">Dev Audit</div>,
 }));
 
 describe('Admin Module Structural Comparison', () => {
