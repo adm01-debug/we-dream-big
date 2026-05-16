@@ -7,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { HelmetProvider } from 'react-helmet-async';
 import React from 'react';
+import { AriaLiveProvider } from '@/components/a11y/AriaLive';
 import AdminConexoesPage from '@/pages/admin/AdminConexoesPage';
 import AdminUsuariosPage from '@/pages/admin/AdminUsuariosPage';
 
