@@ -37,7 +37,7 @@ interface HeaderProps {
   onSearchChange: (query: string) => void;
 }
 
-export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProps) {
+export const Header = React.memo(function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProps) {
   const { theme, actualTheme, setTheme, toggleTheme, isFallback } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
