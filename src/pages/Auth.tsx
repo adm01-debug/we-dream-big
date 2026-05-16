@@ -51,6 +51,7 @@ export default function Auth() {
   const { toast } = useToast();
   const { user, isLoading: authLoading, signIn, signOut } = useAuth();
   const { validateIPForAuthenticatedUser, logLoginAttempt } = useIPValidation();
+  const { isAllowed: isDevAllowed } = useDevGate();
 
   /**
    * Destino pós-login. Precedência:
