@@ -8,7 +8,7 @@ import astronautSvg from "@/assets/astronaut.svg";
 
 interface RocketData { id: number; left: number; size: number; duration: number; rotation: number; scale: number; }
 interface PlanetData { id: number; left: number; top: number; size: number; duration: number; type: number; delay: number; }
-interface AstronautData { id: number; left: number; top: number; size: number; rotation: number; zIndex: number; depth: number; initialAngle: number; }
+interface AstronautData { id: number; left: number; top: number; size: number; rotation: number; zIndex: number; depth: number; initialAngle: number; individualScale?: number; individualOpacity?: number; }
 interface StarData { id: number; size: number; top: number; left: number; breathingDur: number; breathingDelay: number; driftDur: number; }
 
 export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) => {
@@ -24,15 +24,28 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
     speed: 0.2, 
     spacing: 1.0,
     parallaxIntensity: 1.0,
-    depthProfile: 1.0, // Multiplicador de escala/opacidade
-    showControls: false
+    depthProfile: 1.0, 
+    showControls: false,
+    reducedMotion: false,
+    individualAstronauts: [] as { id: number; scale: number; opacity: number }[]
   });
 
   const nextIdRef = useRef(0);
   const starsRef = useRef<StarData[]>([]);
 
-  // Mouse e Scroll parallax tracker
+  // Detecta prefers-reduced-motion
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleChange = () => setConfig(prev => ({ ...prev, reducedMotion: mediaQuery.matches }));
+    mediaQuery.addEventListener("change", handleChange);
+    if (mediaQuery.matches) setConfig(prev => ({ ...prev, reducedMotion: true }));
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // Mouse e Scroll parallax tracker com clamp e suavização
+  useEffect(() => {
+    if (config.reducedMotion) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({
         x: (e.clientX / window.innerWidth - 0.5) * 20 * config.parallaxIntensity,
@@ -40,7 +53,9 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       });
     };
     const handleScroll = () => {
-      setScrollY(window.scrollY * 0.1 * config.parallaxIntensity);
+      const rawScroll = window.scrollY;
+      const clampedScroll = Math.min(Math.max(rawScroll, 0), 1000); 
+      setScrollY(clampedScroll * 0.05 * config.parallaxIntensity);
     };
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -48,7 +63,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [config.parallaxIntensity]);
+  }, [config.parallaxIntensity, config.reducedMotion]);
   
   if (starsRef.current.length === 0) {
     starsRef.current = [...Array(100)].map((_, i) => ({
@@ -103,12 +118,17 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       { left: 10, top: 85, depth: 0.4, rotation: -30, zIndex: 8, initialAngle: 135 },
     ];
 
-    setAstronauts(baseLayout.slice(0, config.astroCount).map((a, i) => ({
-      id: i,
-      ...a,
-      left: 50 + (a.left - 50) * config.spacing,
-      top: 50 + (a.top - 50) * config.spacing,
-    })));
+    setAstronauts(baseLayout.slice(0, config.astroCount).map((a, i) => {
+      const individual = config.individualAstronauts.find(idx => idx.id === i);
+      return {
+        id: i,
+        ...a,
+        left: 50 + (a.left - 50) * config.spacing,
+        top: 50 + (a.top - 50) * config.spacing,
+        individualScale: individual?.scale ?? 1.0,
+        individualOpacity: individual?.opacity ?? 1.0,
+      };
+    }));
 
     return () => clearInterval(rocketInterval);
   }, [spawnRocket, config.astroCount, config.spacing]);
@@ -165,13 +185,13 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       ))}
 
       {/* Floating Astronauts — Sincronizados, Menores e com Parallax Mouse + Scroll */}
-      {astronauts.map((a, i) => {
-        // Tamanhos reduzidos e escala baseada na profundidade e perfil de controle
+      {!config.reducedMotion && astronauts.map((a, i) => {
+        // Tamanhos reduzidos e escala baseada na profundidade, perfil global e ajuste individual
         const baseSize = 35; 
-        const size = baseSize * a.depth * config.depthProfile;
+        const size = baseSize * a.depth * config.depthProfile * (a.individualScale ?? 1.0);
         
-        // Opacidade baseada no perfil e profundidade
-        const opacity = (0.12 + (a.depth * 0.2)) * config.depthProfile;
+        // Opacidade baseada no perfil global, profundidade e ajuste individual
+        const opacity = (0.12 + (a.depth * 0.2)) * config.depthProfile * (a.individualOpacity ?? 1.0);
         
         // Parallax Mouse + Scroll baseado na profundidade
         const translateX = mousePos.x * a.depth;
@@ -183,7 +203,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         return (
           <div
             key={`astro-${a.id}`}
-            className="absolute transition-transform duration-700 ease-out"
+            className="absolute transition-transform duration-1000 ease-out"
             style={{
               left: `${a.left}%`,
               top: `${a.top}%`,
@@ -224,81 +244,145 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         </button>
 
         {config.showControls && (
-          <div className="mt-3 p-5 bg-black/85 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-72 animate-motion-pop overflow-hidden">
+          <div className="mt-3 p-5 bg-black/90 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-80 animate-motion-pop overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-orange" />
-            <h4 className="text-white font-bold mb-4 flex items-center gap-2">
-              <Rocket className="w-4 h-4 text-orange" /> Parâmetros do Cosmos
-            </h4>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-white font-bold flex items-center gap-2">
+                <Rocket className="w-4 h-4 text-orange" /> Parâmetros do Cosmos
+              </h4>
+              <button 
+                onClick={() => setConfig(prev => ({ ...prev, reducedMotion: !prev.reducedMotion }))}
+                className={`text-[10px] px-2 py-1 rounded border transition-colors ${config.reducedMotion ? 'bg-orange/20 border-orange text-orange' : 'bg-white/5 border-white/10 text-white/40'}`}
+              >
+                Motion: {config.reducedMotion ? 'OFF' : 'ON'}
+              </button>
+            </div>
             
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-              <div>
-                <div className="flex justify-between text-[10px] text-white/50 mb-1 uppercase tracking-wider">
-                  <span>Astronautas</span>
-                  <span>{config.astroCount}</span>
+            <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-3">
+                <p className="text-[10px] font-bold text-orange uppercase tracking-widest">Global</p>
+                <div>
+                  <div className="flex justify-between text-[10px] text-white/50 mb-1">
+                    <span>Astronautas</span>
+                    <span>{config.astroCount}</span>
+                  </div>
+                  <input 
+                    type="range" min="1" max="6" step="1"
+                    value={config.astroCount}
+                    onChange={(e) => setConfig(prev => ({ ...prev, astroCount: parseInt(e.target.value) }))}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-orange"
+                  />
                 </div>
-                <input 
-                  type="range" min="1" max="6" step="1"
-                  value={config.astroCount}
-                  onChange={(e) => setConfig(prev => ({ ...prev, astroCount: parseInt(e.target.value) }))}
-                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-orange"
-                />
+
+                <div>
+                  <div className="flex justify-between text-[10px] text-white/50 mb-1">
+                    <span>Órbita (Speed)</span>
+                    <span>{config.speed.toFixed(1)}x</span>
+                  </div>
+                  <input 
+                    type="range" min="0.1" max="2.0" step="0.1"
+                    value={config.speed}
+                    onChange={(e) => setConfig(prev => ({ ...prev, speed: parseFloat(e.target.value) }))}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-orange"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-[10px] text-white/50 mb-1">
+                    <span>Espaçamento</span>
+                    <span>{config.spacing.toFixed(1)}x</span>
+                  </div>
+                  <input 
+                    type="range" min="0.5" max="1.5" step="0.1"
+                    value={config.spacing}
+                    onChange={(e) => setConfig(prev => ({ ...prev, spacing: parseFloat(e.target.value) }))}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-orange"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-[10px] text-white/50 mb-1">
+                    <span>Parallax (Intensity)</span>
+                    <span>{config.parallaxIntensity.toFixed(1)}x</span>
+                  </div>
+                  <input 
+                    type="range" min="0" max="2.0" step="0.1"
+                    value={config.parallaxIntensity}
+                    onChange={(e) => setConfig(prev => ({ ...prev, parallaxIntensity: parseFloat(e.target.value) }))}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-orange"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-[10px] text-white/50 mb-1">
+                    <span>Depth Profile (Global)</span>
+                    <span>{config.depthProfile.toFixed(1)}x</span>
+                  </div>
+                  <input 
+                    type="range" min="0.2" max="2.0" step="0.1"
+                    value={config.depthProfile}
+                    onChange={(e) => setConfig(prev => ({ ...prev, depthProfile: parseFloat(e.target.value) }))}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-orange"
+                  />
+                </div>
               </div>
 
-              <div>
-                <div className="flex justify-between text-[10px] text-white/50 mb-1 uppercase tracking-wider">
-                  <span>Órbita (Velocidade)</span>
-                  <span>{config.speed.toFixed(1)}x</span>
-                </div>
-                <input 
-                  type="range" min="0.1" max="2.0" step="0.1"
-                  value={config.speed}
-                  onChange={(e) => setConfig(prev => ({ ...prev, speed: parseFloat(e.target.value) }))}
-                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-orange"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[10px] text-white/50 mb-1 uppercase tracking-wider">
-                  <span>Espaçamento</span>
-                  <span>{config.spacing.toFixed(1)}x</span>
-                </div>
-                <input 
-                  type="range" min="0.5" max="1.5" step="0.1"
-                  value={config.spacing}
-                  onChange={(e) => setConfig(prev => ({ ...prev, spacing: parseFloat(e.target.value) }))}
-                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-orange"
-                />
-              </div>
-
-              <div className="pt-2 border-t border-white/5">
-                <div className="flex justify-between text-[10px] text-white/50 mb-1 uppercase tracking-wider">
-                  <span>Parallax (Mouse+Scroll)</span>
-                  <span>{config.parallaxIntensity.toFixed(1)}x</span>
-                </div>
-                <input 
-                  type="range" min="0" max="3.0" step="0.1"
-                  value={config.parallaxIntensity}
-                  onChange={(e) => setConfig(prev => ({ ...prev, parallaxIntensity: parseFloat(e.target.value) }))}
-                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-orange"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[10px] text-white/50 mb-1 uppercase tracking-wider">
-                  <span>Profundidade (Scale/Opacity)</span>
-                  <span>{config.depthProfile.toFixed(1)}x</span>
-                </div>
-                <input 
-                  type="range" min="0.2" max="2.0" step="0.1"
-                  value={config.depthProfile}
-                  onChange={(e) => setConfig(prev => ({ ...prev, depthProfile: parseFloat(e.target.value) }))}
-                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-orange"
-                />
+              <div className="space-y-4 pt-4 border-t border-white/10">
+                <p className="text-[10px] font-bold text-orange uppercase tracking-widest">Individual Ajuste</p>
+                {astronauts.map((a, idx) => (
+                  <div key={idx} className="space-y-2 p-2 bg-white/5 rounded-lg border border-white/5">
+                    <p className="text-[9px] text-white/30 font-bold uppercase">Astro #{idx + 1}</p>
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <div className="flex justify-between text-[8px] text-white/40 mb-1">
+                          <span>Escala</span>
+                          <span>{a.individualScale?.toFixed(1)}x</span>
+                        </div>
+                        <input 
+                          type="range" min="0.2" max="2.5" step="0.1"
+                          value={a.individualScale ?? 1.0}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            setConfig(prev => {
+                              const existing = prev.individualAstronauts.filter(i => i.id !== idx);
+                              return {
+                                ...prev,
+                                individualAstronauts: [...existing, { id: idx, scale: val, opacity: a.individualOpacity ?? 1.0 }]
+                              };
+                            });
+                          }}
+                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white/40"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between text-[8px] text-white/40 mb-1">
+                          <span>Opacidade</span>
+                          <span>{a.individualOpacity?.toFixed(1)}x</span>
+                        </div>
+                        <input 
+                          type="range" min="0" max="2.0" step="0.1"
+                          value={a.individualOpacity ?? 1.0}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            setConfig(prev => {
+                              const existing = prev.individualAstronauts.filter(i => i.id !== idx);
+                              return {
+                                ...prev,
+                                individualAstronauts: [...existing, { id: idx, opacity: val, scale: a.individualScale ?? 1.0 }]
+                              };
+                            });
+                          }}
+                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white/40"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
             
             <p className="mt-4 text-[9px] text-white/30 italic text-center">
-              As configurações são aplicadas em tempo real à cena.
+              Limitador de scroll ativo (clamp 1000px).
             </p>
           </div>
         )}
