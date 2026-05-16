@@ -388,6 +388,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
           </div>
         )}
       </div>
+      )}
 
       {/* Rockets rising from bottom to top */}
       {rockets.map((r) => (
