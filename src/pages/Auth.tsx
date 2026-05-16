@@ -70,15 +70,15 @@ export default function Auth() {
   const [currentIP, setCurrentIP] = useState<string | null>(null);
   const [geoLocation, setGeoLocation] = useState<string | null>(null);
   // Fallback social → email/senha: mensagem amigável quando OAuth falha.
-  const [socialError, setSocialError] = useState<string | null>(null);
+  const [socialError, setSocialError] = useState<OAuthErrorCopy | null>(null);
   const emailInputRef = useRef<HTMLInputElement | null>(null);
 
   // Captura `?error=` vindo do SSOCallbackPage (Google falhou) e exibe o
-  // banner de fallback. Limpa o param da URL para não persistir.
+  // banner de fallback com mensagem descritiva. Limpa o param da URL.
   useEffect(() => {
     const err = searchParams.get('error');
     if (err) {
-      setSocialError(err);
+      setSocialError(resolveOAuthError(err));
       const next = new URLSearchParams(searchParams);
       next.delete('error');
       setSearchParams(next, { replace: true });
@@ -86,7 +86,7 @@ export default function Auth() {
   }, [searchParams, setSearchParams]);
 
   const handleSocialError = useCallback((message: string) => {
-    setSocialError(message);
+    setSocialError(resolveOAuthError(message));
     setTimeout(() => emailInputRef.current?.focus(), 50);
   }, []);
 
