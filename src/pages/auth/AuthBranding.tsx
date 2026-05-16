@@ -404,7 +404,7 @@ export function AuthBrandingPanel() {
               Um Universo de Produtos, para o{" "}
               <span className="text-orange relative">
                 Melhor Time das Galáxias!
-                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-orange/0 via-orange/60 to-orange/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
+                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-orange/0 via-orange/60 to-orange/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-700 shadow-[0_0_15px_rgba(251,146,60,0.5)]" />
               </span>
             </h2>
             <p className="text-base text-white/70 leading-relaxed font-light text-center">
