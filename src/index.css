@@ -38,7 +38,7 @@
   to { transform: rotate(360deg) translateX(15px) rotate(-360deg); }
 }
 
-/* Removida duplicata de breathingStar - definição oficial está no final do arquivo */
+/* A definição oficial está no final do arquivo */
 
 @keyframes starDrift {
   from { transform: translate3d(0, 0, 0); }
@@ -2257,14 +2257,14 @@ body.compare-focus-mode [role='main'] {
 /* Efeito de respiração estelar: brilho suave que pulsa lentamente */
 @keyframes breathingStar {
   0%, 100% { 
-    opacity: 0.2; 
-    transform: scale(0.8); 
-    filter: blur(0.3px) brightness(0.8);
+    opacity: 0.25; 
+    transform: scale(0.7); 
+    filter: blur(0.5px) brightness(0.5);
   }
   50% { 
     opacity: 1; 
-    transform: scale(1.2); 
-    filter: blur(0px) brightness(1.5) drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+    transform: scale(1.4); 
+    filter: blur(0px) brightness(1.8) drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
   }
 }
 

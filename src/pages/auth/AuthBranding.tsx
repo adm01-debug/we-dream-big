@@ -73,7 +73,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       size: 0.8 + (i % 3) * 0.4,
       top: ((i * 137.7) % 100),
       left: ((i * 149.3) % 100),
-      breathingDur: 12 + (i % 8), 
+      breathingDur: 6 + (i % 5), 
       breathingDelay: (i % 4) * 0.05,
       driftDur: 120 + (i % 40),
     }));
