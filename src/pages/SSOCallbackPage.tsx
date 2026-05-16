@@ -269,10 +269,10 @@ export default function SSOCallbackPage() {
       >
         <StatusIcon status={status} />
         <div className="space-y-1">
-          <h1 className="text-base font-semibold text-foreground">
-            {STATUS_TITLE[status]}
+          <h1 className="text-base font-semibold text-foreground" data-testid="sso-callback-title">
+            {status === 'failed' && errorDetail ? errorDetail.title : STATUS_TITLE[status]}
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground" data-testid="sso-callback-description">
             {status === 'failed' && errorMessage
               ? errorMessage
               : STATUS_DESCRIPTION[status]}
@@ -283,6 +283,23 @@ export default function SSOCallbackPage() {
             </p>
           )}
         </div>
+        {status === 'failed' && errorDetail && (
+          <div
+            className={
+              'w-full rounded-lg border px-3 py-2 text-left text-xs ' +
+              SEVERITY_STYLES[errorDetail.severity]
+            }
+            data-testid="sso-callback-hint"
+            data-severity={errorDetail.severity}
+            data-error-code={errorDetail.code}
+          >
+            <p className="font-medium">Como resolver</p>
+            <p className="mt-1 text-muted-foreground">{errorDetail.hint}</p>
+            <p className="mt-2 text-[10px] uppercase tracking-wide text-muted-foreground/60">
+              Código: {errorDetail.code}
+            </p>
+          </div>
+        )}
         <StatusSteps status={status} />
       </div>
     </div>
