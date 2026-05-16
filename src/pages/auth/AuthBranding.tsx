@@ -183,8 +183,8 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
               top: `${(i * 17) % 100}%`,
               left: `${(i * 23) % 100}%`,
               animation: `starDrift ${60 + (i % 20)}s linear infinite alternate`,
-              backgroundColor: i % 5 === 0 ? '#404040' : i % 7 === 0 ? '#525252' : 'rgba(255,255,255,0.4)',
-              boxShadow: i % 5 === 0 ? '0 0 4px rgba(64,64,64,0.8)' : i % 7 === 0 ? '0 0 4px #525252' : 'none',
+              backgroundColor: i % 5 === 0 ? 'hsl(0 0% 25%)' : i % 7 === 0 ? 'hsl(0 0% 32%)' : 'hsl(0 0% 100% / 0.4)',
+              boxShadow: i % 5 === 0 ? '0 0 4px hsl(0 0% 25% / 0.8)' : i % 7 === 0 ? '0 0 4px hsl(0 0% 32%)' : 'none',
               opacity: i % 3 === 0 ? 0.4 : 0.2,
             }}
           />
@@ -230,10 +230,10 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
             animation: `zigzagMovement ${p.duration}s ease-in-out ${p.delay}s infinite alternate`,
             willChange: "transform",
             background: p.type === 0
-              ? 'radial-gradient(circle at 30% 30%, #262626, #000000)'
+              ? 'radial-gradient(circle at 30% 30%, hsl(0 0% 15%), hsl(0 0% 0%))'
               : p.type === 1
-                ? 'radial-gradient(circle at 30% 30%, #404040, #000000)'
-                : 'radial-gradient(circle at 30% 30%, #171717, #000000)',
+                ? 'radial-gradient(circle at 30% 30%, hsl(0 0% 25%), hsl(0 0% 0%))'
+                : 'radial-gradient(circle at 30% 30%, hsl(0 0% 9%), hsl(0 0% 0%))',
             borderRadius: '50%',
             boxShadow: 'inset -12px -12px 24px rgba(0,0,0,0.75), 0 0 24px rgba(15, 23, 60, 0.15)'
           }}
@@ -422,7 +422,13 @@ export function AuthBrandingPanel() {
 
   return (
     <div className="flex w-full lg:w-1/2 relative min-h-[500px] lg:h-screen items-center overflow-hidden">
-      {/* Sem decoração lateral — fundo 100% unificado vem do <main> em Auth.tsx */}
+      {/* Design System Documentation (Hidden/Internal reference)
+          Palette: Premium Monochrome
+          Primary: hsl(var(--primary))
+          Shadows: var(--shadow-premium)
+          Glows: drop-shadow(0 0 Xpx hsl(var(--primary) / Y))
+          Gradients: var(--gradient-hero), var(--gradient-glow)
+      */}
 
       {/* Content */}
       <div 
