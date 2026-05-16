@@ -40,10 +40,9 @@ describe('AuthBrandingPanel Visual Classes', () => {
     expect(grid).toBeInTheDocument();
     
     const classes = grid?.className || '';
-    expect(classes).toContain('w-[95%]');
+    expect(classes).toContain('w-full');
     expect(classes).toContain('lg:w-[105%]');
     expect(classes).toContain('xl:w-[110%]');
-    expect(classes).toContain('-mx-[2.5%]');
     expect(classes).toContain('lg:-mx-[2.5%]');
     expect(classes).toContain('xl:-mx-[5%]');
   });
@@ -56,12 +55,13 @@ describe('AuthBrandingPanel Visual Classes', () => {
     );
     
     const grid = container.querySelector('.grid-cols-2');
-    expect(grid?.className).toContain('gap-4');
+    expect(grid?.className).toContain('gap-3');
     expect(grid?.className).toContain('sm:gap-5');
     
     const cards = container.querySelectorAll('.rounded-2xl');
     cards.forEach(card => {
-      expect(card.className).toContain('px-6');
+      expect(card.className).toContain('px-4');
+      expect(card.className).toContain('sm:px-6');
       expect(card.className).toContain('h-[99px]');
     });
   });
