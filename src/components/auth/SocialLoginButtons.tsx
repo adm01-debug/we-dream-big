@@ -31,6 +31,12 @@ const REDIRECT_TIMEOUT_MS = 15000;
 interface SocialLoginButtonsProps {
   /** Disparado quando o login social falha — habilita fallback para e-mail/senha. */
   onError?: (message: string) => void;
+  /**
+   * Ref mutável onde o componente publica a função `retry()`.
+   * Permite que o pai (banner de erro) reexecute o fluxo Google sem
+   * o usuário precisar rolar até o botão original.
+   */
+  retryRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 /**
@@ -44,7 +50,7 @@ interface SocialLoginButtonsProps {
  * Para reativar o SSO antes do deploy, ver `docs/AUTH-SSO-ACTIVATION.md`.
  */
 export const SocialLoginButtons = forwardRef<HTMLDivElement, SocialLoginButtonsProps>(
-  function SocialLoginButtons({ onError }, ref) {
+  function SocialLoginButtons({ onError, retryRef }, ref) {
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const [slowHint, setSlowHint] = useState<string | null>(null);
     const { toast } = useToast();
@@ -123,6 +129,18 @@ export const SocialLoginButtons = forwardRef<HTMLDivElement, SocialLoginButtonsP
         finishWithError(mapOAuthError(raw));
       }
     };
+
+    // Publica a função `retry()` no ref do pai (banner de erro).
+    useEffect(() => {
+      if (!retryRef) return;
+      retryRef.current = () => {
+        if (isLoading) return;
+        void handleGoogleLogin();
+      };
+      return () => {
+        if (retryRef) retryRef.current = null;
+      };
+    });
 
     const loading = isLoading === 'google';
 
