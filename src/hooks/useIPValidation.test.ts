@@ -119,9 +119,9 @@ describe('useIPValidation', () => {
     });
 
     it('returns error when current IP cannot be identified', async () => {
-      mockFetch.mockResolvedValueOnce({
-        json: async () => ({}), // Missing ip field
-      });
+      // Simulate both get-visitor-info and ipify failure
+      vi.mocked(supabase.functions.invoke).mockResolvedValue({ data: null, error: { message: 'Network' } });
+      mockFetch.mockRejectedValueOnce(new Error('Fetch failed'));
 
       const { result } = renderHook(() => useIPValidation());
 
@@ -138,18 +138,18 @@ describe('useIPValidation', () => {
     });
 
     it('handles city_not_whitelisted reason correctly', async () => {
-      mockFetch.mockResolvedValueOnce({
-        json: async () => ({ ip: '1.2.3.4' }),
+      vi.mocked(supabase.functions.invoke).mockImplementation(async (fnName) => {
+        if (fnName === 'get-visitor-info') return { data: { ip: '1.2.3.4' }, error: null };
+        if (fnName === 'validate-access') return {
+          data: {
+            allowed: false,
+            reason: 'city_not_whitelisted',
+            details: { detected_city: 'São Paulo' },
+          },
+          error: null,
+        };
+        return { data: null, error: null };
       });
-
-      vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
-        data: {
-          allowed: false,
-          reason: 'city_not_whitelisted',
-          details: { detected_city: 'São Paulo' },
-        },
-        error: null,
-      } as Awaited<ReturnType<typeof supabase.functions.invoke>>);
 
       const { result } = renderHook(() => useIPValidation());
 
@@ -163,18 +163,18 @@ describe('useIPValidation', () => {
     });
 
     it('handles too_many_attempts reason correctly', async () => {
-      mockFetch.mockResolvedValueOnce({
-        json: async () => ({ ip: '1.2.3.4' }),
+      vi.mocked(supabase.functions.invoke).mockImplementation(async (fnName) => {
+        if (fnName === 'get-visitor-info') return { data: { ip: '1.2.3.4' }, error: null };
+        if (fnName === 'validate-access') return {
+          data: {
+            allowed: false,
+            reason: 'too_many_attempts',
+            details: { lockout_minutes: 30 },
+          },
+          error: null,
+        };
+        return { data: null, error: null };
       });
-
-      vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
-        data: {
-          allowed: false,
-          reason: 'too_many_attempts',
-          details: { lockout_minutes: 30 },
-        },
-        error: null,
-      } as Awaited<ReturnType<typeof supabase.functions.invoke>>);
 
       const { result } = renderHook(() => useIPValidation());
 
