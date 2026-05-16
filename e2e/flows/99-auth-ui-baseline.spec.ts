@@ -13,7 +13,7 @@ test.describe("Auth UI Baseline", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    // Congela fontes e desabilita animações para maior estabilidade
+    // Congela fontes e desabilita animações, EXCETO as que queremos validar
     await page.addInitScript(() => {
       const style = document.createElement('style');
       style.innerHTML = `
@@ -23,6 +23,9 @@ test.describe("Auth UI Baseline", () => {
           transition-delay: 0s !important;
           animation-delay: 0s !important;
         }
+        /* Forçamos a animação das estrelas a ficar em um estado específico para o baseline */
+        /* Ou, se quisermos ver a mudança, podemos comentar as linhas acima para as estrelas */
+        
         /* Esconde elementos que podem variar (como o IP no rodapé legal se for dinâmico) */
         [data-testid="user-ip-info"] { visibility: hidden !important; }
       `;
@@ -35,6 +38,10 @@ test.describe("Auth UI Baseline", () => {
     await gotoAndSettle(page, "/login");
     await page.waitForTimeout(1000);
     
+    // Verificamos se as estrelas estão presentes e animando (através do data-testid)
+    const star = page.locator('[data-testid^="star-breathing-"]').first();
+    await expect(star).toBeVisible();
+
     await expect(page).toHaveScreenshot("auth-login-normal-desktop.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01

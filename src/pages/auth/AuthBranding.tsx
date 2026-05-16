@@ -212,7 +212,8 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
           }}
         >
           <div
-            className="w-full h-full rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.4)]"
+            className="w-full h-full rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+            data-testid={`star-breathing-${star.id}`}
             style={{
               // Respiração (Brilho/Escala) na camada interna
               animation: `breathingStar ${star.breathingDur}s ease-in-out ${star.breathingDelay}s infinite`,
