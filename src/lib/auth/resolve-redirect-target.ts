@@ -22,6 +22,17 @@ import {
   clearPostLoginRedirect,
 } from './post-login-redirect';
 
+/**
+ * Guarda final defense-in-depth: garante que NENHUM caminho retornado por
+ * `resolveRedirectTarget` aponte para uma rota de autenticação, mesmo que
+ * uma futura mudança em `isSafeRedirectPath` deixe escapar algum caso.
+ * Se a guarda detectar violação, força fallback `/`.
+ */
+const FALLBACK = '/';
+function enforceSafe(target: string): string {
+  return isSafeRedirectPath(target) ? target : FALLBACK;
+}
+
 export interface RedirectFromState {
   pathname?: string;
   search?: string;
@@ -54,5 +65,5 @@ export function resolveRedirectTarget(input: ResolveRedirectInput): string {
   }
 
   // 3. sessionStorage (consome one-shot) → 4. fallback '/'
-  return consumePostLoginRedirect('/');
+  return enforceSafe(consumePostLoginRedirect(FALLBACK));
 }
