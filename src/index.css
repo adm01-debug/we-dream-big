@@ -2196,3 +2196,29 @@ body.compare-focus-mode [role='main'] {
   margin: 0 !important;
   max-width: 100% !important;
 }
+
+/* Animations for Unified Space Scene */
+@keyframes breathingStar {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 0.8; transform: scale(1.2); }
+}
+
+@keyframes zigzagMovement {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(20px, 40px) rotate(5deg); }
+  50% { transform: translate(-20px, 80px) rotate(-5deg); }
+  75% { transform: translate(20px, 120px) rotate(5deg); }
+  100% { transform: translate(0, 160px) rotate(0deg); }
+}
+
+@keyframes floatMovement {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(30px, 30px) rotate(10deg); }
+}
+
+@keyframes rocketRising {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-120vh); opacity: 0; }
+}

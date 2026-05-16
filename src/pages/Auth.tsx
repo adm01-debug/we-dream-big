@@ -318,14 +318,12 @@ export default function Auth() {
 
   return (
     <main
-      className="relative flex flex-col lg:flex-row min-h-screen overflow-hidden bg-[#0A0D14]"
+      className="relative flex flex-col lg:flex-row min-h-screen overflow-hidden bg-[#0A0E1A]"
       role="main"
       aria-label="Autenticação"
     >
-      {/* Fundo unificado azul-escuro com estrelas cobrindo TODA a tela */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        <Starfield />
-      </div>
+      {/* Fundo unificado azul-noite saturado com cena espacial coordenada */}
+      <SpaceScene />
 
       <PageSEO
         title="Login"
@@ -391,7 +389,7 @@ export default function Auth() {
           {/* Auth Card */}
           <Card
             aria-labelledby="auth-title"
-            className={`border-white/20 bg-[#0A0D14]/75 shadow-2xl shadow-black/40 backdrop-blur-xl ${ipBlocked ? 'pointer-events-none opacity-50' : ''}`}
+            className={`border-white/20 bg-[#0A0E1A]/60 shadow-2xl shadow-black/40 backdrop-blur-md ${ipBlocked ? 'pointer-events-none opacity-50' : ''}`}
           >
             {showForgotPassword ? (
               <CardContent className="pb-6 pt-6">
