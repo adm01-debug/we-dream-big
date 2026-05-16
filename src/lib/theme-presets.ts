@@ -891,7 +891,7 @@ export const THEME_PRESETS: ThemePreset[] = [
     description: 'Verde RGB Razer Chroma',
     h: 113,
     s: 70,
-    l: 51,
+    l: 45, // Reduzido de 51 para 45 para contraste WCAG
     gh: 120,
     sh: 100,
     ss: 60,
