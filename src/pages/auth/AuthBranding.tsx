@@ -70,12 +70,13 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         const size = 1 + (i % 3);
         const top = Math.random() * 100;
         const left = Math.random() * 100;
-        const dur = 3 + Math.random() * 4;
-        const delay = Math.random() * 5;
+        // Respiração humana: ~8–12s por ciclo (5–7 respirações/min em repouso)
+        const dur = 8 + Math.random() * 4;
+        const delay = Math.random() * 6;
         return (
           <div
             key={`star-${i}`}
-            className="absolute rounded-full bg-white/40 shadow-[0_0_10px_rgba(255,255,255,0.4)]"
+            className="absolute rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]"
             style={{
               width: `${size}px`,
               height: `${size}px`,
