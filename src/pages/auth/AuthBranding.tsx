@@ -12,18 +12,24 @@ interface AstronautData { id: number; left: number; top: number; size: number; r
 interface StarData { id: number; size: number; top: number; left: number; breathingDur: number; breathingDelay: number; driftDur: number; }
 interface MeteorData { id: number; top: number; left: number; duration: number; delay: number; }
 
+const ASTRONAUT_LAYOUT: AstronautData[] = [
+  { id: 0, left: 12, top: 18, size: 52, depth: 0.85, rotation: -8, zIndex: 8, initialAngle: 0 },
+  { id: 1, left: 88, top: 27, size: 46, depth: 0.75, rotation: 12, zIndex: 9, initialAngle: 120 },
+  { id: 2, left: 16, top: 78, size: 58, depth: 1.05, rotation: -15, zIndex: 11, initialAngle: 240 },
+  { id: 3, left: 82, top: 70, size: 62, depth: 1.15, rotation: 20, zIndex: 12, initialAngle: 60 },
+];
+
 export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) => {
   const [rockets, setRockets] = useState<RocketData[]>([]);
   const [planets, setPlanets] = useState<PlanetData[]>([]);
-  const [astronauts, setAstronauts] = useState<AstronautData[]>([]);
   const [meteors, setMeteors] = useState<MeteorData[]>([]);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [scrollY, setScrollY] = useState(0);
   
   // Parâmetros controláveis expandidos
   const [config, setConfig] = useState({
-    astroCount: 4,
-    speed: 0.2, 
+    astroCount: ASTRONAUT_LAYOUT.length,
+    speed: 0.42, 
     spacing: 1.0,
     parallaxIntensity: 1.0,
     depthProfile: 1.0, 
@@ -125,35 +131,11 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       type: i % 3,
       delay: Math.random() * 5,
     })));
-    
-    // Layout base para astronautas com ângulos iniciais diferentes para órbita
-    // Distribuídos para evitar sobreposição e preencher o espaço
-    const baseLayout = [
-      { left: 20, top: 25, depth: 0.3, rotation: -8, zIndex: 5, initialAngle: 0 },
-      { left: 70, top: 35, depth: 0.5, rotation: 12, zIndex: 10, initialAngle: 120 },
-      { left: 30, top: 70, depth: 0.8, rotation: -15, zIndex: 15, initialAngle: 240 },
-      { left: 60, top: 65, depth: 1.2, rotation: 20, zIndex: 20, initialAngle: 60 },
-      { left: 45, top: 45, depth: 0.6, rotation: 45, zIndex: 12, initialAngle: 180 },
-      { left: 15, top: 80, depth: 0.4, rotation: -30, zIndex: 8, initialAngle: 300 },
-    ];
-
-    setAstronauts(baseLayout.slice(0, config.astroCount).map((a, i) => {
-      const individual = config.individualAstronauts.find(idx => idx.id === i);
-      return {
-        id: i,
-        ...a,
-        left: 50 + (a.left - 50) * config.spacing,
-        top: 50 + (a.top - 50) * config.spacing,
-        individualScale: individual?.scale ?? 1.0,
-        individualOpacity: individual?.opacity ?? 1.0,
-      };
-    }));
-
     return () => {
       clearInterval(rocketInterval);
       clearInterval(meteorInterval);
     };
-  }, [spawnRocket, config.astroCount, config.spacing, config.individualAstronauts]);
+  }, [spawnRocket]);
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
@@ -246,29 +228,25 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         />
       ))}
 
-      {/* Floating Astronauts — Sincronizados e Persistentes */}
-      {astronauts.map((a, idx) => {
-        // Tamanhos reduzidos e escala baseada na profundidade, perfil global e ajuste individual
-        const baseSize = 35; 
-        const size = baseSize * a.depth * config.depthProfile * (a.individualScale ?? 1.0);
-        
-        // Opacidade baseada no perfil global, profundidade e ajuste individual
-        const opacity = (0.12 + (a.depth * 0.2)) * config.depthProfile * (a.individualOpacity ?? 1.0);
-        
-        // Parallax Mouse + Scroll baseado na profundidade (com suavização adicional)
+      {/* Floating Astronauts — sempre renderizados desde o primeiro frame */}
+      {ASTRONAUT_LAYOUT.slice(0, config.astroCount).map((a) => {
+        const individual = config.individualAstronauts.find(idx => idx.id === a.id);
+        const size = a.size * config.depthProfile * (individual?.scale ?? 1.0);
+        const opacity = 0.5 * config.depthProfile * (individual?.opacity ?? 1.0);
+        const orbitRadius = 14 + a.depth * 14;
         const translateX = mousePos.x * a.depth;
         const translateY = (mousePos.y + scrollY) * a.depth;
-
-        // Órbita circular balanceada
-        const orbitDuration = 30 / config.speed;
+        const orbitDuration = 32 / config.speed;
+        const left = 50 + (a.left - 50) * config.spacing;
+        const top = 50 + (a.top - 50) * config.spacing;
 
         return (
           <div
             key={`astro-${a.id}`}
             className="absolute transition-transform duration-1000 ease-out"
             style={{
-              left: `${a.left}%`,
-              top: `${a.top}%`,
+              left: `${left}%`,
+              top: `${top}%`,
               opacity,
               zIndex: a.zIndex,
               transform: `translate3d(${translateX}px, ${translateY}px, 0)`,
@@ -281,19 +259,23 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
                 // circularOrbit rotaciona e move
                 animation: `circularOrbit ${orbitDuration}s linear infinite`,
                 animationDelay: `-${(a.initialAngle / 360) * orbitDuration}s`, 
+                transformOrigin: "center center",
+                ['--orbit-radius' as string]: `${orbitRadius}px`,
                 // Rim lighting and glassmorphism effect (10/10)
-                filter: `brightness(0.65) drop-shadow(0 0 ${size / 8}px rgba(6, 135, 255, 0.2)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.3))`,
+                filter: `brightness(1.05) drop-shadow(0 0 ${size / 5}px rgba(6, 135, 255, 0.45)) drop-shadow(0 0 6px rgba(255, 255, 255, 0.35))`,
               }}
             >
               <img
                 src={astronautSvg}
                 alt=""
-                className="animate-pulse"
+                className="select-none animate-pulse"
                 style={{
                   width: size,
                   height: size,
                   transform: `rotate(${a.rotation}deg)`,
                   animationDuration: `${orbitDuration / 2}s`,
+                  minWidth: 44,
+                  minHeight: 44,
                 }}
               />
             </div>
