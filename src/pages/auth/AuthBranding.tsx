@@ -135,6 +135,26 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
+      {/* Background Deep Space Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0)_0%,rgba(2,6,23,0.5)_100%)]" />
+
+      {/* Space Dust Layer - Profundidade Extra */}
+      <div className="absolute inset-0 opacity-30">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={`dust-${i}`}
+            className="absolute rounded-full bg-white/40"
+            style={{
+              width: '1px',
+              height: '1px',
+              top: `${(i * 17) % 100}%`,
+              left: `${(i * 23) % 100}%`,
+              animation: `starDrift ${60 + (i % 20)}s linear infinite alternate`,
+            }}
+          />
+        ))}
+      </div>
+
       {/* Dynamic Stars - Otimizado com camadas de animação separadas */}
       {activeStars.map((star) => (
         <div
