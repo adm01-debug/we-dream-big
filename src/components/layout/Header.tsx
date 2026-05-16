@@ -180,7 +180,8 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
           {/* Mobile search trigger */}
           <Button
             variant="ghost"
-            size="icon" aria-label="Buscar"
+            size="icon" 
+            aria-label="Abrir busca global"
             className="md:hidden h-8 w-8 hover:bg-primary/10 hover:text-primary"
             onClick={() => {
               const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });

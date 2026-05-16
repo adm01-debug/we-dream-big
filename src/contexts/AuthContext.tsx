@@ -382,8 +382,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       }
 
-      // Tenta encerrar sessão remota — não bloqueia limpeza local em caso de falha
-      await supabase.auth.signOut().catch((err) => {
+      // Tenta encerrar sessão remota revogando o refresh token no backend
+      await supabase.auth.signOut({ scope: 'global' }).catch((err) => {
         log.warn('remote_signout_failed', { err: String(err) });
       });
     } catch (err) {

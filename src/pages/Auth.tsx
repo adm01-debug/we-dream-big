@@ -343,7 +343,7 @@ export default function Auth() {
               <>
                 <CardHeader className="pb-4">
                   <div className="space-y-1 text-center">
-                    <h1 className="font-display text-xl font-semibold text-foreground">
+                    <h1 className="font-display text-xl sm:text-2xl font-semibold text-foreground">
                       Bem-vindo de volta
                     </h1>
                     <p className="text-sm text-muted-foreground">
