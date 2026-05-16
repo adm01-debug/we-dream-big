@@ -19,8 +19,9 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
     const id = nextIdRef.current++;
     const left = 5 + Math.random() * 90;
     const size = 24 + Math.random() * 40;
-    const duration = isInitial ? (2 + Math.random() * 2) : (3 + Math.random() * 4);
-    const rotationOffset = -5 + Math.random() * 10;
+    // Movimento lento, contemplativo
+    const duration = isInitial ? (12 + Math.random() * 6) : (14 + Math.random() * 8);
+    const rotationOffset = -3 + Math.random() * 6;
     const scale = 0.9 + Math.random() * 0.5;
 
     const rocket: RocketData = { id, left, size, duration, rotation: rotationOffset, scale };
@@ -29,35 +30,35 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
   }, []);
 
   useEffect(() => {
-    // Planets setup
+    // Planetas — movimento extremamente lento (60–90s)
     const initialPlanets = [...Array(5)].map((_, i) => ({
       id: i,
       left: 10 + Math.random() * 80,
       top: 10 + Math.random() * 80,
       size: 40 + Math.random() * 80,
-      duration: 15 + Math.random() * 15,
+      duration: 60 + Math.random() * 30,
       type: i % 3,
       delay: Math.random() * 10
     }));
     setPlanets(initialPlanets);
 
-    // Astronauts setup
+    // Astronautas — flutuação lenta (50–80s)
     const initialAstronauts = [...Array(3)].map((_, i) => ({
       id: i,
       left: 20 + Math.random() * 60,
       top: 20 + Math.random() * 60,
       size: 50 + Math.random() * 30,
-      duration: 20 + Math.random() * 20,
+      duration: 50 + Math.random() * 30,
       delay: Math.random() * 5,
       rotation: Math.random() * 360
     }));
     setAstronauts(initialAstronauts);
 
-    // Initial rockets
-    [0, 800, 2000, 4000].forEach(d => setTimeout(() => spawnRocket(true), d));
+    // Foguetes — espaçados para não poluir
+    [0, 3000, 7000].forEach(d => setTimeout(() => spawnRocket(true), d));
     const rocketInterval = setInterval(() => {
       if (document.visibilityState === 'visible') spawnRocket();
-    }, 4500);
+    }, 9000);
 
     return () => clearInterval(rocketInterval);
   }, [spawnRocket]);
@@ -69,12 +70,13 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         const size = 1 + (i % 3);
         const top = Math.random() * 100;
         const left = Math.random() * 100;
-        const dur = 3 + Math.random() * 4;
-        const delay = Math.random() * 5;
+        // Respiração humana: ~8–12s por ciclo (5–7 respirações/min em repouso)
+        const dur = 8 + Math.random() * 4;
+        const delay = Math.random() * 6;
         return (
           <div
             key={`star-${i}`}
-            className="absolute rounded-full bg-white/40 shadow-[0_0_10px_rgba(255,255,255,0.4)]"
+            className="absolute rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]"
             style={{
               width: `${size}px`,
               height: `${size}px`,
@@ -202,12 +204,8 @@ const FEATURE_ITEMS = [
 
 export function AuthBrandingPanel() {
   return (
-    <div className="flex w-full lg:w-1/2 relative overflow-hidden min-h-[500px] lg:h-screen items-center bg-transparent">
-      {/* Background decoration (fundo unificado vem do <main> em Auth.tsx) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-orange/15 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-orange/5 rounded-full blur-[150px]" />
-      </div>
+    <div className="flex w-full lg:w-1/2 relative min-h-[500px] lg:h-screen items-center bg-transparent">
+      {/* Sem decoração lateral — fundo 100% unificado vem do <main> em Auth.tsx */}
 
       {/* Content */}
       <div className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full min-h-screen">
