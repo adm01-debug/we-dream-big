@@ -123,10 +123,10 @@ html[data-scroll-locked] body {
     --primary-glow: 217 91% 75%;
     --primary-foreground: 0 0% 100%;
 
-    --orange: 24 100% 50%;
-    --orange-hover: 24 100% 45%;
-    --orange-active: 24 100% 40%;
-    --orange-glow: 24 100% 65%;
+    --orange: 217 91% 60%;
+    --orange-hover: 217 91% 55%;
+    --orange-active: 217 91% 50%;
+    --orange-glow: 217 91% 75%;
     --orange-foreground: 0 0% 100%;
 
     /* 5. Functional Colors (High Saturation) */
