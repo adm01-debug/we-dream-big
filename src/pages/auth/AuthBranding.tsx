@@ -65,7 +65,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
       {/* Dynamic Stars with breathing effect */}
-      {[...Array(60)].map((_, i) => {
+      {[...Array(isFull ? 60 : 30)].map((_, i) => {
         const size = 1 + (i % 3);
         const top = Math.random() * 100;
         const left = Math.random() * 100;
