@@ -1,19 +1,33 @@
 import { Helmet } from "react-helmet-async";
-import { useNavigate, useLocation } from "react-router-dom";
-import { ShieldAlert, LogIn, ArrowLeft } from "lucide-react";
+import { useNavigate, useLocation, type Location } from "react-router-dom";
+import { ShieldAlert, LogIn, Home, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
 import { generateSecurityId } from "@/lib/access/security-utils";
 
+type UnauthorizedState = { from?: Location } | null;
+
 export function UnauthorizedPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Ofusca o path original para segurança usando hash não reversível
-  const requestId = useMemo(() => generateSecurityId('AUTH', location.pathname), [location.pathname]);
 
-  const handleLogin = () => {
-    navigate("/auth", { state: { from: location }, replace: true });
+  // Origem que disparou o bloqueio (vinda de um guard via navigate state).
+  // Se não houver, preservamos o próprio /unauthorized apenas como referência —
+  // o Auth.tsx irá decidir o destino final via consumePostLoginRedirect.
+  const fromLocation = (location.state as UnauthorizedState)?.from ?? location;
+
+  // Ofusca o path original para segurança usando hash não reversível
+  const requestId = useMemo(
+    () => generateSecurityId("AUTH", fromLocation.pathname ?? location.pathname),
+    [fromLocation.pathname, location.pathname],
+  );
+
+  const handleRetryLogin = () => {
+    navigate("/auth", { state: { from: fromLocation }, replace: true });
+  };
+
+  const handleGoHome = () => {
+    navigate("/", { replace: true });
   };
 
   return (
@@ -22,13 +36,13 @@ export function UnauthorizedPage() {
         <title>401 — Autenticação Necessária</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      
-      <div 
+
+      <div
         role="alert"
         data-testid="app-unauthorized"
         className="min-h-screen flex items-center justify-center bg-background px-4 py-8"
       >
-        <div className="w-full max-w-md flex flex-col items-center gap-6 text-center">
+        <div className="w-full max-w-md flex flex-col items-center gap-6 text-center animate-fade-in">
           <div className="relative">
             <div className="absolute inset-0 animate-pulse bg-primary/10 rounded-full blur-xl" />
             <ShieldAlert className="h-16 w-16 text-primary relative z-10" />
@@ -42,20 +56,42 @@ export function UnauthorizedPage() {
               Acesso Restrito
             </h1>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Para visualizar este conteúdo, você precisa estar autenticado no sistema. 
-              Sua sessão pode ter expirado ou o link acessado é protegido.
+              Para visualizar este conteúdo, você precisa estar autenticado. Sua sessão
+              pode ter expirado, ou o link acessado é protegido por permissões adicionais.
+            </p>
+            <p className="text-xs text-muted-foreground/80">
+              Tente entrar novamente — você será redirecionado de volta após o login.
             </p>
           </div>
 
           <div className="w-full pt-4 border-t border-border/40 space-y-2">
-            <Button onClick={handleLogin} className="w-full gap-2 h-9">
+            <Button
+              onClick={handleRetryLogin}
+              className="w-full gap-2 h-9"
+              data-testid="unauthorized-retry-login"
+            >
               <LogIn className="h-4 w-4" />
-              Ir para o Login
+              Tentar login novamente
             </Button>
-            
-            <Button variant="ghost" onClick={() => navigate(-1)} className="w-full gap-2 h-9">
+
+            <Button
+              variant="outline"
+              onClick={handleGoHome}
+              className="w-full gap-2 h-9"
+              data-testid="unauthorized-go-home"
+            >
+              <Home className="h-4 w-4" />
+              Voltar para a Home
+            </Button>
+
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="w-full gap-2 h-9"
+              data-testid="unauthorized-go-back"
+            >
               <ArrowLeft className="h-4 w-4" />
-              Voltar
+              Voltar à página anterior
             </Button>
           </div>
 
