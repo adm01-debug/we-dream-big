@@ -38,10 +38,7 @@
   to { transform: rotate(360deg) translateX(15px) rotate(-360deg); }
 }
 
-@keyframes breathingStar {
-  0%, 100% { opacity: 0.3; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.2); }
-}
+/* Removida duplicata de breathingStar - definição oficial está no final do arquivo */
 
 @keyframes starDrift {
   from { transform: translate3d(0, 0, 0); }
