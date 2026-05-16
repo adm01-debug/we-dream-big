@@ -450,12 +450,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, fetchUserData, fetchAAL]);
 
-  // Security: Auto-refresh do token se estiver próximo de expirar
+  // Security: Auto-refresh e Watchdog do token
   useEffect(() => {
     if (!session) return;
     
     const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
     const now = Date.now();
+    const timeToExpiry = expiresAt - now;
+
+    // Se expira em menos de 10 min, tenta refresh agora
+    if (timeToExpiry > 0 && timeToExpiry < 10 * 60 * 1000) {
+      refreshSession();
+    }
+
+    // Watchdog: Avisa o usuário 2 minutos antes de expirar se ele ainda estiver na página
+    const warningThreshold = 2 * 60 * 1000;
+    const warningTime = timeToExpiry - warningThreshold;
+
+    let warningTimer: number | null = null;
+    if (warningTime > 0) {
+      warningTimer = window.setTimeout(() => {
+        toast.warning("Sessão prestes a expirar", {
+          description: "Sua sessão encerrará em 2 minutos. Salve seu trabalho.",
+          duration: 10000,
+        });
+      }, warningTime);
+    }
+
+    return () => {
+      if (warningTimer) window.clearTimeout(warningTimer);
+    };
+  }, [session, refreshSession]);
     const buffer = 5 * 60 * 1000; // 5 minutos antes
     const delay = expiresAt - now - buffer;
 

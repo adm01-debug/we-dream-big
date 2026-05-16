@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Lock, Loader2, Eye, EyeOff, CheckCircle, Sparkles } from 'lucide-react';
+import { AppLogo } from '@/components/layout/AppLogo';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -192,21 +193,16 @@ export default function ResetPassword() {
     <div className="flex min-h-screen items-center justify-center bg-background p-6">
       <div className="w-full max-w-md animate-fade-in space-y-8">
         {/* Logo */}
-        <div className="space-y-3 text-center">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-orange shadow-lg shadow-orange/30">
-            <Sparkles className="h-8 w-8 text-orange-foreground" />
-          </div>
-          <div>
-            <h1 className="font-display text-2xl font-bold text-foreground">Promo Brindes</h1>
-          </div>
+        <div className="flex justify-center">
+          <AppLogo />
         </div>
 
         <Card className="border-border bg-card shadow-xl">
           <CardHeader className="pb-4">
             <div className="space-y-1 text-center">
-              <h2 className="font-display text-xl font-semibold text-foreground">
+              <h1 className="font-display text-xl font-semibold text-foreground">
                 Redefinir senha
-              </h2>
+              </h1>
               <p className="text-sm text-muted-foreground">Digite sua nova senha abaixo</p>
             </div>
           </CardHeader>
@@ -223,6 +219,7 @@ export default function ResetPassword() {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     className="border-border bg-input pl-10 pr-10 focus:border-orange focus:ring-orange"
                     {...form.register('password')}
                   />
@@ -253,6 +250,7 @@ export default function ResetPassword() {
                     id="confirmPassword"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     className="border-border bg-input pl-10 focus:border-orange focus:ring-orange"
                     {...form.register('confirmPassword')}
                   />
