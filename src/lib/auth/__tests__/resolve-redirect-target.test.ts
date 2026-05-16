@@ -161,4 +161,50 @@ describe('resolveRedirectTarget — precedência pós-login', () => {
       expect(resolveRedirectTarget(input)).toBe('/produtos');
     });
   });
+
+  describe('🛡️ Defesa-em-profundidade — rotas de auth NUNCA passam', () => {
+    const authVariants = [
+      '/auth',
+      '/auth/callback',
+      '/auth?redirect=/x',
+      '/AUTH/callback',           // case-insensitive
+      '/login',
+      '/logout',
+      '/signup',
+      '/sign-up',
+      '/register',
+      '/reset-password',
+      '/forgot-password',
+      '/unauthorized',
+      '/%61uth',                  // URL-encoded 'a' → /auth
+      '/%2Fauth',                 // encoded slash → //auth (protocol-relative)
+      '/%252Fauth',               // doubly-encoded
+      '/auth%2Fcallback',         // /auth/callback após decode
+    ];
+
+    it.each(authVariants)('state.from = %s é rejeitado e cai para fallback', (path) => {
+      const result = resolveRedirectTarget({
+        fromState: { pathname: path },
+        queryRedirect: null,
+      });
+      expect(result).toBe('/');
+    });
+
+    it.each(authVariants)('?redirect = %s é rejeitado e cai para fallback', (path) => {
+      const result = resolveRedirectTarget({
+        fromState: null,
+        queryRedirect: path,
+      });
+      expect(result).toBe('/');
+    });
+
+    it('state.from /auth com query/hash maliciosa também é bloqueado', () => {
+      const result = resolveRedirectTarget({
+        fromState: { pathname: '/auth', search: '?redirect=/admin', hash: '#x' },
+        queryRedirect: '/produtos',
+      });
+      // state.from inválido → cai para ?redirect (válido)
+      expect(result).toBe('/produtos');
+    });
+  });
 });

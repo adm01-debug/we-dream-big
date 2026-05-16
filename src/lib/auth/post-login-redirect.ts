@@ -14,20 +14,66 @@
 
 const KEY = 'auth:post_login_redirect';
 
-const BLOCKED_PREFIXES = ['/auth', '/login', '/reset-password', '/unauthorized'];
-// Nota: '/auth' cobre '/auth/callback' automaticamente via startsWith em isSafeRedirectPath.
+/**
+ * Rotas de autenticação — NUNCA podem ser destino pós-login (geram loop).
+ * Exportado para defesa-em-profundidade em `resolveRedirectTarget`.
+ */
+export const AUTH_BLOCKED_PREFIXES = [
+  '/auth',
+  '/login',
+  '/logout',
+  '/signup',
+  '/sign-up',
+  '/register',
+  '/reset-password',
+  '/forgot-password',
+  '/unauthorized',
+] as const;
+// Nota: '/auth' cobre '/auth/callback' automaticamente via startsWith.
+
+/**
+ * Decodifica até 2 níveis de URL-encoding para frustrar bypass com
+ * `%2Fauth`, `%252Fauth`, etc. Retorna a string original se decode falhar.
+ */
+function safeDecode(path: string): string {
+  let current = path;
+  for (let i = 0; i < 2; i++) {
+    try {
+      const next = decodeURIComponent(current);
+      if (next === current) break;
+      current = next;
+    } catch {
+      break;
+    }
+  }
+  return current;
+}
+
+/** True se o path (já decodificado) aponta para uma rota de autenticação. */
+export function isAuthRoutePath(path: string): boolean {
+  const lower = path.toLowerCase();
+  return AUTH_BLOCKED_PREFIXES.some(
+    (p) => lower === p || lower.startsWith(`${p}/`) || lower.startsWith(`${p}?`) || lower.startsWith(`${p}#`),
+  );
+}
 
 /** Valida se um path é seguro para redirect interno. */
 export function isSafeRedirectPath(path: unknown): path is string {
   if (typeof path !== 'string' || path.length === 0) return false;
   // Deve começar com `/` mas não `//` (protocol-relative) nem `/\` (Windows-style)
   if (!path.startsWith('/') || path.startsWith('//') || path.startsWith('/\\')) return false;
-  // Rejeita esquemas embutidos
+  // Rejeita esquemas embutidos (ex.: `javascript:`, `data:`)
   if (/^[a-z]+:/i.test(path)) return false;
-  // Rejeita rotas de auth (evita loop)
-  if (BLOCKED_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`) || path.startsWith(`${p}?`))) {
-    return false;
-  }
+
+  // Defesa-em-profundidade: decodifica URL-encoding antes de checar auth-routes.
+  const decoded = safeDecode(path);
+  // Após decode, re-valida prefixos perigosos (ex.: `/%2F..` → `//..`)
+  if (decoded.startsWith('//') || decoded.startsWith('/\\')) return false;
+  if (/^[a-z]+:/i.test(decoded)) return false;
+  if (isAuthRoutePath(decoded)) return false;
+  // Também checa a forma crua, caso o decode tenha falhado por algum motivo
+  if (isAuthRoutePath(path)) return false;
+
   return true;
 }
 
