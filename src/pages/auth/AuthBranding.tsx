@@ -364,7 +364,14 @@ function FeatureCard({ item, index }: { item: typeof FEATURE_ITEMS[0]; index: nu
       className="flex h-[99px] items-center justify-between gap-2 sm:gap-4 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-2xl hover:bg-white/[0.07] hover:border-blue-500/40 hover:scale-[1.02] transition-all duration-500 group opacity-0 px-4 sm:px-6 relative overflow-hidden"
       style={{ animation: `scale-fade-in 0.5s ease-out ${300 + index * 150}ms forwards` }}
     >
-...
+      <div className="absolute inset-0 w-full h-full pointer-events-none">
+        <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent group-hover:animate-[shimmerTranslate_2s_infinite]" />
+      </div>
+
+      <div className="min-w-0 flex-1 text-left relative z-10">
+        <p className="text-base sm:text-xl font-bold text-white leading-tight tracking-tight">{item.label}</p>
+        <p className="text-[10px] sm:text-xs font-medium text-white/50 leading-tight uppercase tracking-widest mt-0.5">{item.desc}</p>
+      </div>
       <div className="w-11 h-11 shrink-0 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-all duration-500 group-hover:rotate-[10deg] relative z-10 border border-white/[0.05]">
         <IconComponent className="h-5 w-5 text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
       </div>
