@@ -73,6 +73,18 @@ export function ThemeProvider({
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
+  // Listener for changes from other tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === storageKey && e.newValue) {
+        setThemeState(e.newValue as Theme);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [storageKey]);
+
   const setTheme = (newTheme: Theme) => {
     localStorage.setItem(storageKey, newTheme);
     setThemeState(newTheme);

@@ -1,4 +1,4 @@
-import { useEffect, type CSSProperties } from "react";
+import React, { useEffect, type CSSProperties } from "react";
 import { User, Menu, Sun, Moon, Heart, GitCompare, Search, LogOut, Settings, HelpCircle, Shield, MoreHorizontal, Palette, RotateCcw } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
@@ -37,7 +37,7 @@ interface HeaderProps {
   onSearchChange: (query: string) => void;
 }
 
-export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProps) {
+export const Header = React.memo(function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProps) {
   const { theme, actualTheme, setTheme, toggleTheme, isFallback } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();

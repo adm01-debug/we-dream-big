@@ -16,6 +16,7 @@ import { CloudStatusDot } from "@/components/system/CloudStatusDot";
 import { GlobalOfflineAlert } from "@/components/common/GlobalOfflineAlert";
 import { DevOnlyBridgeOverlay } from "@/components/dev/DevOnlyBridgeOverlay";
 import { RouteScrollReset } from "@/components/common/RouteScrollReset";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ThemeInitializer } from "@/components/ThemeInitializer";
 import { useAppBootstrap } from "@/hooks/useAppBootstrap";
 import { AppRoutes } from "@/routes/AppRoutes";
@@ -41,18 +42,20 @@ const App = () => {
               <BrowserRouter future={{ v7_relativeSplatPath: true }}>
                 <AuthProvider>
                   <AppBootstrapContainer>
-                    <AppProviders>
-                      <Toaster />
-                      <Sonner />
-                      <CloudStatusBanner />
-                      <CloudStatusDot />
-                      <BridgeStatusBanner />
-                      <GlobalOfflineAlert />
-                      <DevOnlyBridgeOverlay />
-                      <RouteScrollReset />
-                      <RoutePrefetcher />
-                      <AppRoutes />
-                    </AppProviders>
+                    <ErrorBoundary>
+                      <AppProviders>
+                        <Toaster />
+                        <Sonner />
+                        <CloudStatusBanner />
+                        <CloudStatusDot />
+                        <BridgeStatusBanner />
+                        <GlobalOfflineAlert />
+                        <DevOnlyBridgeOverlay />
+                        <RouteScrollReset />
+                        <RoutePrefetcher />
+                        <AppRoutes />
+                      </AppProviders>
+                    </ErrorBoundary>
                   </AppBootstrapContainer>
                 </AuthProvider>
               </BrowserRouter>

@@ -1,6 +1,6 @@
 // Catálogo de Produtos - Index Page (v3 - refactored)
 import { useState, useRef, useMemo } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+
 import { PageSEO } from "@/components/seo/PageSEO";
 import { FloatingCompareBar } from "@/components/compare/FloatingCompareBar";
 import { SharePreviewDialog } from "@/components/products/share/SharePreviewDialog";
@@ -39,7 +39,7 @@ export default function Index() {
   }), [catalog.searchQuery, catalog.filteredProducts.length, catalog.totalEstimate, catalog.paginatedProducts]);
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title={catalog.searchQuery ? `Busca: ${catalog.searchQuery}` : "Catálogo de Produtos"}
         description={catalog.searchQuery 
@@ -185,6 +185,6 @@ export default function Index() {
           } : null}
         />
       )}
-    </MainLayout>
+    </>
   );
 }

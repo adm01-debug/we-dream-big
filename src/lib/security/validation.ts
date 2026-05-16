@@ -1,22 +1,17 @@
 import { z } from "zod";
+import DOMPurify from "dompurify";
 
 /**
  * Robustly sanitizes HTML strings to prevent XSS.
- * Removes dangerous tags and attributes.
+ * Removes dangerous tags and attributes using DOMPurify.
  */
 export function sanitizeHtml(html: string): string {
   if (!html) return "";
   
-  // Basic sanitization: strip script, object, embed, applet, link, iframe, and form tags
-  // but allow safe formatting like <b>, <i>, <u>, <p>, <span>
-  return html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
-    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, "")
-    .replace(/on\w+="[^"]*"/gi, "") // remove event handlers like onclick
-    .replace(/on\w+='[^']*'/gi, "")
-    .replace(/href="javascript:[^"]*"/gi, "")
-    .replace(/src="javascript:[^"]*"/gi, "");
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["b", "i", "u", "p", "span", "br", "ul", "ol", "li", "strong", "em"],
+    ALLOWED_ATTR: ["class", "style"],
+  });
 }
 
 /**

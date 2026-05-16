@@ -21,8 +21,10 @@ const GlobalCommandBar = lazyWithRetry(() => import("@/components/command/Global
 const PersistentBreadcrumbs = lazyWithRetry(() => import("@/components/common/PersistentBreadcrumbs").then(m => ({ default: m.PersistentBreadcrumbs })));
 import { cn } from "@/lib/utils";
 
+import { Outlet } from "react-router-dom";
+
 interface MainLayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
@@ -116,9 +118,9 @@ export function MainLayout({ children }: MainLayoutProps) {
             role="main"
             aria-label="Conteúdo principal"
           >
-            <Suspense fallback={<div>{children}</div>}>
+            <Suspense fallback={<div>{children || <Outlet />}</div>}>
               <PageTransition variant="fade-slide" duration={0.2}>
-                {children}
+                {children || <Outlet />}
               </PageTransition>
             </Suspense>
           </main>
