@@ -291,7 +291,7 @@ export default function Auth() {
         role="main"
         aria-label="Carregando autenticação"
       >
-        <Loader2 className="h-8 w-8 animate-spin text-orange" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </main>
     );
   }
