@@ -38,11 +38,13 @@ export function AppRoutes() {
         {publicRoutes}
 
         <Route element={<ProtectedRoute />}>
-          {productRoutes}
-          {quoteRoutes}
-          {adminRoutes}
-          {toolsRoutes}
-          {homeAndClientRoutes}
+          <Route element={<MainLayout />}>
+            {productRoutes}
+            {quoteRoutes}
+            {adminRoutes}
+            {toolsRoutes}
+            {homeAndClientRoutes}
+          </Route>
         </Route>
 
         {notFoundRoute}
