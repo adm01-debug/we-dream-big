@@ -24,15 +24,28 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
     speed: 0.2, 
     spacing: 1.0,
     parallaxIntensity: 1.0,
-    depthProfile: 1.0, // Multiplicador de escala/opacidade
-    showControls: false
+    depthProfile: 1.0, 
+    showControls: false,
+    reducedMotion: false,
+    individualAstronauts: [] as { id: number; scale: number; opacity: number }[]
   });
 
   const nextIdRef = useRef(0);
   const starsRef = useRef<StarData[]>([]);
 
-  // Mouse e Scroll parallax tracker
+  // Detecta prefers-reduced-motion
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleChange = () => setConfig(prev => ({ ...prev, reducedMotion: mediaQuery.matches }));
+    mediaQuery.addEventListener("change", handleChange);
+    if (mediaQuery.matches) setConfig(prev => ({ ...prev, reducedMotion: true }));
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // Mouse e Scroll parallax tracker com clamp e suavização
+  useEffect(() => {
+    if (config.reducedMotion) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({
         x: (e.clientX / window.innerWidth - 0.5) * 20 * config.parallaxIntensity,
@@ -40,7 +53,9 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       });
     };
     const handleScroll = () => {
-      setScrollY(window.scrollY * 0.1 * config.parallaxIntensity);
+      const rawScroll = window.scrollY;
+      const clampedScroll = Math.min(Math.max(rawScroll, 0), 1000); 
+      setScrollY(clampedScroll * 0.05 * config.parallaxIntensity);
     };
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -48,7 +63,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [config.parallaxIntensity]);
+  }, [config.parallaxIntensity, config.reducedMotion]);
   
   if (starsRef.current.length === 0) {
     starsRef.current = [...Array(100)].map((_, i) => ({
@@ -170,13 +185,13 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       ))}
 
       {/* Floating Astronauts — Sincronizados, Menores e com Parallax Mouse + Scroll */}
-      {astronauts.map((a, i) => {
-        // Tamanhos reduzidos e escala baseada na profundidade e perfil de controle
+      {!config.reducedMotion && astronauts.map((a, i) => {
+        // Tamanhos reduzidos e escala baseada na profundidade, perfil global e ajuste individual
         const baseSize = 35; 
-        const size = baseSize * a.depth * config.depthProfile;
+        const size = baseSize * a.depth * config.depthProfile * (a.individualScale ?? 1.0);
         
-        // Opacidade baseada no perfil e profundidade
-        const opacity = (0.12 + (a.depth * 0.2)) * config.depthProfile;
+        // Opacidade baseada no perfil global, profundidade e ajuste individual
+        const opacity = (0.12 + (a.depth * 0.2)) * config.depthProfile * (a.individualOpacity ?? 1.0);
         
         // Parallax Mouse + Scroll baseado na profundidade
         const translateX = mousePos.x * a.depth;
@@ -188,7 +203,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         return (
           <div
             key={`astro-${a.id}`}
-            className="absolute transition-transform duration-700 ease-out"
+            className="absolute transition-transform duration-1000 ease-out"
             style={{
               left: `${a.left}%`,
               top: `${a.top}%`,
