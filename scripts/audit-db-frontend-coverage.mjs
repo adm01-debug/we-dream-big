@@ -195,7 +195,6 @@ function fetchSchemaFromTypes(map) {
 // ──────────────────────────────────────────────────────────────────────────────
 
 function indexCodeUsage() {
-  // Concatena todos os arquivos relevantes em memória uma única vez.
   const files = execSync(
     `rg --files ${SEARCH_DIRS.join(" ")} -g '*.{ts,tsx,js,mjs}' -g '!node_modules' -g '!dist' -g '!.next'`,
     { encoding: "utf8", cwd: ROOT, maxBuffer: 64 * 1024 * 1024 }
@@ -204,16 +203,30 @@ function indexCodeUsage() {
     .split("\n")
     .filter(Boolean);
 
-  let blob = "";
+  // Indexa por arquivo: conteúdo + conjunto de "select strings" + lista de tabelas mencionadas
+  const perFile = [];
+  let bigBlob = "";
   for (const f of files) {
     try {
-      blob += "\n" + readFileSync(resolve(ROOT, f), "utf8");
+      const src = readFileSync(resolve(ROOT, f), "utf8");
+      bigBlob += "\n" + src;
+      const selectStrings = [];
+      const reSel = /\.select\(\s*["'`]([^"'`)]+)["'`]/g;
+      let m;
+      while ((m = reSel.exec(src)) !== null) selectStrings.push(m[1]);
+      const insertUpdate = [];
+      const reIU = /\.(?:insert|update|upsert)\(\s*\{([^}]{0,2000})\}/g;
+      while ((m = reIU.exec(src)) !== null) insertUpdate.push(m[1]);
+      const tablesMentioned = new Set();
+      const reTbl = /(?:from|table)\s*\(\s*["'`]([a-z_][a-z0-9_]*)["'`]|["']table["']\s*:\s*["'`]([a-z_][a-z0-9_]*)["'`]/gi;
+      while ((m = reTbl.exec(src)) !== null) tablesMentioned.add(m[1] || m[2]);
+      perFile.push({ src, selectStrings, insertUpdate, tablesMentioned });
     } catch {}
   }
-  return blob;
+  return { perFile, bigBlob };
 }
 
-function detectUsage(blob, table, column) {
+function detectUsage(index, table, column) {
   const snake = column;
   const camel = camelize(column);
   const variants = snake === camel ? [snake] : [snake, camel];
@@ -221,30 +234,37 @@ function detectUsage(blob, table, column) {
   let read = false;
   let write = false;
 
-  for (const name of variants) {
-    // READ signals
-    const reRead = new RegExp(
-      `\\.select\\(["'][^)]*\\b${name}\\b[^)]*["']|` +
-        `\\b${name}\\b\\s*:|` +
-        `\\.\\b${name}\\b(?![A-Za-z0-9_])`,
-      "i"
-    );
-    if (reRead.test(blob)) read = true;
+  // Conjunto de arquivos que mencionam esta tabela
+  const filesForTable = index.perFile.filter((f) => f.tablesMentioned.has(table));
 
-    // WRITE signals — only inside insert/update/upsert call blocks
-    const reWrite = new RegExp(
-      `\\.(?:insert|update|upsert)\\([^)]{0,400}\\b${name}\\b`,
-      "i"
-    );
-    if (reWrite.test(blob)) write = true;
+  for (const name of variants) {
+    const wordRe = new RegExp(`\\b${name}\\b`);
+
+    // READ #1: aparece dentro de uma string .select('...')
+    for (const f of index.perFile) {
+      if (f.selectStrings.some((s) => wordRe.test(s))) { read = true; break; }
+    }
+
+    // READ #2: arquivo menciona a tabela E referencia .col / col: / "col"
+    if (!read) {
+      for (const f of filesForTable) {
+        const acc = new RegExp(`\\.${name}\\b(?![A-Za-z0-9_])|["']${name}["']\\s*:|\\b${name}\\s*:`).test(f.src);
+        if (acc) { read = true; break; }
+      }
+    }
+
+    // WRITE: dentro de bloco insert/update/upsert num arquivo que menciona a tabela
+    if (!write) {
+      for (const f of filesForTable) {
+        if (f.insertUpdate.some((body) => wordRe.test(body))) { write = true; break; }
+      }
+    }
   }
   return { read, write };
 }
 
-function tableUsedAtAll(blob, table) {
-  // Detecta se a tabela aparece em algum from()/table:
-  const re = new RegExp(`(?:from|table)\\(?\\s*["']${table}["']`, "i");
-  return re.test(blob);
+function tableUsedAtAll(index, table) {
+  return index.perFile.some((f) => f.tablesMentioned.has(table));
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
