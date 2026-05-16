@@ -12,7 +12,7 @@ export function RoutePrefetcher() {
 
   useEffect(() => {
     // Only prefetch if we're not on a mobile connection or low power mode if detectable
-    if (pathname === "/login") {
+    if (pathname === "/auth" || pathname === "/login") {
       // Prefetch index/produtos right after login screen loads
       import("@/pages/Index");
       import("@/pages/FiltersPage");
