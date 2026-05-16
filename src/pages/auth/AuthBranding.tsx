@@ -234,8 +234,9 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         );
       })}
 
-      {/* Interface de Controles em Tempo Real */}
-      <div className="absolute top-4 left-4 z-50 pointer-events-auto">
+      {/* Interface de Controles em Tempo Real - Apenas em Desenvolvimento */}
+      {import.meta.env.DEV && (
+        <div className="absolute top-4 left-4 z-50 pointer-events-auto">
         <button 
           onClick={() => setConfig(prev => ({ ...prev, showControls: !prev.showControls }))}
           className="p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg border border-white/20 text-white/40 hover:text-white transition-all group shadow-xl"
@@ -387,6 +388,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
           </div>
         )}
       </div>
+      )}
 
       {/* Rockets rising from bottom to top */}
       {rockets.map((r) => (
