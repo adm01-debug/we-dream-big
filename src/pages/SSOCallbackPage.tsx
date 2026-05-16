@@ -154,13 +154,15 @@ export default function SSOCallbackPage() {
       }, CONFIRMED_HOLD_MS);
     };
 
-    const goLogin = (reason: string) => {
+    const goLogin = (reason: string, rawCode?: string) => {
       if (cancelled) return;
+      const detail = explainOAuthError({ error: rawCode ?? null, description: reason });
       setStatus('failed');
-      setErrorMessage(reason);
-      const target = '/login?error=' + encodeURIComponent(reason);
-      tracer.step('redirect-login', { target, reason });
-      tracer.finish('failure', target, reason);
+      setErrorMessage(detail.description);
+      setErrorDetail(detail);
+      const target = buildLoginTarget(detail);
+      tracer.step('redirect-login', { target, reason, code: detail.code });
+      tracer.finish('failure', target, `${detail.code}:${reason}`);
       window.clearTimeout(slowHintId);
       navigate(target, { replace: true });
     };
