@@ -26,6 +26,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { AuthBrandingPanel, Starfield, SpaceScene } from './auth/AuthBranding';
+import { VisualCheckpointPanel } from '@/components/dev/VisualCheckpointPanel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -325,6 +326,21 @@ export default function Auth() {
     >
       {/* Fundo unificado azul-noite saturado com cena espacial coordenada */}
       <SpaceScene />
+      <VisualCheckpointPanel onStateChange={(state) => {
+        if (state === 'error') {
+          setSocialError({
+            title: 'Erro Simulado',
+            description: 'Esta é uma demonstração do estado de erro visual.',
+            isConfig: false
+          });
+        } else if (state === 'loading') {
+          setIsSubmitting(true);
+          setTimeout(() => setIsSubmitting(false), 3000);
+        } else {
+          setSocialError(null);
+          setIsSubmitting(false);
+        }
+      }} />
 
       <PageSEO
         title="Login"
