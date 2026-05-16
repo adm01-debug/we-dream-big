@@ -197,16 +197,16 @@ export default function ResetPassword() {
             <Sparkles className="h-8 w-8 text-orange-foreground" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground">Promo Gifts</h1>
+            <p className="font-display text-2xl font-bold text-foreground">Promo Gifts</p>
           </div>
         </div>
 
         <Card className="border-border bg-card shadow-xl">
           <CardHeader className="pb-4">
             <div className="space-y-1 text-center">
-              <h2 className="font-display text-xl font-semibold text-foreground">
+              <h1 className="font-display text-xl font-semibold text-foreground">
                 Redefinir senha
-              </h2>
+              </h1>
               <p className="text-sm text-muted-foreground">Digite sua nova senha abaixo</p>
             </div>
           </CardHeader>

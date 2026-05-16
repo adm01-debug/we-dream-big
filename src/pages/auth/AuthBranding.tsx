@@ -191,7 +191,7 @@ export function AuthBrandingPanel() {
               <Gift className="h-7 w-7 text-orange-foreground" />
             </div>
             <div>
-              <h1 className="font-display text-4xl font-bold text-white tracking-tight">Promo Gifts</h1>
+              <p className="font-display text-4xl font-bold text-white tracking-tight">Promo Gifts</p>
               <p className="text-orange font-semibold uppercase tracking-widest text-sm -mt-1">Plataforma de Vendas</p>
             </div>
           </div>
