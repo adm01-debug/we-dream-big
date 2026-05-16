@@ -74,6 +74,7 @@
   to { transform: translate(5%, 5%) scale(1.1); opacity: 0.2; }
 }
 
+/* ═══ NUCLEAR SCROLL LOCK PREVENTION ═══
    Radix UI / react-remove-scroll sets data-scroll-locked on html/body
    and applies overflow:hidden, position:fixed, etc. 
    This MUST be overridden at the highest specificity level. */
