@@ -871,19 +871,24 @@ export const THEME_PRESETS: ThemePreset[] = [
     ss: 75,
     sl: 45,
   }),
-  buildGxPreset({
-    id: 'gx-cyberpunk',
-    name: 'Cyberpunk',
-    emoji: '⚡',
-    description: 'Amarelo neon de Night City',
-    h: 55,
-    s: 100,
-    l: 45, // Reduzido de 51 para 45 para contraste WCAG (Yellow is tough)
-    gh: 180,
-    sh: 320,
-    ss: 95,
-    sl: 55,
-  }),
+  (() => {
+    const p = buildGxPreset({
+      id: 'gx-cyberpunk',
+      name: 'Cyberpunk',
+      emoji: '⚡',
+      description: 'Amarelo neon de Night City',
+      h: 55,
+      s: 100,
+      l: 51,
+      gh: 180,
+      sh: 320,
+      ss: 95,
+      sl: 55,
+    });
+    p.light['primary-foreground'] = '222 25% 10%';
+    p.dark['primary-foreground'] = '222 25% 10%';
+    return p;
+  })(),
   buildGxPreset({
     id: 'gx-razer',
     name: 'Razer',
