@@ -16,46 +16,91 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
   const [astronauts, setAstronauts] = useState<AstronautData[]>([]);
   const nextIdRef = useRef(0);
 
-  // Estabilizamos os dados das estrelas para evitar o "salto" em re-renders
-  const stars = React.useMemo(() => {
-    const count = isFull ? 70 : 35;
-    return [...Array(count)].map((_, i) => ({
+  // Pool de estrelas estável para evitar saltos durante re-renders ou mudanças de breakpoint
+  const allStars = React.useMemo(() => {
+    return [...Array(100)].map((_, i) => ({
       id: i,
-      size: 1 + (i % 3),
-      top: Math.random() * 100,
-      left: Math.random() * 100,
-      // Respiração humana: ~12–16s por ciclo
-      breathingDur: 12 + Math.random() * 4,
-      breathingDelay: Math.random() * 10,
-      // Deriva estelar: extremamente lenta (80-120s)
-      driftDur: 80 + Math.random() * 40,
+      size: 1 + (i % 2), // Estrelas ligeiramente menores para performance
+      top: ((i * 131) % 1000) / 10, // Determinístico baseado no index
+      left: ((i * 179) % 1000) / 10, // Determinístico baseado no index
+      // Respiração unificada: ciclos sincronizados com pequenas variações controladas
+      breathingDur: 14, 
+      breathingDelay: (i % 8) * 0.15, // Pequeno offset para naturalidade, mas uniforme
+      driftDur: 100 + (i % 30),
     }));
-  }, [isFull]);
+  }, []);
+
+  // Filtramos apenas a quantidade necessária sem regenerar as posições
+  const activeStars = isFull ? allStars : allStars.slice(0, 50);
 
   const spawnRocket = useCallback((isInitial = false) => {
-// ... keep existing code
+    const id = nextIdRef.current++;
+    const newRocket: RocketData = {
+      id,
+      left: Math.random() * 80 + 10,
+      size: 30 + Math.random() * 40,
+      duration: 5 + Math.random() * 3,
+      rotation: Math.random() * 10 - 5,
+      scale: 0.8 + Math.random() * 0.4,
+    };
+    setRockets(prev => [...prev, newRocket]);
+    setTimeout(() => {
+      setRockets(prev => prev.filter(r => r.id !== id));
+    }, newRocket.duration * 1000);
+  }, []);
+
+  useEffect(() => {
+    const rocketInterval = setInterval(() => spawnRocket(), 4000);
+    // Gerar planetas e astronautas apenas uma vez
+    setPlanets([...Array(5)].map((_, i) => ({
+      id: i,
+      left: 10 + (i * 18),
+      top: 15 + (i * 15),
+      size: 60 + Math.random() * 100,
+      duration: 25 + Math.random() * 15,
+      type: i % 3,
+      delay: Math.random() * 5,
+    })));
+    
+    setAstronauts([...Array(2)].map((_, i) => ({
+      id: i,
+      left: 20 + (i * 40),
+      top: 30 + (i * 20),
+      size: 40 + Math.random() * 20,
+      duration: 20 + Math.random() * 10,
+      delay: Math.random() * 5,
+      rotation: Math.random() * 360,
+    })));
+
     return () => clearInterval(rocketInterval);
   }, [spawnRocket]);
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
-      {/* Dynamic Stars with breathing and slow drift effects */}
-      {stars.map((star) => (
+      {/* Dynamic Stars - Otimizado com camadas de animação separadas */}
+      {activeStars.map((star) => (
         <div
-          key={`star-${star.id}`}
-          className="absolute rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+          key={`star-container-${star.id}`}
+          className="absolute"
           style={{
-            width: `${star.size}px`,
-            height: `${star.size}px`,
             top: `${star.top}%`,
             left: `${star.left}%`,
-            // Combinando respiração (opacidade/escala) com deriva (posição)
-            animation: `
-              breathingStar ${star.breathingDur}s ease-in-out ${star.breathingDelay}s infinite,
-              starDrift ${star.driftDur}s linear infinite alternate
-            `
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            // Drift (Movimento) na camada externa
+            animation: `starDrift ${star.driftDur}s linear infinite alternate`,
+            willChange: "transform",
           }}
-        />
+        >
+          <div
+            className="w-full h-full rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.4)]"
+            style={{
+              // Respiração (Brilho/Escala) na camada interna
+              animation: `breathingStar ${star.breathingDur}s ease-in-out ${star.breathingDelay}s infinite`,
+              willChange: "opacity, transform",
+            }}
+          />
+        </div>
       ))}
 
       {/* Planets with zigzag trajectory */}
@@ -69,6 +114,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
             left: `${p.left}%`,
             top: `${p.top}%`,
             animation: `zigzagMovement ${p.duration}s ease-in-out ${p.delay}s infinite alternate`,
+            willChange: "transform",
             background: p.type === 0 
               ? 'radial-gradient(circle at 30% 30%, #1E3A8A, #030712)' 
               : p.type === 1 
@@ -89,6 +135,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
             left: `${a.left}%`,
             top: `${a.top}%`,
             animation: `floatMovement ${a.duration}s ease-in-out ${a.delay}s infinite alternate`,
+            willChange: "transform",
           }}
         >
           <svg 
@@ -145,6 +192,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
 
 // Mantemos o Starfield por compatibilidade se necessário, mas o SpaceScene é o principal agora
 export const Starfield = React.memo(() => <SpaceScene isFull={false} />);
+
 
 
 function FeatureCard({ item, index }: { item: typeof FEATURE_ITEMS[0]; index: number }) {
