@@ -37,7 +37,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   if (!canManage) {

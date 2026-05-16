@@ -13,7 +13,7 @@ export function UnauthorizedPage() {
   const requestId = useMemo(() => generateSecurityId('AUTH', location.pathname), [location.pathname]);
 
   const handleLogin = () => {
-    navigate("/login", { state: { from: location }, replace: true });
+    navigate("/auth", { state: { from: location }, replace: true });
   };
 
   return (

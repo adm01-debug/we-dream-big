@@ -14,7 +14,8 @@
 
 const KEY = 'auth:post_login_redirect';
 
-const BLOCKED_PREFIXES = ['/login', '/auth/callback', '/reset-password', '/unauthorized'];
+const BLOCKED_PREFIXES = ['/auth', '/login', '/reset-password', '/unauthorized'];
+// Nota: '/auth' cobre '/auth/callback' automaticamente via startsWith em isSafeRedirectPath.
 
 /** Valida se um path é seguro para redirect interno. */
 export function isSafeRedirectPath(path: unknown): path is string {

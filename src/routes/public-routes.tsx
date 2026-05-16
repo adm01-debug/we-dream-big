@@ -9,6 +9,8 @@ import { Auth, ResetPassword, SSOCallbackPage, Unauthorized } from "./lazy-pages
  */
 export const publicRoutes = (
   <>
+    <Route path="/auth" element={<Auth />} />
+    {/* Alias legado — mantém /login funcionando para bookmarks e links externos */}
     <Route path="/login" element={<Auth />} />
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/auth/callback" element={<SSOCallbackPage />} />

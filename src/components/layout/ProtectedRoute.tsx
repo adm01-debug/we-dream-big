@@ -34,7 +34,7 @@ export function ProtectedRoute({
   if (!user) {
     // Salva destino pós-login (sobrevive ao round-trip OAuth)
     savePostLoginRedirect(`${location.pathname}${location.search}${location.hash}`);
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   const effectiveRole =
