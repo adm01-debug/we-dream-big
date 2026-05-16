@@ -118,6 +118,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
               id="forgot-email"
               type="email"
               placeholder="seu@email.com"
+              autoComplete="email"
               className="pl-10 bg-input border-border focus:border-orange focus:ring-orange"
               {...form.register('email')}
             />

@@ -197,7 +197,7 @@ export default function ResetPassword() {
             <Sparkles className="h-8 w-8 text-orange-foreground" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground">Promo Brindes</h1>
+            <h1 className="font-display text-2xl font-bold text-foreground">Promo Gifts</h1>
           </div>
         </div>
 
@@ -223,6 +223,7 @@ export default function ResetPassword() {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     className="border-border bg-input pl-10 pr-10 focus:border-orange focus:ring-orange"
                     {...form.register('password')}
                   />
@@ -253,6 +254,7 @@ export default function ResetPassword() {
                     id="confirmPassword"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     className="border-border bg-input pl-10 focus:border-orange focus:ring-orange"
                     {...form.register('confirmPassword')}
                   />
