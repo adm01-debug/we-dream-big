@@ -204,7 +204,7 @@ const FEATURE_ITEMS = [
 
 export function AuthBrandingPanel() {
   return (
-    <div className="flex w-full lg:w-1/2 relative min-h-[500px] lg:h-screen items-center bg-transparent">
+    <div className="flex w-full lg:w-1/2 relative min-h-[500px] lg:h-screen items-center">
       {/* Sem decoração lateral — fundo 100% unificado vem do <main> em Auth.tsx */}
 
       {/* Content */}
