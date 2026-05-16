@@ -46,8 +46,8 @@ describe('ContinuousRockets Component', () => {
       vi.advanceTimersByTime(1000);
     });
 
-    // After 3000ms, all 7 initial rockets should have spawned
-    expect(getAllByTestId('rocket-icon').length).toBe(7);
+    // After 3000ms, all 7 initial rockets plus the first interval rocket (at 2.8s) should have spawned
+    expect(getAllByTestId('rocket-icon').length).toBe(8);
   });
 
   it('removes rockets after their duration', async () => {
