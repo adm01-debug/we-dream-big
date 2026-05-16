@@ -318,7 +318,7 @@ export default function Auth() {
 
   return (
     <main
-      className="relative flex min-h-screen overflow-hidden bg-[#0A0D14]"
+      className="relative flex flex-col lg:flex-row min-h-screen overflow-hidden bg-[#0A0D14]"
       role="main"
       aria-label="Autenticação"
     >
