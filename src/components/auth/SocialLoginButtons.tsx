@@ -129,6 +129,9 @@ export const SocialLoginButtons = forwardRef<HTMLDivElement, SocialLoginButtonsP
     const handleGoogleLogin = async () => {
       setIsLoading('google');
       setSlowHint(null);
+      // Marca pending ANTES do redirect para que ao voltar (callback ou cancelo)
+      // o componente reidrate com spinner sem flash do botão idle.
+      markOAuthPending('google');
       const redirect_uri = `${window.location.origin}/auth/callback`;
       authDebug('social-login', 'google click', { redirect_uri, origin: window.location.origin });
 
