@@ -9,6 +9,7 @@ import { authDebugUrl } from '@/lib/auth/auth-debug';
 import { AuthFlowTracer } from '@/lib/auth/auth-flow-tracer';
 import { consumePostLoginRedirect } from '@/lib/auth/post-login-redirect';
 import { clearOAuthPending } from '@/lib/auth/oauth-pending';
+import { explainOAuthError, type OAuthErrorExplanation } from '@/lib/auth/oauth-error-explainer';
 
 /**
  * Callback do login social via Supabase Auth.
@@ -39,6 +40,7 @@ export default function SSOCallbackPage() {
   const [status, setStatus] = useState<CallbackStatus>('processing');
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorDetail, setErrorDetail] = useState<OAuthErrorExplanation | null>(null);
 
   useEffect(() => {
     if (handledRef.current) return;
