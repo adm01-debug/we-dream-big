@@ -2257,15 +2257,20 @@ body.compare-focus-mode [role='main'] {
 /* Efeito de respiração estelar: brilho suave que pulsa lentamente */
 @keyframes breathingStar {
   0%, 100% { 
-    opacity: 0.1; 
-    transform: scale(0.5); 
-    filter: blur(1px) brightness(0.2);
+    opacity: 0.15; 
+    transform: scale(0.4); 
+    filter: blur(1.5px) brightness(0.2) drop-shadow(0 0 0px transparent);
   }
   50% { 
     opacity: 1; 
-    transform: scale(2.2); 
-    filter: blur(0px) brightness(3) drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 0 40px rgba(59, 130, 246, 0.6));
+    transform: scale(2.5); 
+    filter: blur(0px) brightness(4) drop-shadow(0 0 25px rgba(255, 255, 255, 1)) drop-shadow(0 0 50px rgba(59, 130, 246, 0.8));
   }
+}
+
+@keyframes starGlowPulse {
+  0%, 100% { filter: brightness(1) contrast(1); }
+  50% { filter: brightness(1.2) contrast(1.1); }
 }
 
 /* Movimento de deriva estelar — transformado em sub-movimento contínuo para evitar saltos no resize */
