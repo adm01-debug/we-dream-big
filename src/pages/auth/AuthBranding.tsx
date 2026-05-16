@@ -140,7 +140,18 @@ export const SpaceScene = React.memo(({ isFull = true, variant = 'default' }: { 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
       {/* Background Deep Space Glow & Nebula */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0)_0%,rgba(2,6,23,0.6)_100%)]" />
+      <div 
+        className="absolute inset-0 transition-all duration-1000"
+        style={{
+          background: variant === 'eclipse' 
+            ? 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0%, rgba(0,0,0,1) 70%)'
+            : variant === 'supernova'
+              ? 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 0%, rgba(2,6,23,0.9) 100%)'
+              : variant === 'nebula'
+                ? 'bg-[#0a0a0c]'
+                : 'radial-gradient(circle at 50% 50%,rgba(15,23,42,0) 0%,rgba(2,6,23,0.6) 100%)'
+        }}
+      />
       
       {/* Mouse Follow Glow - Interactive Depth (10/10) */}
       <div 
