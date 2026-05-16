@@ -142,9 +142,21 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       {/* Background Deep Space Glow & Nebula */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0)_0%,rgba(2,6,23,0.6)_100%)]" />
       
+      {/* Mouse Follow Glow - Interactive Depth (10/10) */}
+      <div 
+        className="absolute w-[600px] h-[600px] rounded-full opacity-[0.07] blur-[100px] pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, #3b82f6 0%, transparent 70%)',
+          left: `calc(50% + ${mousePos.x * 2}px)`,
+          top: `calc(50% + ${mousePos.y * 2}px)`,
+          transform: 'translate(-50%, -50%)',
+          transition: 'left 0.15s ease-out, top 0.15s ease-out'
+        }}
+      />
+
       {/* Atmospheric Nebula Layers (10/10 Depth) */}
       <div 
-        className="absolute inset-0 opacity-10 blur-[80px]"
+        className="absolute inset-0 opacity-15 blur-[80px]"
         style={{
           background: 'radial-gradient(ellipse at 30% 20%, #1e40af 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, #1e3a8a 0%, transparent 50%)',
           animation: 'nebulaDrift 30s ease-in-out infinite alternate'
@@ -152,7 +164,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       />
       
       <div 
-        className="absolute inset-0 opacity-[0.05] blur-[120px]"
+        className="absolute inset-0 opacity-[0.08] blur-[120px]"
         style={{
           background: 'radial-gradient(circle at 60% 40%, #fb923c 0%, transparent 40%)',
           animation: 'nebulaDrift 45s ease-in-out infinite alternate-reverse'
@@ -262,7 +274,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
                 transformOrigin: "center center",
                 ['--orbit-radius' as string]: `${orbitRadius}px`,
                 // Rim lighting and glassmorphism effect (10/10)
-                filter: `brightness(1.05) drop-shadow(0 0 ${size / 5}px rgba(6, 135, 255, 0.45)) drop-shadow(0 0 6px rgba(255, 255, 255, 0.35))`,
+                filter: `brightness(1.05) drop-shadow(0 0 ${size / 5}px rgba(6, 135, 255, 0.45)) drop-shadow(0 0 6px rgba(255, 255, 255, 0.35)) ${a.depth < 0.9 ? 'blur(0.8px)' : 'blur(0px)'}`,
               }}
             >
               <img
@@ -342,11 +354,35 @@ export const Starfield = React.memo(() => <SpaceScene isFull={false} />);
 
 function FeatureCard({ item, index }: { item: typeof FEATURE_ITEMS[0]; index: number }) {
   const IconComponent = item.icon;
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [glowPos, setGlowPos] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setGlowPos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
   return (
     <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
       className="flex h-[99px] items-center justify-between gap-2 sm:gap-4 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-2xl hover:bg-white/[0.07] hover:border-orange/40 hover:scale-[1.02] transition-all duration-500 group opacity-0 px-4 sm:px-6 relative overflow-hidden"
       style={{ animation: `scale-fade-in 0.5s ease-out ${300 + index * 150}ms forwards` }}
     >
+      {/* Dynamic Cursor Glow (10/10) */}
+      <div 
+        className="absolute w-40 h-40 rounded-full bg-orange/15 blur-[40px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{
+          left: `${glowPos.x}px`,
+          top: `${glowPos.y}px`,
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+
       {/* Glossy Scanning Effect (10/10) */}
       <div className="absolute inset-0 w-full h-full pointer-events-none">
         <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent group-hover:animate-[shimmerTranslate_2s_infinite]" />
@@ -371,12 +407,30 @@ const FEATURE_ITEMS = [
 ];
 
 export function AuthBrandingPanel() {
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const { clientX, clientY } = e;
+      const x = (clientX / window.innerWidth - 0.5) * 4;
+      const y = (clientY / window.innerHeight - 0.5) * -4;
+      setTilt({ x, y });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
-    <div className="flex w-full lg:w-1/2 relative min-h-[500px] lg:h-screen items-center">
+    <div className="flex w-full lg:w-1/2 relative min-h-[500px] lg:h-screen items-center overflow-hidden">
       {/* Sem decoração lateral — fundo 100% unificado vem do <main> em Auth.tsx */}
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full min-h-screen">
+      <div 
+        className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full min-h-screen transition-transform duration-300 ease-out"
+        style={{
+          transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
+        }}
+      >
         <div className="space-y-6 w-full max-w-xl flex flex-col items-center text-center">
           <div className="flex items-center gap-4">
             <AppLogo variant="light" iconClassName="h-14 w-14 rounded-xl shadow-orange/30" textClassName="text-4xl" />
@@ -385,11 +439,12 @@ export function AuthBrandingPanel() {
           <div className="space-y-4 max-w-md flex flex-col items-center">
             <h2 className="text-4xl xl:text-5xl font-display font-bold text-white leading-[1.1] tracking-tight relative group text-center">
               Um Universo de Produtos, para o{" "}
-              <span className="text-orange">
+              <span className="text-orange drop-shadow-[0_0_15px_rgba(251,146,60,0.3)]">
                 Melhor Time das{" "}
                 <span className="relative inline-block">
                   Galáxias!
-                  <span className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-orange/0 via-orange/60 to-orange/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-700 shadow-[0_0_15px_rgba(251,146,60,0.5)]" />
+                  <span className="absolute -bottom-2 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-orange to-transparent opacity-40 group-hover:opacity-100 transition-all duration-700 shadow-[0_0_12px_rgba(251,146,60,0.4)]" />
+                  <span className="absolute -bottom-2 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-orange/60 to-transparent scale-x-75 group-hover:scale-x-110 transition-transform duration-700" />
                 </span>
               </span>
             </h2>
