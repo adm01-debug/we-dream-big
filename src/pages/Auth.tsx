@@ -322,8 +322,23 @@ export default function Auth() {
                       <div className="flex items-start gap-2">
                         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                         <div className="flex-1 space-y-1">
-                          <p className="font-medium">Não consegui te autenticar pelo Google.</p>
-                          <p className="break-words text-xs text-muted-foreground">{socialError}</p>
+                          <p className="font-medium" data-testid="social-login-error-title">
+                            {socialError.title}
+                          </p>
+                          <p className="break-words text-xs text-muted-foreground" data-testid="social-login-error-description">
+                            {socialError.description}
+                          </p>
+                          {socialError.hint && (
+                            <p className="break-words text-xs text-muted-foreground/90" data-testid="social-login-error-hint">
+                              <span className="font-medium text-foreground/80">Dica: </span>
+                              {socialError.hint}
+                            </p>
+                          )}
+                          {socialError.isConfig && (
+                            <p className="text-[11px] text-amber-700/90">
+                              Este é um problema de configuração do provedor — não adianta tentar de novo agora.
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 pt-1">
