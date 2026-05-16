@@ -9,7 +9,7 @@ interface RocketData { id: number; left: number; size: number; duration: number;
 interface PlanetData { id: number; left: number; top: number; size: number; duration: number; type: number; delay: number; }
 interface AstronautData { id: number; left: number; top: number; size: number; duration: number; delay: number; rotation: number; }
 
-export const SpaceScene = React.memo(() => {
+export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) => {
   const [rockets, setRockets] = useState<RocketData[]>([]);
   const [planets, setPlanets] = useState<PlanetData[]>([]);
   const [astronauts, setAstronauts] = useState<AstronautData[]>([]);
