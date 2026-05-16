@@ -878,7 +878,7 @@ export const THEME_PRESETS: ThemePreset[] = [
     description: 'Amarelo neon de Night City',
     h: 55,
     s: 100,
-    l: 51,
+    l: 45, // Reduzido de 51 para 45 para contraste WCAG (Yellow is tough)
     gh: 180,
     sh: 320,
     ss: 95,
