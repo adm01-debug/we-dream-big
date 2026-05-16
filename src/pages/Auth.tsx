@@ -303,7 +303,7 @@ export default function Auth() {
         <div className="z-10 flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
           <div className="relative">
             <AppLogo showText={false} iconClassName="h-20 w-20 rounded-2xl shadow-white/20 animate-pulse" />
-            <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-success flex items-center justify-center ring-4 ring-[#030508]">
+            <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-slate-800 flex items-center justify-center ring-4 ring-[#030508]">
               <RotateCw className="h-3 w-3 text-white animate-spin-slow" />
             </div>
           </div>
