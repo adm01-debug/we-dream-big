@@ -95,6 +95,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
             left: `${a.left}%`,
             top: `${a.top}%`,
             animation: `floatMovement ${a.duration}s ease-in-out ${a.delay}s infinite alternate`,
+            willChange: "transform",
           }}
         >
           <svg 
