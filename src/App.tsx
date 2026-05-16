@@ -42,18 +42,20 @@ const App = () => {
               <BrowserRouter future={{ v7_relativeSplatPath: true }}>
                 <AuthProvider>
                   <AppBootstrapContainer>
-                    <AppProviders>
-                      <Toaster />
-                      <Sonner />
-                      <CloudStatusBanner />
-                      <CloudStatusDot />
-                      <BridgeStatusBanner />
-                      <GlobalOfflineAlert />
-                      <DevOnlyBridgeOverlay />
-                      <RouteScrollReset />
-                      <RoutePrefetcher />
-                      <AppRoutes />
-                    </AppProviders>
+                    <ErrorBoundary>
+                      <AppProviders>
+                        <Toaster />
+                        <Sonner />
+                        <CloudStatusBanner />
+                        <CloudStatusDot />
+                        <BridgeStatusBanner />
+                        <GlobalOfflineAlert />
+                        <DevOnlyBridgeOverlay />
+                        <RouteScrollReset />
+                        <RoutePrefetcher />
+                        <AppRoutes />
+                      </AppProviders>
+                    </ErrorBoundary>
                   </AppBootstrapContainer>
                 </AuthProvider>
               </BrowserRouter>
