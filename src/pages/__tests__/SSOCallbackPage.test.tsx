@@ -88,6 +88,7 @@ describe('SSOCallbackPage', () => {
   });
 
   it('1) provider error em query → redirect /login com error_description', async () => {
+    getSessionMock.mockResolvedValue({ data: { session: null } });
     renderAt('/auth/callback?error=access_denied&error_description=User+cancelled');
     await waitFor(() => expect(navigateMock).toHaveBeenCalledTimes(1));
     const [to, opts] = navigateMock.mock.calls[0];
@@ -102,21 +103,21 @@ describe('SSOCallbackPage', () => {
   });
 
   it('2) provider error no hash → redirect /login com error', async () => {
-    // jsdom não popula `window.location.hash` via MemoryRouter; injetamos manualmente.
-    const original = window.location.hash;
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { ...window.location, hash: '#error=server_error&error_description=Boom', href: 'http://localhost/auth/callback#error=server_error' },
-    });
+    getSessionMock.mockResolvedValue({ data: { session: null } });
+    // jsdom: navigation com hash propaga para window.location.hash automaticamente
+    // via MemoryRouter? Não — precisamos setar manualmente.
+    const origHref = window.location.href;
+    window.location.hash = '#error=server_error&error_description=Boom';
     try {
       renderAt('/auth/callback');
       await waitFor(() => expect(navigateMock).toHaveBeenCalledTimes(1));
       expect(navigateMock.mock.calls[0][0]).toMatch(/\/login\?error=Boom/);
     } finally {
-      Object.defineProperty(window, 'location', {
-        configurable: true,
-        value: { ...window.location, hash: original },
-      });
+      window.location.hash = '';
+      // restaura href se mudou
+      if (window.location.href !== origHref) {
+        /* noop — só limpamos o hash */
+      }
     }
   });
 
