@@ -826,7 +826,7 @@ export const THEME_PRESETS: ThemePreset[] = [
     description: 'Rosa quartzo cristalino',
     h: 345,
     s: 75,
-    l: 68,
+    l: 54, // Reduzido de 68 para 54 para contraste WCAG
     gh: 355,
     sh: 320,
     ss: 60,
