@@ -4,7 +4,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Gift, Package, Factory, SlidersHorizontal, Brain, Rocket } from "lucide-react";
 import { AppLogo } from "@/components/layout/AppLogo";
-import astronautImg from "@/assets/astronaut-cute.avif";
 
 interface RocketData { id: number; left: number; size: number; duration: number; rotation: number; scale: number; }
 interface PlanetData { id: number; left: number; top: number; size: number; duration: number; type: number; delay: number; }
@@ -64,21 +63,14 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       delay: Math.random() * 5,
     })));
     
-    // 4 astronautas com tamanhos bem distintos (profundidade) e posições afastadas
-    const astronautLayout = [
-      { left: 8,  top: 18, size: 140 }, // grande - frente
-      { left: 72, top: 32, size: 95  }, // médio
-      { left: 28, top: 68, size: 70  }, // pequeno
-      { left: 82, top: 78, size: 50  }, // bem ao fundo
-    ];
-    setAstronauts(astronautLayout.map((a, i) => ({
+    setAstronauts([...Array(2)].map((_, i) => ({
       id: i,
-      left: a.left,
-      top: a.top,
-      size: a.size,
-      duration: 60 + i * 10, // bem devagar (60-90s)
-      delay: i * 2,
-      rotation: (i % 2 === 0 ? -1 : 1) * (4 + i * 2), // leve inclinação
+      left: 20 + (i * 40),
+      top: 30 + (i * 20),
+      size: 40 + Math.random() * 20,
+      duration: 20 + Math.random() * 10,
+      delay: Math.random() * 5,
+      rotation: Math.random() * 360,
     })));
 
     return () => clearInterval(rocketInterval);
@@ -135,35 +127,28 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         />
       ))}
 
-      {/* Floating Astronauts — imagem fofa, movimento lento, tamanhos variados (profundidade) */}
+      {/* Floating Astronauts */}
       {astronauts.map(a => (
         <div
           key={`astro-${a.id}`}
-          className="absolute"
+          className="absolute opacity-40"
           style={{
             left: `${a.left}%`,
             top: `${a.top}%`,
-            width: a.size,
-            height: a.size,
-            // opacidade menor para os menores (mais ao fundo)
-            opacity: 0.35 + (a.size / 400),
             animation: `floatMovement ${a.duration}s ease-in-out ${a.delay}s infinite alternate`,
             willChange: "transform",
-            filter: `drop-shadow(0 0 ${Math.round(a.size / 8)}px rgba(120,160,255,0.25))`,
           }}
         >
-          <img
-            src={astronautImg}
-            alt=""
-            draggable={false}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              transform: `rotate(${a.rotation}deg)`,
-              animation: `breathingStar 8s ease-in-out infinite`,
-            }}
-          />
+          <svg 
+            viewBox="0 0 24 24" 
+            style={{ width: a.size, height: a.size, transform: `rotate(${a.rotation}deg)` }}
+            fill="none" 
+            stroke="currentColor" 
+            className="text-white/40"
+            strokeWidth="1"
+          >
+            <path d="M12 2a5 5 0 0 1 5 5v2a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V7a5 5 0 0 1 5-5zM7 10h10v6a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3v-6zM9 19v3M15 19v3M6 13h2M16 13h2" strokeLinecap="round" />
+          </svg>
         </div>
       ))}
 
