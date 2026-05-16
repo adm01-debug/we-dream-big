@@ -800,7 +800,7 @@ export const THEME_PRESETS: ThemePreset[] = [
     description: 'Rosa intenso e viciante',
     h: 330,
     s: 95,
-    l: 60,
+    l: 50, // Reduzido de 60 para 50 para contraste WCAG
     gh: 340,
     sh: 300,
     ss: 90,
