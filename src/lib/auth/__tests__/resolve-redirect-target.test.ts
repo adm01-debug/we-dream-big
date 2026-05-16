@@ -66,12 +66,10 @@ describe('resolveRedirectTarget — precedência pós-login', () => {
 
     it('state.from inválido (rota de auth) é rejeitado e cai para próxima fonte', () => {
       const result = resolveRedirectTarget({
-        fromState: { pathname: '/auth' },
-        queryRedirect: '/produtos',
+        fromState: { pathname: '/auth' }, // bloqueado por isSafeRedirectPath
+        queryRedirect: '/produtos',       // fonte #2 assume
       });
-      // /auth bloqueado → consumePostLoginRedirect retorna o fallback recebido
-      // (o próprio '/auth' rejeitado) → '/' default
-      expect(result).toBe('/');
+      expect(result).toBe('/produtos');
     });
   });
 
