@@ -10,7 +10,7 @@ export const SidebarBrandHeader = forwardRef<HTMLDivElement, SidebarBrandHeaderP
     if (isCollapsed) {
       return (
         <div ref={ref} className="flex flex-col items-center justify-center py-4 mb-2">
-          <AppLogo showText={false} iconClassName="w-8 h-8 rounded-lg" />
+          <AppLogo showText={false} variant="sidebar" />
         </div>
       );
     }
