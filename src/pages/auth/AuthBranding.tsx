@@ -407,12 +407,30 @@ const FEATURE_ITEMS = [
 ];
 
 export function AuthBrandingPanel() {
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const { clientX, clientY } = e;
+      const x = (clientX / window.innerWidth - 0.5) * 4;
+      const y = (clientY / window.innerHeight - 0.5) * -4;
+      setTilt({ x, y });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
-    <div className="flex w-full lg:w-1/2 relative min-h-[500px] lg:h-screen items-center">
+    <div className="flex w-full lg:w-1/2 relative min-h-[500px] lg:h-screen items-center overflow-hidden">
       {/* Sem decoração lateral — fundo 100% unificado vem do <main> em Auth.tsx */}
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full min-h-screen">
+      <div 
+        className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full min-h-screen transition-transform duration-300 ease-out"
+        style={{
+          transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
+        }}
+      >
         <div className="space-y-6 w-full max-w-xl flex flex-col items-center text-center">
           <div className="flex items-center gap-4">
             <AppLogo variant="light" iconClassName="h-14 w-14 rounded-xl shadow-orange/30" textClassName="text-4xl" />
