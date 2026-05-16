@@ -274,7 +274,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
                 transformOrigin: "center center",
                 ['--orbit-radius' as string]: `${orbitRadius}px`,
                 // Rim lighting and glassmorphism effect (10/10)
-                filter: `brightness(1.05) drop-shadow(0 0 ${size / 5}px rgba(6, 135, 255, 0.45)) drop-shadow(0 0 6px rgba(255, 255, 255, 0.35))`,
+                filter: `brightness(1.05) drop-shadow(0 0 ${size / 5}px rgba(6, 135, 255, 0.45)) drop-shadow(0 0 6px rgba(255, 255, 255, 0.35)) ${a.depth < 0.9 ? 'blur(0.8px)' : 'blur(0px)'}`,
               }}
             >
               <img
