@@ -3,8 +3,9 @@ import { test, expect } from '@playwright/test';
 /**
  * Teste de snapshot visual e consistência determinística para a animação de foguetes.
  * Garante que a animação renderiza o número esperado de elementos mesmo com durações aleatórias.
+ * @smoke
  */
-test.describe('Rocket Animation Consistency', () => {
+test.describe('Rocket Animation Consistency @smoke', () => {
   test('should render initial burst of rockets and maintain count', async ({ page }) => {
     // Mock Math.random para garantir valores determinísticos para os foguetes
     // Isso evita que o snapshot visual falhe por causa de posições aleatórias
