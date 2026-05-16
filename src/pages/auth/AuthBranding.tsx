@@ -260,7 +260,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
         const translateY = (mousePos.y + scrollY) * a.depth;
 
         // Órbita circular balanceada
-        const orbitDuration = 25 / config.speed;
+        const orbitDuration = 30 / config.speed;
 
         return (
           <div
