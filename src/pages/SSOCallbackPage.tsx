@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { authDebugUrl } from '@/lib/auth/auth-debug';
 import { AuthFlowTracer } from '@/lib/auth/auth-flow-tracer';
 import { consumePostLoginRedirect } from '@/lib/auth/post-login-redirect';
+import { clearOAuthPending } from '@/lib/auth/oauth-pending';
 
 /**
  * Callback do login social via Supabase Auth.
