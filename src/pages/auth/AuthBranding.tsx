@@ -202,13 +202,11 @@ const FEATURE_ITEMS = [
 
 export function AuthBrandingPanel() {
   return (
-    <div className="flex w-full lg:w-1/2 relative overflow-hidden min-h-[500px] lg:h-screen items-center bg-[#0A0D14]">
-      {/* Background decoration (sem bg sólido — fundo unificado vem do <main>) */}
+    <div className="flex w-full lg:w-1/2 relative overflow-hidden min-h-[500px] lg:h-screen items-center bg-transparent">
+      {/* Background decoration (fundo unificado vem do <main> em Auth.tsx) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-orange/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-orange/10 rounded-full blur-[150px]" />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-orange/5 rounded-full blur-[100px]" />
-        <ContinuousRockets />
+        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-orange/15 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-orange/5 rounded-full blur-[150px]" />
       </div>
 
       {/* Content */}
