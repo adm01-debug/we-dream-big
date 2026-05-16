@@ -92,15 +92,29 @@ export default function Auth() {
     }
   }, [searchParams, setSearchParams]);
 
-  const handleSocialError = useCallback((message: string) => {
-    setSocialError(resolveOAuthError(message));
-    setTimeout(() => emailInputRef.current?.focus(), 50);
-  }, []);
-
   const focusEmailFallback = useCallback(() => {
     emailInputRef.current?.focus();
     emailInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, []);
+
+  const handleSocialError = useCallback(
+    (message: string, opts?: { autoFallback?: boolean }) => {
+      const copy = resolveOAuthError(message);
+      setSocialError(copy);
+      // Fallback automático em falhas recuperáveis (timeout/silencioso):
+      // o usuário não precisa clicar — o foco vai direto pro e-mail.
+      if (opts?.autoFallback && !copy.isConfig) {
+        toast({
+          title: 'Login com Google indisponível',
+          description: 'Mudamos para entrada com e-mail e senha automaticamente.',
+        });
+        setTimeout(() => focusEmailFallback(), 50);
+        return;
+      }
+      setTimeout(() => emailInputRef.current?.focus(), 50);
+    },
+    [toast, focusEmailFallback],
+  );
 
   // Fetch IP and geolocation via edge function (works in preview + production)
   useEffect(() => {

@@ -29,8 +29,12 @@ const SLOW_REDIRECT_MS = 6000;
 const REDIRECT_TIMEOUT_MS = 15000;
 
 interface SocialLoginButtonsProps {
-  /** Disparado quando o login social falha — habilita fallback para e-mail/senha. */
-  onError?: (message: string) => void;
+  /**
+   * Disparado quando o login social falha — habilita fallback para e-mail/senha.
+   * `opts.autoFallback`: true quando a falha foi por timeout/silencioso, indicando
+   * que o pai deve automaticamente focar o formulário de e-mail (sem exigir clique).
+   */
+  onError?: (message: string, opts?: { autoFallback?: boolean }) => void;
   /**
    * Ref mutável onde o componente publica a função `retry()`.
    * Permite que o pai (banner de erro) reexecute o fluxo Google sem
@@ -84,12 +88,12 @@ export const SocialLoginButtons = forwardRef<HTMLDivElement, SocialLoginButtonsP
       return () => document.removeEventListener('visibilitychange', onVis);
     }, [isLoading]);
 
-    const finishWithError = (msg: string) => {
+    const finishWithError = (msg: string, opts?: { autoFallback?: boolean }) => {
       clearTimers();
       setIsLoading(null);
       setSlowHint(null);
       toast({ variant: 'destructive', title: 'Erro ao entrar com Google', description: msg });
-      onError?.(msg);
+      onError?.(msg, opts);
     };
 
     const handleGoogleLogin = async () => {
@@ -103,11 +107,13 @@ export const SocialLoginButtons = forwardRef<HTMLDivElement, SocialLoginButtonsP
         setSlowHint('Conectando ao Google… isto pode levar alguns segundos.');
       }, SLOW_REDIRECT_MS);
 
-      // Timeout duro: se nada acontecer, assume falha silenciosa.
+      // Timeout duro: se nada acontecer, assume falha silenciosa
+      // e sinaliza autoFallback=true para que o pai foque o form de e-mail.
       failTimerRef.current = window.setTimeout(() => {
         authDebugError('social-login', 'redirect timeout', { ms: REDIRECT_TIMEOUT_MS });
         finishWithError(
           'Tempo esgotado ao contatar o Google. Verifique sua conexão e tente novamente.',
+          { autoFallback: true },
         );
       }, REDIRECT_TIMEOUT_MS);
 
