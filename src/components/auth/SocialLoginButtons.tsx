@@ -4,6 +4,11 @@ import { useState, useEffect, useRef, forwardRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { authDebug, authDebugError } from '@/lib/auth/auth-debug';
+import {
+  markOAuthPending,
+  clearOAuthPending,
+  readOAuthPending,
+} from '@/lib/auth/oauth-pending';
 
 /** Mapeia erros conhecidos do Supabase OAuth para mensagens PT-BR amigáveis. */
 function mapOAuthError(raw: string): string {
@@ -75,10 +80,34 @@ export const SocialLoginButtons = forwardRef<HTMLDivElement, SocialLoginButtonsP
     // Limpa timers no unmount
     useEffect(() => () => clearTimers(), []);
 
+    // Restaura o spinner se o usuário voltou de /auth/callback (ou cancelou)
+    // enquanto um fluxo OAuth ainda estava marcado como pendente. Evita
+    // o flash do botão idle antes do AuthContext reconciliar.
+    useEffect(() => {
+      const pending = readOAuthPending();
+      if (pending) {
+        setIsLoading(pending.provider);
+        // Reagenda o timeout duro com o tempo restante.
+        const elapsed = Date.now() - pending.startedAt;
+        const remaining = Math.max(1000, REDIRECT_TIMEOUT_MS - elapsed);
+        failTimerRef.current = window.setTimeout(() => {
+          authDebugError('social-login', 'pending timeout on remount', { remaining });
+          finishWithError(
+            'Tempo esgotado ao contatar o Google. Verifique sua conexão e tente novamente.',
+            { autoFallback: true },
+          );
+        }, remaining);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Se a aba ficar oculta (redirect iniciou), libera o spinner ao voltar.
     useEffect(() => {
       const onVis = () => {
         if (document.visibilityState === 'visible' && isLoading) {
+          // Se voltou rápido (sem callback intermediário) e ainda há pending,
+          // assumimos que o usuário cancelou — limpa o marcador.
+          clearOAuthPending();
           setIsLoading(null);
           setSlowHint(null);
           clearTimers();
@@ -90,6 +119,7 @@ export const SocialLoginButtons = forwardRef<HTMLDivElement, SocialLoginButtonsP
 
     const finishWithError = (msg: string, opts?: { autoFallback?: boolean }) => {
       clearTimers();
+      clearOAuthPending();
       setIsLoading(null);
       setSlowHint(null);
       toast({ variant: 'destructive', title: 'Erro ao entrar com Google', description: msg });
@@ -99,6 +129,9 @@ export const SocialLoginButtons = forwardRef<HTMLDivElement, SocialLoginButtonsP
     const handleGoogleLogin = async () => {
       setIsLoading('google');
       setSlowHint(null);
+      // Marca pending ANTES do redirect para que ao voltar (callback ou cancelo)
+      // o componente reidrate com spinner sem flash do botão idle.
+      markOAuthPending('google');
       const redirect_uri = `${window.location.origin}/auth/callback`;
       authDebug('social-login', 'google click', { redirect_uri, origin: window.location.origin });
 

@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { authDebugUrl } from '@/lib/auth/auth-debug';
 import { AuthFlowTracer } from '@/lib/auth/auth-flow-tracer';
 import { consumePostLoginRedirect } from '@/lib/auth/post-login-redirect';
+import { clearOAuthPending } from '@/lib/auth/oauth-pending';
 
 /**
  * Callback do login social via Supabase Auth.
@@ -42,6 +43,11 @@ export default function SSOCallbackPage() {
   useEffect(() => {
     if (handledRef.current) return;
     handledRef.current = true;
+
+    // A página de callback é a SSOT do estado de loading a partir daqui —
+    // limpa o marcador `__oauth_pending` para que /login não restaure spinner
+    // velho caso o usuário volte (e.g. via back-button durante o redirect).
+    clearOAuthPending();
 
     const tracer = new AuthFlowTracer();
     tracer.step('mount');
