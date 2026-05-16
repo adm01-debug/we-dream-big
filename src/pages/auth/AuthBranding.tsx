@@ -131,7 +131,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
     }));
 
     return () => clearInterval(rocketInterval);
-  }, [spawnRocket, config.astroCount, config.spacing]);
+  }, [spawnRocket, config.astroCount, config.spacing, config.individualAstronauts]);
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
