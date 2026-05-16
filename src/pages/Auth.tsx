@@ -234,6 +234,28 @@ export default function Auth() {
     );
   }
 
+  if (user && !authLoading && !isSubmitting) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#0A0D14] text-white">
+        <Starfield />
+        <div className="z-10 flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
+          <div className="relative">
+            <div className="h-20 w-20 rounded-2xl bg-orange flex items-center justify-center shadow-2xl shadow-orange/40 animate-pulse">
+              <Gift className="h-10 w-10 text-orange-foreground" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-success flex items-center justify-center ring-4 ring-[#0A0D14]">
+              <RotateCw className="h-3 w-3 text-white animate-spin-slow" />
+            </div>
+          </div>
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-display font-bold">Você já está conectado</h2>
+            <p className="text-white/60 text-sm">Redirecionando para sua área segura...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main
       className="relative flex min-h-screen overflow-hidden bg-[#0A0D14]"
@@ -259,6 +281,7 @@ export default function Auth() {
       />
       {/* Left side - Branding */}
       <AuthBrandingPanel />
+
 
       {/* Right side - Auth Form */}
       <div className="relative z-10 flex flex-1 items-center justify-center p-6 lg:p-12">
