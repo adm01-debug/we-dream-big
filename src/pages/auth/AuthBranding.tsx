@@ -29,33 +29,53 @@ export const ContinuousRockets = React.memo(() => {
     
     setRockets((prev) => [...prev, rocket]);
     
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setRockets((prev) => prev.filter((r) => r.id !== id));
     }, (duration + 0.5) * 1000);
+
+    return timer;
   }, []);
 
   useEffect(() => {
     // Initial burst
     const delays = [0, 200, 500, 900, 1400, 2000, 2800];
-    const timers = delays.map(d => setTimeout(() => spawnRocket(true), d));
+    const spawnTimers: NodeJS.Timeout[] = [];
+    const cleanupTimers: NodeJS.Timeout[] = [];
+
+    delays.forEach(d => {
+      const t = setTimeout(() => {
+        const cleanupTimer = spawnRocket(true);
+        cleanupTimers.push(cleanupTimer);
+      }, d);
+      spawnTimers.push(t);
+    });
 
     // Sustained cycle
     const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') spawnRocket();
+      if (document.visibilityState === 'visible') {
+        const cleanupTimer = spawnRocket();
+        cleanupTimers.push(cleanupTimer);
+      }
     }, 2800);
 
     return () => {
-      timers.forEach(clearTimeout);
+      spawnTimers.forEach(clearTimeout);
+      cleanupTimers.forEach(clearTimeout);
       clearInterval(interval);
     };
   }, [spawnRocket]);
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden z-[1]" aria-hidden="true">
+    <div 
+      className="pointer-events-none absolute inset-0 overflow-hidden z-[1]" 
+      aria-hidden="true"
+      data-testid="rocket-container"
+    >
       {rockets.map((r) => (
         <div
           key={r.id}
           className="absolute bottom-0"
+          data-testid="rocket-item"
           style={{
             left: `${r.left}%`,
             animation: `rocketLaunch ${r.duration}s ease-out forwards`,
@@ -71,6 +91,7 @@ export const ContinuousRockets = React.memo(() => {
             >
               <Rocket
                 className="-rotate-45 text-orange"
+                data-testid={`rocket-icon-${r.id}`}
                 style={{
                   width: r.size,
                   height: r.size,
@@ -78,42 +99,31 @@ export const ContinuousRockets = React.memo(() => {
                 }}
               />
             </div>
-          {/* Rastro de chamas — gradiente fixo laranja→amarelo para efeito de propulsão consistente */}
-          <div
-            className="absolute left-1/2 -translate-x-1/2 rounded-full opacity-70"
-            style={{
-              top: `${r.size * 0.7}px`,
-              width: `${r.size * 0.3}px`,
-              height: `${r.size * 1.2}px`,
-              animation: "flameTrail 0.3s ease-in-out infinite alternate",
-              background: "linear-gradient(to bottom, #FB923C, #FBBF24, transparent)",
-              zIndex: -1,
-            }}
-          />
-          <div
-            className="absolute left-1/2 -translate-x-1/2 rounded-full opacity-40"
-            style={{
-              top: `${r.size * 0.8}px`,
-              width: `${r.size * 0.15}px`,
-              height: `${r.size * 1.8}px`,
-              animation: "flameTrail 0.2s ease-in-out infinite alternate-reverse",
-              background: "linear-gradient(to bottom, #FB923C, transparent)",
-              zIndex: -1,
-            }}
-          />
-          <div
-            className="absolute left-1/2 -translate-x-1/2 rounded-full bg-orange/10"
-            style={{
-              top: `${r.size}px`,
-              width: `${r.size * 2}px`,
-              height: `${r.size * 2}px`,
-              animation: "smokeRise 2s ease-out forwards",
-              filter: "blur(12px)",
-              zIndex: -2,
-            }}
-          />
+            {/* Rastro de chamas */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2 rounded-full opacity-70"
+              style={{
+                top: `${r.size * 0.7}px`,
+                width: `${r.size * 0.3}px`,
+                height: `${r.size * 1.2}px`,
+                animation: "flameTrail 0.3s ease-in-out infinite alternate",
+                background: "linear-gradient(to bottom, #FB923C, #FBBF24, transparent)",
+                zIndex: -1,
+              }}
+            />
+            <div
+              className="absolute left-1/2 -translate-x-1/2 rounded-full opacity-40"
+              style={{
+                top: `${r.size * 0.8}px`,
+                width: `${r.size * 0.15}px`,
+                height: `${r.size * 1.8}px`,
+                animation: "flameTrail 0.2s ease-in-out infinite alternate-reverse",
+                background: "linear-gradient(to bottom, #FB923C, transparent)",
+                zIndex: -1,
+              }}
+            />
+          </div>
         </div>
-      </div>
       ))}
     </div>
   );
