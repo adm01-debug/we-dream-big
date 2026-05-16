@@ -88,12 +88,12 @@ export const SocialLoginButtons = forwardRef<HTMLDivElement, SocialLoginButtonsP
       return () => document.removeEventListener('visibilitychange', onVis);
     }, [isLoading]);
 
-    const finishWithError = (msg: string) => {
+    const finishWithError = (msg: string, opts?: { autoFallback?: boolean }) => {
       clearTimers();
       setIsLoading(null);
       setSlowHint(null);
       toast({ variant: 'destructive', title: 'Erro ao entrar com Google', description: msg });
-      onError?.(msg);
+      onError?.(msg, opts);
     };
 
     const handleGoogleLogin = async () => {
@@ -107,11 +107,13 @@ export const SocialLoginButtons = forwardRef<HTMLDivElement, SocialLoginButtonsP
         setSlowHint('Conectando ao Google… isto pode levar alguns segundos.');
       }, SLOW_REDIRECT_MS);
 
-      // Timeout duro: se nada acontecer, assume falha silenciosa.
+      // Timeout duro: se nada acontecer, assume falha silenciosa
+      // e sinaliza autoFallback=true para que o pai foque o form de e-mail.
       failTimerRef.current = window.setTimeout(() => {
         authDebugError('social-login', 'redirect timeout', { ms: REDIRECT_TIMEOUT_MS });
         finishWithError(
           'Tempo esgotado ao contatar o Google. Verifique sua conexão e tente novamente.',
+          { autoFallback: true },
         );
       }, REDIRECT_TIMEOUT_MS);
 
