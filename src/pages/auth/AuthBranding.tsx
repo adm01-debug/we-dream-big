@@ -82,15 +82,15 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       {activeStars.map((star) => (
         <div
           key={`star-container-${star.id}`}
-          className="absolute"
+          className="absolute transition-[top,left] duration-1000 ease-in-out"
           style={{
             top: `${star.top}%`,
             left: `${star.left}%`,
             width: `${star.size}px`,
             height: `${star.size}px`,
-            // Drift (Movimento) na camada externa
+            // Drift (Movimento) na camada externa com translate3d para estabilidade
             animation: `starDrift ${star.driftDur}s linear infinite alternate`,
-            willChange: "transform",
+            willChange: "transform, top, left",
           }}
         >
           <div
