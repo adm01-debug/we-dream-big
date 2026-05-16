@@ -31,41 +31,47 @@ describe('ContinuousRockets Component', () => {
   });
 
   it('spawns initial rockets after delays', async () => {
-    const { getAllByTestId, queryAllByTestId: _queryAllByTestId } = render(<ContinuousRockets />);
+    const { getAllByTestId } = render(<ContinuousRockets />);
 
-    // Initially 0 or 1 depending on immediate spawn
-    // The code has: const initialDelays = [0, 200, 600, 1100, 1800];
-
-    act(() => {
-      vi.advanceTimersByTime(0);
-    });
-    expect(getAllByTestId('rocket-icon').length).toBeGreaterThanOrEqual(1);
-
+    // The component has: const delays = [0, 200, 500, 900, 1400, 2000, 2800];
+    
     act(() => {
       vi.advanceTimersByTime(2000);
     });
 
-    // Should have spawned 5 initial rockets
-    expect(getAllByTestId('rocket-icon').length).toBe(5);
+    // At 2000ms, 6 rockets should have spawned (0, 200, 500, 900, 1400, 2000)
+    expect(getAllByTestId('rocket-icon').length).toBe(6);
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    // After 3000ms, all 7 initial rockets should have spawned
+    expect(getAllByTestId('rocket-icon').length).toBe(7);
   });
 
   it('removes rockets after their duration', async () => {
-    const { getAllByTestId } = render(<ContinuousRockets />);
+    const { getAllByTestId, queryAllByTestId } = render(<ContinuousRockets />);
 
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(3000);
     });
 
     const initialCount = getAllByTestId('rocket-icon').length;
-    expect(initialCount).toBe(5);
+    expect(initialCount).toBe(7);
 
-    // Rocket duration is 2-5.5s + 0.6s removal delay
+    // Rocket duration is 1.5-3s (initial) + 0.5s removal delay
+    // Advancing 8 seconds should clear all initial rockets
     act(() => {
-      vi.advanceTimersByTime(7000);
+      vi.advanceTimersByTime(8000);
     });
 
-    // Some should be removed (depending on random duration, but 7s is enough for all initial ones)
-    // But scheduleNext adds more every 2-5.5s.
-    // So the count should still be low or cycling.
+    // They should be removed, but new ones spawn every 2.8s
+    // At 11s total:
+    // Sustained cycle starts after mount. 
+    // Spawns at: 2.8s, 5.6s, 8.4s.
+    // At 11s, those might still be there or removed depending on duration (2.2-5s)
+    const currentCount = queryAllByTestId('rocket-icon').length;
+    expect(currentCount).toBeLessThan(7);
   });
 });
