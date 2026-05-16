@@ -64,6 +64,7 @@ export default function Auth() {
   }, [location.state, searchParams]);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginStatus, setLoginStatus] = useState<'idle' | 'success'>('idle');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [ipBlocked, setIpBlocked] = useState(false);
   const [blockedIP, setBlockedIP] = useState<string | null>(null);
