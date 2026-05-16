@@ -160,13 +160,13 @@ function FeatureCard({ item, index }: { item: typeof FEATURE_ITEMS[0]; index: nu
   const IconComponent = item.icon;
   return (
     <div 
-      className="relative flex min-h-[104px] items-center justify-center p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl hover:bg-white/10 hover:border-orange/30 hover:scale-[1.02] transition-all duration-500 group opacity-0 text-center"
+      className="relative h-[104px] rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl hover:bg-white/10 hover:border-orange/30 hover:scale-[1.02] transition-all duration-500 group opacity-0 text-center"
       style={{ animation: `scale-fade-in 0.5s ease-out ${300 + index * 150}ms forwards` }}
     >
-      <div className="absolute left-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-orange/15 flex items-center justify-center group-hover:bg-orange/25 transition-colors">
+      <div className="absolute left-1/2 top-4 -translate-x-1/2 w-11 h-11 rounded-xl bg-orange/15 flex items-center justify-center group-hover:bg-orange/25 transition-colors">
         <IconComponent className="h-5 w-5 text-orange" />
       </div>
-      <div className="min-w-0 w-full px-12 text-center">
+      <div className="absolute inset-x-4 bottom-4 text-center">
         <p className="w-full text-center text-2xl font-bold text-orange leading-tight">{item.label}</p>
         <p className="w-full text-center text-sm font-medium text-white/50 leading-tight">{item.desc}</p>
       </div>
