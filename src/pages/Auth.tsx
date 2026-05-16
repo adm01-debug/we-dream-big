@@ -679,14 +679,7 @@ export default function Auth() {
             </div>
           )}
 
-          <div className="space-y-4 pt-4 border-t border-white/10">
-            <p className="text-center text-[10px] leading-relaxed text-muted-foreground/60 max-w-sm mx-auto">
-              Este sistema é propriedade intelectual exclusiva da Brasil Marcas, sendo protegido pela Lei nº 9.609/98 e demais normas aplicáveis. É proibida sua reprodução, cópia, modificação, distribuição ou uso não autorizado.
-            </p>
-            <p className="text-center text-xs font-medium text-muted-foreground">
-              © 2026 Promo Gifts Todos os direitos reservados.
-            </p>
-          </div>
+          <LegalFooter />
         </div>
       </div>
     </main>
