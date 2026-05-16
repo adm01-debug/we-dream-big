@@ -322,6 +322,13 @@ const STATUS_DESCRIPTION: Record<CallbackStatus, string> = {
   failed: 'Não foi possível completar o login.',
 };
 
+const SEVERITY_STYLES: Record<OAuthErrorExplanation['severity'], string> = {
+  config: 'border-destructive/40 bg-destructive/5',
+  user: 'border-amber-500/40 bg-amber-500/5',
+  transient: 'border-primary/30 bg-primary/5',
+  unknown: 'border-border bg-muted/40',
+};
+
 function StatusIcon({ status }: { status: CallbackStatus }) {
   if (status === 'confirmed') {
     return <CheckCircle2 className="h-10 w-10 text-primary animate-fade-in" />;
