@@ -38,6 +38,10 @@ test.describe("Auth UI Baseline", () => {
     await gotoAndSettle(page, "/login");
     await page.waitForTimeout(1000);
     
+    // Verificamos se as estrelas estão presentes e animando (através do data-testid)
+    const star = page.locator('[data-testid^="star-breathing-"]').first();
+    await expect(star).toBeVisible();
+
     await expect(page).toHaveScreenshot("auth-login-normal-desktop.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01
