@@ -183,7 +183,7 @@ const FEATURE_ITEMS = [
 
 export function AuthBrandingPanel() {
   return (
-    <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden h-screen items-center">
+    <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden h-screen items-center bg-[#0A0D14]">
       {/* Background decoration (sem bg sólido — fundo unificado vem do <main>) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -left-20 w-80 h-80 bg-orange/20 rounded-full blur-[120px] animate-pulse" />
@@ -193,7 +193,7 @@ export function AuthBrandingPanel() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full py-20">
+      <div className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full min-h-screen">
         <div className="space-y-6 w-full max-w-xl flex flex-col items-center text-center">
           <div className="flex items-center gap-4">
             <AppLogo variant="light" iconClassName="h-14 w-14 rounded-xl shadow-orange/30" textClassName="text-4xl" />
