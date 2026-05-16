@@ -446,6 +446,7 @@ export default function Auth() {
                           data-testid="login-email-input"
                           type="email"
                           placeholder="seu@email.com"
+                          autoComplete="email"
                           className="border-border bg-input pl-10 focus:border-orange focus:ring-orange"
                           {...loginForm.register('email')}
                           ref={(el) => {
@@ -472,6 +473,7 @@ export default function Auth() {
                           data-testid="login-password-input"
                           type={showPassword ? 'text' : 'password'}
                           placeholder="••••••••"
+                          autoComplete="current-password"
                           className="border-border bg-input pl-10 pr-10 focus:border-orange focus:ring-orange"
                           {...loginForm.register('password')}
                         />
