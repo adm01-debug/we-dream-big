@@ -19,8 +19,9 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
     const id = nextIdRef.current++;
     const left = 5 + Math.random() * 90;
     const size = 24 + Math.random() * 40;
-    const duration = isInitial ? (2 + Math.random() * 2) : (3 + Math.random() * 4);
-    const rotationOffset = -5 + Math.random() * 10;
+    // Movimento lento, contemplativo
+    const duration = isInitial ? (12 + Math.random() * 6) : (14 + Math.random() * 8);
+    const rotationOffset = -3 + Math.random() * 6;
     const scale = 0.9 + Math.random() * 0.5;
 
     const rocket: RocketData = { id, left, size, duration, rotation: rotationOffset, scale };
@@ -29,35 +30,35 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
   }, []);
 
   useEffect(() => {
-    // Planets setup
+    // Planetas — movimento extremamente lento (60–90s)
     const initialPlanets = [...Array(5)].map((_, i) => ({
       id: i,
       left: 10 + Math.random() * 80,
       top: 10 + Math.random() * 80,
       size: 40 + Math.random() * 80,
-      duration: 15 + Math.random() * 15,
+      duration: 60 + Math.random() * 30,
       type: i % 3,
       delay: Math.random() * 10
     }));
     setPlanets(initialPlanets);
 
-    // Astronauts setup
+    // Astronautas — flutuação lenta (50–80s)
     const initialAstronauts = [...Array(3)].map((_, i) => ({
       id: i,
       left: 20 + Math.random() * 60,
       top: 20 + Math.random() * 60,
       size: 50 + Math.random() * 30,
-      duration: 20 + Math.random() * 20,
+      duration: 50 + Math.random() * 30,
       delay: Math.random() * 5,
       rotation: Math.random() * 360
     }));
     setAstronauts(initialAstronauts);
 
-    // Initial rockets
-    [0, 800, 2000, 4000].forEach(d => setTimeout(() => spawnRocket(true), d));
+    // Foguetes — espaçados para não poluir
+    [0, 3000, 7000].forEach(d => setTimeout(() => spawnRocket(true), d));
     const rocketInterval = setInterval(() => {
       if (document.visibilityState === 'visible') spawnRocket();
-    }, 4500);
+    }, 9000);
 
     return () => clearInterval(rocketInterval);
   }, [spawnRocket]);
