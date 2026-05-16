@@ -382,8 +382,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       }
 
-      // Tenta encerrar sessão remota — não bloqueia limpeza local em caso de falha
-      await supabase.auth.signOut().catch((err) => {
+      // Tenta encerrar sessão remota revogando o refresh token no backend
+      await supabase.auth.signOut({ scope: 'global' }).catch((err) => {
         log.warn('remote_signout_failed', { err: String(err) });
       });
     } catch (err) {
@@ -481,6 +481,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (warningTimer) window.clearTimeout(warningTimer);
     };
   }, [session, refreshSession]);
+  useEffect(() => {
+    if (!session) return;
+    const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
+    const now = Date.now();
     const buffer = 5 * 60 * 1000; // 5 minutos antes
     const delay = expiresAt - now - buffer;
 

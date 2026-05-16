@@ -180,7 +180,8 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
           {/* Mobile search trigger */}
           <Button
             variant="ghost"
-            size="icon" aria-label="Buscar"
+            size="icon" 
+            aria-label="Abrir busca global"
             className="md:hidden h-8 w-8 hover:bg-primary/10 hover:text-primary"
             onClick={() => {
               const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
@@ -315,6 +316,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
+                aria-label={`Menu de usuário: ${displayName}`}
                 className="flex items-center gap-2 h-9 px-1.5 sm:px-2 hover:bg-primary/10 rounded-lg"
               >
                 <div className="relative">
