@@ -404,27 +404,35 @@ export default function Auth() {
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   className="flex flex-col items-center justify-center py-16 px-8 text-center"
                 >
-                  <div className="relative mb-6">
-                    <div className="absolute inset-0 animate-ping rounded-full bg-success/20 duration-1000" />
-                    <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-success/10 text-success ring-1 ring-success/20">
-                      <CheckCircle2 className="h-10 w-10" />
+                  <div className="relative mb-8">
+                    <div className="absolute inset-0 animate-ping rounded-full bg-blue-500/20 duration-1000" />
+                    <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20 shadow-[0_0_50px_rgba(59,130,246,0.3)]">
+                      <Rocket className="h-12 w-12 -rotate-45 animate-bounce" />
                     </div>
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.4 }}
+                      className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-4 border-[#030508]"
+                    >
+                      <CheckCircle2 className="h-4 w-4 text-white" />
+                    </motion.div>
                   </div>
                   <motion.h2
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="font-display text-2xl font-bold text-white"
+                    className="font-display text-3xl font-bold text-white tracking-tight"
                   >
-                    Acesso concedido
+                    Decolagem autorizada!
                   </motion.h2>
                   <motion.p
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="mt-2 text-sm text-white/60"
+                    className="mt-3 text-base text-white/50"
                   >
-                    Preparando seu ambiente de trabalho...
+                    Bem-vindo a bordo. Iniciando sistemas...
                   </motion.p>
                 </motion.div>
               ) : showForgotPassword ? (
