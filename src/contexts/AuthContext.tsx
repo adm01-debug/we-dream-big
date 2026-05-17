@@ -82,6 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userRoles, setUserRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRolesLoading, setIsRolesLoading] = useState(false);
+  const [rolesLoadedAt, setRolesLoadedAt] = useState<number | null>(null);
   const [currentAAL, setCurrentAAL] = useState<'aal1' | 'aal2' | null>(null);
   const [nextAAL, setNextAAL] = useState<'aal1' | 'aal2' | null>(null);
   const [hasMFA, setHasMFA] = useState(false);
