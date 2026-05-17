@@ -6,6 +6,9 @@ import { SidebarReorganized } from '../SidebarReorganized';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { SellerCartProvider } from '@/contexts/SellerCartContext';
+import { AriaLiveProvider } from '@/components/a11y';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock simple hooks that might cause issues in a basic render test
@@ -31,7 +34,13 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ThemeProvider>
         <AuthProvider>
           <OnboardingProvider>
-            {children}
+            <TooltipProvider>
+              <SellerCartProvider>
+                <AriaLiveProvider>
+                  {children}
+                </AriaLiveProvider>
+              </SellerCartProvider>
+            </TooltipProvider>
           </OnboardingProvider>
         </AuthProvider>
       </ThemeProvider>
