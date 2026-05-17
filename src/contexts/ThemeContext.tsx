@@ -20,12 +20,16 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({
   children,
-  defaultTheme = 'auto',
+  defaultTheme = 'dark',
   storageKey = 'gifts-store-theme',
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+      const stored = localStorage.getItem(storageKey) as Theme | null;
+      // Closed dark-only platform: migrate legacy 'auto' to the dark default
+      // so the OS preference can't flip the app into light mode.
+      if (stored === 'auto') return 'dark';
+      return stored || defaultTheme;
     }
     return defaultTheme;
   });
@@ -115,10 +119,10 @@ export function useTheme() {
     if (process.env.NODE_ENV === 'development') {
       console.warn('useTheme must be used within a ThemeProvider. Returning a fallback theme to avoid crash.');
     }
-    // Return a safe fallback instead of throwing
+    // Return a safe fallback instead of throwing (dark = platform default)
     return {
-      theme: 'light',
-      actualTheme: 'light',
+      theme: 'dark',
+      actualTheme: 'dark',
       setTheme: () => {},
       toggleTheme: () => {},
       isFallback: true,

@@ -1,34 +1,58 @@
-I will switch the application's primary Supabase instance to your external database and migrate the existing tables.
+## Diagnóstico
 
-**Note on Auth & Edge Functions:**
-*   **Auth:** Your external Supabase must have the same Authentication providers and settings configured for login to work seamlessly.
-*   **Edge Functions:** These will be updated to point to the external database by injecting the new credentials into their environment.
-*   **Storage:** Buckets must be manually recreated in the external Supabase to match the current ones.
+O print do `/` (catálogo) mostra três sintomas que indicam **vazamento de tema claro** sobre uma UI que deveria ser 100% dark:
 
-### Proposed Changes
+1. **Faixa branca no topo da página** (acima da toolbar de filtros).
+2. **Título "Catálogo de Produtos · 6.090 itens" quase invisível** — texto escuro sobre fundo branco.
+3. **Toolbar e cards** já desenhados em dark (correto) — provando que o problema é só o wrapper externo + o `<h1>` herdando `color: foreground` errado.
 
-#### 1. Database Migration
-*   Export the current database schema and data from the internal Supabase.
-*   Since I have service role access to both, I will use a script to migrate the core tables and their content to your external instance.
-*   I will prioritize tables like `profiles`, `organizations`, and others visible in your current schema.
+Investigação inicial confirmou:
 
-#### 2. Supabase Client Update
-*   Modify `src/integrations/supabase/client.ts` to use `EXTERNAL_SUPABASE_URL` and `EXTERNAL_SUPABASE_ANON_KEY` from your secrets.
-*   This will ensure the frontend immediately starts talking to your external database.
+- O fundo espacial / `Starfield` / `SpaceScene` **está corretamente escopado às rotas de auth** (`Auth.tsx`, `AuthBranding.tsx`, `ResetPassword`, `ForgotPasswordConfirmation`, `SSOCallbackPage`). Não vazou para outras telas.
+- `src/index.css` cresceu para **2.364 linhas** e acumulou animações/keyframes (`breathingStar`, `rocketRising`, `zigzagMovement` etc.) e overrides globais de `.dark body`, `.dark p/span/td/...` durante a iteração da tela de login.
+- O catálogo (`Index.tsx` + `CatalogHeader.tsx`) usa tokens semânticos corretos (`bg-background/95`, `text-muted-foreground`), portanto o bug visível é **causado por o `dark` class não estar sendo aplicado ao `<html>`** em algum momento (provavelmente bootstrap do tema ou um override CSS criado durante o trabalho do login que força `:root` a permanecer light).
 
-#### 3. Edge Functions Configuration
-*   Update any existing Edge Functions to use the `EXTERNAL_SUPABASE_URL` and `EXTERNAL_SUPABASE_SERVICE_ROLE_KEY` for server-side operations.
+Escopo aprovado pelo usuário: **catálogo + auditoria global, mantendo dark como padrão**.
 
-#### 4. Verification
-*   Run a connectivity test to ensure the frontend can read/write to the external database.
-*   Verify that the Auth session can still be established (if the external DB is configured correctly).
+## Plano
 
-### Technical Details
-*   I will create a migration script `scripts/migrate-to-external.ts` that uses the Supabase JS client to copy data between instances.
-*   I will update `src/integrations/supabase/client.ts` to look for the external credentials first.
-*   I will check if there are any hardcoded references to the old project ID.
+### Fase 1 — Bug imediato do catálogo (dark theme leak)
 
-**Next steps after approval:**
-1. Execute the migration script.
-2. Update the client code.
-3. Test and verify.
+1. Identificar o ponto exato em que o `dark` deixa de ser aplicado:
+   - Checar `ThemeProvider` / inicialização do tema (provavelmente `src/main.tsx` ou `src/components/system/ThemeProvider.tsx`).
+   - Verificar se há `:root { color-scheme: light }` ou `html:not(.dark)` introduzido junto com o trabalho do login.
+2. Garantir que **fora das rotas `/auth*`** o `dark` esteja sempre ativo (política atual do app — plataforma fechada, dark-only).
+3. Validar visualmente o `/` (catálogo) com `browser--screenshot` — título, hero e cards devem ficar legíveis.
+
+### Fase 2 — Auditoria do `index.css` (conter o que vazou)
+
+1. Mapear todas as regras `@keyframes` e classes adicionadas durante o trabalho do login (`breathingStar`, `starGlowPulse`, `starDrift`, `rocketRising`, `zigzagMovement`, `floatMovement`, `shootingStar`, `nebulaDrift`).
+2. Mover esses keyframes para um arquivo **escopado** (`src/pages/auth/auth-scene.css`) importado **só** por `AuthBranding.tsx`, removendo-os do `index.css` global.
+3. Revisar os overrides `.dark body`, `.dark p/span/label/td/th/li`, `.dark .text-muted-foreground`, `.dark .font-*` (linhas ~395-450) — alguns desses ajustes de `font-weight`/`letter-spacing` foram afinados para o card de login e estão deixando o texto do app inteiro fino demais sobre os cards escuros.
+4. Restaurar pesos/contraste padrão para texto de UI (corpo, labels, paragraphs) e manter os ajustes finos apenas onde semanticamente fizer sentido (ex.: `.font-display`).
+
+### Fase 3 — Auditoria de hardcodes fora da `/auth*`
+
+1. Rodar grep por `bg-white`, `text-white`, `bg-black`, `text-black`, `#fff`, `#000`, `from-blue-`, `to-purple-` em `src/pages/**` e `src/components/**` **excluindo** `src/pages/Auth.tsx`, `src/pages/auth/**`, `src/pages/ResetPassword.tsx`, `src/pages/ForgotPasswordConfirmation.tsx`, `src/pages/SSOCallbackPage.tsx`, `src/components/auth/**`.
+2. Substituir hits legítimos por tokens semânticos (`bg-background`, `text-foreground`, `bg-primary`, `border-border`).
+3. Não tocar nas rotas de auth — elas têm identidade visual própria (azul-noite + estrelas) e ficam.
+
+### Fase 4 — QA visual
+
+1. Screenshot de `/` (catálogo), `/colecoes`, `/comparar`, `/admin/usuarios`, `/orcamento`, `/auth` (controle — não deve mudar).
+2. Confirmar contraste WCAG AA em texto principal e `muted-foreground`.
+3. Confirmar que `/auth` mantém o fundo espacial intacto.
+
+## Detalhes técnicos
+
+- **Política dark-only fora de `/auth`**: já consta na memória do projeto (`Closed Platform` + `Skins Propagation`). A correção deve respeitar `var(--primary)` e nunca cores hardcoded.
+- **Não criar nada novo no Lovable Cloud / DBs externos** — todo o trabalho é frontend/CSS.
+- **Não fazer redesign** — só reverter vazamentos e restaurar contraste. UI das telas continua igual.
+- **Arquivos esperados de mudança**: `src/index.css`, `src/pages/auth/AuthBranding.tsx` (+ novo `auth-scene.css`), eventual `ThemeProvider`, e ajustes pontuais em páginas/componentes com hardcodes.
+- **Arquivos intocáveis**: `src/pages/Auth.tsx`, `src/pages/ResetPassword.tsx`, `src/pages/ForgotPasswordConfirmation.tsx`, `src/pages/SSOCallbackPage.tsx`, `src/components/auth/**`, `src/integrations/supabase/*`.
+
+## Riscos / fora de escopo
+
+- Não vou alterar a paleta de cores (`--primary`, `--background` etc.) — só corrigir aplicação. Se você quiser repaletar, abrimos um plano separado.
+- Não vou mexer no comportamento do `Starfield`/animações de auth — só mudar o **arquivo onde elas moram** (escopo CSS).
+- Se a Fase 3 revelar muitos hardcodes (>50 hits), volto antes de continuar para confirmar prioridades.
