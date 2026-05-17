@@ -98,8 +98,9 @@ for (const [file, rules] of Object.entries(baselineCounts)) {
 
 const baselineTotal = baseline.totalErrors ?? 0;
 console.log(
-  `ESLint baseline gate — atual: ${totalErrors} erros · baseline: ${baselineTotal} erros`
+  `ESLint baseline gate — atual: ${totalErrors} erros, ${totalWarnings} warnings · baseline: ${baselineTotal} erros`
 );
+
 
 if (improvements.length) {
   const improved = improvements.reduce((s, i) => s + (i.baseline - i.current), 0);
