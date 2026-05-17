@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict DpVxMiZyEUgqizGplkafiTOkd3taggndaLKqFKbcSfhMzjFJVsZsFCbc8yg08C7
+\restrict BVNJgiyXFjpcgIYV6uzL3wn7a0W1Esv54Uaq6obuhntA8ofrEpzaQgADDpeADIg
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.9
@@ -17267,5 +17267,5 @@ ALTER TABLE public.workspace_notifications ENABLE ROW LEVEL SECURITY;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict DpVxMiZyEUgqizGplkafiTOkd3taggndaLKqFKbcSfhMzjFJVsZsFCbc8yg08C7
+\unrestrict BVNJgiyXFjpcgIYV6uzL3wn7a0W1Esv54Uaq6obuhntA8ofrEpzaQgADDpeADIg
 
