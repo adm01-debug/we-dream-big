@@ -10,6 +10,7 @@ import {
   ReplenishmentsPage,
   SellerCartsPage,
 } from "./lazy-pages";
+import { ValidProductIdRoute } from "./guards/ValidProductIdRoute";
 
 /**
  * Product routes — products list, detail, filters, novelties, replenishments,
@@ -21,7 +22,14 @@ export const productRoutes = (
   <>
     <Route path="/produtos" element={<FiltersPage />} />
     <Route path="/produto" element={<Navigate to="/produtos" replace />} />
-    <Route path="/produto/:id" element={<ProductDetail />} />
+    <Route
+      path="/produto/:id"
+      element={
+        <ValidProductIdRoute>
+          <ProductDetail />
+        </ValidProductIdRoute>
+      }
+    />
     <Route path="/filtros" element={<FiltersPage />} />
     <Route path="/novidades" element={<NoveltiesPage />} />
     <Route path="/reposicao" element={<ReplenishmentsPage />} />
