@@ -31,10 +31,15 @@ export const StarBackground = React.memo(function StarBackground() {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#020617]">
-      {/* Background glow layers */}
-      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/20 blur-[150px] rounded-full opacity-60 animate-pulse" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-500/10 blur-[150px] rounded-full opacity-40" />
+    <div
+      aria-hidden="true"
+      data-testid="space-scene"
+      className="fixed inset-0 z-[60] overflow-hidden pointer-events-none mix-blend-screen"
+      style={{ opacity: 0.55 }}
+    >
+      {/* Background glow layers (sutis, sem cobrir o conteúdo) */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[160px] rounded-full opacity-40 animate-pulse" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[160px] rounded-full opacity-30" />
       
       {/* Stars */}
       {stars.map((star) => (
