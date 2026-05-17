@@ -465,7 +465,7 @@ export function AuthBrandingPanel() {
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
