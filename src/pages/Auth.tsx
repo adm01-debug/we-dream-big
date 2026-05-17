@@ -548,7 +548,7 @@ export default function Auth() {
                           inputMode="email"
                           autoCapitalize="none"
                           spellCheck={false}
-                          className="border-border bg-input pl-10 lowercase focus:border-blue-500 focus:ring-blue-500"
+                          className="border-white/10 bg-white/5 pl-10 lowercase focus:border-primary/50 focus:ring-primary/20 transition-all duration-300 placeholder:text-white/20"
                           {...loginForm.register('email')}
                           onChange={(e) => {
                             const lower = e.target.value.toLowerCase();
