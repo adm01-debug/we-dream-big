@@ -5,7 +5,7 @@ import { runBotProtection } from '../_shared/bot-protection.ts';
 import { getBreaker, circuitOpenResponse, getAllBreakerStatuses } from '../_shared/circuit-breaker.ts';
 import { AsyncLocalStorage } from "node:async_hooks";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
-import { resolveCredential, buildCredentialsHealth, getCredentialCacheMetrics } from "../_shared/credentials.ts";
+import { resolveCredential, buildCredentialsHealth } from "../_shared/credentials.ts";
 
 const breaker = getBreaker("crm-db");
 
@@ -57,37 +57,16 @@ function buildCrmClient(url: string, key: string): SupabaseClient {
 
 export async function getCrmClient(): Promise<SupabaseClient | null> {
   if (cachedCrmClient) return cachedCrmClient;
-  
   // SSOT: DB-first via integration_credentials, fallback to legacy env aliases
   // (CRM_SUPABASE_URL / CRM_SUPABASE_SERVICE_KEY / CRM_SUPABASE_ANON_KEY).
-  const [urlRes, svcRes, anonRes] = await Promise.all([
+  const [{ value: url }, { value: serviceKey }, { value: anonKey }] = await Promise.all([
     resolveCredential("EXTERNAL_CRM_URL"),
     resolveCredential("EXTERNAL_CRM_SERVICE_ROLE_KEY"),
     resolveCredential("EXTERNAL_CRM_ANON_KEY"),
   ]);
-
-  const CRM_URL = urlRes.value;
-  const CRM_SERVICE_KEY = svcRes.value;
-  const CRM_ANON_VAL = anonRes.value;
-  const CRM_KEY = CRM_SERVICE_KEY || CRM_ANON_VAL;
-
-  if (!CRM_URL || !CRM_KEY) {
-    console.error(
-      `[crm-boot] ❌ Falha na resolução de credenciais: ` +
-      `URL=${urlRes.resolved_name}(${urlRes.source}) ` +
-      `KEY=${svcRes.resolved_name}(${svcRes.source}) ` +
-      `ANON=${anonRes.resolved_name}(${anonRes.source})`
-    );
-    return null;
-  }
-
-  console.log(
-    `[crm-boot] ✅ Credenciais resolvidas: ` +
-    `URL=${urlRes.resolved_name}(${urlRes.source}) ` +
-    `KEY=${CRM_SERVICE_KEY ? svcRes.resolved_name : anonRes.resolved_name}(${CRM_SERVICE_KEY ? svcRes.source : anonRes.source})`
-  );
-
-  cachedCrmClient = buildCrmClient(CRM_URL, CRM_KEY);
+  const key = serviceKey ?? anonKey;
+  if (!url || !key) return null;
+  cachedCrmClient = buildCrmClient(url, key);
   return cachedCrmClient;
 }
 
@@ -113,46 +92,39 @@ export function __getClientBootStateForTests() {
 function warmupCrmClient(): Promise<void> {
   if (crmWarmupPromise) return crmWarmupPromise;
   warmupStartedAtMs = Math.round(performance.now() - isolateMonoStart);
-  
-  console.log(`[crm-boot-warmup] Iniciando validação de boot (isolate_age=${warmupStartedAtMs}ms)`);
-  
   crmWarmupPromise = (async () => {
     const t0 = performance.now();
     try {
       const client = await getCrmClient();
       if (!client) {
         warmupError = 'CRM_SUPABASE_URL/KEY not configured';
-        // getCrmClient já logou o erro detalhado
+        console.warn(`[crm-boot-warmup] ⚠️ ${warmupError}`);
         warmupMs = Math.round(performance.now() - t0);
         return;
       }
-      
-      // Validação ativa: tenta um select simples
       const { error } = await client.from('companies').select('id').limit(1);
       warmupMs = Math.round(performance.now() - t0);
-      
       if (error) {
         warmupError = error.message;
-        console.warn(`[crm-boot-warmup] ⚠️ Falha na query de teste (warmup_ms=${warmupMs}): "${error.message}"`);
+        console.warn(`[crm-boot-warmup] ⚠️ warmup_ms=${warmupMs} error="${error.message}"`);
       } else {
         warmupOk = true;
         crmWarmupCompleted = true;
         console.log(
-          `[crm-boot-warmup] ✅ Warmup concluído com sucesso: client_build_ms=${clientBuildMs} ` +
-          `warmup_started_at_ms=${warmupStartedAtMs} warmup_ms=${warmupMs}`,
+          `[crm-boot-warmup] ✅ ready client_build_ms=${clientBuildMs} ` +
+            `warmup_started_at_ms=${warmupStartedAtMs} warmup_ms=${warmupMs}`,
         );
       }
     } catch (e) {
       warmupMs = Math.round(performance.now() - t0);
       warmupError = e instanceof Error ? e.message : String(e);
-      console.warn(`[crm-boot-warmup] ⚠️ Erro inesperado no warmup (warmup_ms=${warmupMs}): ${warmupError}`);
+      console.warn(`[crm-boot-warmup] ⚠️ warmup_ms=${warmupMs} ${warmupError}`);
     }
   })();
   return crmWarmupPromise;
 }
 
-// Executa a validação de início imediatamente no boot do isolate
-// Isso garante que os logs apareçam nos Logs da Edge Function antes mesmo da primeira request real.
+// Dispara warm-up no boot do isolate (não-bloqueante).
 warmupCrmClient();
 
 
@@ -177,7 +149,7 @@ function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(finalBody), { status, headers });
 }
 
-type DiagOp = "ping" | "diag" | "breaker_status" | "creds_health" | "creds_debug";
+type DiagOp = "ping" | "diag" | "breaker_status" | "creds_health";
 
 /**
  * Detecta operações de diagnóstico (`ping` | `diag` | `breaker_status` |
@@ -190,12 +162,11 @@ async function detectDiagOp(req: Request): Promise<DiagOp | null> {
   try {
     const url = new URL(req.url);
     const op = url.searchParams.get("op");
-    if (op === "ping" || op === "diag" || op === "breaker_status" || op === "creds_health" || op === "creds_debug") return op;
+    if (op === "ping" || op === "diag" || op === "breaker_status" || op === "creds_health") return op;
     if (url.searchParams.get("ping") === "1") return "ping";
     if (url.searchParams.get("diag") === "1") return "diag";
     if (url.searchParams.get("breaker") === "1") return "breaker_status";
     if (url.searchParams.get("creds") === "1") return "creds_health";
-    if (url.searchParams.get("creds_debug") === "1") return "creds_debug";
   } catch { /* ignore */ }
 
   // Body JSON (POST/PUT/PATCH apenas; clonamos para não consumir o original)
@@ -205,7 +176,7 @@ async function detectDiagOp(req: Request): Promise<DiagOp | null> {
       try {
         const cloned = req.clone();
         const peek = await cloned.json() as { operation?: unknown };
-        if (peek?.operation === "ping" || peek?.operation === "diag" || peek?.operation === "breaker_status" || peek?.operation === "creds_health" || peek?.operation === "creds_debug") {
+        if (peek?.operation === "ping" || peek?.operation === "diag" || peek?.operation === "breaker_status" || peek?.operation === "creds_health") {
           return peek.operation as DiagOp;
         }
       } catch { /* corpo inválido — não é diag */ }
@@ -869,9 +840,6 @@ Deno.serve((req) => {
   if (diagOp === "creds_health") {
     return jsonResponse(await buildCredsHealthSnapshot());
   }
-  if (diagOp === "creds_debug") {
-    return jsonResponse({ ok: true, ts: Date.now(), metrics: getCredentialCacheMetrics() });
-  }
 
   // Marca início da request real (pós-diag) para medir cold vs warm path.
   // `was_cold` = true para a 1ª request real após o boot do isolate.
@@ -899,6 +867,8 @@ Deno.serve((req) => {
     if (auth.error) return auth.error;
 
     // SSOT: DB-first via integration_credentials, env fallback via aliases.
+    // Antes lia Deno.env.get() direto e ignorava credenciais salvas pela UI
+    // (/admin/conexoes), causando 500 mesmo após o usuário cadastrar a CRM.
     const [urlRes, svcRes, anonRes] = await Promise.all([
       resolveCredential("EXTERNAL_CRM_URL"),
       resolveCredential("EXTERNAL_CRM_SERVICE_ROLE_KEY"),
@@ -908,18 +878,8 @@ Deno.serve((req) => {
     const CRM_SERVICE_KEY = svcRes.value;
     const CRM_ANON_VAL = anonRes.value;
     const CRM_KEY = CRM_SERVICE_KEY || CRM_ANON_VAL;
-
     if (!CRM_URL || !CRM_KEY) {
-      const diag = {
-        url: { name: urlRes.resolved_name, source: urlRes.source, present: !!CRM_URL },
-        key: { name: svcRes.resolved_name, source: svcRes.source, present: !!CRM_SERVICE_KEY },
-        anon: { name: anonRes.resolved_name, source: anonRes.source, present: !!CRM_ANON_VAL }
-      };
-      console.error(`[crm-db-bridge] ❌ Credenciais não configuradas: ${JSON.stringify(diag)}`);
-      return jsonResponse({ 
-        error: "CRM database credentials not configured", 
-        diagnostics: diag 
-      }, 500);
+      return jsonResponse({ error: "CRM database credentials not configured" }, 500);
     }
 
     const CRM_ANON = CRM_ANON_VAL ?? "";
@@ -950,11 +910,7 @@ Deno.serve((req) => {
     // paga cold-start. Em rajada paralela, fetch keep-alive evita re-handshake.
     const crm = await getCrmClient();
     if (!crm) {
-      // getCrmClient já logou detalhes no console
-      return jsonResponse({ 
-        error: "CRM database credentials not configured",
-        details: "getCrmClient returned null after resolution"
-      }, 500);
+      return jsonResponse({ error: "CRM database credentials not configured" }, 500);
     }
 
     // Validate body with Zod schema

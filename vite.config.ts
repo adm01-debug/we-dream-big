@@ -11,17 +11,17 @@ import { visualizer } from "rollup-plugin-visualizer";
  */
 export default defineConfig(({ mode }: { mode: string }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  
-  // O usuário deseja usar o Supabase Externo como o backend principal do sistema.
-  // Resolvemos as URLs e Chaves priorizando as externas para que o Auth e Functions 
-  // ocorram no projeto de destino (doufsxqlfjyuvxuezpln).
-  const externalSupabaseUrl = env.VITE_EXTERNAL_SUPABASE_URL || env.EXTERNAL_SUPABASE_URL || 'https://doufsxqlfjyuvxuezpln.supabase.co';
+  const externalSupabaseUrl = env.VITE_EXTERNAL_SUPABASE_URL || env.EXTERNAL_SUPABASE_URL;
   const externalSupabaseAnonKey = env.VITE_EXTERNAL_SUPABASE_ANON_KEY || env.EXTERNAL_SUPABASE_ANON_KEY;
-
-  const resolvedSupabaseUrl = externalSupabaseUrl;
-  const resolvedSupabaseAnonKey = externalSupabaseAnonKey || env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-
+  const hasExternalBrowserPair = Boolean(
+    externalSupabaseUrl && externalSupabaseAnonKey,
+  );
+  const resolvedSupabaseUrl = hasExternalBrowserPair
+    ? externalSupabaseUrl
+    : env.VITE_SUPABASE_URL;
+  const resolvedSupabaseAnonKey = hasExternalBrowserPair
+    ? externalSupabaseAnonKey
+    : env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
   return {
     plugins: [
@@ -136,10 +136,8 @@ export default defineConfig(({ mode }: { mode: string }) => {
     include: ['react', 'react-dom', 'react-router-dom'],
   },
   define: {
-    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(resolvedSupabaseUrl),
-    'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(resolvedSupabaseAnonKey),
-    'import.meta.env.VITE_EXTERNAL_SUPABASE_URL': JSON.stringify(externalSupabaseUrl),
-    'import.meta.env.VITE_EXTERNAL_SUPABASE_ANON_KEY': JSON.stringify(externalSupabaseAnonKey),
+    'import.meta.env.VITE_EXTERNAL_SUPABASE_URL': JSON.stringify(resolvedSupabaseUrl),
+    'import.meta.env.VITE_EXTERNAL_SUPABASE_ANON_KEY': JSON.stringify(resolvedSupabaseAnonKey),
   },
   }
 })
