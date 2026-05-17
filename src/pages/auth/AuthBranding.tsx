@@ -400,14 +400,28 @@ export function AuthBrandingPanel() {
   return (
     <div className="flex w-full lg:w-1/2 relative min-h-screen items-center">
       {/* Content */}
-      <div className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full min-h-screen lg:translate-x-[5%] xl:translate-x-[10%]">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full min-h-screen lg:translate-x-[5%] xl:translate-x-[10%]"
+      >
         <div className="space-y-6 w-full max-w-xl flex flex-col items-center text-center">
-          <div className="flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center gap-4"
+          >
             <AppLogo variant="light" iconClassName="h-[3.25rem] w-[3.25rem] rounded-xl shadow-blue-500/40" textClassName="text-4xl" />
-          </div>
+          </motion.div>
 
           <div className="space-y-5 max-w-lg flex flex-col items-center">
-            <h2 className="text-4xl xl:text-5xl font-display font-bold text-white leading-[1.05] tracking-tight relative group text-center">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="text-4xl xl:text-5xl font-display font-bold text-white leading-[1.05] tracking-tight relative group text-center"
+            >
               Um Universo de Produtos, para o{" "}
               <span className="text-blue-400">
                 Melhor Time das{" "}
@@ -416,10 +430,15 @@ export function AuthBrandingPanel() {
                   <span className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-blue-400/0 via-blue-400/60 to-blue-400/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-700 shadow-[0_0_18px_rgba(59,130,246,0.6)]" />
                 </span>
               </span>
-            </h2>
-            <p className="text-[0.95rem] text-white/60 leading-relaxed font-light text-center max-w-md">
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="text-[0.95rem] text-white/60 leading-relaxed font-light text-center max-w-md"
+            >
               Tenha acesso ao maior mix de produtos personalizados, consulte estoque em tempo real, visualize locais e técnicas de personalização. Feito especialmente para você decolar!!!
-            </p>
+            </motion.p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:gap-5 pt-6 w-full">
