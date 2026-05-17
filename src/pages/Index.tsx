@@ -29,7 +29,7 @@ export default function Index() {
     "numberOfItems": catalog.totalEstimate || catalog.filteredProducts?.length || 0,
     "mainEntity": {
       "@type": "ItemList",
-      "itemListElement": catalog.paginatedProducts.slice(0, 10).map((p, i) => ({
+      "itemListElement": (catalog.paginatedProducts || []).slice(0, 10).map((p, i) => ({
         "@type": "ListItem",
         "position": i + 1,
         "url": `${window.location.origin}/produto/${p.id}`,
