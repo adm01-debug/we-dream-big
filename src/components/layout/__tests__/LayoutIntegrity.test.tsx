@@ -5,6 +5,9 @@ import { SidebarReorganized } from '../SidebarReorganized';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { SellerCartProvider } from '@/contexts/SellerCartContext';
+import { AriaLiveProvider } from '@/components/a11y/AriaLive';
 
 // Mocks de hooks e contexts
 vi.mock('@/contexts/ThemeContext', () => ({
@@ -76,13 +79,21 @@ const queryClient = new QueryClient({
 describe('Integridade de Componentes de Layout', () => {
   it('Header deve ser importado e renderizado sem erros de sintaxe ou runtime básico', () => {
     const { container } = render(
-      <BrowserRouter>
-        <Header 
-          onMenuToggle={vi.fn()} 
-          searchQuery="" 
-          onSearchChange={vi.fn()} 
-        />
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AriaLiveProvider>
+            <SellerCartProvider>
+              <TooltipProvider>
+                <Header 
+                  onMenuToggle={vi.fn()} 
+                  searchQuery="" 
+                  onSearchChange={vi.fn()} 
+                />
+              </TooltipProvider>
+            </SellerCartProvider>
+          </AriaLiveProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
     );
     expect(container).toBeDefined();
   });
