@@ -371,6 +371,15 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
                 <Palette className="h-4 w-4 mr-2" />
                 Skins
               </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem
+                  onClick={() => navigate("/status")}
+                  className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+                >
+                  <Activity className="h-4 w-4 mr-2" />
+                  Status do Sistema
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">
                 <HelpCircle className="h-4 w-4 mr-2" />
                 Ajuda
