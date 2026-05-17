@@ -140,6 +140,15 @@ class EnhancedErrorBoundary extends Component<Props, State> {
     window.location.href = '/';
   };
 
+  handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      window.location.href = '/auth?reason=manual-recovery';
+    } catch {
+      window.location.href = '/auth';
+    }
+  };
+
   handleClearCacheReload = async () => {
     // Reaproveita o pipeline de recovery (Cache API + SW + cache-bust no URL).
     // Ignora o limite de reloads aqui pois é uma ação manual do usuário.
