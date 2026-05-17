@@ -352,9 +352,8 @@ export default function AdminExternalDbPage() {
             ))}
           </CardContent>
         )}
+        </Card>
       </div>
-
-      <Card className="border-primary/30">
 
       <Card className="border-primary/30">
         <CardHeader>
