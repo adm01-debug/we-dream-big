@@ -57,16 +57,37 @@ function buildCrmClient(url: string, key: string): SupabaseClient {
 
 export async function getCrmClient(): Promise<SupabaseClient | null> {
   if (cachedCrmClient) return cachedCrmClient;
+  
   // SSOT: DB-first via integration_credentials, fallback to legacy env aliases
   // (CRM_SUPABASE_URL / CRM_SUPABASE_SERVICE_KEY / CRM_SUPABASE_ANON_KEY).
-  const [{ value: url }, { value: serviceKey }, { value: anonKey }] = await Promise.all([
+  const [urlRes, svcRes, anonRes] = await Promise.all([
     resolveCredential("EXTERNAL_CRM_URL"),
     resolveCredential("EXTERNAL_CRM_SERVICE_ROLE_KEY"),
     resolveCredential("EXTERNAL_CRM_ANON_KEY"),
   ]);
-  const key = serviceKey ?? anonKey;
-  if (!url || !key) return null;
-  cachedCrmClient = buildCrmClient(url, key);
+
+  const CRM_URL = urlRes.value;
+  const CRM_SERVICE_KEY = svcRes.value;
+  const CRM_ANON_VAL = anonRes.value;
+  const CRM_KEY = CRM_SERVICE_KEY || CRM_ANON_VAL;
+
+  if (!CRM_URL || !CRM_KEY) {
+    console.error(
+      `[crm-boot] ❌ Falha na resolução de credenciais: ` +
+      `URL=${urlRes.resolved_name}(${urlRes.source}) ` +
+      `KEY=${svcRes.resolved_name}(${svcRes.source}) ` +
+      `ANON=${anonRes.resolved_name}(${anonRes.source})`
+    );
+    return null;
+  }
+
+  console.log(
+    `[crm-boot] ✅ Credenciais resolvidas: ` +
+    `URL=${urlRes.resolved_name}(${urlRes.source}) ` +
+    `KEY=${CRM_SERVICE_KEY ? svcRes.resolved_name : anonRes.resolved_name}(${CRM_SERVICE_KEY ? svcRes.source : anonRes.source})`
+  );
+
+  cachedCrmClient = buildCrmClient(CRM_URL, CRM_KEY);
   return cachedCrmClient;
 }
 
