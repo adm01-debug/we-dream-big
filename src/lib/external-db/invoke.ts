@@ -160,11 +160,16 @@ export async function invokeWithRetry(
     }
 
     const msg = await extractFunctionErrorMessage(error);
+    const friendlyMsg = msg.includes("jwt") || msg.includes("unauthorized")
+      ? "Sua sessão expirou ou você não tem permissão para acessar este recurso externo."
+      : msg.includes("timeout") 
+      ? "A conexão com o banco externo demorou muito. Tente novamente."
+      : "Não foi possível completar a operação no banco externo.";
 
     // Fail-fast em erros determinísticos (schema/validação/auth) — retry não muda o resultado.
     if (isNonRetryableError(msg)) {
       logger.warn(`[external-db] Fail-fast (deterministic error, no retry): ${msg}`);
-      return finalize({ data, error });
+      return finalize({ data: null, error: new Error(friendlyMsg) });
     }
 
     if (attempt < retries && isRetryableError(msg)) {
