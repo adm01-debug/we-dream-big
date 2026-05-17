@@ -17,7 +17,6 @@ import { SellerCartProvider } from "@/contexts/SellerCartContext";
 import { OnboardingProvider } from "@/contexts/OnboardingContext";
 
 import { GlobalOverlay } from "./GlobalOverlay";
-import { StarBackground } from "@/components/effects/StarBackground";
 const GlobalCommandBar = lazyWithRetry(() => import("@/components/command/GlobalCommandBar").then(m => ({ default: m.GlobalCommandBar })));
 const PersistentBreadcrumbs = lazyWithRetry(() => import("@/components/common/PersistentBreadcrumbs").then(m => ({ default: m.PersistentBreadcrumbs })));
 import { cn } from "@/lib/utils";
@@ -63,8 +62,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   }, [location.pathname]);
 
   const layoutContent = (
-    <div className="min-h-screen bg-transparent print:min-h-0" role="document">
-      <StarBackground />
+    <div className="min-h-screen bg-background print:min-h-0" role="document">
       <GlobalOverlay />
       <div className="print:hidden">
         <SkipToContent />
@@ -98,7 +96,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           <div
             className={cn(
               "sticky z-30 print:hidden transition-all duration-300",
-              "bg-background/20 backdrop-blur-xl",
+              "bg-background/85 backdrop-blur-md",
               "border-b border-border/40",
               isHome && "hidden",
             )}
@@ -116,12 +114,12 @@ export function MainLayout({ children }: MainLayoutProps) {
             ref={mainRef}
             tabIndex={-1}
             id="main-content" 
-            className="flex-1 p-3 sm:p-4 lg:p-6 pb-24 sm:pb-20 lg:pb-6 print:p-0 print:pb-0 outline-none overflow-x-clip bg-transparent" 
+            className="flex-1 p-3 sm:p-4 lg:p-6 pb-24 sm:pb-20 lg:pb-6 print:p-0 print:pb-0 outline-none overflow-x-clip" 
             role="main"
             aria-label="Conteúdo principal"
           >
             <Suspense fallback={<div>{children || <Outlet />}</div>}>
-              <PageTransition variant="fade-slide" duration={0.6}>
+              <PageTransition variant="fade-slide" duration={0.2}>
                 {children || <Outlet />}
               </PageTransition>
             </Suspense>

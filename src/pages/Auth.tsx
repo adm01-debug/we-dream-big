@@ -24,11 +24,8 @@ import {
   Activity,
   CheckCircle2,
   XCircle,
-  Rocket,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { AuthBrandingPanel, Starfield, SpaceScene } from './auth/AuthBranding';
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -196,8 +193,7 @@ export default function Auth() {
   // Redirect if already logged in (only on initial load)
   useEffect(() => {
     if (user && !authLoading && !isSubmitting) {
-      const target = resolveRedirectTargetCb();
-      setTimeout(() => navigate(target, { replace: true }), 100);
+      navigate(resolveRedirectTargetCb(), { replace: true });
     }
   }, [user, authLoading, navigate, isSubmitting, resolveRedirectTargetCb]);
 
@@ -253,66 +249,20 @@ export default function Auth() {
     setIpBlocked(false);
 
     try {
-      const { error, data: signInData } = await signIn(data.email, data.password);
+      const { error } = await signIn(data.email, data.password);
 
       if (error) {
         await logLoginAttempt(data.email, null, false, error.message);
 
-        let description = error.message;
-        let diagnosis = "Verifique as credenciais";
-
-        if (error.message.includes('Invalid login credentials')) {
-          description = 'Email ou senha incorretos';
-          diagnosis = "AUTH_FAILED: Senha não confere ou usuário não existe no Supabase.";
-        } else if (error.message.includes('Email not confirmed')) {
-          description = 'E-mail ainda não confirmado. Verifique sua caixa de entrada.';
-          diagnosis = "AUTH_CONFIRM: Usuário existe mas e-mail está pendente de validação.";
-        } else if (error.message.includes('Database error')) {
-          description = 'Erro de sincronização com o banco de dados. Tente novamente em instantes.';
-          diagnosis = "DB_ERROR: Supabase recusou a conexão ou RLS está bloqueando o acesso inicial.";
-        }
+        const description = error.message.includes('Invalid login credentials')
+          ? 'Email ou senha incorretos'
+          : error.message;
 
         toast({
           variant: 'destructive',
           title: 'Erro ao entrar',
-          description: (
-            <div className="space-y-3">
-              <p className="font-medium">{description}</p>
-              <div className="p-2 bg-black/40 rounded-lg border border-white/5 font-mono text-[10px] text-white/50">
-                DIAGNÓSTICO: {diagnosis}
-              </div>
-              <Button 
-                variant="link" 
-                size="sm" 
-                className="h-auto p-0 text-xs text-white/60 hover:text-white"
-                onClick={() => navigate('/status')}
-              >
-                Executar teste completo de conexão →
-              </Button>
-            </div>
-          ),
+          description,
         });
-        return;
-      }
-
-      // Verificação pós-auth de perfil e roles
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('is_active, role')
-        .eq('email', data.email.toLowerCase())
-        .single();
-
-      if (profileError && profileError.code !== 'PGRST116') {
-         console.warn('Profile fetch error:', profileError);
-      }
-
-      if (profileData && profileData.is_active === false) {
-        toast({
-          variant: 'destructive',
-          title: 'Acesso Bloqueado',
-          description: 'Sua conta está inativa. Entre em contato com o administrador.',
-        });
-        await signOut();
         return;
       }
 
@@ -324,12 +274,11 @@ export default function Auth() {
       } else {
         navigate(resolveRedirectTargetCb());
       }
-    } catch (err) {
-      console.error('Login exception:', err);
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Erro inesperado',
-        description: 'Não foi possível conectar ao servidor. Verifique sua internet.',
+        description: 'Tente novamente mais tarde',
       });
     } finally {
       setIsSubmitting(false);
@@ -356,7 +305,7 @@ export default function Auth() {
           <div className="relative">
             <AppLogo showText={false} iconClassName="h-20 w-20 rounded-2xl shadow-blue-500/40 animate-pulse" />
             <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-success flex items-center justify-center ring-4 ring-[#030508]">
-              <Rocket className="h-3 w-3 text-white" />
+              <RotateCw className="h-3 w-3 text-white animate-spin-slow" />
             </div>
           </div>
           <div className="text-center space-y-2">
@@ -370,7 +319,7 @@ export default function Auth() {
 
   return (
     <main
-      className="relative flex flex-col lg:flex-row min-h-screen bg-[#030508] overflow-x-hidden"
+      className="relative flex flex-col lg:flex-row min-h-screen bg-[#030508]"
       role="main"
       aria-label="Autenticação"
     >
@@ -378,17 +327,24 @@ export default function Auth() {
       <SpaceScene />
 
       <PageSEO
-        title="Login | Promo Gifts"
-        description="Acesse a plataforma Promo Gifts. Entre com suas credenciais para gerenciar seus produtos e orçamentos com a melhor IA das Galáxias!"
+        title="Login"
+        description="Acesse a plataforma Promo Gifts. Faça login para gerenciar seus orçamentos e catálogo."
         path="/login"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Login — Promo Gifts',
+          description: 'Página de autenticação da plataforma Promo Gifts.',
+          url: 'https://criar-together-now.lovable.app/login',
+        }}
       />
       {/* Left side - Branding */}
       <AuthBrandingPanel />
 
 
       {/* Right side - Auth Form */}
-      <div className="relative z-10 flex flex-1 items-center justify-center p-5 lg:p-10">
-        <div className="w-full max-w-[22.2rem] animate-fade-in space-y-7">
+      <div className="relative z-10 flex flex-1 items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-[23.8rem] animate-fade-in space-y-8">
           {/* Mobile Logo */}
           <div className="flex justify-center lg:hidden">
             <AppLogo />
@@ -434,145 +390,93 @@ export default function Auth() {
           {/* Auth Card */}
           <Card
             aria-labelledby="auth-title"
-            className={`relative border-white/10 bg-black/60 shadow-2xl shadow-black/60 backdrop-blur-xl rounded-[2rem] overflow-hidden transition-all duration-500 ${ipBlocked ? 'pointer-events-none opacity-50' : ''}`}
+            className={`border-white/10 bg-[#030508]/60 shadow-2xl shadow-black/40 backdrop-blur-md ${ipBlocked ? 'pointer-events-none opacity-50' : ''}`}
           >
-            <AnimatePresence mode="wait">
-              {loginStatus === 'success' ? (
-                <motion.div
-                  key="success"
-                  initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
-                  animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex flex-col items-center justify-center py-16 px-8 text-center"
-                >
-                  <div className="relative mb-8">
-                    <div className="absolute inset-0 animate-ping rounded-full bg-blue-500/30 duration-700" />
-                    <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20 shadow-[0_0_50px_rgba(59,130,246,0.5)] overflow-hidden">
-                      <Rocket className="h-12 w-12 -rotate-45 animate-bounce" />
-                    </div>
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.4 }}
-                      className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-4 border-[#030508]"
-                    >
-                      <CheckCircle2 className="h-4 w-4 text-white" />
-                    </motion.div>
+            {showForgotPassword ? (
+              <CardContent className="pb-6 pt-6">
+                <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
+              </CardContent>
+            ) : (
+              <>
+                <CardHeader className="pb-4">
+                  <div className="space-y-1 text-center">
+                    <h1 className="font-display text-xl sm:text-2xl font-semibold text-foreground" id="auth-title">
+                      Bem-vindo de volta
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                      Entre com suas credenciais para continuar
+                    </p>
                   </div>
-                  <motion.h2
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="font-display text-3xl font-bold text-white tracking-tight"
-                  >
-                    Decolagem autorizada!
-                  </motion.h2>
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="mt-3 text-base text-white/50"
-                  >
-                    Bem-vindo a bordo. Iniciando sistemas...
-                  </motion.p>
-                </motion.div>
-              ) : showForgotPassword ? (
-                <motion.div
-                  key="forgot-password"
-                  initial={{ opacity: 0, x: 20, filter: 'blur(5px)' }}
-                  animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, x: -20, filter: 'blur(5px)' }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <CardContent className="pb-7 pt-7">
-                    <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
-                  </CardContent>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="login-form"
-                  initial={{ opacity: 0, x: -20, filter: 'blur(5px)' }}
-                  animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, x: 20, filter: 'blur(5px)' }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <CardHeader className="pb-3 pt-9">
-                    <div className="space-y-1 text-center">
-                      <h1 className="font-display text-[1.4rem] font-bold text-white tracking-tight" id="auth-title">
-                        Entre com suas credenciais para Brilhar, você nasceu para isso!
-                      </h1>
-                      <p className="text-[13px] text-white/50">
-                        Inicie sua jornada rumo ao sucesso
-                      </p>
-                    </div>
-                  </CardHeader>
+                </CardHeader>
 
-                <CardContent className="space-y-5 pb-9">
+                <CardContent className="space-y-6 pt-2">
                   {socialError && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                    <div
                       role="alert"
-                      className="relative overflow-hidden animate-fade-in space-y-3 rounded-[1.5rem] border border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-transparent p-5 text-sm shadow-2xl backdrop-blur-xl"
+                      data-testid="social-login-fallback-banner"
+                      className="animate-fade-in space-y-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-foreground shadow-sm"
                     >
-                      <div className="absolute top-0 right-0 p-2 opacity-10">
-                        <ShieldAlert className="h-12 w-12 text-amber-500" />
-                      </div>
-                      
-                      <div className="flex items-start gap-4">
-                        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-500/20 shadow-inner">
-                          <AlertTriangle className="h-5 w-5 text-amber-500" />
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/20">
+                          <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
                         </div>
-                        <div className="flex-1 space-y-2">
-                          <h3 className="font-display text-base font-bold text-amber-200" data-testid="social-login-error-title">
+                        <div className="flex-1 space-y-1.5">
+                          <p className="font-semibold leading-tight text-amber-900 dark:text-amber-200" data-testid="social-login-error-title">
                             {socialError.title}
-                          </h3>
-                          <p className="text-[13px] leading-relaxed text-amber-100/70" data-testid="social-login-error-description">
+                          </p>
+                          <p className="text-xs leading-relaxed text-amber-800/80 dark:text-amber-300/80" data-testid="social-login-error-description">
                             {socialError.description}
                           </p>
                           {socialError.hint && (
-                            <div className="mt-3 rounded-xl bg-black/40 p-3 border border-white/5" data-testid="social-login-error-hint">
-                              <p className="text-[11px] leading-snug text-white/60">
-                                <span className="font-bold uppercase tracking-wider text-[9px] text-amber-500 mr-2">Solução:</span>
+                            <div className="rounded-md bg-amber-500/10 p-2 border border-amber-500/20" data-testid="social-login-error-hint">
+                              <p className="text-[11px] leading-snug text-amber-900/90 dark:text-amber-100/90">
+                                <span className="font-bold uppercase tracking-wider text-[9px] opacity-70 mr-1">Dica:</span>
                                 {socialError.hint}
                               </p>
                             </div>
                           )}
+                          {socialError.isConfig && (
+                            <p className="text-[10px] italic text-amber-700/70 dark:text-amber-400/60">
+                              Este é um problema de configuração que requer atenção do administrador.
+                            </p>
+                          )}
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col gap-2 pt-3">
-                        <div className="flex items-center gap-2">
-                          {!socialError.isConfig && (
-                            <Button
-                              type="button"
-                              className="flex-1 h-11 gap-2 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs transition-all active:scale-95 rounded-xl shadow-lg shadow-amber-500/20"
-                              onClick={handleRetryGoogle}
-                            >
-                              <RotateCw className="h-4 w-4" />
-                              Tentar Google Novamente
-                            </Button>
-                          )}
+                      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-500/10">
+                        {!socialError.isConfig && (
                           <Button
                             type="button"
-                            variant="outline"
-                            className="flex-1 h-11 text-xs font-bold border-white/10 bg-white/5 text-white hover:bg-white/10 rounded-xl transition-all active:scale-95"
-                            onClick={focusEmailFallback}
+                            size="sm"
+                            variant="default"
+                            className="h-8 gap-1.5 text-xs font-medium shadow-sm hover:shadow-md transition-all active:scale-95"
+                            onClick={handleRetryGoogle}
+                            data-testid="social-fallback-retry-google"
                           >
-                            Usar E-mail
+                            <RotateCw className="h-3 w-3" aria-hidden="true" />
+                            Tentar novamente
                           </Button>
-                        </div>
+                        )}
                         <Button
                           type="button"
+                          size="sm"
+                          variant={socialError.isConfig ? 'default' : 'outline'}
+                          className={`h-8 text-xs font-medium transition-all active:scale-95 ${!socialError.isConfig ? 'border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-900' : 'shadow-sm'}`}
+                          onClick={focusEmailFallback}
+                          data-testid="social-fallback-use-email"
+                        >
+                          Usar e-mail e senha
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
                           variant="ghost"
-                          className="h-8 text-[10px] uppercase tracking-widest text-white/30 hover:text-white/60 hover:bg-transparent"
+                          className="h-8 text-xs text-amber-800/60 hover:text-amber-900 hover:bg-transparent"
                           onClick={() => setSocialError(null)}
                         >
-                          Ignorar aviso
+                          Dispensar
                         </Button>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
 
                   <form
@@ -592,16 +496,8 @@ export default function Auth() {
                           type="email"
                           placeholder="seu@email.com"
                           autoComplete="email"
-                          inputMode="email"
-                          autoCapitalize="none"
-                          spellCheck={false}
-                          className="border-white/10 bg-white/5 pl-10 lowercase focus:border-primary/50 focus:ring-primary/20 transition-all duration-300 placeholder:text-white/20"
+                          className="border-border bg-input pl-10 focus:border-blue-500 focus:ring-blue-500"
                           {...loginForm.register('email')}
-                          onChange={(e) => {
-                            const lower = e.target.value.toLowerCase();
-                            if (e.target.value !== lower) e.target.value = lower;
-                            loginForm.register('email').onChange(e);
-                          }}
                           ref={(el) => {
                             loginForm.register('email').ref(el);
                             emailInputRef.current = el;
@@ -616,8 +512,8 @@ export default function Auth() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="login-password" title="password" className="text-foreground">
-                        Senha de Acesso
+                      <Label htmlFor="login-password" className="text-foreground">
+                        Senha
                       </Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -627,7 +523,7 @@ export default function Auth() {
                           type={showPassword ? 'text' : 'password'}
                           placeholder="••••••••"
                           autoComplete="current-password"
-                          className="border-white/10 bg-white/5 pl-10 pr-10 focus:border-primary/50 focus:ring-primary/20 transition-all duration-300 placeholder:text-white/20"
+                          className="border-border bg-input pl-10 pr-10 focus:border-blue-500 focus:ring-blue-500"
                           {...loginForm.register('password')}
                         />
                         <button
@@ -652,45 +548,46 @@ export default function Auth() {
                     </div>
 
                     <div className="flex items-center justify-end">
-                      <button
+                      <Button
                         type="button"
                         data-testid="login-forgot-link"
-                        className="h-auto p-0 text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 transition-colors"
+                        variant="link-primary"
+                        className="h-auto p-0 text-sm"
                         onClick={() => setShowForgotPassword(true)}
                       >
                         Esqueci minha senha
-                      </button>
+                      </Button>
                     </div>
 
                     <Button
                       type="submit"
                       data-testid="login-submit"
-                      className="h-12 w-full text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/40 border border-white/10 rounded-xl active:scale-[0.98]"
+                      className="h-12 w-full text-base font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30 border border-white/20"
                         disabled={isSubmitting || loginStatus === 'success'}
                       >
                         {isSubmitting ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Iniciando Sistemas...
+                            Entrando...
                           </>
                         ) : loginStatus === 'success' ? (
                           <>
                             <div className="flex items-center gap-2 animate-in zoom-in duration-300">
-                              <Rocket className="h-4 w-4 -rotate-45" />
-                              <span>Decolando!</span>
+                              <Gift className="h-4 w-4" />
+                              <span>Pronto!</span>
                             </div>
                           </>
                         ) : (
-                          'Entrar na Plataforma'
+                          'Entrar'
                         )}
                       </Button>
 
-                    <div className="relative py-2">
+                    <div className="relative">
                       <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-white/10" />
+                        <span className="w-full border-t border-white/20" />
                       </div>
-                      <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest">
-                        <span className="bg-black/80 px-4 text-white/30 rounded-full border border-white/5">
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-[#0A0D14]/75 px-2 text-muted-foreground backdrop-blur-xl">
                           ou
                         </span>
                       </div>
@@ -699,27 +596,26 @@ export default function Auth() {
                     <SocialLoginButtons onError={handleSocialError} retryRef={googleRetryRef} />
                   </form>
                 </CardContent>
-              </motion.div>
+              </>
             )}
-          </AnimatePresence>
-        </Card>
+          </Card>
 
           {/* IP/Location Widget */}
           {currentIP && (
             <div
-              className="mx-auto flex max-w-fit items-center justify-center gap-4 rounded-full border border-white/5 bg-black/40 px-6 py-2.5 opacity-0 shadow-lg backdrop-blur-md transition-all hover:bg-black/60 hover:border-white/10"
+              className="mx-auto flex max-w-fit items-center justify-center gap-3 rounded-full border border-border/60 bg-card/80 px-5 py-2.5 opacity-0 shadow-md backdrop-blur-md"
               style={{ animation: 'scale-fade-in 0.5s ease-out 600ms forwards' }}
             >
-              <div className="flex items-center gap-2.5 text-xs text-white/50">
-                <Globe className="h-4 w-4 text-blue-500/80" />
-                <span className="font-mono tracking-wider">{currentIP}</span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Globe className="h-3.5 w-3.5 text-blue-500" />
+                <span className="font-mono">{currentIP}</span>
               </div>
               {geoLocation && (
                 <>
-                  <div className="h-4 w-px bg-white/10" />
-                  <div className="flex items-center gap-2 text-xs text-white/50">
-                    <Wifi className="h-4 w-4 text-emerald-500/80" />
-                    <span className="font-medium">{geoLocation}</span>
+                  <div className="h-4 w-px bg-border" />
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Wifi className="h-3.5 w-3.5 text-success" />
+                    <span>{geoLocation}</span>
                   </div>
                 </>
               )}

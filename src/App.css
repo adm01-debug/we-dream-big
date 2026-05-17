@@ -86,7 +86,6 @@ body {
 body {
   overflow-x: hidden;
   width: 100%;
-  background-color: transparent !important;
 }
 
 /* Smooth transitions for theme/skin changes — applied globally during switch */

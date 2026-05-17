@@ -324,11 +324,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name: 'RateLimitError',
           status: 429,
         } as { message: string; name: string; status: number },
-        data: null,
       };
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -344,7 +343,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: 'RateLimitError',
             status: 429,
           } as { message: string; name: string; status: number },
-          data: null,
         };
       }
     } else {
@@ -357,7 +355,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.functions.invoke('log-login-attempt', {
       body: {
         email,
-        user_id: data?.user?.id || null,
+        user_id: error ? null : undefined,
         ip_address: 'client',
         success: !error,
         failure_reason: error?.message || null,
@@ -366,7 +364,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: log.headers(),
     }).catch(() => {});
 
-    return { error, data };
+    return { error };
   };
 
   const signOut = async () => {
