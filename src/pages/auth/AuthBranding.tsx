@@ -68,7 +68,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
   }, [config.parallaxIntensity, config.reducedMotion]);
   
   if (starsRef.current.length === 0) {
-    starsRef.current = [...Array(100)].map((_, i) => ({
+    starsRef.current = [...Array(150)].map((_, i) => ({
       id: i,
       size: 0.8 + (i % 3) * 0.4,
       top: ((i * 137.7) % 100),
@@ -212,15 +212,13 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
           }}
         >
           <div
-            className="w-full h-full rounded-full"
+            className="w-full h-full rounded-full bg-white"
             data-testid={`star-breathing-${star.id}`}
             style={{
-              background: 'radial-gradient(circle, #ffffff 0%, #3b82f6 40%, transparent 100%)',
-              boxShadow: '0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(59, 130, 246, 0.6)',
-              // Respiração (Brilho/Escala) na camada interna
+              boxShadow: '0 0 10px #fff, 0 0 20px #3b82f6',
               animation: `breathingStar ${star.breathingDur}s ease-in-out ${star.breathingDelay}s infinite, starGlowPulse ${star.breathingDur * 1.5}s ease-in-out infinite`,
               willChange: "opacity, transform, filter",
-              mixBlendMode: 'color-dodge',
+              mixBlendMode: 'screen',
             }}
           />
         </div>
