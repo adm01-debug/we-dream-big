@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
           .from('material_groups')
           .select('*')
           .eq('is_active', true)
-          .order('sort_order', { ascending: true });
+          .order('name', { ascending: true });
 
         if (groupsError) throw groupsError;
 
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
             material_groups (id, name, slug, description)
           `)
           .eq('is_active', true)
-          .order('sort_order', { ascending: true });
+          .order('name', { ascending: true });
 
         if (typesError) throw typesError;
 
@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
           query = query.eq('material_groups.slug', groupId);
         }
 
-        const { data: types, error: typesError } = await query.order('sort_order', { ascending: true });
+        const { data: types, error: typesError } = await query.order('name', { ascending: true });
 
         if (typesError) throw typesError;
 
@@ -239,7 +239,7 @@ Deno.serve(async (req) => {
             material_groups (id, name, slug, description)
           `)
           .eq('is_active', true)
-          .order('sort_order', { ascending: true });
+          .order('name', { ascending: true });
 
         if (typesError) throw typesError;
 
@@ -295,7 +295,7 @@ Deno.serve(async (req) => {
           `)
           .eq('product_id', productId)
           .eq('is_active', true)
-          .order('sort_order', { ascending: true });
+          .order('name', { ascending: true });
 
         if (error) throw error;
         result = { materials: data, count: data?.length || 0, productId };
