@@ -1,1 +1,0 @@
-DELETE FROM auth.users WHERE email = 'adm01@promobrindes.com.br';

@@ -72,19 +72,7 @@
     "typecheck:full": "tsc -p tsconfig.app.json --noEmit",
     "ci:build": "node scripts/check-build-warnings.mjs",
     "typecheck:baseline:update": "node scripts/tsc-baseline-generate.mjs",
-    "check:observability": "node scripts/observability-check.mjs",
-    "clean:vite": "rm -rf node_modules/.vite node_modules/.vite-temp",
-    "dev:clean": "npm run clean:vite && npm install && npm run dev",
-    "predev": "npm run clean:vite",
-    "dev:clean:pnpm": "npm run clean:vite && pnpm install && pnpm dev",
-    "dev:clean:yarn": "npm run clean:vite && yarn install && yarn dev",
-    "clean:all": "rm -rf node_modules node_modules/.vite && npm install && npm run dev",
-    "clean:all:hard": "rm -rf node_modules node_modules/.vite package-lock.json bun.lock && npm install",
-    "predev:pnp": "npm run clean:vite",
-    "predev:pnpm": "npm run clean:vite",
-    "dev:pnpm": "pnpm run predev:pnpm && pnpm exec vite",
-    "predev:yarn": "npm run clean:vite",
-    "dev:yarn": "yarn run predev:yarn && yarn exec vite"
+    "check:observability": "node scripts/observability-check.mjs"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

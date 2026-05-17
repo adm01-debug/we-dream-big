@@ -22,11 +22,8 @@ export default defineConfig(({ mode }: { mode: string }) => ({
   ].filter(Boolean),
   
   resolve: {
-    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(__dirname, './src'),
-      react: path.resolve(__dirname, './node_modules/react'),
-      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
     },
   },
   
@@ -122,14 +119,6 @@ export default defineConfig(({ mode }: { mode: string }) => ({
   },
   
   optimizeDeps: {
-    include: [
-      'react',
-      'react/jsx-runtime',
-      'react/jsx-dev-runtime',
-      'react-dom',
-      'react-dom/client',
-      'react-router-dom',
-      '@tanstack/react-query',
-    ],
+    include: ['react', 'react-dom', 'react-router-dom'],
   },
 }))
