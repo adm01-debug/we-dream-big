@@ -308,7 +308,7 @@ export default function Auth() {
           <div className="relative">
             <AppLogo showText={false} iconClassName="h-20 w-20 rounded-2xl shadow-blue-500/40 animate-pulse" />
             <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-success flex items-center justify-center ring-4 ring-[#030508]">
-              <RotateCw className="h-3 w-3 text-white animate-spin-slow" />
+              <Rocket className="h-3 w-3 text-white" />
             </div>
           </div>
           <div className="text-center space-y-2">
