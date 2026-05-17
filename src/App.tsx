@@ -42,7 +42,7 @@ const App = () => {
               <BrowserRouter future={{ v7_relativeSplatPath: true }}>
                 <AuthProvider>
                   <AppBootstrapContainer>
-                    <ErrorBoundary>
+                    <EnhancedErrorBoundary>
                       <AppProviders>
                         <Toaster />
                         <Sonner />
