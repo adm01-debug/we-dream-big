@@ -5,7 +5,7 @@ import { runBotProtection } from '../_shared/bot-protection.ts';
 import { getBreaker, circuitOpenResponse, getAllBreakerStatuses } from '../_shared/circuit-breaker.ts';
 import { AsyncLocalStorage } from "node:async_hooks";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
-import { resolveCredential, buildCredentialsHealth } from "../_shared/credentials.ts";
+import { resolveCredential, buildCredentialsHealth, getCredentialCacheMetrics } from "../_shared/credentials.ts";
 
 const breaker = getBreaker("crm-db");
 
