@@ -1686,9 +1686,20 @@ async function getExternalClient(corsHeaders: Record<string, string>, userContex
   ]);
   
   if (!externalUrl || !externalKey) {
-    console.warn('[external-db-bridge] EXTERNAL_PROMOBRIND_URL/KEY not configured (DB or env) — returning empty payload');
+    const missing = [];
+    if (!externalUrl) missing.push("EXTERNAL_PROMOBRIND_URL");
+    if (!externalKey) missing.push("EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY");
+    
+    console.warn(`[external-db-bridge] ⚠️ Credenciais não configuradas: ${missing.join(", ")}. Retornando payload vazio.`);
     return jsonResponse(
-      { records: [], data: [], count: 0, _unconfigured: true, _message: 'Banco externo não configurado' },
+      { 
+        records: [], 
+        data: [], 
+        count: 0, 
+        _unconfigured: true, 
+        _missing: missing,
+        _message: 'Banco externo não configurado. Verifique as secrets EXTERNAL_PROMOBRIND_URL e EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY.' 
+      },
       200,
       corsHeaders,
     );
