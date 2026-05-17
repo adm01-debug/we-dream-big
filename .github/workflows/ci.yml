@@ -93,7 +93,8 @@ jobs:
       # e falha SOMENTE para erros NOVOS vs .eslint-baseline.json.
       # Step informacional separado removido (era redundante e dobrava o tempo de CI).
       - name: ESLint baseline gate (bloqueia apenas regressões novas)
-        run: node scripts/check-eslint-baseline.mjs
+        run: npm run lint:baseline
+
 
       - name: TypeScript type check
         run: npm run typecheck
