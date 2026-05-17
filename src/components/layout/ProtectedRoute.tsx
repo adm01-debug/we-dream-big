@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +14,31 @@ interface ProtectedRouteProps extends AccessPolicy {
   requireAdmin?: boolean;
 }
 
+function ProtectedRouteErrorRedirect() {
+  const didRedirectRef = useRef(false);
+  const { signOut } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (didRedirectRef.current) return;
+    didRedirectRef.current = true;
+
+    savePostLoginRedirect(`${location.pathname}${location.search}${location.hash}`);
+    void signOut().finally(() => {
+      window.location.replace('/auth?reason=module-error');
+    });
+  }, [location.hash, location.pathname, location.search, signOut]);
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Redirecionando para o login…</p>
+      </div>
+    </div>
+  );
+}
+
 export function ProtectedRoute({
   children,
   requiredRole,
@@ -21,7 +46,7 @@ export function ProtectedRoute({
   requireDev,
   requireAdmin = false,
 }: ProtectedRouteProps) {
-  const { user, roles, currentAAL, isLoading } = useAuth();
+  const { user, session, roles, currentAAL, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -32,7 +57,7 @@ export function ProtectedRoute({
     );
   }
 
-  if (!user) {
+  if (!user || !session) {
     // Salva destino pós-login (sobrevive ao round-trip OAuth)
     savePostLoginRedirect(`${location.pathname}${location.search}${location.hash}`);
     return <Navigate to="/auth" state={{ from: location }} replace />;
@@ -75,16 +100,7 @@ export function ProtectedRoute({
 
   return (
     <EnhancedErrorBoundary
-      fallback={
-        <div className="p-8">
-          <EmptyState
-            variant="error"
-            title="Falha no Módulo"
-            description="Ocorreu um erro ao carregar esta seção. Tente recarregar a página."
-            action={{ label: 'Recarregar', onClick: () => window.location.reload() }}
-          />
-        </div>
-      }
+      fallback={<ProtectedRouteErrorRedirect />}
     >
       {children ? <>{children}</> : <Outlet />}
     </EnhancedErrorBoundary>
