@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { table, direction = "to-external" } = await req.json();
+    const { table, direction = "to-external", since } = await req.json();
 
     if (!table) {
       return new Response(JSON.stringify({ error: "Table name is required" }), {
@@ -42,13 +42,17 @@ serve(async (req) => {
     let sourceClient = direction === "to-external" ? internalSupabase : externalSupabase;
     let targetClient = direction === "to-external" ? externalSupabase : internalSupabase;
 
-    console.log(`Starting sync for table ${table} in direction ${direction}`);
+    console.log(`Starting sync for table ${table} in direction ${direction}${since ? ` since ${since}` : ''}`);
 
     // 3. Buscar dados da origem
-    const { data: sourceData, error: sourceError } = await sourceClient
-      .from(table)
-      .select("*")
-      .limit(1000); // Limitando para evitar estouro de memória em tabelas grandes
+    let query = sourceClient.from(table).select("*").limit(1000);
+    
+    // Sincronização incremental se updated_at estiver disponível e solicitado
+    if (since) {
+      query = query.gt('updated_at', since);
+    }
+
+    const { data: sourceData, error: sourceError } = await query;
 
     if (sourceError) throw sourceError;
 
@@ -59,7 +63,6 @@ serve(async (req) => {
     }
 
     // 4. Inserir/Atualizar no destino (Upsert)
-    // Note: Requer que a tabela tenha uma Primary Key definida corretamente
     const { data: syncResult, error: syncError } = await targetClient
       .from(table)
       .upsert(sourceData, { onConflict: 'id' });
@@ -69,7 +72,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       success: true, 
       message: `Synced ${sourceData.length} records to ${direction === "to-external" ? 'external' : 'internal'} database.`,
-      count: sourceData.length
+      count: sourceData.length,
+      last_updated: sourceData.length > 0 ? sourceData.reduce((max, r) => (r.updated_at > max ? r.updated_at : max), sourceData[0].updated_at) : null
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
