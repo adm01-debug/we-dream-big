@@ -55,7 +55,9 @@ Deno.serve(async (req) => {
 
     // Conectar ao banco externo
     const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
+    const externalKey =
+      Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY') ||
+      Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
 
     if (!externalUrl || !externalKey) {
       console.warn('[materials-api] EXTERNAL_SUPABASE_URL/KEY not configured — returning empty payload');
