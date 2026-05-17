@@ -72,8 +72,12 @@ export async function getCrmClient(): Promise<SupabaseClient | null> {
   const CRM_KEY = CRM_SERVICE_KEY || CRM_ANON_VAL;
 
   if (!CRM_URL || !CRM_KEY) {
+    const missing = [];
+    if (!CRM_URL) missing.push("CRM_SUPABASE_URL (EXTERNAL_CRM_URL)");
+    if (!CRM_KEY) missing.push("CRM_SUPABASE_SERVICE_KEY (EXTERNAL_CRM_SERVICE_ROLE_KEY)");
+    
     console.error(
-      `[crm-boot] ❌ Falha na resolução de credenciais: ` +
+      `[crm-boot] ❌ Falha na resolução de credenciais. Faltando: ${missing.join(", ")}. ` +
       `URL=${urlRes.resolved_name}(${urlRes.source}) ` +
       `KEY=${svcRes.resolved_name}(${svcRes.source}) ` +
       `ANON=${anonRes.resolved_name}(${anonRes.source})`

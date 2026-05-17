@@ -23,13 +23,13 @@ export default function Index() {
     "@type": "CollectionPage",
     "name": catalog.searchQuery ? `Resultados para "${catalog.searchQuery}" - Catálogo` : "Catálogo de Brindes Promocionais",
     "description": catalog.searchQuery 
-      ? `Encontramos ${catalog.filteredProducts.length} brindes promocionais para sua busca "${catalog.searchQuery}".`
+      ? `Encontramos ${catalog.filteredProducts?.length || 0} brindes promocionais para sua busca "${catalog.searchQuery}".`
       : "Explore nosso catálogo com mais de 15.000 brindes personalizáveis. Filtre por categoria, material, cor e preço.",
-    "url": window.location.href,
-    "numberOfItems": catalog.totalEstimate || catalog.filteredProducts.length,
+    "url": typeof window !== 'undefined' ? window.location.href : '',
+    "numberOfItems": catalog.totalEstimate || catalog.filteredProducts?.length || 0,
     "mainEntity": {
       "@type": "ItemList",
-      "itemListElement": catalog.paginatedProducts.slice(0, 10).map((p, i) => ({
+      "itemListElement": (catalog.paginatedProducts || []).slice(0, 10).map((p, i) => ({
         "@type": "ListItem",
         "position": i + 1,
         "url": `${window.location.origin}/produto/${p.id}`,
