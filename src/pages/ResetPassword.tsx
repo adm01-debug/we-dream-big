@@ -204,73 +204,76 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-6">
-      <div className="w-full max-w-md animate-fade-in space-y-8">
+    <div className="relative flex min-h-screen items-center justify-center bg-[#030508] p-6 overflow-hidden">
+      <SpaceScene />
+      <div className="relative z-10 w-full max-w-md animate-fade-in space-y-8">
         {/* Logo */}
         <div className="flex justify-center">
           <AppLogo />
         </div>
 
-        <Card className="border-border bg-card shadow-xl">
-          <CardHeader className="pb-4">
+        <Card className="border-white/10 bg-black/60 shadow-2xl backdrop-blur-xl rounded-[2rem] overflow-hidden">
+          <CardHeader className="pb-4 pt-8">
             <div className="space-y-1 text-center">
-              <h1 className="font-display text-xl font-semibold text-foreground">
-                Redefinir senha
+              <h1 className="font-display text-2xl font-bold text-white">
+                Nova Senha
               </h1>
-              <p className="text-sm text-muted-foreground">Digite sua nova senha abaixo</p>
+              <p className="text-sm text-white/50">Defina sua nova chave de acesso</p>
             </div>
           </CardHeader>
 
-          <CardContent className="pt-2">
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <CardContent className="pt-2 pb-10 px-8">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground">
+                <Label htmlFor="password" title="password" className="text-white">
                   Nova senha
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     autoComplete="new-password"
-                    className="border-border bg-input pl-10 pr-10 focus:border-orange focus:ring-orange"
+                    className="border-white/10 bg-white/5 pl-10 pr-10 text-white focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl h-11 transition-all"
                     {...form.register('password')}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-orange"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 transition-colors hover:text-blue-400"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {form.formState.errors.password && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm text-destructive font-medium">
                     {form.formState.errors.password.message}
                   </p>
                 )}
-                <PasswordStrengthIndicator password={form.watch('password')} />
+                <div className="pt-1">
+                  <PasswordStrengthIndicator password={form.watch('password')} />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-foreground">
+                <Label htmlFor="confirmPassword" title="confirmPassword" className="text-white">
                   Confirmar nova senha
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
                   <Input
                     id="confirmPassword"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     autoComplete="new-password"
-                    className="border-border bg-input pl-10 focus:border-orange focus:ring-orange"
+                    className="border-white/10 bg-white/5 pl-10 text-white focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl h-11 transition-all"
                     {...form.register('confirmPassword')}
                   />
                 </div>
                 {form.formState.errors.confirmPassword && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm text-destructive font-medium">
                     {form.formState.errors.confirmPassword.message}
                   </p>
                 )}
@@ -278,17 +281,16 @@ export default function ResetPassword() {
 
               <Button
                 type="submit"
-                variant="orange"
-                className="h-11 w-full text-base font-semibold"
+                className="h-12 w-full text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 rounded-xl border border-white/10 transition-all active:scale-[0.98]"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Redefinindo...
+                    Atualizando...
                   </>
                 ) : (
-                  'Redefinir senha'
+                  'Redefinir Senha'
                 )}
               </Button>
             </form>
@@ -298,4 +300,5 @@ export default function ResetPassword() {
       </div>
     </div>
   );
+}
 }
