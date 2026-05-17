@@ -59,6 +59,15 @@ export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatch
   const body = { operation: "batch", queries };
   const reqBytes = estimatePayloadBytes(body);
   const requestId = newRequestId();
+
+  // Gate: credenciais resolvidas? Sem isto a edge devolve 500.
+  const creds = await validateCrmCredentials();
+  if (!creds.ok) {
+    throw new Error(
+      `CRM indisponível: credenciais ${creds.health}. Configure CRM_SUPABASE_URL e CRM_SUPABASE_SERVICE_KEY.`,
+    );
+  }
+
   const { data, error } = await supabase.functions.invoke("crm-db-bridge", {
     body,
     headers: { [REQUEST_ID_HEADER]: requestId },
