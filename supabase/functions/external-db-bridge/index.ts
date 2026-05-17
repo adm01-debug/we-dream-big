@@ -1666,13 +1666,12 @@ function cachedJsonResponse(payload: string, corsHeaders: Record<string, string>
 let cachedExternalClient: ServiceClient | null = null;
 let warmupPromise: Promise<void> | null = null;
 
-function buildExternalClient(url: string, key: string): ServiceClient {
+function buildExternalClient(url: string, key: string, globalHeaders?: Record<string, string>): ServiceClient {
   return castSupabaseClient(createClient(url, key, {
     db: { schema: 'public' },
     global: {
-      headers: {
+      headers: globalHeaders ?? {
         'x-connection-timeout': '15000',
-        // Increase PostgREST statement timeout to 25s to avoid premature cancellation
         'Prefer': 'max-affected=1000',
       },
     },
@@ -1704,18 +1703,12 @@ async function getExternalClient(corsHeaders: Record<string, string>, userContex
   
   if (userContext) {
     // Injeta claims do JWT para o Supabase externo honrar o RLS
-    // Nota: Requer que o Supabase externo aceite essas claims via session variables (set_config)
-    // ou que o client use um auth token válido do projeto destino.
-    // Como usamos Service Role, forçamos claims via headers se o bridge permitir bypass.
     globalHeaders['x-supabase-auth-sub'] = userContext.id;
     if (userContext.role) globalHeaders['x-supabase-auth-role'] = userContext.role;
     if (userContext.email) globalHeaders['x-supabase-auth-email'] = userContext.email;
   }
 
-  const client = castSupabaseClient(createClient(externalUrl, externalKey, {
-    db: { schema: 'public' },
-    global: { headers: globalHeaders },
-  }));
+  const client = buildExternalClient(externalUrl, externalKey, globalHeaders);
   
   if (!userContext) {
     cachedExternalClient = client;
