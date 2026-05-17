@@ -205,7 +205,7 @@ async function detectDiagOp(req: Request): Promise<DiagOp | null> {
       try {
         const cloned = req.clone();
         const peek = await cloned.json() as { operation?: unknown };
-        if (peek?.operation === "ping" || peek?.operation === "diag" || peek?.operation === "breaker_status" || peek?.operation === "creds_health") {
+        if (peek?.operation === "ping" || peek?.operation === "diag" || peek?.operation === "breaker_status" || peek?.operation === "creds_health" || peek?.operation === "creds_debug") {
           return peek.operation as DiagOp;
         }
       } catch { /* corpo inválido — não é diag */ }
