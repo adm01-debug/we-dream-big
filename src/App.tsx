@@ -55,7 +55,7 @@ const App = () => {
                         <RoutePrefetcher />
                         <AppRoutes />
                       </AppProviders>
-                    </ErrorBoundary>
+                    </EnhancedErrorBoundary>
                   </AppBootstrapContainer>
                 </AuthProvider>
               </BrowserRouter>
