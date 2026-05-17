@@ -193,7 +193,7 @@ export async function invokeWithRetry(
     if (isColdStartSignal(msg)) {
       emitBridgeStatus({ type: 'unavailable', reason: msg, attempts: attempt + 1 });
     }
-    return finalize({ data, error });
+    return finalize({ data, error: new Error(friendlyMsg) });
   }
-  return finalize({ data: null, error: new Error('Max retries exceeded') });
+  return finalize({ data: null, error: new Error('O banco externo não respondeu após várias tentativas.') });
 }
