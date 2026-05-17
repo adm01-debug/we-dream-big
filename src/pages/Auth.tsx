@@ -598,12 +598,12 @@ export default function Auth() {
                         )}
                       </Button>
 
-                    <div className="relative">
+                    <div className="relative py-2">
                       <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-white/20" />
+                        <span className="w-full border-t border-white/10" />
                       </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-[#0A0D14]/75 px-2 text-muted-foreground backdrop-blur-xl">
+                      <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest">
+                        <span className="bg-black/80 px-4 text-white/30 rounded-full border border-white/5">
                           ou
                         </span>
                       </div>
