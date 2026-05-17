@@ -34,8 +34,15 @@ import { ProductDetailHero } from './product-detail/ProductDetailHero';
 import { ScrollToTopButton } from '@/components/common/ScrollToTopButton';
 
 export default function ProductDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id: rawId } = useParams<{ id: string }>();
+  const id = rawId && rawId !== 'undefined' && rawId !== 'null' ? rawId : '';
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!id) {
+      navigate('/catalogo', { replace: true });
+    }
+  }, [id, navigate]);
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { trackProductView } = useProductAnalytics();
