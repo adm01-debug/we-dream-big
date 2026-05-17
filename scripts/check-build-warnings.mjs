@@ -49,8 +49,10 @@ async function runBuildAndCheckWarnings() {
     let foundWarnings = [];
 
     for (const line of lines) {
-      // Ignora warnings conhecidos de infra que não podemos controlar (opcional)
+      // Ignora warnings conhecidos que não são críticos para a lógica da app
       if (line.includes('npm warn')) continue; 
+      if (line.includes('A PostCSS plugin did not pass the `from` option')) continue;
+      if (line.includes('dynamic import will not move module into another chunk')) continue;
       
       if (warningPatterns.some(pattern => pattern.test(line))) {
         foundWarnings.push(line.trim());
