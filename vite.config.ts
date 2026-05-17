@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'
 import { componentTagger } from "lovable-tagger";
@@ -9,7 +9,19 @@ import { visualizer } from "rollup-plugin-visualizer";
  * 
  * @see https://vitejs.dev/config/
  */
-export default defineConfig(({ mode }: { mode: string }) => ({
+export default defineConfig(({ mode }: { mode: string }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const hasExternalBrowserPair = Boolean(
+    env.VITE_EXTERNAL_SUPABASE_URL && env.VITE_EXTERNAL_SUPABASE_ANON_KEY,
+  );
+  const resolvedSupabaseUrl = hasExternalBrowserPair
+    ? env.VITE_EXTERNAL_SUPABASE_URL
+    : env.VITE_SUPABASE_URL;
+  const resolvedSupabaseAnonKey = hasExternalBrowserPair
+    ? env.VITE_EXTERNAL_SUPABASE_ANON_KEY
+    : env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+  return ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
@@ -121,4 +133,9 @@ export default defineConfig(({ mode }: { mode: string }) => ({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
   },
-}))
+  define: {
+    'import.meta.env.VITE_EXTERNAL_SUPABASE_URL': JSON.stringify(resolvedSupabaseUrl),
+    'import.meta.env.VITE_EXTERNAL_SUPABASE_ANON_KEY': JSON.stringify(resolvedSupabaseAnonKey),
+  },
+})
+})
