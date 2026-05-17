@@ -406,26 +406,26 @@ export default function Auth() {
           {/* Auth Card */}
           <Card
             aria-labelledby="auth-title"
-            className={`border-white/10 bg-[#030508]/60 shadow-2xl shadow-black/40 backdrop-blur-md ${ipBlocked ? 'pointer-events-none opacity-50' : ''}`}
+            className={`border-white/10 bg-black/60 shadow-2xl shadow-black/60 backdrop-blur-xl rounded-[2rem] overflow-hidden ${ipBlocked ? 'pointer-events-none opacity-50' : ''}`}
           >
             {showForgotPassword ? (
-              <CardContent className="pb-6 pt-6">
+              <CardContent className="pb-8 pt-8">
                 <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
               </CardContent>
             ) : (
               <>
-                <CardHeader className="pb-4">
+                <CardHeader className="pb-4 pt-10">
                   <div className="space-y-1 text-center">
-                    <h1 className="font-display text-xl sm:text-2xl font-semibold text-foreground" id="auth-title">
+                    <h1 className="font-display text-2xl font-bold text-white tracking-tight" id="auth-title">
                       Bem-vindo de volta
                     </h1>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white/50">
                       Entre com suas credenciais para continuar
                     </p>
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-6 pt-2">
+                <CardContent className="space-y-6 pb-10">
                   {socialError && (
                     <div
                       role="alert"
