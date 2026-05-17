@@ -122,26 +122,29 @@ export default function SystemStatusPage() {
         
         let status: "ok" | "error" | "warning" = "ok";
         let msg = "Acessível";
+        let suggestion = "";
         
         if (error) {
-          // PGRST301 = JWT Expirado/Inválido
-          // 42501 = Forbidden (RLS block)
           if (error.code === 'PGRST301') {
             status = "error";
             msg = `JWT Inválido/Expirado (${error.code})`;
+            suggestion = "Sua sessão expirou. Tente sair e entrar novamente para renovar o token.";
           } else if (httpStatus === 403 || error.code === '42501') {
             status = "warning";
             msg = `Forbidden (Bloqueado por RLS: ${error.code})`;
+            suggestion = `Verifique se existe uma política SELECT para a role '${instanceInfo.sessionType}' na tabela ${t}.`;
           } else if (error.code === '42P01') {
             status = "error";
             msg = `Tabela Inexistente (Esquema não sincronizado: ${error.code})`;
+            suggestion = "Execute as migrações no banco de dados para criar a tabela.";
           } else {
             status = "error";
             msg = `Erro ${error.code}: ${error.message} (HTTP ${httpStatus})`;
+            suggestion = "Verifique os logs do Supabase para mais detalhes.";
           }
         }
 
-        return { table: t, status, msg, code: error?.code, httpStatus };
+        return { table: t, status, msg, code: error?.code, httpStatus, suggestion };
       })
     );
     setRlsChecks(rlsResults);
