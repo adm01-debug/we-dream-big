@@ -46,11 +46,13 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
         return;
       }
 
-      setRequestSent(true);
       toast({
         title: 'Solicitação enviada!',
         description: result.message,
       });
+      
+      // Navega para a página de confirmação com instruções detalhadas
+      navigate('/forgot-password-confirmation');
     } catch (error) {
       toast({
         variant: 'destructive',
