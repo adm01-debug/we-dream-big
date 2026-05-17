@@ -946,7 +946,11 @@ Deno.serve((req) => {
     // paga cold-start. Em rajada paralela, fetch keep-alive evita re-handshake.
     const crm = await getCrmClient();
     if (!crm) {
-      return jsonResponse({ error: "CRM database credentials not configured" }, 500);
+      // getCrmClient já logou detalhes no console
+      return jsonResponse({ 
+        error: "CRM database credentials not configured",
+        details: "getCrmClient returned null after resolution"
+      }, 500);
     }
 
     // Validate body with Zod schema
