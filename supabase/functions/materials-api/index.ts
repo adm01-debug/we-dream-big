@@ -55,7 +55,9 @@ Deno.serve(async (req) => {
 
     // Conectar ao banco externo
     const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
+    const externalKey =
+      Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY') ||
+      Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
 
     if (!externalUrl || !externalKey) {
       console.warn('[materials-api] EXTERNAL_SUPABASE_URL/KEY not configured — returning empty payload');
@@ -86,7 +88,7 @@ Deno.serve(async (req) => {
           .from('material_groups')
           .select('*')
           .eq('is_active', true)
-          .order('sort_order', { ascending: true });
+          .order('name', { ascending: true });
 
         if (groupsError) throw groupsError;
 
@@ -135,10 +137,10 @@ Deno.serve(async (req) => {
           .from('material_types')
           .select(`
             *,
-            material_groups (id, name, slug, description, hex_code, icon)
+            material_groups (id, name, slug, description)
           `)
           .eq('is_active', true)
-          .order('sort_order', { ascending: true });
+          .order('name', { ascending: true });
 
         if (typesError) throw typesError;
 
@@ -188,7 +190,7 @@ Deno.serve(async (req) => {
           .from('material_types')
           .select(`
             *,
-            material_groups!inner (id, name, slug, description, hex_code, icon)
+            material_groups!inner (id, name, slug, description)
           `)
           .eq('is_active', true);
 
@@ -198,7 +200,7 @@ Deno.serve(async (req) => {
           query = query.eq('material_groups.slug', groupId);
         }
 
-        const { data: types, error: typesError } = await query.order('sort_order', { ascending: true });
+        const { data: types, error: typesError } = await query.order('name', { ascending: true });
 
         if (typesError) throw typesError;
 
@@ -236,10 +238,10 @@ Deno.serve(async (req) => {
           .from('material_types')
           .select(`
             *,
-            material_groups (id, name, slug, description, hex_code, icon, sort_order)
+            material_groups (id, name, slug, description)
           `)
           .eq('is_active', true)
-          .order('sort_order', { ascending: true });
+          .order('name', { ascending: true });
 
         if (typesError) throw typesError;
 
@@ -295,7 +297,7 @@ Deno.serve(async (req) => {
           `)
           .eq('product_id', productId)
           .eq('is_active', true)
-          .order('sort_order', { ascending: true });
+          .order('name', { ascending: true });
 
         if (error) throw error;
         result = { materials: data, count: data?.length || 0, productId };
@@ -435,12 +437,16 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Materials API error:', errorMessage);
-    
+  } catch (error: any) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : (error?.message || error?.error_description || error?.hint || error?.details || JSON.stringify(error) || 'Erro desconhecido');
+    const errorCode = error?.code ?? null;
+    console.error('Materials API error:', errorMessage, 'code:', errorCode, 'raw:', JSON.stringify(error));
+
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: errorMessage, code: errorCode }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
