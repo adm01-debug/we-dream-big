@@ -435,12 +435,16 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Materials API error:', errorMessage);
-    
+  } catch (error: any) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : (error?.message || error?.error_description || error?.hint || error?.details || JSON.stringify(error) || 'Erro desconhecido');
+    const errorCode = error?.code ?? null;
+    console.error('Materials API error:', errorMessage, 'code:', errorCode, 'raw:', JSON.stringify(error));
+
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: errorMessage, code: errorCode }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
