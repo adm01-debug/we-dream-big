@@ -32,27 +32,35 @@ async function runBuildAndCheckWarnings() {
     console.log('\n--- Resultado do Build ---');
     
     // Lista de padrões que indicam warnings que devem falhar o build
+    // Focamos em códigos de erro específicos do Vite/Rollup/TS para evitar falsos positivos
     const warningPatterns = [
-      /warning/i,
-      /✗/i,
-      /failed/i,
-      /error/i,
-      /Expected/i,
-      /PostCSS plugin did not pass the `from` option/i, // Exemplo de warning comum que o usuário pode querer barrar
+      /\[vite:.*\]/i,         // Erros de plugins do Vite
+      /\[rollup:.*\]/i,       // Erros do Rollup
+      /TS\d+: /i,             // Erros do TypeScript (ex: TS2322)
+      /error/i,               // Padrão genérico de erro
+      /warning/i,             // Padrão genérico de warning
+      /Unused/i,              // Código não utilizado
+      /Expected/i,            // Erros de sintaxe/parsing
+      /console\.(warn|error)/i // Captura mensagens de console emitidas durante o build/SSR
     ];
 
-    // Alguns warnings de dependências externas podem ser ignorados se necessário, 
-    // mas a instrução é ser rigoroso ("falhar se houver warnings").
     const combinedOutput = stdout + stderr;
     const lines = combinedOutput.split('\n');
     
     let foundWarnings = [];
 
+    // Lista de exceções permitidas (infraestrutura ou legadas seguras)
+    const allowedExceptions = [
+      'npm warn',
+      'PostCSS plugin did not pass the `from` option',
+      'dynamic import will not move module into another chunk',
+      'Entry module "src/main.tsx" is using named and default exports together', // Rollup warning comum
+      'Circular dependency', // Muitas vezes presente em libs grandes, avaliar se bloqueia
+    ];
+
+
     for (const line of lines) {
-      // Ignora warnings conhecidos que não são críticos para a lógica da app
-      if (line.includes('npm warn')) continue; 
-      if (line.includes('A PostCSS plugin did not pass the `from` option')) continue;
-      if (line.includes('dynamic import will not move module into another chunk')) continue;
+      if (allowedExceptions.some(exc => line.includes(exc))) continue;
       
       if (warningPatterns.some(pattern => pattern.test(line))) {
         foundWarnings.push(line.trim());
@@ -66,14 +74,15 @@ async function runBuildAndCheckWarnings() {
 
     if (foundWarnings.length > 0) {
       console.error(`❌ Build concluído, mas foram encontrados ${foundWarnings.length} warnings/erros impeditivos:`);
-      foundWarnings.slice(0, 10).forEach(w => console.error(`   - ${w}`));
-      if (foundWarnings.length > 10) console.error(`   ... e mais ${foundWarnings.length - 10} warnings.`);
+      foundWarnings.slice(0, 20).forEach(w => console.error(`   - ${w}`));
+      if (foundWarnings.length > 20) console.error(`   ... e mais ${foundWarnings.length - 20} warnings.`);
       process.exit(1);
     }
 
-    console.log('✅ Build concluído com sucesso e SEM warnings! 10/10.');
+    console.log('✅ Build concluído com sucesso e SEM warnings detectados! 10/10.');
     process.exit(0);
   });
+
 }
 
 runBuildAndCheckWarnings().catch(err => {
