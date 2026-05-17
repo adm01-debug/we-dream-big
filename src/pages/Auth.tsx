@@ -406,26 +406,26 @@ export default function Auth() {
           {/* Auth Card */}
           <Card
             aria-labelledby="auth-title"
-            className={`border-white/10 bg-[#030508]/60 shadow-2xl shadow-black/40 backdrop-blur-md ${ipBlocked ? 'pointer-events-none opacity-50' : ''}`}
+            className={`border-white/10 bg-black/60 shadow-2xl shadow-black/60 backdrop-blur-xl rounded-[2rem] overflow-hidden ${ipBlocked ? 'pointer-events-none opacity-50' : ''}`}
           >
             {showForgotPassword ? (
-              <CardContent className="pb-6 pt-6">
+              <CardContent className="pb-8 pt-8">
                 <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
               </CardContent>
             ) : (
               <>
-                <CardHeader className="pb-4">
+                <CardHeader className="pb-4 pt-10">
                   <div className="space-y-1 text-center">
-                    <h1 className="font-display text-xl sm:text-2xl font-semibold text-foreground" id="auth-title">
+                    <h1 className="font-display text-2xl font-bold text-white tracking-tight" id="auth-title">
                       Bem-vindo de volta
                     </h1>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white/50">
                       Entre com suas credenciais para continuar
                     </p>
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-6 pt-2">
+                <CardContent className="space-y-6 pb-10">
                   {socialError && (
                     <div
                       role="alert"
@@ -598,12 +598,12 @@ export default function Auth() {
                         )}
                       </Button>
 
-                    <div className="relative">
+                    <div className="relative py-2">
                       <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-white/20" />
+                        <span className="w-full border-t border-white/10" />
                       </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-[#0A0D14]/75 px-2 text-muted-foreground backdrop-blur-xl">
+                      <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest">
+                        <span className="bg-black/80 px-4 text-white/30 rounded-full border border-white/5">
                           ou
                         </span>
                       </div>
@@ -619,19 +619,19 @@ export default function Auth() {
           {/* IP/Location Widget */}
           {currentIP && (
             <div
-              className="mx-auto flex max-w-fit items-center justify-center gap-3 rounded-full border border-border/60 bg-card/80 px-5 py-2.5 opacity-0 shadow-md backdrop-blur-md"
+              className="mx-auto flex max-w-fit items-center justify-center gap-4 rounded-full border border-white/5 bg-black/40 px-6 py-2.5 opacity-0 shadow-lg backdrop-blur-md transition-all hover:bg-black/60 hover:border-white/10"
               style={{ animation: 'scale-fade-in 0.5s ease-out 600ms forwards' }}
             >
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Globe className="h-3.5 w-3.5 text-blue-500" />
-                <span className="font-mono">{currentIP}</span>
+              <div className="flex items-center gap-2.5 text-xs text-white/50">
+                <Globe className="h-4 w-4 text-blue-500/80" />
+                <span className="font-mono tracking-wider">{currentIP}</span>
               </div>
               {geoLocation && (
                 <>
-                  <div className="h-4 w-px bg-border" />
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Wifi className="h-3.5 w-3.5 text-success" />
-                    <span>{geoLocation}</span>
+                  <div className="h-4 w-px bg-white/10" />
+                  <div className="flex items-center gap-2 text-xs text-white/50">
+                    <Wifi className="h-4 w-4 text-emerald-500/80" />
+                    <span className="font-medium">{geoLocation}</span>
                   </div>
                 </>
               )}
