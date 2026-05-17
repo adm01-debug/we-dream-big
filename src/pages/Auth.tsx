@@ -259,31 +259,60 @@ export default function Auth() {
         await logLoginAttempt(data.email, null, false, error.message);
 
         let description = error.message;
+        let diagnosis = "Verifique as credenciais";
+
         if (error.message.includes('Invalid login credentials')) {
           description = 'Email ou senha incorretos';
+          diagnosis = "AUTH_FAILED: Senha não confere ou usuário não existe no Supabase.";
         } else if (error.message.includes('Email not confirmed')) {
           description = 'E-mail ainda não confirmado. Verifique sua caixa de entrada.';
+          diagnosis = "AUTH_CONFIRM: Usuário existe mas e-mail está pendente de validação.";
         } else if (error.message.includes('Database error')) {
           description = 'Erro de sincronização com o banco de dados. Tente novamente em instantes.';
+          diagnosis = "DB_ERROR: Supabase recusou a conexão ou RLS está bloqueando o acesso inicial.";
         }
 
         toast({
           variant: 'destructive',
           title: 'Erro ao entrar',
           description: (
-            <div className="space-y-2">
-              <p>{description}</p>
+            <div className="space-y-3">
+              <p className="font-medium">{description}</p>
+              <div className="p-2 bg-black/40 rounded-lg border border-white/5 font-mono text-[10px] text-white/50">
+                DIAGNÓSTICO: {diagnosis}
+              </div>
               <Button 
                 variant="link" 
                 size="sm" 
                 className="h-auto p-0 text-xs text-white/60 hover:text-white"
                 onClick={() => navigate('/status')}
               >
-                Verificar status da conexão →
+                Executar teste completo de conexão →
               </Button>
             </div>
           ),
         });
+        return;
+      }
+
+      // Verificação pós-auth de perfil e roles
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_active, role')
+        .eq('email', data.email.toLowerCase())
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+         console.warn('Profile fetch error:', profileError);
+      }
+
+      if (profileData && profileData.is_active === false) {
+        toast({
+          variant: 'destructive',
+          title: 'Acesso Bloqueado',
+          description: 'Sua conta está inativa. Entre em contato com o administrador.',
+        });
+        await signOut();
         return;
       }
 
