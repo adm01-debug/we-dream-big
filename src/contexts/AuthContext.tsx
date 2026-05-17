@@ -543,7 +543,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     nextAAL,
     hasMFA,
     mfaRequired,
-    rolesLoaded: userRoles.length > 0,
+    rolesLoaded: rolesLoadedAt !== null,
     refreshAAL: fetchAAL,
     signIn,
     signOut,
