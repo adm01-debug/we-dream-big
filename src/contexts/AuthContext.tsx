@@ -296,13 +296,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       authDebug("AuthContext.init", "initial getSession()", summarizeSession(session));
-      setSession(session);
-      setUser(session?.user ?? null);
+      // SOMENTE atualiza se o listener ainda não pegou a sessão.
+      // onAuthStateChange geralmente dispara IMEDIATAMENTE após ser subscrito se houver sessão no storage.
+      setSession((prev) => {
+        if (prev) return prev;
+        return session;
+      });
+      setUser((prev) => {
+        if (prev) return prev;
+        return session?.user ?? null;
+      });
 
-      if (session?.user) {
+      if (session?.user && !fetchPromiseRef.current && rolesLoadedAt === null) {
         fetchUserData(session.user.id);
         fetchAAL();
-      } else {
+      } else if (!session?.user) {
         setIsLoading(false);
       }
     });
