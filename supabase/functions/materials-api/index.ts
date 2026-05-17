@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
           .from('material_types')
           .select(`
             *,
-            material_groups (id, name, slug, description, hex_code, icon)
+            material_groups (id, name, slug, description)
           `)
           .eq('is_active', true)
           .order('sort_order', { ascending: true });
@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
           .from('material_types')
           .select(`
             *,
-            material_groups!inner (id, name, slug, description, hex_code, icon)
+            material_groups!inner (id, name, slug, description)
           `)
           .eq('is_active', true);
 
@@ -236,7 +236,7 @@ Deno.serve(async (req) => {
           .from('material_types')
           .select(`
             *,
-            material_groups (id, name, slug, description, hex_code, icon, sort_order)
+            material_groups (id, name, slug, description)
           `)
           .eq('is_active', true)
           .order('sort_order', { ascending: true });
