@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home, Bug, ChevronDown, ChevronUp, RotateCcw, Trash2, Copy, Check } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, Bug, ChevronDown, ChevronUp, RotateCcw, Trash2, Copy, Check, LogOut } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { reportError } from '@/lib/error-reporter';
 import { attemptChunkRecovery, isChunkLoadError } from '@/lib/chunk-recovery';
