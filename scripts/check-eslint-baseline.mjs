@@ -56,18 +56,23 @@ const report = JSON.parse(readFileSync(out, "utf8"));
 // Agrega current igual ao generator.
 const current = {};
 let totalErrors = 0;
-const newOccurrences = []; // {file, rule, line, col, message}
+let totalWarnings = 0;
 for (const file of report) {
   if (!file.messages?.length) continue;
   const rel = relative(ROOT, file.filePath).replaceAll("\\", "/");
   for (const m of file.messages) {
-    if (m.severity !== 2) continue;
+    // Agora processamos tanto erros (2) quanto warnings (1)
+    if (m.severity === 0) continue;
+    
     const rule = m.ruleId ?? "<no-rule>";
     current[rel] ??= {};
     current[rel][rule] = (current[rel][rule] ?? 0) + 1;
-    totalErrors += 1;
+    
+    if (m.severity === 2) totalErrors += 1;
+    if (m.severity === 1) totalWarnings += 1;
   }
 }
+
 
 // Compara: por (file,rule), conta quantas excedem o baseline.
 // Quando há regressão, escolhemos as primeiras N mensagens daquele par
