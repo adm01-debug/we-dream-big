@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { usePasswordResetRequests } from '@/hooks/usePasswordResetRequests';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Email inválido'),
