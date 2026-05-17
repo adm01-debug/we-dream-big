@@ -388,11 +388,12 @@ export default function SystemStatusPage() {
           </CardHeader>
           <CardContent className="space-y-1">
             {rlsChecks.map((check, i) => (
-              <div key={i} className="flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-muted/50 transition-colors border-b border-white/5 last:border-0">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded bg-white/5 flex items-center justify-center font-mono text-[10px] text-white/40">
-                    {check.table.substring(0, 2).toUpperCase()}
-                  </div>
+              <div key={i} className="flex flex-col py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors border-b border-white/5 last:border-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded bg-white/5 flex items-center justify-center font-mono text-[10px] text-white/40">
+                      {check.table.substring(0, 2).toUpperCase()}
+                    </div>
                   <div>
                     <p className="font-mono text-sm font-bold">{check.table}</p>
                     <p className={`text-xs ${check.status === 'error' ? 'text-destructive' : check.status === 'warning' ? 'text-warning' : 'text-success'}`}>
