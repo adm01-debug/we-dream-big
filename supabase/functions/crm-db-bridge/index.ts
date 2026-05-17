@@ -190,11 +190,12 @@ async function detectDiagOp(req: Request): Promise<DiagOp | null> {
   try {
     const url = new URL(req.url);
     const op = url.searchParams.get("op");
-    if (op === "ping" || op === "diag" || op === "breaker_status" || op === "creds_health") return op;
+    if (op === "ping" || op === "diag" || op === "breaker_status" || op === "creds_health" || op === "creds_debug") return op;
     if (url.searchParams.get("ping") === "1") return "ping";
     if (url.searchParams.get("diag") === "1") return "diag";
     if (url.searchParams.get("breaker") === "1") return "breaker_status";
     if (url.searchParams.get("creds") === "1") return "creds_health";
+    if (url.searchParams.get("creds_debug") === "1") return "creds_debug";
   } catch { /* ignore */ }
 
   // Body JSON (POST/PUT/PATCH apenas; clonamos para não consumir o original)
