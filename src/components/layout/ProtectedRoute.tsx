@@ -95,7 +95,7 @@ export function ProtectedRoute({
 
   return (
     <EnhancedErrorBoundary
-      fallback={<ProtectedRouteErrorRedirect />}
+      fallback={<ProtectedRouteErrorFallback />}
     >
       {children ? <>{children}</> : <Outlet />}
     </EnhancedErrorBoundary>
