@@ -14,28 +14,23 @@ interface ProtectedRouteProps extends AccessPolicy {
   requireAdmin?: boolean;
 }
 
-function ProtectedRouteErrorRedirect() {
-  const didRedirectRef = useRef(false);
-  const { signOut } = useAuth();
+function ProtectedRouteErrorFallback() {
   const location = useLocation();
 
-  useEffect(() => {
-    if (didRedirectRef.current) return;
-    didRedirectRef.current = true;
-
-    savePostLoginRedirect(`${location.pathname}${location.search}${location.hash}`);
-    void signOut().finally(() => {
-      window.location.replace('/auth?reason=module-error');
-    });
-  }, [location.hash, location.pathname, location.search, signOut]);
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-3 text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Redirecionando para o login…</p>
-      </div>
-    </div>
+    <EmptyState
+      variant="error"
+      title="Falha no Carregamento"
+      description="Ocorreu um erro ao carregar este módulo. Tente recarregar a página ou voltar ao início."
+      action={{ 
+        label: 'Recarregar Página', 
+        onClick: () => window.location.reload() 
+      }}
+      secondaryAction={{
+        label: 'Ir para o Início',
+        onClick: () => window.location.href = '/'
+      }}
+    />
   );
 }
 
