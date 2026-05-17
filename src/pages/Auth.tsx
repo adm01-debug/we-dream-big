@@ -24,6 +24,7 @@ import {
   Activity,
   CheckCircle2,
   XCircle,
+  Rocket,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthBrandingPanel, Starfield, SpaceScene } from './auth/AuthBranding';
