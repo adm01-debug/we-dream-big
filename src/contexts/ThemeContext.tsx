@@ -119,10 +119,10 @@ export function useTheme() {
     if (process.env.NODE_ENV === 'development') {
       console.warn('useTheme must be used within a ThemeProvider. Returning a fallback theme to avoid crash.');
     }
-    // Return a safe fallback instead of throwing
+    // Return a safe fallback instead of throwing (dark = platform default)
     return {
-      theme: 'light',
-      actualTheme: 'light',
+      theme: 'dark',
+      actualTheme: 'dark',
       setTheme: () => {},
       toggleTheme: () => {},
       isFallback: true,
