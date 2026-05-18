@@ -9,7 +9,14 @@ test.describe('Quote Builder Wizard Flow (5 Steps)', () => {
   });
 
   test('should complete the full quote creation flow', async ({ page }) => {
-    const nextButton = page.getByTestId('wizard-next-button');
+    // Navigation via stepper buttons since footer buttons were removed
+    const stepConditions = page.getByTestId('wizard-step-conditions');
+    const stepItems = page.getByTestId('wizard-step-items');
+    const stepPersonalization = page.getByTestId('wizard-step-personalization');
+    const stepReview = page.getByTestId('wizard-step-review');
+    
+    // Save button in summary column (Col 3)
+    const saveButton = page.getByRole('button', { name: /Criar|Salvar|Salvar Alterações/i }).last();
     
     // 1. STEP: CLIENTE
     await expect(page.getByText('Etapa 1: Cliente (Atual)', { exact: false })).toBeVisible();
