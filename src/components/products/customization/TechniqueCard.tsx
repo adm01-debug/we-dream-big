@@ -135,3 +135,4 @@ export function TechniqueCard({ technique, isSelected, onSelect }: TechniqueCard
     </TooltipProvider>
   );
 }
+}
