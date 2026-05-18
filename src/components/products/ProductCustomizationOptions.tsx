@@ -335,13 +335,15 @@ export function ProductCustomizationOptions({
                 {currentLocation.options.length !== 1 ? "s" : ""}
               </Badge>
             </div>
-            <LocationPanel
-              key={currentLocation.location_code}
-              location={currentLocation}
-              quantity={quantity}
-              confirmedPersonalization={pricesRef.current.get(currentLocation.location_code)}
-              onPriceCalculated={handlePriceCalculated}
-            />
+            <div ref={step3Ref} className="pt-2 border-t border-border/40 scroll-mt-28">
+              <LocationPanel
+                key={currentLocation.location_code}
+                location={currentLocation}
+                quantity={quantity}
+                confirmedPersonalization={pricesRef.current.get(currentLocation.location_code)}
+                onPriceCalculated={handlePriceCalculated}
+              />
+            </div>
           </div>
         )}
 
