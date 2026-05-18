@@ -48,6 +48,7 @@ export function ConfigurationPanelV6({
 
   // Edição local: quando confirmado, bloqueia inputs até clicar em "Editar"
   const [editing, setEditing] = useState(false);
+  const [showConfirmError, setShowConfirmError] = useState(false);
   const isLocked = isConfirmed && !editing;
 
   const larguraNum = parseFloat(largura) || 0;
@@ -78,15 +79,29 @@ export function ConfigurationPanelV6({
   const canConfirm = !!price && !loading && !error && !dimensionError;
 
   const handleConfirm = () => {
-    if (!canConfirm || !price) return;
+    if (!canConfirm) {
+      setShowConfirmError(true);
+      return;
+    }
+    if (!price) return;
+    
+    setShowConfirmError(false);
     const dims = technique.usa_dimensao ? { width: larguraNum, height: alturaNum } : undefined;
     onPriceCalculatedRef.current(technique.technique_id, price, dims);
     setEditing(false);
   };
 
+  const handleEdit = () => {
+    if (window.confirm("Deseja editar esta gravação? Isso permitirá alterar as dimensões e cores já confirmadas.")) {
+      setEditing(true);
+    }
+  };
+
   const handleRemove = () => {
-    onPriceCalculatedRef.current(technique.technique_id, null);
-    setEditing(false);
+    if (window.confirm("Tem certeza que deseja remover esta gravação do orçamento?")) {
+      onPriceCalculatedRef.current(technique.technique_id, null);
+      setEditing(false);
+    }
   };
 
   return (
