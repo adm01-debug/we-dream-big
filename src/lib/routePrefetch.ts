@@ -7,6 +7,7 @@
 
 const routeImportMap: Record<string, () => Promise<unknown>> = {
   '/': () => import('@/pages/Index'),
+  '/dashboard': () => import('@/pages/CustomizableDashboard'),
   '/filtros': () => import('@/pages/FiltersPage'),
   '/produtos': () => import('@/pages/FiltersPage'),
   '/novidades': () => import('@/pages/NoveltiesPage'),
@@ -22,14 +23,18 @@ const routeImportMap: Record<string, () => Promise<unknown>> = {
   '/simulador': () => import('@/pages/SimuladorWizard'),
   '/simulador-precos': () => import('@/pages/PriceSimulatorPage'),
   '/estoque': () => import('@/pages/StockDashboardPage'),
-  '/mockup': () => import('@/pages/MockupGenerator'),
+  '/mockup-generator': () => import('@/pages/MockupGenerator'),
   '/magic-up': () => import('@/pages/MagicUp'),
-  '/kits': () => import('@/pages/KitBuilderPage'),
+  '/montar-kit': () => import('@/pages/KitBuilderPage'),
   '/meus-kits': () => import('@/pages/KitLibraryPage'),
-  
+  '/clientes': () => import('@/pages/ClientsPage'),
   '/tendencias': () => import('@/pages/TrendsPage'),
-  '/busca-precos': () => import('@/pages/AdvancedPriceSearchPage'),
+  '/busca-preco': () => import('@/pages/AdvancedPriceSearchPage'),
   '/inteligencia-comercial': () => import('@/pages/CommercialIntelligencePage'),
+  '/admin/usuarios': () => import('@/pages/admin/AdminUsuariosPage'),
+  '/admin/telemetria': () => import('@/pages/admin/AdminTelemetriaPage'),
+  '/admin/cadastros': () => import('@/pages/admin/AdminCadastrosPage'),
+  '/admin/conexoes': () => import('@/pages/admin/AdminConexoesStatusPage'),
 };
 
 const prefetched = new Set<string>();
