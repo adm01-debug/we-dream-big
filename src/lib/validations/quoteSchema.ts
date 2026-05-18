@@ -44,6 +44,7 @@ export const quoteItemSchema = z.object({
 export function validateQuoteForm(data: {
   clientId: string;
   contactId: string;
+  paymentMethod: string;
   paymentTerms: string;
   deliveryTime: string;
   shippingType: string;
@@ -55,6 +56,7 @@ export function validateQuoteForm(data: {
   const result = quoteFormSchema.safeParse({
     clientId: data.clientId,
     contactId: data.contactId,
+    paymentMethod: data.paymentMethod,
     paymentTerms: data.paymentTerms,
     deliveryTime: data.deliveryTime,
     shippingType: data.shippingType,
