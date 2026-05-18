@@ -75,10 +75,8 @@ export function ProductCustomizationOptions({
     onSelectionChange?.(items);
   }, [options, onSelectionChange]);
 
-  // Set first location as active when data loads
-  if (options?.locations?.length && !activeLocation) {
-    setActiveLocation(options.locations[0].location_code);
-  }
+  // Auto-select logic is now handled in useEffect above
+
 
   if (isLoading) {
     return (
