@@ -155,4 +155,44 @@ describe('CompanySearchDropdown', () => {
       expect(alphaHistoryItem).toHaveClass('bg-primary/10');
     });
   });
+
+  it('should maintain highlighted state and show history while loading new results', async () => {
+    // 1. Setup mock to simulate slow search
+    (useQuery as any).mockImplementation((options: any) => {
+      if (options.queryKey[0] === 'quote-companies-search') {
+        return { data: [], isLoading: true }; // Always loading
+      }
+      return { data: mockCompanies, isLoading: false };
+    });
+
+    render(
+      <CompanySearchDropdown
+        companyId="1"
+        selectedCompany={null}
+        onSelectCompany={vi.fn()}
+        onClearCompany={vi.fn()}
+      />
+    );
+
+    const input = screen.getByTestId('company-search-input');
+    fireEvent.focus(input);
+
+    // Should show history even if something else is loading or companies are being fetched
+    await waitFor(() => {
+      const alphaHistoryItem = screen.getByTestId('history-item-1');
+      expect(alphaHistoryItem).toBeInTheDocument();
+      expect(alphaHistoryItem).toHaveClass('bg-primary/10');
+    });
+
+    // 2. Type to trigger search (which will be "loading" based on our mock)
+    fireEvent.change(input, { target: { value: 'Alpha' } });
+
+    // History match for 'Alpha' should still be visible and highlighted while server results are "loading"
+    await waitFor(() => {
+      const alphaHistoryItem = screen.getByTestId('history-item-1');
+      expect(alphaHistoryItem).toBeInTheDocument();
+      expect(alphaHistoryItem).toHaveClass('bg-primary/10');
+      expect(screen.getByText('servidor...')).toBeInTheDocument(); // Loading indicator from code
+    });
+  });
 });
