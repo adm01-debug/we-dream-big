@@ -86,7 +86,8 @@ export function ProductCustomizationOptions({
     }
   }, [initialPersonalizations, productId]);
 
-  // Refs for scrolling to sections
+  // Refs for scrolling and offset calculation
+  const stickyHeaderRef = useRef<HTMLDivElement>(null);
   const step2Ref = useRef<HTMLDivElement>(null);
   const step3Ref = useRef<HTMLDivElement>(null);
 
@@ -94,9 +95,10 @@ export function ProductCustomizationOptions({
     const refs = [null, null, step2Ref, step3Ref];
     const target = refs[step];
     if (target?.current) {
-      const headerOffset = 140; // Approximate height of sticky header
+      // Calculate dynamic offset based on the actual height of the sticky header
+      const headerHeight = stickyHeaderRef.current?.offsetHeight || 140;
       const elementPosition = target.current.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      const offsetPosition = elementPosition + window.pageYOffset - headerHeight - 12; // -12 for extra breathing room
 
       window.scrollTo({
         top: offsetPosition,
@@ -191,7 +193,10 @@ export function ProductCustomizationOptions({
     <TooltipProvider delayDuration={200}>
       <div className="space-y-3">
         {/* Bloco fixo: stepper + locais — sempre visíveis durante a rolagem */}
-        <div className="sticky top-0 z-20 -mx-3 px-3 py-2 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border/40 shadow-sm md:shadow-none space-y-2 md:space-y-3">
+        <div 
+          ref={stickyHeaderRef}
+          className="sticky top-0 z-20 -mx-3 px-3 py-2 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border/40 shadow-sm md:shadow-none space-y-2 md:space-y-3"
+        >
 
         {/* STEP HEADER — guia didático com âncoras */}
         <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-[11px] font-medium text-muted-foreground overflow-x-auto pb-1 md:pb-0 scrollbar-none">
