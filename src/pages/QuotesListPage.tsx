@@ -142,7 +142,6 @@ export default function QuotesListPage() {
     return results;
   }, [quotes, searchTerm, statusFilter, quoteFuse, sortBy]);
 
-import { formatCurrency } from '@/lib/format';
 
   const handleDelete = async () => {
     if (deleteConfirmId) {
