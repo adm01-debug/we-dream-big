@@ -31,6 +31,15 @@ export function ProductCustomizationOptions({
   const { data: options, isLoading } = useProductCustomizationOptions(productId);
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
 
+  // Auto-select first location ONLY if it's not already set
+  // This allows persistent selection during re-renders if the state is lifted
+  useEffect(() => {
+    if (options?.locations?.length && !activeLocation) {
+      setActiveLocation(options.locations[0].location_code);
+    }
+  }, [options, activeLocation]);
+
+
   // Track prices per location
   const pricesRef = useRef<Map<string, PersonalizationItem>>(new Map());
 
