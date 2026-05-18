@@ -103,7 +103,7 @@ export default function FiltersPage() {
   }, [state]);
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Filtros de Produtos" description="Filtre e encontre brindes por cor, categoria, preço e fornecedor." path="/produtos" />
       <div className="animate-fade-in">
         <div className="flex gap-8">
