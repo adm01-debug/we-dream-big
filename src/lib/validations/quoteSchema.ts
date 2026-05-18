@@ -3,6 +3,7 @@ import { z } from "zod";
 export const quoteFormSchema = z.object({
   clientId: z.string().min(1, "Empresa é obrigatória"),
   contactId: z.string().min(1, "Contato é obrigatório"),
+  paymentMethod: z.string().min(1, "Forma de pagamento é obrigatória"),
   paymentTerms: z.string().min(1, "Prazo de pagamento é obrigatório"),
   deliveryTime: z.string().min(1, "Prazo de entrega é obrigatório"),
   shippingType: z.string().min(1, "Tipo de frete é obrigatório"),
@@ -43,6 +44,7 @@ export const quoteItemSchema = z.object({
 export function validateQuoteForm(data: {
   clientId: string;
   contactId: string;
+  paymentMethod: string;
   paymentTerms: string;
   deliveryTime: string;
   shippingType: string;
@@ -54,6 +56,7 @@ export function validateQuoteForm(data: {
   const result = quoteFormSchema.safeParse({
     clientId: data.clientId,
     contactId: data.contactId,
+    paymentMethod: data.paymentMethod,
     paymentTerms: data.paymentTerms,
     deliveryTime: data.deliveryTime,
     shippingType: data.shippingType,
@@ -66,6 +69,7 @@ export function validateQuoteForm(data: {
       const fieldMap: Record<string, string> = {
         clientId: "empresa",
         contactId: "contato",
+        paymentMethod: "forma_pagamento",
         paymentTerms: "prazo_pagamento",
         deliveryTime: "prazo_entrega",
         shippingType: "frete",
@@ -86,6 +90,7 @@ export function validateQuoteForm(data: {
 export const QUOTE_FIELD_LABELS: Record<string, string> = {
   empresa: "Empresa",
   contato: "Contato",
+  forma_pagamento: "Forma de Pagamento",
   prazo_pagamento: "Prazo de Pagamento",
   prazo_entrega: "Prazo de Entrega",
   frete: "Frete",

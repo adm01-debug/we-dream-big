@@ -151,6 +151,7 @@ export function useQuoteBuilderState() {
   const [quoteNumber, setQuoteNumber] = useState('');
   const [currentStatus, setCurrentStatus] = useState('draft');
 
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('');
   const [deliveryTime, setDeliveryTime] = useState('');
   const [deliveryMode, setDeliveryMode] = useState<'prazo' | 'data'>('prazo');
@@ -171,18 +172,18 @@ export function useQuoteBuilderState() {
   const activeStep = useMemo((): QuoteBuilderStep => {
     if (!clientId) return 'client';
     if (items.length === 0) return 'items';
-    if (!paymentTerms || !deliveryTime || !shippingType) return 'conditions';
+    if (!paymentMethod || !paymentTerms || !deliveryTime || !shippingType) return 'conditions';
     return 'review';
-  }, [clientId, items.length, paymentTerms, deliveryTime, shippingType]);
+  }, [clientId, items.length, paymentMethod, paymentTerms, deliveryTime, shippingType]);
 
   const completedSteps = useMemo((): QuoteBuilderStep[] => {
     const steps: QuoteBuilderStep[] = [];
     if (clientId) steps.push('client');
     if (items.length > 0) steps.push('items');
-    if (paymentTerms && deliveryTime && shippingType) steps.push('conditions');
+    if (paymentMethod && paymentTerms && deliveryTime && shippingType) steps.push('conditions');
     // No review, we only mark as completed if saved
     return steps;
-  }, [clientId, items.length, paymentTerms, deliveryTime, shippingType]);
+  }, [clientId, items.length, paymentMethod, paymentTerms, deliveryTime, shippingType]);
   // ── AutoSave ──
   const { clearAutoSave } = useAutoSaveQuote({
     enabled: !!clientId && items.length > 0 && !isEditMode,
@@ -195,6 +196,7 @@ export function useQuoteBuilderState() {
       discountType,
       discountValue,
       negotiationMarkup,
+      paymentMethod,
       paymentTerms,
       deliveryTime,
       shippingType,
@@ -211,6 +213,7 @@ export function useQuoteBuilderState() {
         if (saved.clientId) setClientId(saved.clientId);
         if (saved.contactId) setContactId(saved.contactId);
         if (saved.items) setItems(saved.items);
+        if (saved.paymentMethod) setPaymentMethod(saved.paymentMethod);
         // ... outros campos conforme necessário
       }
     },
@@ -256,6 +259,7 @@ export function useQuoteBuilderState() {
         }
         if (typeof quote.negotiation_markup_percent === 'number')
           setNegotiationMarkup(quote.negotiation_markup_percent);
+        if (quote.payment_method) setPaymentMethod(quote.payment_method);
         if (quote.payment_terms) setPaymentTerms(quote.payment_terms);
         if (quote.shipping_type) setShippingType(quote.shipping_type);
         if (quote.shipping_cost) setShippingCost(quote.shipping_cost);
@@ -612,13 +616,14 @@ export function useQuoteBuilderState() {
       validateQuoteForm({
         clientId,
         contactId,
+        paymentMethod,
         paymentTerms,
         deliveryTime,
         shippingType,
         shippingCost,
         itemsCount: items.length,
       }),
-    [clientId, contactId, paymentTerms, deliveryTime, shippingType, shippingCost, items],
+    [clientId, contactId, paymentMethod, paymentTerms, deliveryTime, shippingType, shippingCost, items],
   );
 
   const isFormValid = validationErrors.length === 0;
@@ -689,6 +694,7 @@ export function useQuoteBuilderState() {
         notes: notes || undefined,
         internal_notes: internalNotes || undefined,
         valid_until: validUntil || undefined,
+        payment_method: paymentMethod || undefined,
         payment_terms: paymentTerms || undefined,
         delivery_time: deliveryTime || undefined,
         shipping_type: shippingType || undefined,
@@ -779,6 +785,8 @@ export function useQuoteBuilderState() {
     setItems,
     quoteNumber,
     currentStatus,
+    paymentMethod,
+    setPaymentMethod,
     paymentTerms,
     setPaymentTerms,
     deliveryTime,
