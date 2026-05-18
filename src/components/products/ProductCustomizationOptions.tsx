@@ -11,6 +11,11 @@
  * Selecionar CIRCULAR bloqueia LADO A/B (e vice-versa) com tooltip explicando.
  */
 
+/**
+ * ProductCustomizationOptions — Interface base para configuração de gravação.
+ * Utilizado dentro do ProductCustomizationModal para isolar a complexidade.
+ */
+
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
