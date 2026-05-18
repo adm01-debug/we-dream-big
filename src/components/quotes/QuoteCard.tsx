@@ -65,8 +65,8 @@ export function QuoteCard({ quote, onClick, className }: QuoteCardProps) {
             <Calendar className="h-3 w-3" />
             {new Date(quote.created_at).toLocaleDateString("pt-BR")}
           </span>
-          <span className="font-semibold text-foreground">
-            R$ {Number(quote.total ?? 0).toFixed(2)}
+          <span className="font-semibold text-foreground tabular-nums">
+            {formatCurrency(Number(quote.total ?? 0))}
           </span>
         </div>
       </CardContent>
