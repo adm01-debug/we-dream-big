@@ -207,44 +207,54 @@ export function useQuoteBuilderState() {
     return steps;
   }, [clientId, contactId, items, paymentMethod, paymentTerms, deliveryTime, shippingType]);
 
+  const announce = useCallback((message: string) => {
+    const announcer = document.getElementById('quote-builder-announcer');
+    if (announcer) {
+      announcer.textContent = message;
+    }
+  }, []);
+
   const validateStep = useCallback((step: QuoteBuilderStep): boolean => {
     switch (step) {
       case 'client':
         if (!clientId) {
           toast.error('Selecione um cliente');
+          announce('Erro: Selecione um cliente');
           return false;
         }
         if (!contactId) {
           toast.error('Selecione um contato');
+          announce('Erro: Selecione um contato');
           return false;
         }
         return true;
       case 'conditions':
         if (!paymentMethod || !paymentTerms || !deliveryTime || !shippingType) {
           toast.error('Preencha todas as condições comerciais');
+          announce('Erro: Preencha todas as condições comerciais');
           return false;
         }
         if (shippingType === 'fob_pre' && !shippingCost) {
           toast.error('Informe o valor do frete');
+          announce('Erro: Informe o valor do frete');
           return false;
         }
         return true;
       case 'items':
         if (items.length === 0) {
           toast.error('Adicione pelo menos um item');
+          announce('Erro: Adicione pelo menos um item');
           return false;
         }
         return true;
       case 'personalization':
-        // Etapa opcional se não houver personalização, mas se houver, 
-        // podemos validar se todas estão preenchidas (opcional por enquanto)
         return true;
       case 'review':
         return true;
       default:
         return true;
     }
-  }, [clientId, contactId, paymentMethod, paymentTerms, deliveryTime, shippingType, shippingCost, items]);
+  }, [clientId, contactId, paymentMethod, paymentTerms, deliveryTime, shippingType, shippingCost, items, announce]);
 
   const nextStep = useCallback(() => {
     const steps: QuoteBuilderStep[] = ['client', 'conditions', 'items', 'personalization', 'review'];
@@ -267,6 +277,25 @@ export function useQuoteBuilderState() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [currentStep]);
+  
+  const goToStep = useCallback((step: QuoteBuilderStep) => {
+    const steps: QuoteBuilderStep[] = ['client', 'conditions', 'items', 'personalization', 'review'];
+    const targetIndex = steps.indexOf(step);
+    const currentIndex = steps.indexOf(currentStep);
+
+    if (targetIndex === currentIndex) return;
+
+    // Se estiver tentando ir para uma etapa posterior, validar as anteriores
+    if (targetIndex > currentIndex) {
+      // Validar cada etapa entre a atual e a alvo (não inclusiva da alvo, pois a alvo é onde queremos chegar)
+      for (let i = currentIndex; i < targetIndex; i++) {
+        if (!validateStep(steps[i])) return;
+      }
+    }
+
+    setCurrentStep(step);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep, validateStep]);
   // ── AutoSave ──
   const { clearAutoSave } = useAutoSaveQuote({
     enabled: !!clientId && items.length > 0 && !isEditMode,
@@ -848,6 +877,7 @@ export function useQuoteBuilderState() {
     setCurrentStep,
     nextStep,
     prevStep,
+    goToStep,
     activeStep,
     completedSteps,
     // Auth
