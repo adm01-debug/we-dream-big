@@ -42,7 +42,7 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
   const discountAmount = quote.discount_percent
     ? subtotal * (quote.discount_percent / 100)
     : (quote.discount_amount || 0);
-  const shippingCostValue = (quote.shipping_type === "fob" || quote.shipping_type === "fob_pre")
+  const shippingCostValue = quote.shipping_type === "fob_pre"
     ? (quote.shipping_cost || 0) : 0;
   const total = subtotal - discountAmount + shippingCostValue;
 

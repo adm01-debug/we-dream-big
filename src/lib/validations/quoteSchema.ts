@@ -15,7 +15,7 @@ export const quoteFormSchema = z.object({
   internalNotes: z.string().max(2000, "Notas internas devem ter no máximo 2000 caracteres").optional(),
 }).refine(
   (data) => {
-    if (data.shippingType === "fob" || data.shippingType === "fob_pre") {
+    if (data.shippingType === "fob_pre") {
       return data.shippingCost !== undefined && data.shippingCost > 0;
     }
     return true;
