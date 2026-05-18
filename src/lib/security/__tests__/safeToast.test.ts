@@ -1,16 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-vi.mock('sonner', () => ({
-  toast: {
+// Mocks com factory inline. Guardamos referência estável aos spies em
+// `globalThis` para conseguir observar chamadas mesmo após `installSafeToast`
+// substituir `toast.error/warning/message` por wrappers.
+vi.mock('sonner', () => {
+  const fns = {
     error: vi.fn(),
     warning: vi.fn(),
     message: vi.fn(),
     success: vi.fn(),
     info: vi.fn(),
-  },
-}));
+  };
+  (globalThis as unknown as { __sonner: typeof fns }).__sonner = fns;
+  return { toast: fns };
+});
 
-// Mock devInfraGate — controlado por variável de módulo via getter.
 const gateState = { isDev: false };
 vi.mock('@/lib/system/dev-gate/DevInfraGate', () => ({
   devInfraGate: {
@@ -25,14 +29,23 @@ import {
 } from '@/lib/security/safeToast';
 import { toast } from 'sonner';
 
+const sonner = () =>
+  (globalThis as unknown as {
+    __sonner: {
+      error: ReturnType<typeof vi.fn>;
+      warning: ReturnType<typeof vi.fn>;
+      message: ReturnType<typeof vi.fn>;
+    };
+  }).__sonner;
+
 describe('safeToast', () => {
   beforeEach(() => {
-    errorSpy.mockClear();
-    warningSpy.mockClear();
-    messageSpy.mockClear();
+    sonner().error.mockClear();
+    sonner().warning.mockClear();
+    sonner().message.mockClear();
     installSafeToast();
     setSafeToastRoles([]);
-    isDev = false;
+    gateState.isDev = false;
   });
 
   describe('looksTechnical', () => {
@@ -60,55 +73,57 @@ describe('safeToast', () => {
       [123],
       [null],
     ])('does not flag %s as technical', (s) => {
-      expect(looksTechnical(s)).toBe(false);
+      expect(looksTechnical(s as unknown)).toBe(false);
     });
   });
 
   describe('runtime patch — non-dev user', () => {
     it('substitui título técnico por copy genérica', () => {
       toast.error('TypeError: undefined is not a function');
-      expect(errorSpy).toHaveBeenCalledWith(__test__.PUBLIC_FALLBACK_TITLE, undefined);
+      expect(sonner().error).toHaveBeenCalledWith(__test__.PUBLIC_FALLBACK_TITLE, undefined);
     });
 
     it('mantém título amigável', () => {
       toast.error('Empresa sem ID Bitrix24');
-      expect(errorSpy).toHaveBeenCalledWith('Empresa sem ID Bitrix24', undefined);
+      expect(sonner().error).toHaveBeenCalledWith('Empresa sem ID Bitrix24', undefined);
     });
 
     it('strip description técnica preservando título', () => {
       toast.error('Erro ao salvar', { description: 'Failed to fetch' });
-      const [, opts] = errorSpy.mock.calls[0];
-      expect(opts).toBeDefined();
+      const [, opts] = sonner().error.mock.calls[0];
       expect((opts as { description?: string }).description).toBeUndefined();
     });
 
     it('preserva description amigável', () => {
       toast.error('Erro ao salvar', { description: 'Verifique os dados informados.' });
-      const [, opts] = errorSpy.mock.calls[0];
+      const [, opts] = sonner().error.mock.calls[0];
       expect((opts as { description: string }).description).toBe('Verifique os dados informados.');
     });
 
     it('aplica também em toast.warning e toast.message', () => {
       toast.warning('Error: stack trace at https://x.com/a.tsx:1');
       toast.message('UNAUTHORIZED_LEGACY_JWT');
-      expect(warningSpy).toHaveBeenCalledWith(__test__.PUBLIC_FALLBACK_TITLE, undefined);
-      expect(messageSpy).toHaveBeenCalledWith(__test__.PUBLIC_FALLBACK_TITLE, undefined);
+      expect(sonner().warning).toHaveBeenCalledWith(__test__.PUBLIC_FALLBACK_TITLE, undefined);
+      expect(sonner().message).toHaveBeenCalledWith(__test__.PUBLIC_FALLBACK_TITLE, undefined);
     });
   });
 
   describe('runtime patch — dev user', () => {
     beforeEach(() => {
-      isDev = true;
+      gateState.isDev = true;
     });
 
     it('preserva título técnico para devs', () => {
       toast.error('TypeError: undefined is not a function');
-      expect(errorSpy).toHaveBeenCalledWith('TypeError: undefined is not a function', undefined);
+      expect(sonner().error).toHaveBeenCalledWith(
+        'TypeError: undefined is not a function',
+        undefined,
+      );
     });
 
     it('preserva description técnica para devs', () => {
       toast.error('Erro ao salvar', { description: 'Failed to fetch' });
-      const [, opts] = errorSpy.mock.calls[0];
+      const [, opts] = sonner().error.mock.calls[0];
       expect((opts as { description: string }).description).toBe('Failed to fetch');
     });
   });
@@ -117,6 +132,6 @@ describe('safeToast', () => {
     installSafeToast();
     installSafeToast();
     toast.error('Erro normal');
-    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(sonner().error).toHaveBeenCalledTimes(1);
   });
 });
