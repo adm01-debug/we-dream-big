@@ -174,3 +174,11 @@ const CloudStatusBannerInner = memo(function CloudStatusBannerInner() {
     </AnimatePresence>
   );
 });
+
+export const CloudStatusBanner = memo(function CloudStatusBanner() {
+  return (
+    <DevOnly>
+      <CloudStatusBannerInner />
+    </DevOnly>
+  );
+});
