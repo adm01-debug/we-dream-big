@@ -35,6 +35,9 @@ import {
   Sparkles,
   ExternalLink,
   Info,
+  Building2,
+  CreditCard,
+  FileCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
