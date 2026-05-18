@@ -27,6 +27,7 @@ import { GripVertical, Package, Trash2, ChevronDown, ChevronUp, Palette } from "
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Badge } from "@/components/ui/badge";
 import { PriceFreshnessBadge } from "@/components/products/PriceFreshnessBadge";
 import { cn } from "@/lib/utils";
@@ -216,12 +217,9 @@ function SortableItem({
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">Preço:</span>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min={0}
+                  <CurrencyInput
                     value={item.unit_price}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdatePrice(parseFloat(e.target.value) || 0)}
+                    onChange={(n) => onUpdatePrice(n)}
                     className="w-28 h-8 text-sm"
                   />
                 </div>
