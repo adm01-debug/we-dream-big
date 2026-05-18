@@ -23,13 +23,15 @@ const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 const formatBR = (n: number) =>
   round2(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// Permite apenas dígitos, separadores (.,) e sinal opcional no início.
-const VALID_NUMERIC_RE = /^-?[\d.,]*$/;
+// Apenas dígitos e separadores; sinal `-` só quando explicitamente permitido.
+const RE_NO_NEG = /^[\d.,]*$/;
+const RE_WITH_NEG = /^-?[\d.,]*$/;
 
-const parseStrict = (raw: string): { n: number; ok: boolean } => {
+const parseStrict = (raw: string, allowNegative: boolean): { n: number; ok: boolean } => {
   const trimmed = raw.trim();
   if (!trimmed) return { n: 0, ok: true }; // vazio = 0 (válido)
-  if (!VALID_NUMERIC_RE.test(trimmed)) return { n: NaN, ok: false };
+  const re = allowNegative ? RE_WITH_NEG : RE_NO_NEG;
+  if (!re.test(trimmed)) return { n: NaN, ok: false };
   const clean = trimmed
     .replace(/\.(?=\d{3}(\D|$))/g, '') // remove pontos de milhar
     .replace(',', '.');
