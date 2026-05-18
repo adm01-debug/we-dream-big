@@ -151,6 +151,7 @@ export function useQuoteBuilderState() {
   const [quoteNumber, setQuoteNumber] = useState('');
   const [currentStatus, setCurrentStatus] = useState('draft');
 
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('');
   const [deliveryTime, setDeliveryTime] = useState('');
   const [deliveryMode, setDeliveryMode] = useState<'prazo' | 'data'>('prazo');
