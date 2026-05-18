@@ -284,7 +284,11 @@ export default function QuoteBuilderPage() {
                       <span className="ml-1">*</span>
                     )}
                   </Label>
-                  <Select value={s.paymentMethod} onValueChange={s.setPaymentMethod}>
+                  <Select 
+                    data-testid="payment-method-select-root"
+                    value={s.paymentMethod} 
+                    onValueChange={s.setPaymentMethod}
+                  >
                     <SelectTrigger
                       data-testid="payment-method-select"
                       className={cn(
