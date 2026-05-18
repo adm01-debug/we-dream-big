@@ -33,8 +33,7 @@ const STATUS_CONFIG: Partial<Record<'down' | 'degraded' | 'warming', BannerVaria
   }
 };
 
-export const CloudStatusBanner = memo(function CloudStatusBanner() {
-  const { isAllowed, isDev } = useDevGate();
+const CloudStatusBannerInner = memo(function CloudStatusBannerInner() {
   const { status, snapshot, retry, isChecking } = useCloudStatus();
   const [showDebug, setShowDebug] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
@@ -42,14 +41,9 @@ export const CloudStatusBanner = memo(function CloudStatusBanner() {
   const timeline = useMemo(() => getStatusTimeline(), []);
   const isIssueStatus = status === 'down' || status === 'degraded' || status === 'warming';
   const config = isIssueStatus ? STATUS_CONFIG[status] : null;
-  // Banner de saúde do backend é exclusivo para usuários DEV — usuários finais
-  // não devem ver mensagens de infra ("Backend instável", "indisponível", etc.).
-  const shouldShowIssue = isAllowed && (
-    status === 'down' || status === 'degraded' || status === 'warming'
-  );
-  const shouldShow = shouldShowIssue;
-
-  if (!shouldShow) return null;
+  // Banner de saúde do backend é gateado externamente por <DevOnly> — aqui só
+  // decidimos se há issue ativo para renderizar.
+  if (!isIssueStatus) return null;
 
   // Defensivo: como shouldShow exige status ∈ {down, degraded, warming},
   // config sempre estará definido aqui. Os fallbacks (?? ...) protegem caso
