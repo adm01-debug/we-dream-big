@@ -171,14 +171,16 @@ export function TotalsSection({ data }: { data: ProposalTemplateData }) {
 
 /* ─── Notes ─── */
 export function NotesSection({ data }: { data: ProposalTemplateData }) {
-  const paymentLabel = formatPaymentTerms(data.paymentTerms);
+  const methodLabel = formatPaymentMethod(data.paymentMethod);
+  const termsLabel = formatPaymentTerms(data.paymentTerms);
   const deliveryLabel = formatDeliveryTime(data.deliveryTime);
   const shippingLabel = formatShipping(data.shippingType, data.shippingCost);
   return (
     <div style={{ marginTop: "50px", fontSize: "12px", color: "#666", lineHeight: "1.6", borderTop: "1px solid #eee", paddingTop: "20px" }}>
       <div style={{ fontWeight: 700, fontSize: "13px", color: "#333", marginBottom: "8px" }}>Informações Relevantes:</div>
       <div>- Todos os valores são para produtos já personalizados conforme descrição.</div>
-      {paymentLabel && <div>- 💳 Pagamento: {paymentLabel}.</div>}
+      {methodLabel && <div>- 💳 Forma de Pagamento: {methodLabel}.</div>}
+      {termsLabel && <div>- 💵 Prazo de Pagamento: {termsLabel}.</div>}
       {deliveryLabel && <div>- 📦 Prazo de Entrega: {deliveryLabel}.</div>}
       {data.shippingType && <div>- 🚚 Frete: {shippingLabel}.</div>}
       <div>- Todos produtos passam por controle de qualidade.</div>
