@@ -153,7 +153,12 @@ export function CompanySearchDropdown({
   }, [companies, searchTerm, fuse, serverResults, history]);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => { if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setIsOpen(false); };
+    const handler = (e: MouseEvent) => { 
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+        setSearchTerm("");
+      }
+    };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
