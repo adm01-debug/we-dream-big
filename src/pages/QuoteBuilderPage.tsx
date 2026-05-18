@@ -770,10 +770,9 @@ export default function QuoteBuilderPage() {
 
           {/* Persistent Summary Sidebar for Steps 1-4 */}
           {s.activeStep !== 'review' && (
-            <div className="hidden lg:block lg:col-span-4">
-              <QuoteBuilderSummaryColumn
-                items={s.items}
-                activeItemIndex={s.activeItemIndex}
+            <QuoteBuilderSummaryColumn
+              items={s.items}
+              activeItemIndex={s.activeItemIndex}
                 setActiveItemIndex={s.setActiveItemIndex}
                 removeItem={s.removeItem}
                 discountType={s.discountType}
