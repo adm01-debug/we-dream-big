@@ -141,6 +141,9 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
     act(() => {
       result.current.setClientId('company-1');
       result.current.setContactId('contact-1');
+    });
+
+    act(() => {
       result.current.nextStep(); // Now at conditions
     });
 
