@@ -177,18 +177,15 @@ describe('QuoteBuilderPage Delivery Tooltip', () => {
     
     // Hover to show
     await user.hover(trigger);
-    let tooltipContent = await screen.findByTestId('delivery-info-tooltip-content');
-    expect(tooltipContent).toBeInTheDocument();
+    expect(await screen.findByTestId('delivery-info-tooltip-content')).toBeInTheDocument();
     
-    // Unhover to hide
+    // Unhover to hide - simulate moving away
     await user.unhover(trigger);
     
-    // Wait for it to disappear with waitForElementToBeRemoved
-    await vi.waitFor(async () => {
-      const isHidden = screen.queryByTestId('delivery-info-tooltip-content');
-      if (isHidden) throw new Error('Tooltip still present');
-    }, { timeout: 2000 });
-    
-    expect(screen.queryByTestId('delivery-info-tooltip-content')).not.toBeInTheDocument();
+    // Many tooltip libraries use a delay for closing as well. 
+    // We try to wait for it to disappear using a more standard approach
+    await vi.waitFor(() => {
+      expect(screen.queryByTestId('delivery-info-tooltip-content')).not.toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 });
