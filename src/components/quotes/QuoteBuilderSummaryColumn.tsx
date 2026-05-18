@@ -75,10 +75,10 @@ export function QuoteBuilderSummaryColumn({
   const [showOnlyStale, setShowOnlyStale] = useState(false);
 
   // ── Base apresentada (subtotal + markup) — referência para converter desconto %/R$ ──
-  const presentedSubtotal = useMemo(
-    () => (realSubtotal || 0) * (1 + (negotiationMarkup || 0) / 100),
-    [realSubtotal, negotiationMarkup],
-  );
+  const presentedSubtotal = useMemo(() => {
+    const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+    return round2((realSubtotal || 0) * (1 + (negotiationMarkup || 0) / 100));
+  }, [realSubtotal, negotiationMarkup]);
 
   const handleDiscountTypeChange = (next: "percent" | "amount") => {
     if (next === discountType) return;
