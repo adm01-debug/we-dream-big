@@ -1,24 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// Mock sonner BEFORE importing safeToast so o monkey-patch incide no spy.
-const errorSpy = vi.fn();
-const warningSpy = vi.fn();
-const messageSpy = vi.fn();
 vi.mock('sonner', () => ({
   toast: {
-    error: errorSpy,
-    warning: warningSpy,
-    message: messageSpy,
+    error: vi.fn(),
+    warning: vi.fn(),
+    message: vi.fn(),
     success: vi.fn(),
     info: vi.fn(),
   },
 }));
 
-// Mock devInfraGate para alternar dev/não-dev.
-let isDev = false;
+// Mock devInfraGate — controlado por variável de módulo via getter.
+const gateState = { isDev: false };
 vi.mock('@/lib/system/dev-gate/DevInfraGate', () => ({
   devInfraGate: {
-    shouldShow: () => isDev,
+    shouldShow: () => gateState.isDev,
   },
 }));
 
