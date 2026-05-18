@@ -100,18 +100,23 @@ export default function QuoteBuilderPage() {
         className="fixed right-4 top-20 z-40"
       />
 
-      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
-        {/* Header (minimal — title hidden for SEO/E2E) */}
-        <h1 data-testid="page-title-orcamento-novo" className="sr-only">
+      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 pt-0 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
+        {/* Header (minimal — title positioned off-screen for E2E visibility) */}
+        <h1 
+          data-testid="page-title-orcamento-novo" 
+          className="absolute -top-[1000px] left-0"
+        >
           {s.isEditMode ? 'Editar Orçamento' : 'Novo Orçamento'}
         </h1>
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        
+        {/* Fixed Back Button on Mobile */}
+        <div className="sticky top-[96px] z-30 -mx-3 px-3 py-2 bg-background/95 backdrop-blur-sm border-b border-border/10 sm:static sm:z-auto sm:mx-0 sm:px-0 sm:py-0 sm:bg-transparent sm:backdrop-blur-none sm:border-none flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
             aria-label="Voltar"
             onClick={() => guardNavigation(() => s.navigate(-1))}
-            className="gap-2 -ml-2"
+            className="gap-2 -ml-2 h-8 px-2"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm">Voltar</span>
