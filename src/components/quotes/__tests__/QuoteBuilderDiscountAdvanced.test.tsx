@@ -55,7 +55,8 @@ describe('QuoteBuilderSummaryColumn Advanced Discount Scenarios', () => {
     fireEvent.change(input, { target: { value: '1500' } });
     
     expect(await screen.findByText(/Valor máximo é/)).toBeInTheDocument();
-    expect(await screen.findByText(/R\$ 1.000,00/)).toBeInTheDocument();
+    const alerts = await screen.findAllByRole('alert');
+    expect(alerts.some(a => a.textContent?.includes('1.000,00'))).toBe(true);
   });
 
   it('uses presentedSubtotal (with markup) as limit for amount discount', async () => {
@@ -80,7 +81,8 @@ describe('QuoteBuilderSummaryColumn Advanced Discount Scenarios', () => {
     // Should block 1101
     fireEvent.change(input, { target: { value: '1101' } });
     expect(await screen.findByText(/Valor máximo é/)).toBeInTheDocument();
-    expect(await screen.findByText(/R\$ 1.100,00/)).toBeInTheDocument();
+    const alerts = await screen.findAllByRole('alert');
+    expect(alerts.some(a => a.textContent?.includes('1.100,00'))).toBe(true);
   });
 
   it('maintains rounding stability during conversion % <-> R$', () => {
