@@ -55,6 +55,7 @@ interface Props {
   confirmAllStalePrices?: () => void;
   shippingType?: string;
   shippingCost?: number;
+  className?: string;
 }
 
 export function QuoteBuilderSummaryColumn({
