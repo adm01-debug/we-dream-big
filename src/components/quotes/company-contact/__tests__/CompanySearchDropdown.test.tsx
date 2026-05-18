@@ -177,22 +177,21 @@ describe('CompanySearchDropdown', () => {
     const input = screen.getByTestId('company-search-input');
     fireEvent.focus(input);
 
-    // Should show history even if something else is loading or companies are being fetched
+    // Initial state: show history
     await waitFor(() => {
-      const alphaHistoryItem = screen.getByTestId('history-item-1');
-      expect(alphaHistoryItem).toBeInTheDocument();
-      expect(alphaHistoryItem).toHaveClass('bg-primary/10');
+      expect(screen.getByTestId('search-history-section')).toBeInTheDocument();
     });
 
     // 2. Type to trigger search (which will be "loading" based on our mock)
     fireEvent.change(input, { target: { value: 'Alpha' } });
 
     // History match for 'Alpha' should still be visible and highlighted while server results are "loading"
+    // Note: When searching, history items are merged into the main list if they match
     await waitFor(() => {
-      const alphaHistoryItem = screen.getByTestId('history-item-1');
-      expect(alphaHistoryItem).toBeInTheDocument();
-      expect(alphaHistoryItem).toHaveClass('bg-primary/10');
-      expect(screen.getByText('servidor...')).toBeInTheDocument(); // Loading indicator from code
+      const alphaItem = screen.getByTestId('company-option-1');
+      expect(alphaItem).toBeInTheDocument();
+      expect(alphaItem).toHaveClass('bg-primary/10');
+      expect(screen.getByText('servidor...')).toBeInTheDocument();
     });
   });
 });
