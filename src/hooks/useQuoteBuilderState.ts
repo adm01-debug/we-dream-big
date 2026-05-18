@@ -180,11 +180,14 @@ export function useQuoteBuilderState() {
     if (value !== 'fob_pre') {
       setShippingCost(0);
     }
-    toast.success(`Frete alterado para: ${
-      value === 'cif' ? 'CIF' : 
-      value === 'fob' ? 'FOB' : 
-      'FOB Pré-negociado'
-    }`);
+    setTimeout(() => {
+      // Pequeno delay para garantir que o estado foi processado antes de avisar
+      toast.success(`Frete alterado para: ${
+        value === 'cif' ? 'CIF' : 
+        value === 'fob' ? 'FOB' : 
+        'FOB Pré-negociado'
+      }`);
+    }, 50);
   }, []);
 
   const [productSearchOpen, setProductSearchOpen] = useState(false);
@@ -368,7 +371,10 @@ export function useQuoteBuilderState() {
             setDeliveryMode('prazo');
           }
         }
-        if (saved.shippingType) setShippingType(saved.shippingType);
+        if (saved.shippingType) {
+          // Usar setTimeout para garantir que o Radix Select reaja após a montagem do componente
+          setTimeout(() => setShippingType(saved.shippingType), 0);
+        }
         if (saved.shippingCost) setShippingCost(saved.shippingCost);
         if (saved.validUntil) setValidUntil(saved.validUntil);
         if (saved.notes) setNotes(saved.notes);

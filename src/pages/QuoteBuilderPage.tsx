@@ -496,6 +496,12 @@ export default function QuoteBuilderPage() {
                       <SelectItem value="fob_pre">FOB | Valor pré negociado</SelectItem>
                     </SelectContent>
                   </Select>
+                  {s.validationErrors.includes('frete') && (
+                    <p className="flex items-center gap-1 text-[10px] text-destructive mt-0.5">
+                      <AlertTriangle className="h-3 w-3" />
+                      Selecione a modalidade de frete
+                    </p>
+                  )}
                   {s.shippingType === 'fob_pre' && (
                     <div className="mt-1.5 space-y-1">
                       <Label
