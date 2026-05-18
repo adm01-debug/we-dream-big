@@ -172,7 +172,7 @@ export function CompanySearchDropdown({
     setSearchTerm("");
   };
 
-  const showHistory = isOpen && !searchTerm.trim() && history.length > 0;
+  const showHistory = isOpen && history.length > 0 && !searchTerm.trim();
 
   if (selectedCompany && !isOpen) {
     return (
