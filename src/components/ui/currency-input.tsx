@@ -57,6 +57,7 @@ export function CurrencyInput({
   min = 0,
   max,
   onValidityChange,
+  ...props
 }: CurrencyInputProps) {
   const allowNegative = min < 0;
   const [text, setText] = useState<string>(value || showZero ? formatBR(value) : '');
