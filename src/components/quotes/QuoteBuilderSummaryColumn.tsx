@@ -71,6 +71,29 @@ export function QuoteBuilderSummaryColumn({
   const [confirmAllOpen, setConfirmAllOpen] = useState(false);
   const [showOnlyStale, setShowOnlyStale] = useState(false);
 
+  // ── Base apresentada (subtotal + markup) — referência para converter desconto %/R$ ──
+  const presentedSubtotal = useMemo(
+    () => (realSubtotal || 0) * (1 + (negotiationMarkup || 0) / 100),
+    [realSubtotal, negotiationMarkup],
+  );
+
+  const handleDiscountTypeChange = (next: "percent" | "amount") => {
+    if (next === discountType) return;
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+    if (presentedSubtotal > 0 && discountValue > 0) {
+      if (next === "amount") {
+        // % → R$
+        setDiscountValue(round2(Math.max(0, presentedSubtotal * (discountValue / 100))));
+      } else {
+        // R$ → %
+        const pct = (discountValue / presentedSubtotal) * 100;
+        setDiscountValue(round2(Math.max(0, Math.min(100, pct))));
+      }
+    }
+    setDiscountType(next);
+  };
+
+
   // ── Itens com preço pendente de confirmação (aging/stale e ainda não confirmado) ──
   const staleIndexes = useMemo(() => {
     const set = new Set<number>();
@@ -300,7 +323,7 @@ export function QuoteBuilderSummaryColumn({
                 </div>
               )}
               <div className="flex items-center gap-2">
-                <Select value={discountType} onValueChange={(v) => setDiscountType(v as "percent" | "amount")}>
+                <Select value={discountType} onValueChange={(v) => handleDiscountTypeChange(v as "percent" | "amount")}>
                   <SelectTrigger className="w-16 h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="percent">%</SelectItem>
