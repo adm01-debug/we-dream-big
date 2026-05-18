@@ -16,7 +16,7 @@ export const quoteFormSchema = z.object({
 }).refine(
   (data) => {
     if (data.shippingType === "fob_pre") {
-      return data.shippingCost !== undefined && data.shippingCost > 0;
+      return typeof data.shippingCost === "number" && data.shippingCost > 0;
     }
     return true;
   },

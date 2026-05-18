@@ -529,8 +529,9 @@ export function useQuoteBuilderState() {
   );
 
   const total = useMemo(() => {
-    const baseTotal = Math.max(0, subtotal - discountAmount);
-    return shippingType === 'fob_pre' ? baseTotal + shippingCost : baseTotal;
+    const baseTotal = QuoteCalc.round2(subtotal - discountAmount);
+    const shipping = shippingType === 'fob_pre' ? QuoteCalc.round2(shippingCost) : 0;
+    return QuoteCalc.round2(baseTotal + shipping);
   }, [subtotal, discountAmount, shippingCost, shippingType]);
 
   // ── Desconto REAL (sobre subtotal real) — usado para alçada ──
