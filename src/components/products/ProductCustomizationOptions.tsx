@@ -8,7 +8,7 @@
  */
 
 import { useState, useCallback, useRef } from "react";
-import { Paintbrush, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
