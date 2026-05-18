@@ -55,7 +55,6 @@ interface Props {
   confirmAllStalePrices?: () => void;
   shippingType?: string;
   shippingCost?: number;
-  className?: string;
 }
 
 export function QuoteBuilderSummaryColumn({
@@ -69,7 +68,6 @@ export function QuoteBuilderSummaryColumn({
   realSubtotal = 0, realDiscountPercent = 0,
   confirmItemPrice, confirmAllStalePrices,
   shippingType, shippingCost = 0,
-  className,
 }: Props) {
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
   const [sellerNotes, setSellerNotes] = useState("");
@@ -133,7 +131,7 @@ export function QuoteBuilderSummaryColumn({
   };
 
   return (
-    <aside className={cn("w-full", className)}>
+    <div className="lg:col-span-4">
       <div className="sticky top-24">
         <div className="flex flex-col rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden">
           {/* Header */}
@@ -557,6 +555,6 @@ export function QuoteBuilderSummaryColumn({
           toast.success(`${staleCount} preço(s) confirmado(s) com fornecedor`);
         }}
       />
-    </aside>
+    </div>
   );
 }
