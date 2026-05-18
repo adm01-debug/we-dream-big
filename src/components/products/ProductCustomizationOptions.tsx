@@ -302,7 +302,7 @@ export function ProductCustomizationOptions({
               key={currentLocation.location_code}
               location={currentLocation}
               quantity={quantity}
-              confirmedTechniqueId={pricesRef.current.get(currentLocation.location_code)?.techniqueId}
+              confirmedPersonalization={pricesRef.current.get(currentLocation.location_code)}
               onPriceCalculated={handlePriceCalculated}
             />
           </div>
