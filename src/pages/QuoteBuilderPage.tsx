@@ -109,7 +109,7 @@ export default function QuoteBuilderPage() {
             </div>
             <div>
               <h1
-                data-testid="page-title-orcamento-novo"
+                data-testid={s.isEditMode ? "page-title-orcamento-editar" : "page-title-orcamento-novo"}
                 className="font-display text-xl font-bold leading-tight sm:text-2xl"
               >
                 {s.isEditMode ? 'Editar Orçamento' : 'Novo Orçamento'}
