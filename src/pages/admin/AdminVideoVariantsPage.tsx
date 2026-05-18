@@ -199,6 +199,7 @@ export default function AdminVideoVariantsPage() {
           </Table>
         </CardContent>
       </Card>
-      </div>
+        </div>
+      </>
   );
 }
