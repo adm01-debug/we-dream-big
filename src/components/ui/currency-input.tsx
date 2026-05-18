@@ -12,13 +12,15 @@ interface CurrencyInputProps {
   showZero?: boolean;
 }
 
+const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+
 const formatBR = (n: number) =>
-  n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  round2(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const parseBR = (raw: string): number => {
   const clean = raw.replace(/[^\d,.-]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
   const n = parseFloat(clean);
-  return Number.isFinite(n) ? n : 0;
+  return Number.isFinite(n) ? round2(n) : 0;
 };
 
 /**
