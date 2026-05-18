@@ -64,6 +64,8 @@ export interface ProposalTemplateData {
 
 export function formatPaymentTerms(value?: string): string {
   const map: Record<string, string> = {
+    "7_dias": "7 dias a partir da entrega",
+    "14_dias": "14 dias a partir da entrega",
     "21_dias": "21 dias a partir da entrega",
     "28_dias": "28 dias a partir da entrega",
     "50_50": "50% entrada / 50% após entrega",
