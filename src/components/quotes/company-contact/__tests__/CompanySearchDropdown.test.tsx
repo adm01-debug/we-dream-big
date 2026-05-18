@@ -21,10 +21,12 @@ vi.mock('@/lib/crm-db', () => ({
 const mockCompanies = [
   { id: '1', name: 'Alpha Corp', razao_social: 'Alpha S.A.', cnpj: '111', logo_url: null },
   { id: '2', name: 'Beta Solutions', razao_social: 'Beta Ltda', cnpj: '222', logo_url: null },
+  { id: '3', name: 'Gamma Ltd', razao_social: 'Gamma Ltda', cnpj: '333', logo_url: null },
 ];
 
 const mockHistory = [
   { id: '1', label: 'Alpha Corp', type: 'company', metadata: { cnpj: '111' }, timestamp: Date.now() },
+  { id: '2', label: 'Beta Solutions', type: 'company', metadata: { cnpj: '22.222.222/0001-22' }, timestamp: Date.now() },
 ];
 
 describe('CompanySearchDropdown', () => {
@@ -106,6 +108,46 @@ describe('CompanySearchDropdown', () => {
       // Should find Alpha Corp via history CNPJ match
       expect(results[1]).toHaveTextContent('Alpha Corp');
       expect(results[1]).toHaveTextContent('111');
+    });
+  });
+
+  it('should filter correctly by partial CNPJ, masked/unmasked and show only regular results for non-history items', async () => {
+    render(
+      <CompanySearchDropdown
+        companyId=""
+        selectedCompany={null}
+        onSelectCompany={vi.fn()}
+        onClearCompany={vi.fn()}
+      />
+    );
+
+    const input = screen.getByTestId('company-search-input');
+    fireEvent.focus(input);
+
+    // 1. Partial CNPJ search (company 1: "111", search for "11")
+    fireEvent.change(input, { target: { value: '11' } });
+    await waitFor(() => {
+      expect(screen.getByTestId('company-option-1')).toBeInTheDocument();
+      expect(screen.getByText('Alpha Corp')).toBeInTheDocument();
+    });
+
+    // 2. Masked CNPJ search (company 2 in history has mask)
+    fireEvent.change(input, { target: { value: '22.222' } });
+    await waitFor(() => {
+      expect(screen.getByTestId('company-option-2')).toBeInTheDocument();
+      expect(screen.getByText('Beta Solutions')).toBeInTheDocument();
+    });
+
+    // 3. Unmasked CNPJ search (company 2 digits only)
+    fireEvent.change(input, { target: { value: '22222' } });
+    await waitFor(() => {
+      expect(screen.getByTestId('company-option-2')).toBeInTheDocument();
+    });
+
+    // 4. CNPJ not in history (company 3: "333")
+    fireEvent.change(input, { target: { value: '333' } });
+    await waitFor(() => {
+      expect(screen.getByTestId('company-option-3')).toBeInTheDocument();
     });
   });
 
