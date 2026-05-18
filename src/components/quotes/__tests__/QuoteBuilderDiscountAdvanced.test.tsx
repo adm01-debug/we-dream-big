@@ -79,7 +79,8 @@ describe('QuoteBuilderSummaryColumn Advanced Discount Scenarios', () => {
     
     // Should block 1101
     fireEvent.change(input, { target: { value: '1101' } });
-    expect(await screen.findByText(/Valor máximo é R\$ 1.100,00/)).toBeInTheDocument();
+    expect(await screen.findByText(/Valor máximo é/)).toBeInTheDocument();
+    expect(await screen.findByText(/R\$ 1.100,00/)).toBeInTheDocument();
   });
 
   it('maintains rounding stability during conversion % <-> R$', () => {
