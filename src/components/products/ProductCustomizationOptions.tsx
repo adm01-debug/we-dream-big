@@ -344,28 +344,49 @@ export function ProductCustomizationOptions({
         {/* /fim do bloco sticky (stepper + locais) */}
         </div>
 
-        {/* STEPS 2 + 3 — Técnica + Tamanho (rolam normalmente abaixo do bloco fixo) */}
-        {currentLocation && (
-          <div ref={step2Ref} className="rounded-xl border border-border/60 bg-background/40 p-3 space-y-2.5 scroll-mt-28">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Técnicas para{" "}
-                <span className="text-primary">{currentLocation.location_name}</span>
-              </p>
-              <Badge variant="secondary" className="text-[10px]">
-                {currentLocation.options.length} técnica
-                {currentLocation.options.length !== 1 ? "s" : ""}
-              </Badge>
+        {/* STEPS 2 + 3 — Content Area (Modular Bento) */}
+        {currentLocation ? (
+          <div ref={step2Ref} className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in zoom-in-95 duration-300">
+            {/* Technique Selection Module */}
+            <div className="rounded-xl border border-border/60 bg-background/60 p-4 space-y-3 shadow-sm">
+              <div className="flex items-center justify-between border-b pb-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  2. Selecione a Técnica
+                </p>
+                <Badge variant="secondary" className="text-[9px] h-4">
+                  {currentLocation.options.length} opções
+                </Badge>
+              </div>
+              <div className="max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
+                <LocationPanel
+                  key={currentLocation.location_code}
+                  location={currentLocation}
+                  quantity={quantity}
+                  confirmedPersonalization={pricesRef.current.get(currentLocation.location_code)}
+                  onPriceCalculated={handlePriceCalculated}
+                />
+              </div>
             </div>
-            <div ref={step3Ref} className="pt-2 border-t border-border/40 scroll-mt-28">
-              <LocationPanel
-                key={currentLocation.location_code}
-                location={currentLocation}
-                quantity={quantity}
-                confirmedPersonalization={pricesRef.current.get(currentLocation.location_code)}
-                onPriceCalculated={handlePriceCalculated}
-              />
+
+            {/* Config & Preview Module */}
+            <div className="space-y-4">
+              <div className="hidden md:flex flex-col items-center justify-center h-full p-8 rounded-xl border border-dashed border-primary/20 bg-primary/5 text-center">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                  <Palette className="h-6 w-6 text-primary" />
+                </div>
+                <h4 className="text-sm font-bold text-foreground">Configuração em Tempo Real</h4>
+                <p className="text-[11px] text-muted-foreground mt-1 max-w-[200px]">
+                  Os valores são calculados automaticamente conforme você ajusta cores e dimensões.
+                </p>
+              </div>
             </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed rounded-2xl bg-muted/5">
+            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Package className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Selecione um local acima para começar</p>
           </div>
         )}
 
