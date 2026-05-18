@@ -248,18 +248,21 @@ export function ProductCustomizationOptions({
           </button>
         </div>
 
-        {/* STEP 1 — Local */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] md:text-xs font-semibold text-foreground truncate">
-              Onde a arte será gravada?
-            </p>
-            <Badge variant="outline" className="text-[9px] px-1 h-4">
-              {locations.length}
-            </Badge>
+        {/* STEP 1 — Local Selection Cards */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground">
+              Escolha o Local
+            </h3>
+            {mutuallyExclusive && (
+              <Badge variant="outline" className="text-[9px] gap-1 text-amber-600 border-amber-200 bg-amber-50">
+                <Info className="h-2.5 w-2.5" />
+                Opções Exclusivas
+              </Badge>
+            )}
           </div>
 
-          <div className="flex md:grid md:grid-cols-3 gap-2 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0 scrollbar-none snap-x">
+          <div className="flex md:grid md:grid-cols-4 gap-2 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0 scrollbar-none snap-x">
             {locations.map((loc) => {
               const isActive = activeLocation === loc.location_code;
               const hasPrice = pricesRef.current.has(loc.location_code);
