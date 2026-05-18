@@ -521,7 +521,6 @@ export default function QuoteBuilderPage() {
                     </div>
                   )}
                 </div>
-              </div>
 
               {/* Atalho para Business Analytics do cliente — substitui o antigo painel de Recomendações IA,
                   consolidando inteligência comercial no módulo /ferramentas/bi (SSOT). */}
