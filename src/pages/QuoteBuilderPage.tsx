@@ -347,8 +347,9 @@ export default function QuoteBuilderPage() {
 
                 {/* Entrega */}
                 <div className="space-y-1">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5" data-testid="delivery-label-container">
                     <Label
+                      data-testid="delivery-label"
                       className={cn(
                         'text-xs',
                         s.validationErrors.includes('prazo_entrega')
@@ -364,11 +365,18 @@ export default function QuoteBuilderPage() {
                     <TooltipProvider delayDuration={150}>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="inline-flex cursor-help align-middle text-muted-foreground/60 hover:text-primary transition-colors">
+                          <span 
+                            data-testid="delivery-info-tooltip-trigger"
+                            className="inline-flex cursor-help align-middle text-muted-foreground/60 hover:text-primary transition-colors"
+                          >
                             <Info className="h-3 w-3" aria-label="Informação sobre prazo de entrega" />
                           </span>
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs text-[11px] leading-relaxed">
+                        <TooltipContent 
+                          data-testid="delivery-info-tooltip-content"
+                          side="top" 
+                          className="max-w-xs text-[11px] leading-relaxed"
+                        >
                           Antes de assumir o compromisso com seu Cliente, valide com todo o time
                           (Fornecedores, Coordenador de Compras, Coordenador de Logística) a
                           viabilidade do prazo.
