@@ -67,6 +67,18 @@ vi.mock('@/hooks/useAutoSaveQuote', () => ({
   useAutoSaveQuote: vi.fn(() => ({ clearAutoSave: vi.fn() })),
 }));
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
+
 describe('useQuoteBuilderState Navigation and Validation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -75,12 +87,12 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
   });
 
   it('starts at "client" step', () => {
-    const { result } = renderHook(() => useQuoteBuilderState());
+    const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
     expect(result.current.currentStep).toBe('client');
   });
 
   it('prevents nextStep if client/contact not selected', () => {
-    const { result } = renderHook(() => useQuoteBuilderState());
+    const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
     
     act(() => {
       result.current.nextStep();
@@ -91,7 +103,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
   });
 
   it('allows nextStep if client/contact are selected', () => {
-    const { result } = renderHook(() => useQuoteBuilderState());
+    const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
     
     act(() => {
       result.current.setClientId('company-1');
@@ -106,7 +118,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
   });
 
   it('prevents moving to conditions if items are missing when skipping', () => {
-    const { result } = renderHook(() => useQuoteBuilderState());
+    const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
     
     act(() => {
       result.current.setClientId('company-1');
@@ -123,7 +135,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
   });
 
   it('allows jumping back to a previous step without validation', () => {
-    const { result } = renderHook(() => useQuoteBuilderState());
+    const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
     
     act(() => {
       result.current.setClientId('company-1');
@@ -141,7 +153,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
   });
 
   it('announces errors for screen readers', () => {
-    const { result } = renderHook(() => useQuoteBuilderState());
+    const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
     
     act(() => {
       result.current.nextStep();
