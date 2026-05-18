@@ -230,8 +230,7 @@ export default function PermissionsPage() {
                 </CardContent>
               </Card>
             </div>
-          </main>
-      </main>
-    </div>
-  );
+        </main>
+      </div>
+    );
 }

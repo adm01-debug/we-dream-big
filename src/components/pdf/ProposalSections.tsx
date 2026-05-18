@@ -31,7 +31,7 @@ export function HeaderSection({ data }: { data: ProposalTemplateData }) {
         <polygon points={`${greenStart},0 ${darkStart},0 ${darkEnd},${H} ${greenEnd},${H}`} fill="#00c853" />
         <rect x="0" y={H - barH} width={W} height={barH} fill="#00c853" />
       </svg>
-      <div style={{ position: "absolute", zIndex: 10, top: "0", left: "24px", bottom: `${barH}px`, width: "324px", display: "flex", alignItems: "center", justifyContent: "flex-start", padding: "12px 14px" }}>
+      <div style={{ position: "absolute", zIndex: 10, top: "0", left: "24px", bottom: `${barH}px`, width: "360px", display: "flex", alignItems: "center", justifyContent: "flex-start", padding: "12px 14px" }}>
         <img src="/images/promo-brindes-logo.png" alt="Promo Brindes" style={{ width: "100%", height: "auto", display: "block", imageRendering: "high-quality" as React.CSSProperties["imageRendering"], mixBlendMode: "multiply" }} crossOrigin="anonymous" loading="lazy" />
       </div>
       <div style={{ position: "absolute", zIndex: 10, textAlign: "right", color: "#ffffff", top: "50%", right: "32px", transform: "translateY(-60%)" }}>
@@ -220,6 +220,9 @@ export function FooterSection({ data }: { data: ProposalTemplateData }) {
           <div style={{ fontWeight: 800, fontSize: "12px", textTransform: "uppercase", marginTop: "5px", color: "#000" }}>{data.seller.name}</div>
           <div style={{ width: "180px", height: "1px", backgroundColor: "#333", margin: "2px auto" }} />
           <div style={{ fontSize: "11px", color: "#666" }}>Executivo de Vendas</div>
+        </div>
+        <div style={{ position: "absolute", bottom: "10px", right: "260px" }}>
+          <img src="/images/promo-brindes-logo.png" alt="Logo" style={{ height: "40px", opacity: 0.5, mixBlendMode: "multiply" }} />
         </div>
       </div>
     </div>
