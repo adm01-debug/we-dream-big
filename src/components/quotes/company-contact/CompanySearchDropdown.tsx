@@ -216,7 +216,8 @@ export function CompanySearchDropdown({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input autoFocus={isOpen} placeholder="Buscar empresa por nome, CNPJ..." value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)} onFocus={() => setIsOpen(true)} className="pl-9 h-11 bg-background"
-          onKeyDown={(e) => { if (e.key === "Escape") { setIsOpen(false); setSearchTerm(""); } }} />
+          onKeyDown={(e) => { if (e.key === "Escape") { setIsOpen(false); setSearchTerm(""); } }}
+          data-testid="company-search-input" />
         {(loadingCompanies || loadingSearch) && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />}
       </div>
 
