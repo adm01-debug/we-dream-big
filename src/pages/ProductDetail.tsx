@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { PageSEO } from "@/components/seo/PageSEO";
 import { getCdnUrl } from '@/utils/image-utils';
 import { ProductStickyHeader } from '@/components/products/ProductStickyHeader';
 import { SimilarProducts } from '@/components/products/SimilarProducts';
@@ -216,64 +216,42 @@ export default function ProductDetail() {
 
   return (
     <>
-      <Helmet>
-        <title>{product.name} | Promo Gifts</title>
-        <meta
-          name="description"
-          content={product.description || `${product.name} - Brinde Promocional`}
-        />
-        <link rel="canonical" href={`${window.location.origin}/produto/${product.id}`} />
-        <meta property="og:title" content={`${product.name} | Promo Gifts`} />
-        <meta
-          property="og:description"
-          content={product.description || `${product.name} - Brinde Promocional`}
-        />
-        <meta
-          property="og:image"
-          content={
-            product.og_image_url
-              ? getCdnUrl(product.og_image_url, 'large')
-              : product.images[0] || ''
-          }
-        />
-        <meta property="og:type" content="product" />
-        <meta property="og:url" content={`${window.location.origin}/produto/${product.id}`} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${product.name} | Promo Gifts`} />
-        <meta
-          name="twitter:image"
-          content={
-            product.og_image_url
-              ? getCdnUrl(product.og_image_url, 'large')
-              : product.images[0] || ''
-          }
-        />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Product',
-            name: product.name,
-            description: product.description || `${product.name} - Brinde Promocional`,
-            sku: product.sku,
-            image: product.images?.filter(Boolean) || [],
-            brand: { '@type': 'Brand', name: product.supplier?.name || 'Promo Gifts' },
-            offers: {
-              '@type': 'Offer',
-              price: product.price,
-              priceCurrency: 'BRL',
-              availability:
-                product.stockStatus === 'in-stock'
-                  ? 'https://schema.org/InStock'
-                  : product.stockStatus === 'out-of-stock'
-                    ? 'https://schema.org/OutOfStock'
-                    : 'https://schema.org/LimitedAvailability',
-              seller: { '@type': 'Organization', name: 'Promo Gifts' },
-            },
-            category: product.category?.name,
-            material: product.materials?.join(', '),
-          })}
-        </script>
-      </Helmet>
+      <PageSEO
+        title={`${product.name} | Promo Gifts`}
+        description={product.description || `${product.name} - Brinde Promocional`}
+        path={`/produto/${product.id}`}
+        ogImage={
+          product.og_image_url
+            ? getCdnUrl(product.og_image_url, 'large')
+            : product.images[0] || ''
+        }
+        ogType="product"
+      />
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.name,
+          description: product.description || `${product.name} - Brinde Promocional`,
+          sku: product.sku,
+          image: product.images?.filter(Boolean) || [],
+          brand: { '@type': 'Brand', name: product.supplier?.name || 'Promo Gifts' },
+          offers: {
+            '@type': 'Offer',
+            price: product.price,
+            priceCurrency: 'BRL',
+            availability:
+              product.stockStatus === 'in-stock'
+                ? 'https://schema.org/InStock'
+                : product.stockStatus === 'out-of-stock'
+                  ? 'https://schema.org/OutOfStock'
+                  : 'https://schema.org/LimitedAvailability',
+            seller: { '@type': 'Organization', name: 'Promo Gifts' },
+          },
+          category: product.category?.name,
+          material: product.materials?.join(', '),
+        })}
+      </script>
 
       <ProductStickyHeader
         productId={product.id}
@@ -287,7 +265,7 @@ export default function ProductDetail() {
         product={product}
       />
 
-      <div className="mx-auto min-w-0 max-w-[1600px] animate-fade-in space-y-4 overflow-x-hidden pb-20 md:space-y-6 md:pb-0 xl:space-y-8 xl:px-4 2xl:px-8">
+      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-4 animate-fade-in">
         <IntelligenceBadges
           badges={intellBadges}
           turnoverScore={intellTurnover}
