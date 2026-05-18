@@ -79,10 +79,23 @@ export function ConfigurationPanelV6({ technique, quantity, isConfirmed = false,
   };
 
   return (
-    <div className="space-y-4 p-4 rounded-lg bg-secondary/30 border border-border/50">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-        Configure a gravação
-      </p>
+    <div className={cn(
+      "space-y-4 p-4 rounded-lg border",
+      isConfirmed
+        ? "bg-primary/5 border-primary/30"
+        : "bg-secondary/30 border-border/50",
+    )}>
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          {isConfirmed && !editing ? "Gravação confirmada" : "Configure a gravação"}
+        </p>
+        {isConfirmed && !editing && (
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wide">
+            <Check className="h-3 w-3" /> Adicionada ao orçamento
+          </span>
+        )}
+      </div>
+
 
       {/* Dimension inputs (conditional) */}
       {technique.usa_dimensao && (
