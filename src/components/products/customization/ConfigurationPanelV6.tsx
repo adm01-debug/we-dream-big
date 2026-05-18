@@ -20,20 +20,31 @@ interface ConfigurationPanelV6Props {
   quantity: number;
   /** True quando esta técnica já foi confirmada e está no orçamento. */
   isConfirmed?: boolean;
+  initialWidth?: number;
+  initialHeight?: number;
+  initialColors?: number;
   onPriceCalculated: (techniqueId: string, price: CustomizationPriceResponseV6 | null, dimensions?: { width?: number; height?: number }) => void;
 }
 
-export function ConfigurationPanelV6({ technique, quantity, isConfirmed = false, onPriceCalculated }: ConfigurationPanelV6Props) {
+export function ConfigurationPanelV6({ 
+  technique, 
+  quantity, 
+  isConfirmed = false, 
+  initialWidth,
+  initialHeight,
+  initialColors,
+  onPriceCalculated 
+}: ConfigurationPanelV6Props) {
   // Dimensions
   const [largura, setLargura] = useState<string>(
-    technique.usa_dimensao ? String(technique.efetiva_largura_max) : ""
+    initialWidth ? String(initialWidth) : (technique.usa_dimensao ? String(technique.efetiva_largura_max) : "")
   );
   const [altura, setAltura] = useState<string>(
-    technique.usa_dimensao ? String(technique.efetiva_altura_max) : ""
+    initialHeight ? String(initialHeight) : (technique.usa_dimensao ? String(technique.efetiva_altura_max) : "")
   );
 
   // Colors
-  const [numCores, setNumCores] = useState(1);
+  const [numCores, setNumCores] = useState(initialColors || 1);
 
   // Edição local: quando confirmado, bloqueia inputs até clicar em "Editar"
   const [editing, setEditing] = useState(false);
