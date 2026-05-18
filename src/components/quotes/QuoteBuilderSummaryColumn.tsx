@@ -557,6 +557,6 @@ export function QuoteBuilderSummaryColumn({
           toast.success(`${staleCount} preço(s) confirmado(s) com fornecedor`);
         }}
       />
-    </div>
+    </aside>
   );
 }
