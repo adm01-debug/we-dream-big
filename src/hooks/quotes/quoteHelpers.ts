@@ -40,7 +40,7 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
     ? Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal) * 10000) / 100
     : 0;
 
-  return { subtotal, realSubtotal, discountAmount, total, realDiscountPercent, markup };
+  return { subtotal: round2(subtotal), realSubtotal: round2(realSubtotal), discountAmount: round2(discountAmount), total: round2(total), realDiscountPercent, markup };
 }
 
 export function buildInsertPayload(
