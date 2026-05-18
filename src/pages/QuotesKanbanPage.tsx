@@ -85,7 +85,7 @@ export default function QuotesKanbanPage() {
   return (
       <>
         <PageSEO title="Kanban de Orçamentos" description="Visualize e gerencie orçamentos no formato Kanban." path="/orcamentos/kanban" noIndex />
-        <div className="space-y-6">
+        <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-4 animate-fade-in">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
