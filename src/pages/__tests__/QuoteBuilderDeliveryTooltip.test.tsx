@@ -168,4 +168,23 @@ describe('QuoteBuilderPage Delivery Tooltip', () => {
     expect(tooltipContent).toBeInTheDocument();
     expect(tooltipContent.textContent).toContain('Antes de assumir o compromisso com seu Cliente');
   });
+
+  it('should hide the tooltip content when unhovering', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    
+    const trigger = screen.getByTestId('delivery-info-tooltip-trigger');
+    
+    // Hover to show
+    await user.hover(trigger);
+    let tooltipContent = await screen.findByTestId('delivery-info-tooltip-content');
+    expect(tooltipContent).toBeInTheDocument();
+    
+    // Unhover to hide
+    await user.unhover(trigger);
+    
+    // Wait for it to disappear
+    const isHidden = await screen.queryByTestId('delivery-info-tooltip-content');
+    expect(isHidden).not.toBeInTheDocument();
+  });
 });
