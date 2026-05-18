@@ -30,7 +30,12 @@ export function ClientDetailHeader({ client }: ClientDetailHeaderProps) {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold font-display text-foreground truncate">{name}</h1>
+          <h1 
+            data-testid="page-title-client-detail"
+            className="text-2xl font-bold font-display text-foreground truncate"
+          >
+            {name}
+          </h1>
           <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
             {client.cnpj && <span className="font-mono">{client.cnpj}</span>}
             {location && (<span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{location}</span>)}

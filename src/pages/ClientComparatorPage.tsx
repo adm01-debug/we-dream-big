@@ -56,7 +56,7 @@ export default function ClientComparatorPage() {
                   <GitCompare className="h-4 w-4 text-primary-foreground" />
                 </div>
                 <div>
-                  <h1 className="font-display text-lg font-bold">Comparador de clientes</h1>
+                  <h1 data-testid="page-title-client-comparator" className="font-display text-lg font-bold">Comparador de clientes</h1>
                   <p className="text-xs text-muted-foreground">
                     Lado a lado · até {MAX_CLIENTS} clientes da sua carteira
                   </p>

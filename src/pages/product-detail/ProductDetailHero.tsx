@@ -171,7 +171,7 @@ export function ProductDetailHero({
             />
           </div>
           <h1
-            data-testid="product-name"
+            data-testid="page-title-product-detail"
             data-product-name={product.name}
             className="font-display text-lg font-bold leading-tight tracking-tight text-foreground sm:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl"
           >

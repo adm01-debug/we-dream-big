@@ -91,7 +91,7 @@ export default function QuoteViewPage() {
             </Button>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="font-display text-2xl font-bold">Orçamento {quote.quote_number}</h1>
+                <h1 data-testid="page-title-quote-view" className="font-display text-2xl font-bold">Orçamento {quote.quote_number}</h1>
                 <Badge variant={status.variant}>{status.label}</Badge>
               </div>
               <p className="text-muted-foreground">
