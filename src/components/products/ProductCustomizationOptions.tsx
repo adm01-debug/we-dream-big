@@ -8,7 +8,7 @@
  */
 
 import { useState, useCallback, useRef } from "react";
-import { Paintbrush, Loader2 } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -99,48 +99,37 @@ export function ProductCustomizationOptions({
     .reduce((sum, p) => sum + (p.price?.total_cobrado ?? 0), 0);
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-            <Paintbrush className="h-4 w-4 text-primary" />
-          </div>
-          <h3 className="font-display text-lg font-semibold text-foreground">
-            Personalização
-          </h3>
+    <div className="space-y-3">
+      {/* Location tabs (compact, no duplicate header — outer toggle already says "Personalização") */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
+          {locations.map((loc) => {
+            const isActive = activeLocation === loc.location_code;
+            const hasPrice = pricesRef.current.has(loc.location_code);
+            return (
+              <button
+                key={loc.location_code}
+                onClick={() => setActiveLocation(loc.location_code)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all border",
+                  isActive
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : hasPrice
+                      ? "bg-primary/10 text-primary border-primary/30"
+                      : "bg-secondary text-secondary-foreground border-border hover:bg-secondary/80"
+                )}
+              >
+                {loc.location_name}
+                {hasPrice && !isActive && <span className="ml-1.5">✓</span>}
+              </button>
+            );
+          })}
         </div>
-        <Badge variant="secondary" className="text-xs">
+        <Badge variant="secondary" className="text-[10px]">
           {locations.length} loca{locations.length !== 1 ? "is" : "l"}
         </Badge>
       </div>
 
-      {/* Location tabs */}
-      <div className="flex gap-2 flex-wrap">
-        {locations.map((loc) => {
-          const isActive = activeLocation === loc.location_code;
-          const hasPrice = pricesRef.current.has(loc.location_code);
-          return (
-            <button
-              key={loc.location_code}
-              onClick={() => setActiveLocation(loc.location_code)}
-              className={cn(
-                "px-4 py-2 rounded-lg text-sm font-medium transition-all border",
-                isActive
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : hasPrice
-                    ? "bg-primary/10 text-primary border-primary/30"
-                    : "bg-secondary text-secondary-foreground border-border hover:bg-secondary/80"
-              )}
-            >
-              {loc.location_name}
-              {hasPrice && !isActive && (
-                <span className="ml-1.5 text-xs">✓</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
 
       {/* Current location panel */}
       {currentLocation && (
