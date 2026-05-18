@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
-import { Building2, Search, X, Loader2 } from "lucide-react";
+import { Building2, Search, X, Loader2, Clock, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { selectCrm, searchCrm } from "@/lib/crm-db";
 import { getCompanyDisplayName, type CrmCompany } from "@/types/crm";
 import { CompanyAvatar, type CompanyOption } from "./shared-types";
+import { useSearchHistory } from "@/hooks/useSearchHistory";
 
 interface CompanySearchDropdownProps {
   companyId: string;
@@ -100,7 +101,26 @@ export function CompanySearchDropdown({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleSelect = (id: string) => { onSelectCompany(id); setIsOpen(false); setSearchTerm(""); };
+  const { history, addToHistory, removeFromHistory, clearHistory } = useSearchHistory("company");
+
+  const handleSelect = (id: string) => {
+    if (id) {
+      const c = (companies || []).concat(serverResults || []).find((x) => x.id === id);
+      if (c) {
+        addToHistory({
+          id: c.id,
+          label: c.name,
+          type: "company",
+          metadata: { razao_social: c.razao_social, cnpj: c.cnpj, logo_url: c.logo_url },
+        });
+      }
+    }
+    onSelectCompany(id);
+    setIsOpen(false);
+    setSearchTerm("");
+  };
+
+  const showHistory = isOpen && !searchTerm.trim() && history.length > 0;
 
   if (selectedCompany && !isOpen) {
     return (
@@ -160,9 +180,41 @@ export function CompanySearchDropdown({
               )}
             </div>
             <div className="relative">
-              <ScrollArea style={{ height: `${Math.min(Math.max((filteredCompanies.length + 1), 2) * 56, 280)}px` }}>
+              <ScrollArea style={{ height: `${Math.min(Math.max((filteredCompanies.length + 1 + (showHistory ? history.length + 1 : 0)), 2) * 56, 320)}px` }}>
                 <button type="button" className={cn("flex items-center gap-3 w-full px-3 py-2.5 text-left transition-colors duration-150 hover:bg-primary/10 border-b border-border/30", !companyId && "bg-primary/5")}
                   onClick={() => handleSelect("")}><span className="text-sm text-muted-foreground">Sem empresa</span></button>
+                {showHistory && (
+                  <div className="border-b border-border/30">
+                    <div className="flex items-center justify-between px-3 py-1.5 bg-muted/20">
+                      <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
+                        <Clock className="h-3 w-3" /> Pesquisas recentes
+                      </span>
+                      <button type="button" onClick={() => clearHistory()}
+                        className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-destructive transition-colors">
+                        <Trash2 className="h-3 w-3" /> Limpar
+                      </button>
+                    </div>
+                    {history.map((item) => {
+                      const meta = (item.metadata || {}) as { razao_social?: string | null; cnpj?: string | null; logo_url?: string | null };
+                      return (
+                        <div key={item.id} className="group flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-primary/10 transition-colors border-b border-border/20 last:border-b-0">
+                          <button type="button" className="flex items-center gap-3 flex-1 min-w-0" onClick={() => handleSelect(item.id)}>
+                            <CompanyAvatar name={item.label} logoUrl={meta.logo_url ?? null} size="sm" />
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <span className="text-sm font-medium truncate">{item.label}</span>
+                              {meta.cnpj && <span className="text-[11px] text-muted-foreground/70 font-mono truncate">{meta.cnpj}</span>}
+                            </div>
+                          </button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); removeFromHistory(item.id); }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+                            aria-label={`Remover ${item.label} do histórico`}>
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 {filteredCompanies.length === 0 && !loadingCompanies ? (
                   <div className="flex flex-col items-center justify-center gap-2 py-6 text-center px-4">
                     <div className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center"><Building2 className="h-5 w-5 text-muted-foreground/60" /></div>
