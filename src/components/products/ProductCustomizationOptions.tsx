@@ -65,6 +65,14 @@ export function ProductCustomizationOptions({
   // Force re-render when pricesRef changes (badges/exclusão dependem disso)
   const [, forceTick] = useState(0);
 
+  // Reset local state when productId changes
+  useEffect(() => {
+    pricesRef.current.clear();
+    setActiveLocation(null);
+    hasInitialized.current = false;
+    forceTick(n => n + 1);
+  }, [productId]);
+
   // Initialize from initialPersonalizations
   useEffect(() => {
     if (!hasInitialized.current && initialPersonalizations.length > 0) {
@@ -76,7 +84,26 @@ export function ProductCustomizationOptions({
       hasInitialized.current = true;
       forceTick(n => n + 1);
     }
-  }, [initialPersonalizations]);
+  }, [initialPersonalizations, productId]);
+
+  // Refs for scrolling to sections
+  const step2Ref = useRef<HTMLDivElement>(null);
+  const step3Ref = useRef<HTMLDivElement>(null);
+
+  const scrollToStep = (step: number) => {
+    const refs = [null, null, step2Ref, step3Ref];
+    const target = refs[step];
+    if (target?.current) {
+      const headerOffset = 140; // Approximate height of sticky header
+      const elementPosition = target.current.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
 
   // Auto-select primeiro local quando dados carregam
   useEffect(() => {
