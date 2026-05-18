@@ -1,7 +1,7 @@
 
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import ProductCustomizationOptions from './ProductCustomizationOptions';
+import { ProductCustomizationOptions } from './ProductCustomizationOptions';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Mock dependencies
