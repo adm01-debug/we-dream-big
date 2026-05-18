@@ -49,7 +49,7 @@ export function AdminTemplatesManager({ onEditTemplate }: AdminTemplatesManagerP
     return grouped;
   }, [filteredTemplates]);
 
-  const formatCurrency = (value: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+  
 
   const calculateTotal = (template: QuoteTemplate) => {
     const itemsTotal = template.items_data.reduce((sum, item) => {
