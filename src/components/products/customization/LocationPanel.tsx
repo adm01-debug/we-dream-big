@@ -14,8 +14,8 @@ import type { TechniqueOption, GravacaoLocation, CustomizationPriceResponseV6 } 
 interface LocationPanelProps {
   location: GravacaoLocation;
   quantity: number;
-  /** technique_id já confirmada para este local (vindo do parent). */
-  confirmedTechniqueId?: string;
+  /** técnica já confirmada para este local (vindo do parent). */
+  confirmedPersonalization?: PersonalizationItem;
   onPriceCalculated: (locationCode: string, techniqueId: string, price: CustomizationPriceResponseV6 | null, dimensions?: { width?: number; height?: number }) => void;
 }
 
