@@ -409,23 +409,38 @@ export function QuoteBuilderSummaryColumn({
           )}
 
           {/* Footer */}
-          <div className="shrink-0 pt-3 mt-3 border-t border-border/50 px-4 pb-4 space-y-3">
-            {shippingType === "fob_pre" && shippingCost > 0 && (
-              <div className="flex items-center justify-between text-sm mb-2 text-muted-foreground">
-                <span>Frete (FOB)</span>
-                <span className="font-medium tabular-nums">{formatCurrency(shippingCost)}</span>
+          <div className="shrink-0 pt-3 mt-3 border-t border-border/50 px-4 pb-4 space-y-2">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground uppercase tracking-tight">
+              <span>Subtotal</span>
+              <span className="font-medium tabular-nums">{formatCurrency(presentedSubtotal)}</span>
+            </div>
+            
+            {discountAmount > 0 && (
+              <div className="flex items-center justify-between text-[11px] text-destructive">
+                <span>Desconto</span>
+                <span className="font-medium tabular-nums">-{formatCurrency(discountAmount)}</span>
               </div>
             )}
-            <div className="flex items-baseline justify-between gap-2">
+
+            {shippingType === "fob_pre" && shippingCost > 0 && (
+              <div className="flex items-center justify-between text-[11px] text-primary font-medium">
+                <span>Frete (FOB)</span>
+                <span className="tabular-nums">+{formatCurrency(shippingCost)}</span>
+              </div>
+            )}
+
+            <div className="flex items-baseline justify-between gap-2 pt-1.5 border-t border-border/30">
               <div>
                 <span className="font-bold text-base">Total</span>
                 {items.length > 0 && (
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     ≈{formatCurrency(items.reduce((s, i) => s + i.quantity, 0) > 0 ? total / items.reduce((s, i) => s + i.quantity, 0) : 0)}/un.
                   </p>
                 )}
               </div>
-              <span className="font-bold text-xl text-primary tabular-nums">{formatCurrency(total)}</span>
+              <span data-testid="summary-total-value" className="font-bold text-2xl text-primary tabular-nums tracking-tight">
+                {formatCurrency(total)}
+              </span>
             </div>
 
             {!isFormValid && (
