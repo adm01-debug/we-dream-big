@@ -51,6 +51,8 @@ export function QuoteProductCustomization({
       const newP: QuoteItemPersonalization = {
         technique_id: item.techniqueId,
         technique_name: item.techniqueName,
+        location_code: item.locationCode,
+        location_name: item.locationName,
         colors_count: item.numberOfColors,
         positions_count: 1,
         width_cm: item.width,
@@ -64,9 +66,8 @@ export function QuoteProductCustomization({
           : `${item.locationName} — ${item.codigoTabela}`,
       };
 
-      // Replace existing by same locationCode (notes key) or techniqueId
-      const key = newP.notes!;
-      const existingIdx = updated.findIndex(m => m.notes === key || m.technique_id === newP.technique_id);
+      // Replace existing by same locationCode
+      const existingIdx = updated.findIndex(m => m.location_code === newP.location_code);
       if (existingIdx >= 0) {
         updated[existingIdx] = newP;
       } else {
