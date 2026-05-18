@@ -169,12 +169,8 @@ function formatValue(value: unknown): string | number {
 /**
  * Formata moeda brasileira
  */
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value);
-}
+import { formatCurrency } from "@/lib/format";
+
 
 /**
  * Formata porcentagem
