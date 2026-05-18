@@ -56,7 +56,8 @@ export function ItemsListEditor({ items, onChange }: ItemsListEditorProps) {
                   min={1}
                   placeholder="Qtd"
                   value={item.quantity}
-                  onChange={(e) => update(idx, { quantity: +e.target.value })}
+                  onKeyDown={(e) => { if (e.key === "-" || e.key === "+" || e.key === "e") e.preventDefault(); }}
+                  onChange={(e) => update(idx, { quantity: Math.max(1, +e.target.value || 1) })}
                 />
               </div>
               <div className="col-span-6 sm:col-span-3">

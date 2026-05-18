@@ -79,15 +79,22 @@ export function QuoteBuilderSummaryColumn({
 
   const handleDiscountTypeChange = (next: "percent" | "amount") => {
     if (next === discountType) return;
-    const round2 = (n: number) => Math.round(n * 100) / 100;
+    const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
     if (presentedSubtotal > 0 && discountValue > 0) {
       if (next === "amount") {
         // % → R$
-        setDiscountValue(round2(Math.max(0, presentedSubtotal * (discountValue / 100))));
+        // Garante que o desconto em R$ não exceda o subtotal disponível
+        setDiscountValue(round2(Math.min(presentedSubtotal, presentedSubtotal * (discountValue / 100))));
       } else {
         // R$ → %
+        // Garante que o desconto em % não exceda 100%
         const pct = (discountValue / presentedSubtotal) * 100;
         setDiscountValue(round2(Math.max(0, Math.min(100, pct))));
+      }
+    } else if (presentedSubtotal === 0 && discountValue > 0) {
+      // Se o subtotal for zero, o desconto monetário deve zerar ao converter para %
+      if (next === "percent") {
+        setDiscountValue(0);
       }
     }
     setDiscountType(next);
@@ -331,16 +338,12 @@ export function QuoteBuilderSummaryColumn({
                   </SelectContent>
                 </Select>
                 {discountType === "percent" ? (
-                  <Input
-                    type="number" min={0} step={1} max={100} inputMode="numeric"
-                    value={discountValue || ""}
-                    onKeyDown={(e) => { if (e.key === "-" || e.key === "+" || e.key === "e") e.preventDefault(); }}
-                    onChange={(e) => {
-                      const n = parseFloat(e.target.value);
-                      if (!Number.isFinite(n)) { setDiscountValue(0); return; }
-                      setDiscountValue(Math.min(100, Math.max(0, n)));
-                    }}
-                    placeholder="Desconto"
+                  <CurrencyInput
+                    value={discountValue}
+                    onChange={setDiscountValue}
+                    max={100}
+                    min={0}
+                    placeholder="0%"
                     aria-label="Valor do desconto em porcentagem"
                     className={cn(
                       "h-8 text-sm transition-all",
@@ -350,8 +353,10 @@ export function QuoteBuilderSummaryColumn({
                 ) : (
                   <CurrencyInput
                     value={discountValue}
-                    onChange={(n) => setDiscountValue(n)}
-                    placeholder="Desconto"
+                    onChange={setDiscountValue}
+                    max={presentedSubtotal}
+                    min={0}
+                    placeholder="R$ 0,00"
                     aria-label="Valor do desconto em reais"
                     className={cn(
                       "h-8 text-sm transition-all",
