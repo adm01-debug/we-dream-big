@@ -39,3 +39,11 @@ const CloudStatusDotInner = memo(function CloudStatusDotInner() {
     </TooltipProvider>
   );
 });
+
+export const CloudStatusDot = memo(function CloudStatusDot() {
+  return (
+    <DevOnly strict>
+      <CloudStatusDotInner />
+    </DevOnly>
+  );
+});
