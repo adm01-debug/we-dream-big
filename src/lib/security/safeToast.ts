@@ -23,44 +23,14 @@ import { toast } from 'sonner';
 
 import type { AppRole } from '@/contexts/AuthContext';
 import { devInfraGate } from '@/lib/system/dev-gate/DevInfraGate';
+// SSOT da heurística de "texto técnico" — ver `sanitize-message.ts`.
+// Mantemos a fachada exportada (`__test__.looksTechnical`) para
+// compatibilidade com testes existentes.
+import { looksTechnical as ssotLooksTechnical } from './sanitize-message';
 
 const PUBLIC_FALLBACK_TITLE = 'Não foi possível concluir esta ação. Tente novamente.';
 
-/**
- * Padrões que indicam mensagem TÉCNICA (não pode chegar a não-dev).
- * Conservador: prefere falso-positivo (esconder em prod) a vazar.
- */
-const TECHNICAL_PATTERNS: RegExp[] = [
-  /\bError\s*:/i,
-  /\bTypeError\b/,
-  /\bReferenceError\b/,
-  /\bSyntaxError\b/,
-  /\bStack trace\b/i,
-  /\bComponent Stack\b/i,
-  /\bat\s+https?:\/\/.+:\d+/i, // stack frame URL
-  /\bFailed to fetch\b/i,
-  /\bNetworkError\b/i,
-  /\bUNAUTHORIZED_LEGACY_JWT\b/,
-  /\bSUPABASE_EDGE_RUNTIME_ERROR\b/,
-  /\b[A-Z][A-Z0-9_]{6,}\b/, // códigos UPPER_SNAKE_CASE longos (>=7 chars)
-  /\b(?:401|403|404|409|422|429|500|502|503|504)\b\s*[:\-]/, // status:
-  /\bJSON(?:\.parse|\.stringify)?\b/i,
-  /\bunexpected token\b/i,
-  /^\s*[{[]/, // começa com { ou [ → JSON bruto
-  /violates\s+(?:row[- ]level|foreign key|check)/i,
-  /\bpermission denied for\b/i,
-  /\bduplicate key value\b/i,
-  /\brelation\s+"[^"]+"\s+does not exist\b/i,
-];
-
-function looksTechnical(input: unknown): boolean {
-  if (typeof input !== 'string') return false;
-  if (input.length === 0) return false;
-  for (const re of TECHNICAL_PATTERNS) {
-    if (re.test(input)) return true;
-  }
-  return false;
-}
+const looksTechnical = (input: unknown): boolean => ssotLooksTechnical(input);
 
 /* ---------------------------------------------------------------- *
  * Roles provider — atualizado pelo AuthContext via `setSafeToastRoles`.
