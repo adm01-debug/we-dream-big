@@ -280,6 +280,7 @@ export default function QuoteBuilderPage() {
                   </Label>
                   <Select value={s.paymentMethod} onValueChange={s.setPaymentMethod}>
                     <SelectTrigger
+                      data-testid="payment-method-select"
                       className={cn(
                         'h-8 text-xs',
                         s.validationErrors.includes('forma_pagamento') && 'border-destructive',
