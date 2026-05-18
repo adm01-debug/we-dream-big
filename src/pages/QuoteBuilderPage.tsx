@@ -320,7 +320,11 @@ export default function QuoteBuilderPage() {
                       <span className="ml-1">*</span>
                     )}
                   </Label>
-                  <Select value={s.paymentTerms} onValueChange={s.setPaymentTerms}>
+                  <Select 
+                    data-testid="payment-terms-select-root"
+                    value={s.paymentTerms} 
+                    onValueChange={s.setPaymentTerms}
+                  >
                     <SelectTrigger
                       data-testid="payment-terms-select"
                       className={cn(
