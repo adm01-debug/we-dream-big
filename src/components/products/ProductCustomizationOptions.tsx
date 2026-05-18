@@ -196,15 +196,24 @@ export function ProductCustomizationOptions({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="space-y-6">
-        {/* Bloco fixo: stepper + locais — sempre visíveis durante a rolagem */}
+      <div className="flex flex-col gap-6">
+        {/* STEP 1 — Local Selection (Pinned Bento Grid) */}
         <div 
           ref={stickyHeaderRef}
-          className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border/40 shadow-sm md:shadow-none space-y-3"
+          className="sticky top-0 z-20 -mx-4 px-4 py-4 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border/40 shadow-sm md:shadow-none space-y-4"
         >
-
-        {/* STEP HEADER — guia didático com âncoras */}
-        <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-[11px] font-medium text-muted-foreground overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+          {/* STEP HEADER — Modern Progress Bar */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-500" 
+                style={{ width: activeLocation ? '66%' : '33%' }}
+              />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+              {activeLocation ? 'Passo 2 de 3' : 'Passo 1 de 3'}
+            </span>
+          </div>
           <button 
             type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
