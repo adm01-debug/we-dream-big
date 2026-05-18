@@ -30,12 +30,12 @@ import { toast } from 'sonner';
 
 const sonner = () =>
   (globalThis as unknown as {
-    __sonner: {
+    __sonnerOriginals: {
       error: ReturnType<typeof vi.fn>;
       warning: ReturnType<typeof vi.fn>;
       message: ReturnType<typeof vi.fn>;
     };
-  }).__sonner;
+  }).__sonnerOriginals;
 
 describe('safeToast', () => {
   beforeEach(() => {
