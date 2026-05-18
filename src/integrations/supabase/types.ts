@@ -4851,6 +4851,7 @@ export type Database = {
           notes: string | null
           organization_id: string | null
           parent_quote_id: string | null
+          payment_method: string | null
           payment_terms: string | null
           quote_number: string
           real_discount_percent: number | null
@@ -4891,6 +4892,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string | null
           parent_quote_id?: string | null
+          payment_method?: string | null
           payment_terms?: string | null
           quote_number?: string
           real_discount_percent?: number | null
@@ -4931,6 +4933,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string | null
           parent_quote_id?: string | null
+          payment_method?: string | null
           payment_terms?: string | null
           quote_number?: string
           real_discount_percent?: number | null
