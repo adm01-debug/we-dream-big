@@ -162,7 +162,9 @@ export function useQuoteBuilderState() {
 
   const handleShippingTypeChange = useCallback((value: string) => {
     setShippingType(value);
-    setShippingCost(0);
+    if (value !== 'fob_pre') {
+      setShippingCost(0);
+    }
   }, []);
 
   const [productSearchOpen, setProductSearchOpen] = useState(false);
