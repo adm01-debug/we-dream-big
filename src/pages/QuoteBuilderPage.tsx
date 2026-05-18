@@ -483,7 +483,7 @@ export default function QuoteBuilderPage() {
                   <Select 
                     data-testid="shipping-type-select-root"
                     value={s.shippingType} 
-                    onValueChange={s.handleShippingTypeChange}
+                    onValueChange={s.setShippingType}
                   >
                     <SelectTrigger
                       data-testid="shipping-type-select"
