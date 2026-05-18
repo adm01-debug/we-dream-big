@@ -42,7 +42,11 @@ export function ContactDropdown({ contacts, contactId, onContactChange, onContac
       {open && (
         <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-lg max-h-[280px] overflow-y-auto">
           {contacts.map((contact) => (
-            <button key={contact.id} type="button" className={cn("flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent/50 transition-colors text-left", contactId === contact.id && "bg-accent")}
+            <button 
+              key={contact.id} 
+              type="button" 
+              data-testid={`contact-option-${contact.id}`}
+              className={cn("flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent/50 transition-colors text-left", contactId === contact.id && "bg-accent")}
               onClick={() => { onContactChange?.(contact.id); onContactInfoChange?.({ id: contact.id, name: contact.name, email: contact.email, phone: contact.phone, cargo: contact.cargo }); setOpen(false); }}>
               <div className={cn("w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0", contactId === contact.id ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary")}>
                 {contactId === contact.id ? <Check className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
