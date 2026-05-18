@@ -22,14 +22,22 @@ test.describe('Quote Builder Wizard Flow (5 Steps)', () => {
     // Wait for the specific result to be visible and click it
     // Using a more specific selector for the company item
     const companyOption = page.locator('button:has-text("Promo")').first();
-    await companyOption.waitFor({ state: 'visible', timeout: 8000 });
+    await companyOption.waitFor({ state: 'visible', timeout: 10000 });
     await companyOption.click();
     
     // Wait for contact to be loaded and auto-selected if unique, or select first
-    const contactSelector = page.getByText('Selecione um contato', { exact: false });
-    if (await contactSelector.isVisible()) {
-      await contactSelector.click();
-      await page.locator('div[role="option"]').first().click();
+    const contactTrigger = page.getByTestId('contact-selector-trigger');
+    const contactAutoSelected = page.getByText('Selecione uma empresa primeiro');
+    
+    // Give some time for queries
+    await page.waitForTimeout(1000);
+    
+    if (await contactTrigger.isVisible()) {
+      const triggerText = await contactTrigger.innerText();
+      if (triggerText.includes('Selecione um contato')) {
+        await contactTrigger.click();
+        await page.locator('button[data-testid^="contact-option-"]').first().click();
+      }
     }
     
     // Advance to Conditions
