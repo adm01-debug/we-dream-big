@@ -87,16 +87,78 @@ export function CompanySearchDropdown({
   }, [companies]);
 
   const filteredCompanies = useMemo(() => {
-    if (!searchTerm.trim()) return companies || [];
+    const term = searchTerm.trim().toLowerCase();
     const seen = new Set<string>();
     const merged: CompanyOption[] = [];
-    if (serverResults) { for (const sr of serverResults) { if (!seen.has(sr.id)) { merged.push(sr); seen.add(sr.id); } } }
-    if (fuse) { for (const lr of fuse.search(searchTerm).map((r) => r.item)) { if (!seen.has(lr.id)) { merged.push(lr); seen.add(lr.id); } } }
+
+    // 1. History (always add to 'seen' to avoid duplicates, only add to 'merged' if searching)
+    if (term || history.length > 0) {
+      const historyItems = term 
+        ? history.filter(h => 
+            h.label.toLowerCase().includes(term) || 
+            ((h.metadata as any)?.cnpj || "").includes(term) ||
+            ((h.metadata as any)?.razao_social || "").toLowerCase().includes(term)
+          )
+        : history;
+
+      for (const h of historyItems) {
+        if (!seen.has(h.id)) {
+          if (term) {
+            const meta = (h.metadata || {}) as any;
+            merged.push({
+              id: h.id,
+              name: h.label,
+              razao_social: meta.razao_social || h.label,
+              nome_fantasia: h.label,
+              ramo_atividade: null,
+              cnpj: meta.cnpj || null,
+              logo_url: meta.logo_url || null,
+            });
+          }
+          seen.add(h.id);
+        }
+      }
+    }
+
+    // 2. Server Results
+    if (serverResults) {
+      for (const sr of serverResults) {
+        if (!seen.has(sr.id)) {
+          merged.push(sr);
+          seen.add(sr.id);
+        }
+      }
+    }
+
+    // 3. Local Fuse Results / All companies if no search
+    if (!term) {
+      if (companies) {
+        for (const c of companies) {
+          if (!seen.has(c.id)) {
+            merged.push(c);
+            seen.add(c.id);
+          }
+        }
+      }
+    } else if (fuse) {
+      for (const lr of fuse.search(searchTerm).map((r) => r.item)) {
+        if (!seen.has(lr.id)) {
+          merged.push(lr);
+          seen.add(lr.id);
+        }
+      }
+    }
+
     return merged.slice(0, 100);
-  }, [companies, searchTerm, fuse, serverResults]);
+  }, [companies, searchTerm, fuse, serverResults, history]);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => { if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setIsOpen(false); };
+    const handler = (e: MouseEvent) => { 
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+        setSearchTerm("");
+      }
+    };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
@@ -120,7 +182,7 @@ export function CompanySearchDropdown({
     setSearchTerm("");
   };
 
-  const showHistory = isOpen && !searchTerm.trim() && history.length > 0;
+  const showHistory = isOpen && history.length > 0 && !searchTerm.trim();
 
   if (selectedCompany && !isOpen) {
     return (
@@ -197,7 +259,7 @@ export function CompanySearchDropdown({
                     {history.map((item) => {
                       const meta = (item.metadata || {}) as { razao_social?: string | null; cnpj?: string | null; logo_url?: string | null };
                       return (
-                        <div key={item.id} className="group flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-primary/10 transition-colors border-b border-border/20 last:border-b-0">
+                        <div key={item.id} className={cn("group flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-primary/10 transition-colors border-b border-border/20 last:border-b-0", companyId === item.id && "bg-primary/10 border-l-2 border-l-primary")}>
                           <button type="button" className="flex items-center gap-3 flex-1 min-w-0" onClick={() => handleSelect(item.id)}>
                             <CompanyAvatar name={item.label} logoUrl={meta.logo_url ?? null} size="sm" />
                             <div className="flex flex-col flex-1 min-w-0">
@@ -223,7 +285,7 @@ export function CompanySearchDropdown({
                 ) : (
                   <div className="py-0">
                     {filteredCompanies.map((company, index) => (
-                      <button key={company.id} type="button" className={cn("flex items-center gap-3 w-full px-3 py-2.5 text-left transition-colors duration-150 hover:bg-primary/10", index < filteredCompanies.length - 1 && "border-b border-border/30", companyId === company.id && "bg-primary/5")}
+                      <button key={company.id} type="button" className={cn("flex items-center gap-3 w-full px-3 py-2.5 text-left transition-colors duration-150 hover:bg-primary/10", index < filteredCompanies.length - 1 && "border-b border-border/30", companyId === company.id && "bg-primary/10 border-l-2 border-l-primary")}
                         onClick={() => handleSelect(company.id)}>
                         <CompanyAvatar name={company.name} logoUrl={company.logo_url} size="sm" />
                         <div className="flex flex-col flex-1 min-w-0">
