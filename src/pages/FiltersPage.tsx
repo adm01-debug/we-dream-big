@@ -486,6 +486,6 @@ export default function FiltersPage() {
           } : null}
         />
       )}
-    </MainLayout>
+    </>
   );
 }
