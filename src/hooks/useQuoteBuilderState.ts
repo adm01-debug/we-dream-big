@@ -490,8 +490,7 @@ export function useQuoteBuilderState() {
 
   // ── Calculations ──
   const formatCurrency = useCallback((value: number) => {
-    const { formatCurrency: fmt } = require('@/lib/format');
-    return fmt(value);
+    return fmtCurrency(value);
   }, []);
 
   const calculateItemPersonalizationTotal = useCallback((item: QuoteItem) => {
