@@ -785,6 +785,8 @@ export function useQuoteBuilderState() {
     setItems,
     quoteNumber,
     currentStatus,
+    paymentMethod,
+    setPaymentMethod,
     paymentTerms,
     setPaymentTerms,
     deliveryTime,
