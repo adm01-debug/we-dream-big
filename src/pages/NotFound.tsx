@@ -12,7 +12,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4" data-testid="app-not-found">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in" data-testid="app-not-found">
       <PageSEO title="Página não encontrada" noIndex />
       <div className="text-center max-w-md mx-auto space-y-8">
         {/* Branding */}

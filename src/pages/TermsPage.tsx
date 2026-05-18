@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-background p-6">
-      <PageSEO title="Termos de Uso" />
+    <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-8 animate-fade-in">
+      <PageSEO title="Termos de Uso" path="/termos" />
       <div className="mx-auto max-w-3xl space-y-8">
         <header className="space-y-4">
           <Button variant="ghost" asChild className="-ml-2 gap-2 text-muted-foreground">
@@ -15,7 +15,7 @@ export default function TermsPage() {
               Voltar
             </Link>
           </Button>
-          <h1 className="font-display text-4xl font-bold tracking-tight">Termos de Uso</h1>
+          <h1 data-testid="page-title-termos" className="font-display text-4xl font-bold tracking-tight">Termos de Uso</h1>
           <p className="text-muted-foreground">Última atualização: 16 de maio de 2026</p>
         </header>
 

@@ -60,6 +60,8 @@ export type PageSlug =
   | "estoque"
   | "detalhe-produto"
   | "admin-produto"
+  | "termos"
+  | "privacidade"
   | "404";
 
 export const Sel = {
