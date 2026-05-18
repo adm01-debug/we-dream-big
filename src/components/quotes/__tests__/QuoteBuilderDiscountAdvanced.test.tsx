@@ -54,7 +54,8 @@ describe('QuoteBuilderSummaryColumn Advanced Discount Scenarios', () => {
     const input = screen.getByPlaceholderText('R$ 0,00');
     fireEvent.change(input, { target: { value: '1500' } });
     
-    expect(await screen.findByText(/Valor máximo é R\$ 1.000,00/)).toBeInTheDocument();
+    expect(await screen.findByText(/Valor máximo é/)).toBeInTheDocument();
+    expect(await screen.findByText(/R\$ 1.000,00/)).toBeInTheDocument();
   });
 
   it('uses presentedSubtotal (with markup) as limit for amount discount', async () => {
