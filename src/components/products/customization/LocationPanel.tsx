@@ -9,6 +9,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { ArrowLeft, Check, Palette } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { TechniqueCard } from "./TechniqueCard";
 import { ConfigurationPanelV6 } from "./ConfigurationPanelV6";
