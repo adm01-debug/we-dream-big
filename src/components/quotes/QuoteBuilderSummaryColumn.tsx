@@ -385,7 +385,7 @@ export function QuoteBuilderSummaryColumn({
                       <span className="tabular-nums" data-testid="discount-effective-equivalent">
                         {discountType === "percent"
                           ? `${formatCurrency(discountAmount)} sobre ${formatCurrency(presentedSubtotal)}`
-                          : `${((discountAmount / presentedSubtotal) * 100).toFixed(2).replace(".", ",")}% sobre ${formatCurrency(presentedSubtotal)}`}
+                          : `${((discountAmount / (presentedSubtotal || 1)) * 100).toFixed(2).replace(".", ",")}% sobre ${formatCurrency(presentedSubtotal)}`}
                       </span>
                     </div>
                   )}
