@@ -111,7 +111,7 @@ export function buildItemsInsertPayload(
     product_sku: item.product_sku,
     product_image_url: item.product_image_url,
     quantity: item.quantity,
-    unit_price: item.unit_price,
+    unit_price: round2(item.unit_price),
     color_name: item.color_name,
     color_hex: item.color_hex,
     size_code: item.size_code || null,
