@@ -159,6 +159,13 @@ export function useQuoteBuilderState() {
   const [shippingType, setShippingType] = useState('');
   const [shippingCost, setShippingCost] = useState(0);
 
+  const handleShippingTypeChange = useCallback((value: string) => {
+    setShippingType(value);
+    if (value !== 'fob_pre') {
+      setShippingCost(0);
+    }
+  }, []);
+
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [productSearch, setProductSearch] = useState('');
   const [selectedProductForColor, setSelectedProductForColor] = useState<Product | null>(null);
@@ -520,7 +527,10 @@ export function useQuoteBuilderState() {
     [subtotal, discountType, discountValue],
   );
 
-  const total = useMemo(() => Math.max(0, subtotal - discountAmount), [subtotal, discountAmount]);
+  const total = useMemo(() => {
+    const baseTotal = Math.max(0, subtotal - discountAmount);
+    return shippingType === 'fob_pre' ? baseTotal + shippingCost : baseTotal;
+  }, [subtotal, discountAmount, shippingCost, shippingType]);
 
   // ── Desconto REAL (sobre subtotal real) — usado para alçada ──
   const realDiscountPercent = useMemo(
@@ -699,7 +709,7 @@ export function useQuoteBuilderState() {
         delivery_time: deliveryTime || undefined,
         shipping_type: shippingType || undefined,
         shipping_cost:
-          shippingType === 'fob_pre' || shippingType === 'fob' ? shippingCost : undefined,
+          shippingType === 'fob_pre' ? shippingCost : undefined,
       };
       let result;
       if (isEditMode && quoteId) {
@@ -797,7 +807,7 @@ export function useQuoteBuilderState() {
     deliveryDate,
     setDeliveryDate,
     shippingType,
-    setShippingType,
+    setShippingType: handleShippingTypeChange,
     shippingCost,
     setShippingCost,
     productSearchOpen,

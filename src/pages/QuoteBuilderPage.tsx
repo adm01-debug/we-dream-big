@@ -468,6 +468,7 @@ export default function QuoteBuilderPage() {
                   </Label>
                   <Select value={s.shippingType} onValueChange={s.setShippingType}>
                     <SelectTrigger
+                      data-testid="shipping-type-select"
                       className={cn(
                         'h-8 text-xs',
                         s.validationErrors.includes('frete') && 'border-destructive',
@@ -499,6 +500,7 @@ export default function QuoteBuilderPage() {
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs text-muted-foreground">R$</span>
                         <CurrencyInput
+                          data-testid="shipping-cost-input"
                           value={s.shippingCost || 0}
                           onChange={(n) => s.setShippingCost(n)}
                           className={cn(
@@ -617,6 +619,8 @@ export default function QuoteBuilderPage() {
             setDiscountValue={s.setDiscountValue}
             discountAmount={s.discountAmount}
             total={s.total}
+            shippingType={s.shippingType}
+            shippingCost={s.shippingCost}
             isFormValid={s.isFormValid}
             isDraftValid={s.isDraftValid}
             validationErrors={s.validationErrors}

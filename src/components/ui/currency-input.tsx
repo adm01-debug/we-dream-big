@@ -16,6 +16,7 @@ interface CurrencyInputProps {
   max?: number;
   /** Notifica se há erro de validação (útil pra desabilitar submit). */
   onValidityChange?: (valid: boolean) => void;
+  [key: string]: any;
 }
 
 export const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -56,6 +57,7 @@ export function CurrencyInput({
   min = 0,
   max,
   onValidityChange,
+  ...props
 }: CurrencyInputProps) {
   const allowNegative = min < 0;
   const [text, setText] = useState<string>(value || showZero ? formatBR(value) : '');
@@ -83,6 +85,7 @@ export function CurrencyInput({
   return (
     <div className="w-full">
       <Input
+        {...props}
         type="text"
         inputMode={allowNegative ? 'decimal' : 'decimal'}
         value={text}
