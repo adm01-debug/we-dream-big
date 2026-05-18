@@ -264,6 +264,68 @@ export function ConfigurationPanelV6({ technique, quantity, isConfirmed = false,
             : "Aguardando cálculo..."}
         </div>
       )}
+
+      {/* AÇÕES — Confirmar / Editar / Remover */}
+      <div className="flex items-center gap-2 pt-1">
+        {!isConfirmed && (
+          <Button
+            type="button"
+            size="sm"
+            className="flex-1"
+            disabled={!canConfirm}
+            onClick={handleConfirm}
+          >
+            <Check className="h-4 w-4 mr-1.5" />
+            Confirmar e adicionar ao orçamento
+          </Button>
+        )}
+        {isConfirmed && !editing && (
+          <>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="flex-1"
+              onClick={() => setEditing(true)}
+            >
+              <Pencil className="h-4 w-4 mr-1.5" />
+              Editar
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={handleRemove}
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              Remover
+            </Button>
+          </>
+        )}
+        {isConfirmed && editing && (
+          <>
+            <Button
+              type="button"
+              size="sm"
+              className="flex-1"
+              disabled={!canConfirm}
+              onClick={handleConfirm}
+            >
+              <Check className="h-4 w-4 mr-1.5" />
+              Atualizar gravação
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setEditing(false)}
+            >
+              Cancelar
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
