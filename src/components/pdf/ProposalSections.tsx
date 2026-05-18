@@ -6,6 +6,7 @@ import React from "react";
 import { GREEN, GREEN_DARK, DARK, BLUE, fmt, thStyle, tdStyle, totalsRowStyle } from "./ProposalStyles";
 import {
   formatPaymentTerms,
+  formatPaymentMethod,
   formatDeliveryTime,
   formatShipping,
   type ProposalItem,
