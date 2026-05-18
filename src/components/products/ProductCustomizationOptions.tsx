@@ -7,7 +7,7 @@
  * Briefing v6 (12/02/2026).
  */
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,6 +30,15 @@ export function ProductCustomizationOptions({
 }: ProductCustomizationOptionsProps) {
   const { data: options, isLoading } = useProductCustomizationOptions(productId);
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
+
+  // Auto-select first location ONLY if it's not already set
+  // This allows persistent selection during re-renders if the state is lifted
+  useEffect(() => {
+    if (options?.locations?.length && !activeLocation) {
+      setActiveLocation(options.locations[0].location_code);
+    }
+  }, [options, activeLocation]);
+
 
   // Track prices per location
   const pricesRef = useRef<Map<string, PersonalizationItem>>(new Map());
@@ -66,10 +75,8 @@ export function ProductCustomizationOptions({
     onSelectionChange?.(items);
   }, [options, onSelectionChange]);
 
-  // Set first location as active when data loads
-  if (options?.locations?.length && !activeLocation) {
-    setActiveLocation(options.locations[0].location_code);
-  }
+  // Auto-select logic is now handled in useEffect above
+
 
   if (isLoading) {
     return (
