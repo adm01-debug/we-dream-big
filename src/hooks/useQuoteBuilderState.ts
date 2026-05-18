@@ -196,6 +196,7 @@ export function useQuoteBuilderState() {
       discountType,
       discountValue,
       negotiationMarkup,
+      paymentMethod,
       paymentTerms,
       deliveryTime,
       shippingType,
@@ -212,6 +213,7 @@ export function useQuoteBuilderState() {
         if (saved.clientId) setClientId(saved.clientId);
         if (saved.contactId) setContactId(saved.contactId);
         if (saved.items) setItems(saved.items);
+        if (saved.paymentMethod) setPaymentMethod(saved.paymentMethod);
         // ... outros campos conforme necessário
       }
     },
