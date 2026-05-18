@@ -102,7 +102,7 @@ export default function AdminUsuariosPage() {
               <UserCog className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h1 className="font-display text-3xl font-bold tracking-tight">Usuários</h1>
+              <h1 data-testid="page-title-usuarios" className="font-display text-3xl font-bold tracking-tight">Usuários</h1>
               <p className="text-muted-foreground">Gerencie usuários, roles e aprovações de reset de senha</p>
             </div>
           </div>
