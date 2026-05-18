@@ -3,10 +3,8 @@
  */
 import { toast } from "sonner";
 import type { SimulationOption, Product } from "@/types/simulation";
+import { formatCurrency } from "@/lib/format";
 
-export function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-}
 
 export async function copyOptionToClipboard(
   option: SimulationOption,

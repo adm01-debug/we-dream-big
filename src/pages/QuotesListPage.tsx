@@ -142,12 +142,7 @@ export default function QuotesListPage() {
     return results;
   }, [quotes, searchTerm, statusFilter, quoteFuse, sortBy]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
+import { formatCurrency } from '@/lib/format';
 
   const handleDelete = async () => {
     if (deleteConfirmId) {

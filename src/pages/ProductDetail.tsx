@@ -31,6 +31,8 @@ import { useRecentlyViewedStore } from '@/stores/useRecentlyViewedStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { ProductDetailHero } from './product-detail/ProductDetailHero';
 import { ScrollToTopButton } from '@/components/common/ScrollToTopButton';
+import { formatCurrency } from '@/lib/format';
+
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -58,7 +60,7 @@ export default function ProductDetail() {
         id: it.id,
         name: it.name,
         category: it.category_name || product?.category?.name || 'Brindes',
-        priceRange: `R$ ${it.price.toFixed(2)}`,
+        priceRange: formatCurrency(it.price),
         tags: [it.supplier_name].filter(Boolean) as string[],
       })),
     [similarItems, product?.category?.name],

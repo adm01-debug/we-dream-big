@@ -9,6 +9,8 @@ import { ArrowRight, TrendingUp, TrendingDown, Minus, GitCompare } from "lucide-
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { QuoteVersion } from "@/hooks/useQuoteVersions";
+import { formatCurrency } from "@/lib/format";
+
 
 interface QuoteItem {
   id: string;
@@ -44,9 +46,6 @@ interface QuoteVersionCompareProps {
   currentQuoteId?: string;
 }
 
-function formatCurrency(val: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val);
-}
 
 function DiffBadge({ oldVal, newVal, format: fmt }: { oldVal: number; newVal: number; format?: (v: number) => string }) {
   const diff = newVal - oldVal;
