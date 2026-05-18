@@ -454,11 +454,14 @@ export default function QuoteBuilderPage() {
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs text-muted-foreground">R$</span>
                         <Input
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          value={s.shippingCost || ''}
-                          onChange={(e) => s.setShippingCost(parseFloat(e.target.value) || 0)}
+                          type="text"
+                          inputMode="decimal"
+                          value={s.shippingCost ? String(s.shippingCost).replace('.', ',') : ''}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^\d,.]/g, '').replace(',', '.');
+                            const n = parseFloat(raw);
+                            s.setShippingCost(Number.isFinite(n) ? n : 0);
+                          }}
                           placeholder="0,00"
                           className={cn(
                             'h-8 text-xs',
