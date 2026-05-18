@@ -264,7 +264,7 @@ export default function QuoteBuilderPage() {
                 </h3>
 
                 {/* Pagamento Form */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label
                     className={cn(
                       'text-xs',
