@@ -694,6 +694,7 @@ export function useQuoteBuilderState() {
         notes: notes || undefined,
         internal_notes: internalNotes || undefined,
         valid_until: validUntil || undefined,
+        payment_method: paymentMethod || undefined,
         payment_terms: paymentTerms || undefined,
         delivery_time: deliveryTime || undefined,
         shipping_type: shippingType || undefined,
