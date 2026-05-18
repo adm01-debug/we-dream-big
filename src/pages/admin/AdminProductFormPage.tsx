@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
 import {
   invokeExternalDbSingle,
   fetchPromobrindProductById,
@@ -379,7 +378,6 @@ export default function AdminProductFormPage() {
 
   if (isLoading) {
     return (
-      <MainLayout>
         <PageSEO
           title="Carregando Produto..."
           description="Aguarde enquanto carregamos os dados do produto."
@@ -392,12 +390,10 @@ export default function AdminProductFormPage() {
             <p className="text-sm text-muted-foreground">Carregando produto...</p>
           </div>
         </div>
-      </MainLayout>
     );
   }
 
   return (
-    <MainLayout>
       <PageSEO
         title={isEdit ? `Editar: ${product?.sku || 'Produto'}` : 'Novo Produto'}
         description={
@@ -533,6 +529,5 @@ export default function AdminProductFormPage() {
           )}
         </Suspense>
       </div>
-    </MainLayout>
   );
 }

@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { MainLayout } from '@/components/layout/MainLayout';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -166,7 +165,6 @@ export default function QuotesListPage() {
 
   if (isLoading) {
     return (
-      <MainLayout>
         <div className="mx-auto w-full max-w-[1920px] animate-fade-in space-y-4 px-3 py-3 pb-24 sm:px-4 sm:py-4 md:pb-6 lg:px-6 xl:px-8">
           {/* Breadcrumb global vem do MainLayout (sticky) — não duplicar aqui. */}
           <div className="flex items-center justify-between gap-3">
@@ -187,7 +185,6 @@ export default function QuotesListPage() {
             ))}
           </div>
         </div>
-      </MainLayout>
     );
   }
 
@@ -199,7 +196,6 @@ export default function QuotesListPage() {
   };
 
   return (
-    <MainLayout>
       <PageSEO
         title="Orçamentos"
         description="Gerencie seus orçamentos. Crie, edite e acompanhe propostas comerciais."
@@ -472,6 +468,5 @@ export default function QuotesListPage() {
           </AlertDialogContent>
         </AlertDialog>
       </TooltipProvider>
-    </MainLayout>
   );
 }
