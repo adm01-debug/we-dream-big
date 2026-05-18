@@ -295,7 +295,7 @@ export default function QuoteBuilderPage() {
                 </div>
 
                 {/* Pagamento Terms */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label
                     className={cn(
                       'text-xs',
