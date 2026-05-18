@@ -24,7 +24,7 @@ export default function BridgeMetricsOverlay() {
   // early-return. Caso contrário, mudanças em `isAllowed` (ex: AuthContext
   // resolvendo role `dev` após RLS desbloqueada) provocam
   // "Rendered more hooks than during the previous render" e crash global.
-  const { isAllowed } = useDevGate();
+  const { isDev } = useDevGate();
 
   const {
     open,
@@ -39,7 +39,7 @@ export default function BridgeMetricsOverlay() {
     longTasks,
     summary,
     clear
-  } = useBridgeMetrics(isAllowed);
+  } = useBridgeMetrics(isDev);
 
   const [showInfo, setShowInfo] = useState(false);
   const handleTogglePause = useCallback(() => setPaused(prev => !prev), [setPaused]);
@@ -47,7 +47,7 @@ export default function BridgeMetricsOverlay() {
 
   // Guards APÓS todos os hooks (ordem de hooks fica estável entre renders).
   if (import.meta.env.PROD) return null;
-  if (!isAllowed) return null;
+  if (!isDev) return null;
 
   if (!open) {
     return (
