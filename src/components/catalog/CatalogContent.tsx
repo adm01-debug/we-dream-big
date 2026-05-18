@@ -1,12 +1,12 @@
 import { useRef, useCallback, useEffect, useState, useMemo, memo, type RefObject } from 'react';
 import type { ActiveColorFilter } from '@/utils/color-image-resolver';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Loader2, ArrowUp, Keyboard, X, AlertCircle } from 'lucide-react';
+import { Loader2, ArrowUp, AlertCircle } from 'lucide-react';
 import { useProductsContextSafe } from '@/contexts/ProductsContext';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import { AnimatePresence, motion } from 'framer-motion';
+
 import { ProductCard } from '@/components/products/ProductCard';
 import { ProductListItem } from '@/components/products/ProductListItem';
 import { ProductTableView } from '@/components/products/ProductTableView';
@@ -527,15 +527,6 @@ export const CatalogContent = memo(function CatalogContent({
   );
   const sel = useCatalogSelection(paginatedProducts, selectionMode, onSelectedCountChange);
 
-  const [showKbdTip, setShowKbdTip] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setShowKbdTip(true), 2000);
-    const hideTimer = setTimeout(() => setShowKbdTip(false), 8000);
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(hideTimer);
-    };
-  }, []);
 
   const sharedProps = useMemo(
     () => ({
@@ -728,25 +719,6 @@ export const CatalogContent = memo(function CatalogContent({
 
   return (
     <div className="relative">
-      <AnimatePresence>
-        {showKbdTip && !activeProductId && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="absolute -top-12 right-0 z-30 hidden items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary/90 px-3 py-1.5 text-[10px] font-medium text-primary-foreground shadow-lg backdrop-blur-sm lg:flex"
-          >
-            <Keyboard className="h-3 w-3" />
-            <span>
-              Use <kbd className="rounded bg-white/20 px-1">J</kbd> /{' '}
-              <kbd className="rounded bg-white/20 px-1">K</kbd> para navegar rapidamente
-            </span>
-            <button onClick={() => setShowKbdTip(false)} className="ml-1 hover:text-white/60">
-              <X className="h-3 w-3" />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
       {renderContent()}
       <CatalogBulkModals
         sel={sel}
