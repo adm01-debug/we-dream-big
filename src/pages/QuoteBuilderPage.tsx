@@ -441,10 +441,7 @@ export default function QuoteBuilderPage() {
                         <Calendar
                           mode="single"
                           selected={s.deliveryDate}
-                          onSelect={(date) => {
-                            s.setDeliveryDate(date);
-                            s.setDeliveryTime(date ? `date:${format(date, 'yyyy-MM-dd')}` : '');
-                          }}
+                          onSelect={s.handleDeliveryDateChange}
                           disabled={(date) => date < new Date()}
                           initialFocus
                         />
