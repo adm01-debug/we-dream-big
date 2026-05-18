@@ -54,7 +54,7 @@ export default function KitBuilderPage() {
         />
 
         <div className="border-b bg-card/40 backdrop-blur-sm">
-          <div className="container py-4">
+          <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4">
             <WizardSteps
               currentStep={state.wizardState.currentStep}
               completedSteps={state.wizardState.completedSteps}
