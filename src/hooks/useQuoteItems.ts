@@ -51,6 +51,8 @@ export function useQuoteItems(initialItems: QuoteItem[] = []) {
             idx === existingIndex ? { ...item, quantity: item.quantity + 1 } : item,
           );
           setActiveItemIndex(existingIndex);
+          // Auto-expand existing item too
+          setExpandedItems((p) => new Set(p).add(existingIndex));
           return newItems;
         }
 
@@ -72,12 +74,16 @@ export function useQuoteItems(initialItems: QuoteItem[] = []) {
             personalizations: [],
           },
         ];
-        setActiveItemIndex(newItems.length - 1);
+        const newIdx = newItems.length - 1;
+        setActiveItemIndex(newIdx);
+        // Auto-expand new item so personalization is immediately visible
+        setExpandedItems((p) => new Set(p).add(newIdx));
         return newItems;
       });
     },
     [],
   );
+
 
   const updateItemQuantity = useCallback((index: number, quantity: number) => {
     if (quantity < 1) return;
