@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import Fuse from 'fuse.js';
 import { format, addDays } from 'date-fns';
 import { toast } from 'sonner';
+import { formatCurrency as fmtCurrency } from '@/lib/format';
 import { validateQuoteForm, QUOTE_FIELD_LABELS } from '@/lib/validations';
 import { useQuotes, type QuoteItem, type QuoteItemPersonalization } from '@/hooks/useQuotes';
 import {
@@ -489,7 +490,7 @@ export function useQuoteBuilderState() {
 
   // ── Calculations ──
   const formatCurrency = useCallback((value: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    return fmtCurrency(value);
   }, []);
 
   const calculateItemPersonalizationTotal = useCallback((item: QuoteItem) => {

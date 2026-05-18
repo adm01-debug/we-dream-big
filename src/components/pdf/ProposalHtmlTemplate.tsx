@@ -104,9 +104,7 @@ export function formatDeliveryTime(value?: string): string {
 export function formatShipping(type?: string, cost?: number): string {
   if (!type) return "A combinar";
   if (type === "cif") return "CIF — Frete grátis (Cortesia)";
-  if (type === "fob") return cost && cost > 0
-    ? `FOB — Repassado ao cliente (${cost.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
-    : "FOB — Repassado ao cliente";
+  if (type === "fob") return "FOB — Repassado ao cliente";
   if (type === "fob_pre") return cost && cost > 0
     ? `FOB — Valor pré-negociado (${cost.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})`
     : "FOB — Valor pré-negociado";

@@ -37,7 +37,7 @@ export const calculateSubtotal = (items: QuoteItemCalculationParams[]): number =
 export const applyMarkup = (baseValue: number, markupPercent: number): number => {
   const safeMarkup = Math.min(50, Math.max(0, markupPercent || 0));
   if (safeMarkup <= 0) return baseValue || 0;
-  return Math.round(baseValue * (1 + safeMarkup / 100) * 100) / 100;
+  return Math.round((baseValue * (1 + safeMarkup / 100) + Number.EPSILON) * 100) / 100;
 };
 
 /**
@@ -50,7 +50,7 @@ export const calculateDiscountAmount = (
 ): number => {
   const safeValue = Math.max(0, discountValue || 0);
   if (discountType === 'percent') {
-    return (subtotal || 0) * (safeValue / 100);
+    return Math.round(((subtotal || 0) * (safeValue / 100) + Number.EPSILON) * 100) / 100;
   }
   return safeValue;
 };
@@ -66,5 +66,5 @@ export const calculateRealDiscountPercent = (
 ): number => {
   if (realSubtotal <= 0) return 0;
   const finalBeforeShipping = Math.max(0, presentedSubtotal - discountAmount);
-  return Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal) * 10000) / 100;
+  return Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal + Number.EPSILON) * 10000) / 100;
 };

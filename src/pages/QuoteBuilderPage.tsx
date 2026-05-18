@@ -109,7 +109,7 @@ export default function QuoteBuilderPage() {
             </div>
             <div>
               <h1
-                data-testid="page-title-orcamento-novo"
+                data-testid={s.isEditMode ? "page-title-orcamento-editar" : "page-title-orcamento-novo"}
                 className="font-display text-xl font-bold leading-tight sm:text-2xl"
               >
                 {s.isEditMode ? 'Editar Orçamento' : 'Novo Orçamento'}
@@ -264,7 +264,7 @@ export default function QuoteBuilderPage() {
                 </h3>
 
                 {/* Pagamento Form */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label
                     className={cn(
                       'text-xs',
@@ -280,6 +280,7 @@ export default function QuoteBuilderPage() {
                   </Label>
                   <Select value={s.paymentMethod} onValueChange={s.setPaymentMethod}>
                     <SelectTrigger
+                      data-testid="payment-method-select"
                       className={cn(
                         'h-8 text-xs',
                         s.validationErrors.includes('forma_pagamento') && 'border-destructive',
@@ -295,7 +296,7 @@ export default function QuoteBuilderPage() {
                 </div>
 
                 {/* Pagamento Terms */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label
                     className={cn(
                       'text-xs',
@@ -311,6 +312,7 @@ export default function QuoteBuilderPage() {
                   </Label>
                   <Select value={s.paymentTerms} onValueChange={s.setPaymentTerms}>
                     <SelectTrigger
+                      data-testid="payment-terms-select"
                       className={cn(
                         'h-8 text-xs',
                         s.validationErrors.includes('prazo_pagamento') && 'border-destructive',
@@ -330,7 +332,7 @@ export default function QuoteBuilderPage() {
                 </div>
 
                 {/* Entrega */}
-                <div className="space-y-1">
+                <div className="space-y-1.5 border-t border-border/30 pt-3 mt-1">
                   <div className="flex items-center gap-1.5" data-testid="delivery-label-container">
                     <Label
                       data-testid="delivery-label"
@@ -370,42 +372,45 @@ export default function QuoteBuilderPage() {
                   </div>
 
 
-                    <div className="flex gap-0.5 rounded-md bg-muted p-0.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          s.setDeliveryMode('prazo');
-                          s.setDeliveryTime('');
-                          s.setDeliveryDate(undefined);
-                        }}
-                        className={cn(
-                          'rounded-sm px-2 py-0.5 text-[10px] font-medium transition-colors',
-                          s.deliveryMode === 'prazo'
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        Prazo
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          s.setDeliveryMode('data');
-                          s.setDeliveryTime('');
-                        }}
-                        className={cn(
-                          'rounded-sm px-2 py-0.5 text-[10px] font-medium transition-colors',
-                          s.deliveryMode === 'data'
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        Data
-                      </button>
+                    <div className="flex flex-col gap-1.5 rounded-xl bg-muted/30 p-1.5 border border-border/40">
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            s.setDeliveryMode('prazo');
+                            s.setDeliveryTime('');
+                            s.setDeliveryDate(undefined);
+                          }}
+                          className={cn(
+                            'flex-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all',
+                            s.deliveryMode === 'prazo'
+                              ? 'bg-background text-primary shadow-sm ring-1 ring-border/50'
+                              : 'text-muted-foreground hover:bg-muted/50',
+                          )}
+                        >
+                          Contar dias
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            s.setDeliveryMode('data');
+                            s.setDeliveryTime('');
+                          }}
+                          className={cn(
+                            'flex-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all',
+                            s.deliveryMode === 'data'
+                              ? 'bg-background text-primary shadow-sm ring-1 ring-border/50'
+                              : 'text-muted-foreground hover:bg-muted/50',
+                          )}
+                        >
+                          Data fixa
+                        </button>
+                      </div>
                     </div>
                   {s.deliveryMode === 'prazo' ? (
                     <Select value={s.deliveryTime} onValueChange={s.setDeliveryTime}>
                       <SelectTrigger
+                        data-testid="delivery-time-select"
                         className={cn(
                           'h-8 text-xs',
                           s.validationErrors.includes('prazo_entrega') && 'border-destructive',
@@ -424,9 +429,10 @@ export default function QuoteBuilderPage() {
                   ) : (
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
+                          <Button
+                            data-testid="delivery-date-picker"
+                            variant="outline"
+                            className={cn(
                             'h-8 w-full justify-start text-left text-xs font-normal',
                             !s.deliveryDate && 'text-muted-foreground',
                             s.validationErrors.includes('prazo_entrega') && 'border-destructive',
@@ -455,7 +461,7 @@ export default function QuoteBuilderPage() {
                 </div>
 
                 {/* Frete */}
-                <div className="space-y-1">
+                <div className="space-y-1.5 border-t border-border/30 pt-3 mt-1">
                   <Label
                     className={cn(
                       'text-xs',
