@@ -207,44 +207,54 @@ export function useQuoteBuilderState() {
     return steps;
   }, [clientId, contactId, items, paymentMethod, paymentTerms, deliveryTime, shippingType]);
 
+  const announce = useCallback((message: string) => {
+    const announcer = document.getElementById('quote-builder-announcer');
+    if (announcer) {
+      announcer.textContent = message;
+    }
+  }, []);
+
   const validateStep = useCallback((step: QuoteBuilderStep): boolean => {
     switch (step) {
       case 'client':
         if (!clientId) {
           toast.error('Selecione um cliente');
+          announce('Erro: Selecione um cliente');
           return false;
         }
         if (!contactId) {
           toast.error('Selecione um contato');
+          announce('Erro: Selecione um contato');
           return false;
         }
         return true;
       case 'conditions':
         if (!paymentMethod || !paymentTerms || !deliveryTime || !shippingType) {
           toast.error('Preencha todas as condições comerciais');
+          announce('Erro: Preencha todas as condições comerciais');
           return false;
         }
         if (shippingType === 'fob_pre' && !shippingCost) {
           toast.error('Informe o valor do frete');
+          announce('Erro: Informe o valor do frete');
           return false;
         }
         return true;
       case 'items':
         if (items.length === 0) {
           toast.error('Adicione pelo menos um item');
+          announce('Erro: Adicione pelo menos um item');
           return false;
         }
         return true;
       case 'personalization':
-        // Etapa opcional se não houver personalização, mas se houver, 
-        // podemos validar se todas estão preenchidas (opcional por enquanto)
         return true;
       case 'review':
         return true;
       default:
         return true;
     }
-  }, [clientId, contactId, paymentMethod, paymentTerms, deliveryTime, shippingType, shippingCost, items]);
+  }, [clientId, contactId, paymentMethod, paymentTerms, deliveryTime, shippingType, shippingCost, items, announce]);
 
   const nextStep = useCallback(() => {
     const steps: QuoteBuilderStep[] = ['client', 'conditions', 'items', 'personalization', 'review'];
