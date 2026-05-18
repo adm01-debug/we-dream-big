@@ -18,16 +18,16 @@ interface CurrencyInputProps {
   onValidityChange?: (valid: boolean) => void;
 }
 
-const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+export const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-const formatBR = (n: number) =>
+export const formatBR = (n: number) =>
   round2(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // Apenas dígitos e separadores; sinal `-` só quando explicitamente permitido.
 const RE_NO_NEG = /^[\d.,]*$/;
 const RE_WITH_NEG = /^-?[\d.,]*$/;
 
-const parseStrict = (raw: string, allowNegative: boolean): { n: number; ok: boolean } => {
+export const parseStrict = (raw: string, allowNegative: boolean): { n: number; ok: boolean } => {
   const trimmed = raw.trim();
   if (!trimmed) return { n: 0, ok: true }; // vazio = 0 (válido)
   const re = allowNegative ? RE_WITH_NEG : RE_NO_NEG;
