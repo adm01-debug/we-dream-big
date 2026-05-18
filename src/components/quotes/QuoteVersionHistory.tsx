@@ -12,6 +12,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuoteVersions, type QuoteVersion } from "@/hooks/useQuoteVersions";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
+import { formatCurrency } from "@/lib/format";
+
 
 interface QuoteVersionHistoryProps {
   quoteId: string;
@@ -39,8 +41,6 @@ export function QuoteVersionHistory({ quoteId, currentQuoteId, onCreateVersion }
     }
   };
 
-  const formatCurrency = (value: number) =>
-    value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   if (isLoading && versions.length === 0) {
     return (
