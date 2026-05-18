@@ -711,7 +711,7 @@ export function useQuoteBuilderState() {
         delivery_time: deliveryTime || undefined,
         shipping_type: shippingType || undefined,
         shipping_cost:
-          shippingType === 'fob_pre' ? shippingCost : undefined,
+          shippingType === 'fob_pre' ? (shippingCost || 0) : 0,
       };
       let result;
       if (isEditMode && quoteId) {
