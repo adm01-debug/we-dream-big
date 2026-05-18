@@ -499,6 +499,7 @@ export default function QuoteBuilderPage() {
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs text-muted-foreground">R$</span>
                         <CurrencyInput
+                          data-testid="shipping-cost-input"
                           value={s.shippingCost || 0}
                           onChange={(n) => s.setShippingCost(n)}
                           className={cn(
