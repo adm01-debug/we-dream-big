@@ -732,6 +732,7 @@ export function useQuoteBuilderState() {
       notes,
       internalNotes,
       validUntil,
+      paymentMethod,
       paymentTerms,
       deliveryTime,
       shippingType,

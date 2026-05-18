@@ -77,6 +77,7 @@ export function formatPaymentTerms(value?: string): string {
     "14_dias": "14 dias a partir da entrega",
     "21_dias": "21 dias a partir da entrega",
     "28_dias": "28 dias a partir da entrega",
+    "7_14_dias": "7 e 14 dias a partir da entrega",
     "50_50": "50% entrada / 50% após entrega",
   };
   return value ? (map[value] || value) : "";

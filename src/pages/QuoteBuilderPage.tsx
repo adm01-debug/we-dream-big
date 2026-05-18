@@ -324,6 +324,7 @@ export default function QuoteBuilderPage() {
                       <SelectItem value="14_dias">14 dias após entrega</SelectItem>
                       <SelectItem value="21_dias">21 dias após entrega</SelectItem>
                       <SelectItem value="28_dias">28 dias após entrega</SelectItem>
+                      <SelectItem value="7_14_dias">7 e 14 dias após entrega</SelectItem>
                       <SelectItem value="50_50">50/50 | 50% entrada / 50% após entrega</SelectItem>
                     </SelectContent>
                   </Select>
