@@ -804,7 +804,7 @@ export function useQuoteBuilderState() {
     deliveryDate,
     setDeliveryDate,
     shippingType,
-    setShippingType,
+    setShippingType: handleShippingTypeChange,
     shippingCost,
     setShippingCost,
     productSearchOpen,
