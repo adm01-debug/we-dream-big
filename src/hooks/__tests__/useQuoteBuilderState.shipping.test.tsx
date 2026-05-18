@@ -46,6 +46,12 @@ vi.mock('@/hooks/useDiscountApproval', () => ({
   }),
 }));
 
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({
+    user: { id: 'user-123' },
+  }),
+}));
+
 vi.mock('@/hooks/useQuoteItems', () => ({
   useQuoteItems: () => ({
     items: [],
