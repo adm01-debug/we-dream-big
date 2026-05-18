@@ -8,7 +8,8 @@
  */
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { Info, Palette, Package, Ruler, Lock, CheckCircle2 } from "lucide-react";
+import { Info, Palette, Package, Ruler, Lock, CheckCircle2, RotateCcw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -17,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useProductCustomizationOptions } from "@/hooks/useProductCustomizationOptions";
 import { LocationPanel } from "./customization/LocationPanel";
@@ -82,18 +84,20 @@ export function ProductCustomizationOptions({
 
   const scrollToStep = (step: number) => {
     const refs = [null, null, step2Ref];
-    const target = refs[step];
-    if (target?.current) {
-      const headerOffset = stickyHeaderRef.current?.offsetHeight || 80;
-      const elementPosition = target.current.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset - 20;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
+    const target = (refs[step] as React.RefObject<HTMLDivElement>)?.current;
+    
+    if (target) {
+      // Inside a modal, we need to scroll the container, not the window
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  const handleResetAll = useCallback(() => {
+    pricesRef.current.clear();
+    setActiveLocation(null);
+    forceTick(n => n + 1);
+    onSelectionChange?.([]);
+  }, [onSelectionChange]);
 
   const handleLocationSelect = useCallback((locationCode: string) => {
     setActiveLocation(locationCode);
@@ -213,7 +217,11 @@ export function ProductCustomizationOptions({
                     s.done ? "bg-primary text-primary-foreground" : s.active ? "bg-primary/20 text-primary ring-2 ring-primary/30" : "bg-muted text-muted-foreground"
                   )}
                 >
-                  {s.done ? <CheckCircle2 className="h-3.5 w-3.5" /> : s.step}
+                  {s.done ? (
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    </motion.div>
+                  ) : s.step}
                 </button>
                 <span className={cn(
                   "text-[10px] font-bold uppercase tracking-wider",
@@ -223,7 +231,12 @@ export function ProductCustomizationOptions({
                 </span>
                 {i < arr.length - 1 && (
                   <div className="flex-1 h-[2px] bg-muted mx-2 rounded-full overflow-hidden">
-                    <div className={cn("h-full bg-primary transition-all duration-500", s.done ? "w-full" : "w-0")} />
+                    <motion.div 
+                      className="h-full bg-primary"
+                      initial={{ width: 0 }}
+                      animate={{ width: s.done ? "100%" : "0%" }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                    />
                   </div>
                 )}
               </div>
@@ -232,25 +245,39 @@ export function ProductCustomizationOptions({
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground">
-                Escolha o Local
-              </h3>
-              {mutuallyExclusive && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button type="button" className="text-amber-600 hover:text-amber-700 transition-colors">
-                      <Info className="h-4 w-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="bg-amber-50 text-amber-900 border-amber-200 text-[10px] max-w-[200px]">
-                    Este produto possui opções de gravação exclusivas (Circular 360° vs. Lado A/B).
-                  </TooltipContent>
-                </Tooltip>
+              <div className="flex items-center gap-2">
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground">
+                  Escolha o Local
+                </h3>
+                {mutuallyExclusive && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="text-amber-600 hover:text-amber-700 transition-colors">
+                        <Info className="h-4 w-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-amber-50 text-amber-900 border-amber-200 text-[10px] max-w-[200px]">
+                      Este produto possui opções de gravação exclusivas (Circular 360° vs. Lado A/B).
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+              
+              {pricesRef.current.size > 0 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleResetAll}
+                  className="h-7 text-[9px] font-bold text-muted-foreground hover:text-destructive gap-1.5 uppercase tracking-widest"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Limpar Tudo
+                </Button>
               )}
             </div>
 
             <div className="flex md:grid md:grid-cols-4 gap-2 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0 scrollbar-none snap-x">
-              {locations.map((loc) => {
+              {locations.map((loc, idx) => {
                 const isActive = activeLocation === loc.location_code;
                 const hasPrice = pricesRef.current.has(loc.location_code);
                 const isCircular = isCircularLocation(loc);
@@ -268,8 +295,13 @@ export function ProductCustomizationOptions({
                 }
 
                 const button = (
-                  <button
+                  <motion.button
                     key={loc.location_code}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    whileHover={{ scale: isDisabled ? 1 : 1.02 }}
+                    whileTap={{ scale: isDisabled ? 1 : 0.98 }}
                     type="button"
                     disabled={isDisabled}
                     onClick={() => !isDisabled && handleLocationSelect(loc.location_code)}
@@ -278,7 +310,7 @@ export function ProductCustomizationOptions({
                       isDisabled
                         ? "cursor-not-allowed opacity-40 bg-muted/30 border-border"
                         : isActive
-                          ? "border-primary bg-primary/10 ring-2 ring-primary/30 shadow-md scale-[1.02] z-10"
+                          ? "border-primary bg-primary/10 ring-2 ring-primary/30 shadow-md z-10"
                           : hasPrice
                             ? "border-emerald-500/50 bg-emerald-500/5 hover:bg-emerald-500/10 shadow-sm"
                             : "border-border bg-secondary/30 hover:bg-secondary/60 hover:border-primary/30",
@@ -298,7 +330,7 @@ export function ProductCustomizationOptions({
                         </span>
                       )}
                     </div>
-                  </button>
+                  </motion.button>
                 );
 
                 return isDisabled && disabledReason ? (
@@ -314,22 +346,44 @@ export function ProductCustomizationOptions({
 
         {/* Workspace Area */}
         <div className="space-y-6">
-          {currentLocation ? (
-            <div ref={step2Ref} className="rounded-2xl border border-border/40 bg-background/50 p-4 md:p-6 shadow-sm animate-in fade-in zoom-in-95 duration-300">
-              <LocationPanel
+          <AnimatePresence mode="wait">
+            {currentLocation ? (
+              <motion.div 
                 key={currentLocation.location_code}
-                location={currentLocation}
-                quantity={quantity}
-                confirmedPersonalization={pricesRef.current.get(currentLocation.location_code)}
-                onPriceCalculated={handlePriceCalculated}
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-24 border-2 border-dashed rounded-2xl bg-muted/5">
-              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4"><Package className="h-8 w-8 text-muted-foreground/40" /></div>
-              <p className="text-sm font-medium text-muted-foreground">Selecione um local acima para começar</p>
-            </div>
-          )}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                ref={step2Ref} 
+                className="rounded-2xl border border-border/40 bg-background/50 p-4 md:p-6 shadow-sm"
+              >
+                <LocationPanel
+                  key={currentLocation.location_code}
+                  location={currentLocation}
+                  quantity={quantity}
+                  confirmedPersonalization={pricesRef.current.get(currentLocation.location_code)}
+                  onPriceCalculated={handlePriceCalculated}
+                />
+              </motion.div>
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center py-20 border-2 border-dashed rounded-3xl bg-muted/5 border-muted-foreground/10"
+              >
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full" />
+                  <div className="relative h-20 w-20 rounded-2xl bg-gradient-to-br from-background to-muted flex items-center justify-center shadow-inner border border-border/50">
+                    <Palette className="h-10 w-10 text-muted-foreground/30 animate-pulse" />
+                  </div>
+                </div>
+                <h4 className="text-sm font-bold text-foreground mb-1">Inicie a Configuração</h4>
+                <p className="text-[11px] text-muted-foreground max-w-[220px] text-center px-4 leading-relaxed">
+                  Selecione um local de gravação no topo para definir a técnica e as dimensões.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Footer shortcuts legend */}
