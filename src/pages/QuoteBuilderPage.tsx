@@ -347,7 +347,7 @@ export default function QuoteBuilderPage() {
 
                 {/* Entrega */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
                     <Label
                       className={cn(
                         'text-xs',
@@ -360,21 +360,22 @@ export default function QuoteBuilderPage() {
                       {s.validationErrors.includes('prazo_entrega') && (
                         <span className="ml-1">*</span>
                       )}
-                      <TooltipProvider delayDuration={150}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="ml-1 inline-flex cursor-help align-middle text-muted-foreground hover:text-foreground">
-                              <Info className="h-3 w-3" aria-label="Informação sobre prazo de entrega" />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
-                            Antes de assumir o compromisso com seu Cliente, valide com todo o time
-                            (Fornecedores, Coordenador de Compras, Coordenador de Logística) a
-                            viabilidade do prazo.
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
                     </Label>
+                    <TooltipProvider delayDuration={150}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex cursor-help align-middle text-muted-foreground/60 hover:text-primary transition-colors">
+                            <Info className="h-3 w-3" aria-label="Informação sobre prazo de entrega" />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-[11px] leading-relaxed">
+                          Antes de assumir o compromisso com seu Cliente, valide com todo o time
+                          (Fornecedores, Coordenador de Compras, Coordenador de Logística) a
+                          viabilidade do prazo.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                     <div className="flex items-start gap-2 rounded-lg border border-warning/20 bg-warning/5 p-2 mb-2 animate-in fade-in slide-in-from-top-1 duration-300">
                       <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0 mt-0.5" />
                       <p className="text-[10px] leading-tight text-warning-foreground/80">
