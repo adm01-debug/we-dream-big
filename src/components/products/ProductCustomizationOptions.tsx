@@ -140,6 +140,21 @@ export function ProductCustomizationOptions({
     [options, onSelectionChange]
   );
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        // Parent Dialog handles this, but we can do extra logic here if needed
+      }
+      if (e.target instanceof HTMLInputElement) return;
+      
+      if (e.key === '1') handleLocationSelect(locations[0]?.location_code);
+      if (e.key === '2') handleLocationSelect(locations[1]?.location_code);
+      if (e.key === '3') handleLocationSelect(locations[2]?.location_code);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [locations, handleLocationSelect]);
+
   const locations = options?.locations || [];
   const currentLocation = locations.find((l) => l.location_code === activeLocation);
 
@@ -315,6 +330,22 @@ export function ProductCustomizationOptions({
               <p className="text-sm font-medium text-muted-foreground">Selecione um local acima para começar</p>
             </div>
           )}
+        </div>
+
+        {/* Footer shortcuts legend */}
+        <div className="flex items-center justify-center gap-6 pt-4 border-t border-border/40">
+          <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+            <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border/60 text-foreground">1-4</kbd>
+            Trocar Local
+          </div>
+          <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+            <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border/60 text-foreground">Enter</kbd>
+            Confirmar
+          </div>
+          <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+            <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border/60 text-foreground">Esc</kbd>
+            Sair
+          </div>
         </div>
       </div>
     </TooltipProvider>
