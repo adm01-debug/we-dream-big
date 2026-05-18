@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -177,15 +178,11 @@ export function QuoteTemplateForm({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="discount_amount">Desconto Fixo (R$)</Label>
-                <Input
-                  id="discount_amount"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.discount_amount || ""}
-                  onChange={(e) => {
-                    updateField("discount_amount", parseFloat(e.target.value) || 0);
-                    if (e.target.value) updateField("discount_percent", 0);
+                <CurrencyInput
+                  value={formData.discount_amount || 0}
+                  onChange={(n) => {
+                    updateField("discount_amount", n);
+                    if (n) updateField("discount_percent", 0);
                   }}
                   placeholder="0,00"
                 />

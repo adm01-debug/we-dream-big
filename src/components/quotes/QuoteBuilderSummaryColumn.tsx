@@ -6,6 +6,7 @@ import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -306,17 +307,28 @@ export function QuoteBuilderSummaryColumn({
                     <SelectItem value="amount">R$</SelectItem>
                   </SelectContent>
                 </Select>
-                <Input
-                  type="number" min={0} step={discountType === "percent" ? 1 : 0.01}
-                  max={discountType === "percent" ? 100 : undefined}
-                  value={discountValue || ""}
-                  onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
-                  placeholder="Desconto"
-                  className={cn(
-                    "h-8 text-sm transition-all",
-                    isDiscountExceeded && "border-amber-500 ring-2 ring-amber-500/20 bg-amber-500/[0.03]"
-                  )}
-                />
+                {discountType === "percent" ? (
+                  <Input
+                    type="number" min={0} step={1} max={100}
+                    value={discountValue || ""}
+                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                    placeholder="Desconto"
+                    className={cn(
+                      "h-8 text-sm transition-all",
+                      isDiscountExceeded && "border-amber-500 ring-2 ring-amber-500/20 bg-amber-500/[0.03]"
+                    )}
+                  />
+                ) : (
+                  <CurrencyInput
+                    value={discountValue}
+                    onChange={(n) => setDiscountValue(n)}
+                    placeholder="Desconto"
+                    className={cn(
+                      "h-8 text-sm transition-all",
+                      isDiscountExceeded && "border-amber-500 ring-2 ring-amber-500/20 bg-amber-500/[0.03]"
+                    )}
+                  />
+                )}
               </div>
               {isDiscountExceeded && (
                 <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 px-3 py-2">
