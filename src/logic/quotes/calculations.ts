@@ -40,16 +40,16 @@ export const calculateSubtotal = (items: QuoteItemCalculationParams[]): number =
 };
 
 /**
- * Aplica markup de negociação a um valor base.
+ * Aplica markup de negociação a um valor base com arredondamento.
  */
 export const applyMarkup = (baseValue: number, markupPercent: number): number => {
   const safeMarkup = Math.min(50, Math.max(0, markupPercent || 0));
-  if (safeMarkup <= 0) return baseValue || 0;
-  return Math.round((baseValue * (1 + safeMarkup / 100) + Number.EPSILON) * 100) / 100;
+  if (safeMarkup <= 0) return round2(baseValue);
+  return round2(baseValue * (1 + safeMarkup / 100));
 };
 
 /**
- * Calcula o valor absoluto do desconto.
+ * Calcula o valor absoluto do desconto com arredondamento.
  */
 export const calculateDiscountAmount = (
   subtotal: number, 
@@ -58,14 +58,14 @@ export const calculateDiscountAmount = (
 ): number => {
   const safeValue = Math.max(0, discountValue || 0);
   if (discountType === 'percent') {
-    return Math.round(((subtotal || 0) * (safeValue / 100) + Number.EPSILON) * 100) / 100;
+    return round2((subtotal || 0) * (safeValue / 100));
   }
-  return safeValue;
+  return round2(safeValue);
 };
 
 /**
  * Calcula o percentual de desconto real sobre o subtotal original (sem markup).
- * Essencial para fluxos de aprovação de alçada.
+ * Essencial para fluxos de aprovação de alçada com arredondamento.
  */
 export const calculateRealDiscountPercent = (
   realSubtotal: number,
