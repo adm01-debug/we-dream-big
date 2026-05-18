@@ -113,6 +113,10 @@ vi.mock('@/components/quotes/SaveAsTemplateButton', () => ({
   SaveAsTemplateButton: () => <div data-testid="save-as-template-button" />,
 }));
 
+vi.mock('@/components/quotes/QuoteBuilderStepper', () => ({
+  QuoteBuilderStepper: () => <div data-testid="quote-builder-stepper" />,
+}));
+
 vi.mock('@/components/quotes/QuoteBuilderSummaryColumn', () => ({
   QuoteBuilderSummaryColumn: () => <div data-testid="summary-column" />,
 }));
@@ -124,7 +128,7 @@ vi.mock('@/components/quotes/QuoteBuilderProductSearch', () => ({
 const renderPage = () => {
   return render(
     <BrowserRouter>
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         <QuoteBuilderPage />
       </TooltipProvider>
     </BrowserRouter>
@@ -159,7 +163,7 @@ describe('QuoteBuilderPage Delivery Tooltip', () => {
     await user.hover(trigger);
     
     // Check if tooltip content appears
-    // Radix tooltips might need a bit of time to appear even with delayDuration=0/low
+    // We use findByTestId since tooltips are often in portals and might take a tick
     const tooltipContent = await screen.findByTestId('delivery-info-tooltip-content');
     expect(tooltipContent).toBeInTheDocument();
     expect(tooltipContent.textContent).toContain('Antes de assumir o compromisso com seu Cliente');
