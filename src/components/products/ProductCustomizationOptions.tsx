@@ -209,13 +209,24 @@ export function ProductCustomizationOptions({
             <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
               <div 
                 className="h-full bg-primary transition-all duration-500" 
-                style={{ width: activeLocation ? '66%' : '33%' }}
+                style={{ 
+                  width: pricesRef.current.has(activeLocation || '') 
+                    ? '100%' 
+                    : activeLocation 
+                      ? '66%' 
+                      : '33%' 
+                }}
               />
             </div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
-              {activeLocation ? 'Passo 2 de 3' : 'Passo 1 de 3'}
+              {pricesRef.current.has(activeLocation || '') 
+                ? 'Concluído' 
+                : activeLocation 
+                  ? 'Passo 2 de 3' 
+                  : 'Passo 1 de 3'}
             </span>
           </div>
+
           <div className="flex items-center gap-2 md:gap-4 pb-2">
             <button 
               type="button"
