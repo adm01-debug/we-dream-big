@@ -66,5 +66,5 @@ export const calculateRealDiscountPercent = (
 ): number => {
   if (realSubtotal <= 0) return 0;
   const finalBeforeShipping = Math.max(0, presentedSubtotal - discountAmount);
-  return Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal) * 10000) / 100;
+  return Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal + Number.EPSILON) * 10000) / 100;
 };
