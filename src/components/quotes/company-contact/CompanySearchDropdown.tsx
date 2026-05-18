@@ -91,25 +91,30 @@ export function CompanySearchDropdown({
     const seen = new Set<string>();
     const merged: CompanyOption[] = [];
 
-    // 1. History matches (prioritize history items that match the search term)
-    if (term) {
-      const historyMatches = history.filter(h => 
-        h.label.toLowerCase().includes(term) || 
-        ((h.metadata as any)?.cnpj || "").includes(term) ||
-        ((h.metadata as any)?.razao_social || "").toLowerCase().includes(term)
-      );
-      for (const h of historyMatches) {
+    // 1. History (always add to 'seen' to avoid duplicates, only add to 'merged' if searching)
+    if (term || history.length > 0) {
+      const historyItems = term 
+        ? history.filter(h => 
+            h.label.toLowerCase().includes(term) || 
+            ((h.metadata as any)?.cnpj || "").includes(term) ||
+            ((h.metadata as any)?.razao_social || "").toLowerCase().includes(term)
+          )
+        : history;
+
+      for (const h of historyItems) {
         if (!seen.has(h.id)) {
-          const meta = (h.metadata || {}) as any;
-          merged.push({
-            id: h.id,
-            name: h.label,
-            razao_social: meta.razao_social || h.label,
-            nome_fantasia: h.label,
-            ramo_atividade: null,
-            cnpj: meta.cnpj || null,
-            logo_url: meta.logo_url || null,
-          });
+          if (term) {
+            const meta = (h.metadata || {}) as any;
+            merged.push({
+              id: h.id,
+              name: h.label,
+              razao_social: meta.razao_social || h.label,
+              nome_fantasia: h.label,
+              ramo_atividade: null,
+              cnpj: meta.cnpj || null,
+              logo_url: meta.logo_url || null,
+            });
+          }
           seen.add(h.id);
         }
       }
