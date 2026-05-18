@@ -988,6 +988,8 @@ export function useQuoteBuilderState() {
     activeItemIndex,
     setActiveItemIndex,
     // Computed
+    completedSteps,
+    activeStep,
     filteredProducts,
     subtotal,
     realSubtotal,
@@ -1005,6 +1007,9 @@ export function useQuoteBuilderState() {
     isDiscountExceeded,
     // Actions
     validateStep,
+    nextStep,
+    prevStep,
+    goToStep,
     formatCurrency,
     calculateItemPersonalizationTotal,
     calculateItemTotal,

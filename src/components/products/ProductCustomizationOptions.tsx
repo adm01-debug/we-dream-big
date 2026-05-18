@@ -5,6 +5,15 @@
  *   1) Local de gravação (LADO A / LADO B / CIRCULAR 360°)
  *   2) Técnica disponível para aquele local
  *   3) Tamanho / cores (configuração)
+ *
+ * Regra de exclusividade: se o produto possuir uma opção "CIRCULAR/360°"
+ * ela é mutuamente exclusiva com locais planos (LADO A, LADO B, etc.).
+ * Selecionar CIRCULAR bloqueia LADO A/B (e vice-versa) com tooltip explicando.
+ */
+
+/**
+ * ProductCustomizationOptions — Interface base para configuração de gravação.
+ * Utilizado dentro do ProductCustomizationModal para isolar a complexidade.
  */
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
@@ -19,14 +28,13 @@ import {
 import { cn } from "@/lib/utils";
 import { useProductCustomizationOptions } from "@/hooks/useProductCustomizationOptions";
 import { LocationPanel } from "./customization/LocationPanel";
-import { Info, Palette, Package } from "lucide-react";
 import type {
   CustomizationPriceResponseV6,
   GravacaoLocation,
   PersonalizationItem,
 } from "@/types/customization";
 
-export interface ProductCustomizationOptionsProps {
+interface ProductCustomizationOptionsProps {
   productId: string;
   productSku?: string;
   quantity?: number;
@@ -46,9 +54,9 @@ function isCircularLocation(loc: GravacaoLocation): boolean {
   );
 }
 
-export default function ProductCustomizationOptions({
+export function ProductCustomizationOptions({
   productId,
-  quantity = 1,
+  quantity = 100,
   initialPersonalizations = [],
   onSelectionChange,
 }: ProductCustomizationOptionsProps) {
@@ -59,7 +67,7 @@ export default function ProductCustomizationOptions({
   const pricesRef = useRef<Map<string, PersonalizationItem>>(new Map());
   const hasInitialized = useRef(false);
   
-  // Force re-render when pricesRef changes
+  // Force re-render when pricesRef changes (badges/exclusão dependem disso)
   const [, forceTick] = useState(0);
 
   // Reset local state when productId changes
@@ -83,6 +91,7 @@ export default function ProductCustomizationOptions({
     }
   }, [initialPersonalizations, productId]);
 
+  // Refs for scrolling and offset calculation
   const stickyHeaderRef = useRef<HTMLDivElement>(null);
   const step2Ref = useRef<HTMLDivElement>(null);
   const step3Ref = useRef<HTMLDivElement>(null);
@@ -91,9 +100,10 @@ export default function ProductCustomizationOptions({
     const refs = [null, null, step2Ref, step3Ref];
     const target = refs[step];
     if (target?.current) {
+      // Calculate dynamic offset based on the actual height of the sticky header
       const headerHeight = stickyHeaderRef.current?.offsetHeight || 140;
       const elementPosition = target.current.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerHeight - 12;
+      const offsetPosition = elementPosition + window.pageYOffset - headerHeight - 12; // -12 for extra breathing room
 
       window.scrollTo({
         top: offsetPosition,
@@ -102,6 +112,7 @@ export default function ProductCustomizationOptions({
     }
   };
 
+  // Auto-select primeiro local quando dados carregam
   useEffect(() => {
     if (options?.locations?.length && !activeLocation) {
       setActiveLocation(options.locations[0].location_code);
@@ -145,6 +156,7 @@ export default function ProductCustomizationOptions({
 
   const locations = options?.locations ?? [];
 
+  /** Calcula exclusividade circular ↔ plano. */
   const exclusion = useMemo(() => {
     const confirmedCodes = Array.from(pricesRef.current.keys());
     const confirmedHasCircular = confirmedCodes.some((code) => {
@@ -156,11 +168,12 @@ export default function ProductCustomizationOptions({
       return l ? !isCircularLocation(l) : false;
     });
     return { confirmedHasCircular, confirmedHasFlat };
+    // pricesRef é mutável, mas forceTick (via state) garante recomputação
   }, [locations, pricesRef.current.size]);
 
   if (isLoading) {
     return (
-      <div className="space-y-3 p-4">
+      <div className="space-y-3">
         <Skeleton className="h-5 w-64" />
         <Skeleton className="h-16 w-full rounded-xl" />
         <Skeleton className="h-32 w-full rounded-xl" />
@@ -183,12 +196,13 @@ export default function ProductCustomizationOptions({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex flex-col gap-6 p-4">
-        {/* STEP 1 — Local Selection */}
+      <div className="flex flex-col gap-6">
+        {/* STEP 1 — Local Selection (Pinned Bento Grid) */}
         <div 
           ref={stickyHeaderRef}
-          className="sticky top-0 z-20 -mx-4 px-4 py-4 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border/40 shadow-sm space-y-4"
+          className="sticky top-0 z-20 -mx-4 px-4 py-4 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border/40 shadow-sm md:shadow-none space-y-4"
         >
+          {/* STEP HEADER — Modern Progress Bar */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
               <div 
@@ -200,43 +214,41 @@ export default function ProductCustomizationOptions({
               {activeLocation ? 'Passo 2 de 3' : 'Passo 1 de 3'}
             </span>
           </div>
-          
-          <div className="flex items-center gap-4 overflow-x-auto pb-1 scrollbar-none">
-            <button 
-              type="button"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="flex items-center gap-1.5 shrink-0 hover:text-primary transition-colors text-xs font-medium"
-            >
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                1
-              </span>
-              <span>Local</span>
-            </button>
-            <span className="text-muted-foreground/40 shrink-0">→</span>
-            <button 
-              type="button"
-              onClick={() => scrollToStep(2)}
-              className="flex items-center gap-1.5 shrink-0 hover:text-primary transition-colors text-xs font-medium"
-            >
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-foreground">
-                2
-              </span>
-              <span>Técnica</span>
-            </button>
-            <span className="text-muted-foreground/40 shrink-0">→</span>
-            <button 
-              type="button"
-              onClick={() => scrollToStep(3)}
-              className="flex items-center gap-1.5 shrink-0 hover:text-primary transition-colors text-xs font-medium"
-            >
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-foreground">
-                3
-              </span>
-              <span>Tamanho</span>
-            </button>
-          </div>
+          <button 
+            type="button"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center gap-1 md:gap-1.5 shrink-0 hover:text-primary transition-colors"
+          >
+            <span className="flex h-3.5 w-3.5 md:h-4 md:w-4 items-center justify-center rounded-full bg-primary text-[9px] md:text-[10px] font-bold text-primary-foreground">
+              1
+            </span>
+            <span>Local</span>
+          </button>
+          <span className="text-muted-foreground/40 shrink-0">→</span>
+          <button 
+            type="button"
+            onClick={() => scrollToStep(2)}
+            className="flex items-center gap-1 md:gap-1.5 shrink-0 hover:text-primary transition-colors"
+          >
+            <span className="flex h-3.5 w-3.5 md:h-4 md:w-4 items-center justify-center rounded-full bg-muted text-[9px] md:text-[10px] font-bold text-foreground">
+              2
+            </span>
+            <span>Técnica</span>
+          </button>
+          <span className="text-muted-foreground/40 shrink-0">→</span>
+          <button 
+            type="button"
+            onClick={() => scrollToStep(3)}
+            className="flex items-center gap-1 md:gap-1.5 shrink-0 hover:text-primary transition-colors"
+          >
+            <span className="flex h-3.5 w-3.5 md:h-4 md:w-4 items-center justify-center rounded-full bg-muted text-[9px] md:text-[10px] font-bold text-foreground">
+              3
+            </span>
+            <span>Tamanho</span>
+          </button>
         </div>
 
+        {/* STEP 1 — Local Selection Cards */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground">
@@ -250,21 +262,24 @@ export default function ProductCustomizationOptions({
             )}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          <div className="flex md:grid md:grid-cols-4 gap-2 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0 scrollbar-none snap-x">
             {locations.map((loc) => {
               const isActive = activeLocation === loc.location_code;
               const hasPrice = pricesRef.current.has(loc.location_code);
               const isCircular = isCircularLocation(loc);
 
+              // Regras de exclusão
               let isDisabled = false;
               let disabledReason: string | null = null;
               if (mutuallyExclusive) {
                 if (isCircular && exclusion.confirmedHasFlat) {
                   isDisabled = true;
-                  disabledReason = "Remova as gravações de LADO A/B para usar gravação CIRCULAR (360°).";
+                  disabledReason =
+                    "Remova as gravações de LADO A/B para usar gravação CIRCULAR (360°).";
                 } else if (!isCircular && exclusion.confirmedHasCircular) {
                   isDisabled = true;
-                  disabledReason = "Gravação CIRCULAR (360°) já cobre toda a peça. Remova-a para usar lados separados.";
+                  disabledReason =
+                    "Gravação CIRCULAR (360°) já cobre toda a peça. Remova-a para usar lados separados.";
                 }
               }
 
@@ -275,7 +290,7 @@ export default function ProductCustomizationOptions({
                   disabled={isDisabled}
                   onClick={() => !isDisabled && setActiveLocation(loc.location_code)}
                   className={cn(
-                    "group relative flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2 text-left transition-all",
+                    "group relative flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2 text-left transition-all min-w-[120px] md:min-w-0 snap-start",
                     isDisabled
                       ? "cursor-not-allowed opacity-40 bg-muted/30 border-border"
                       : isActive
@@ -286,10 +301,17 @@ export default function ProductCustomizationOptions({
                   )}
                 >
                   <div className="flex w-full items-center justify-between">
-                    <span className={cn("text-xs font-bold uppercase tracking-wide", isActive ? "text-primary" : "text-foreground")}>
+                    <span
+                      className={cn(
+                        "text-xs font-bold uppercase tracking-wide",
+                        isActive ? "text-primary" : "text-foreground",
+                      )}
+                    >
                       {loc.location_name}
                     </span>
-                    {hasPrice && <span className="text-[10px] font-bold text-primary">✓</span>}
+                    {hasPrice && (
+                      <span className="text-[10px] font-bold text-primary">✓</span>
+                    )}
                   </div>
                   <span className="text-[10px] text-muted-foreground">
                     {isCircular ? "Volta toda · 360°" : "Lado único"}
@@ -300,25 +322,31 @@ export default function ProductCustomizationOptions({
               return isDisabled && disabledReason ? (
                 <Tooltip key={loc.location_code}>
                   <TooltipTrigger asChild>
-                    <span className="inline-flex w-full">{button}</span>
+                    <span className="inline-flex">{button}</span>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="max-w-[220px] text-xs">
                     {disabledReason}
                   </TooltipContent>
                 </Tooltip>
-              ) : button;
+              ) : (
+                button
+              );
             })}
           </div>
 
           {mutuallyExclusive && (
             <p className="text-[10px] text-muted-foreground/80 italic pt-0.5">
-              💡 <span className="font-medium">CIRCULAR (360°)</span> é exclusivo: substitui gravações em LADO A/B.
+              💡 <span className="font-medium">CIRCULAR (360°)</span> é exclusivo: substitui
+              gravações em LADO A/B.
             </p>
           )}
         </div>
+        {/* /fim do bloco sticky (stepper + locais) */}
 
+        {/* STEPS 2 + 3 — Content Area (Modular Bento) */}
         {currentLocation ? (
           <div ref={step2Ref} className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in zoom-in-95 duration-300">
+            {/* Technique Selection Module */}
             <div className="rounded-xl border border-border/60 bg-background/60 p-4 space-y-3 shadow-sm">
               <div className="flex items-center justify-between border-b pb-2">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -339,6 +367,7 @@ export default function ProductCustomizationOptions({
               </div>
             </div>
 
+            {/* Config & Preview Module */}
             <div className="space-y-4">
               <div className="hidden md:flex flex-col items-center justify-center h-full p-8 rounded-xl border border-dashed border-primary/20 bg-primary/5 text-center">
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
@@ -360,6 +389,7 @@ export default function ProductCustomizationOptions({
           </div>
         )}
 
+        {/* SUMMARY — Resumo final das gravações confirmadas */}
         {pricesRef.current.size > 0 && (
           <div className="mt-6 pt-4 border-t border-border/60 animate-in fade-in slide-in-from-bottom-2">
             <div className="flex items-center gap-2 mb-3">
