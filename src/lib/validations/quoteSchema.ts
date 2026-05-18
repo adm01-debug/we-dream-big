@@ -69,6 +69,7 @@ export function validateQuoteForm(data: {
       const fieldMap: Record<string, string> = {
         clientId: "empresa",
         contactId: "contato",
+        paymentMethod: "forma_pagamento",
         paymentTerms: "prazo_pagamento",
         deliveryTime: "prazo_entrega",
         shippingType: "frete",
