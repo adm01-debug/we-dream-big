@@ -192,23 +192,81 @@ export function useQuoteBuilderState() {
   const debouncedProductSearch = useDebounce(productSearch, 400);
 
   // ── Stepper ──
-  const activeStep = useMemo((): QuoteBuilderStep => {
-    if (!clientId) return 'client';
-    if (!paymentMethod || !paymentTerms || !deliveryTime || !shippingType) return 'conditions';
-    if (items.length === 0) return 'items';
-    const hasAnyPersonalization = items.some((it) => (it.personalizations?.length ?? 0) > 0);
-    if (!hasAnyPersonalization) return 'personalization';
-    return 'review';
-  }, [clientId, items, paymentMethod, paymentTerms, deliveryTime, shippingType]);
+  const [currentStep, setCurrentStep] = useState<QuoteBuilderStep>('client');
+
+  const activeStep = useMemo((): QuoteBuilderStep => currentStep, [currentStep]);
 
   const completedSteps = useMemo((): QuoteBuilderStep[] => {
     const steps: QuoteBuilderStep[] = [];
-    if (clientId) steps.push('client');
+    if (clientId && contactId) steps.push('client');
     if (paymentMethod && paymentTerms && deliveryTime && shippingType) steps.push('conditions');
     if (items.length > 0) steps.push('items');
-    if (items.some((it) => (it.personalizations?.length ?? 0) > 0)) steps.push('personalization');
+    // Consideramos personalização "concluída" se houver itens e revisarmos
+    const hasAnyPersonalization = items.some((it) => (it.personalizations?.length ?? 0) > 0);
+    if (hasAnyPersonalization) steps.push('personalization');
     return steps;
-  }, [clientId, items, paymentMethod, paymentTerms, deliveryTime, shippingType]);
+  }, [clientId, contactId, items, paymentMethod, paymentTerms, deliveryTime, shippingType]);
+
+  const validateStep = useCallback((step: QuoteBuilderStep): boolean => {
+    switch (step) {
+      case 'client':
+        if (!clientId) {
+          toast.error('Selecione um cliente');
+          return false;
+        }
+        if (!contactId) {
+          toast.error('Selecione um contato');
+          return false;
+        }
+        return true;
+      case 'conditions':
+        if (!paymentMethod || !paymentTerms || !deliveryTime || !shippingType) {
+          toast.error('Preencha todas as condições comerciais');
+          return false;
+        }
+        if (shippingType === 'fob_pre' && !shippingCost) {
+          toast.error('Informe o valor do frete');
+          return false;
+        }
+        return true;
+      case 'items':
+        if (items.length === 0) {
+          toast.error('Adicione pelo menos um item');
+          return false;
+        }
+        return true;
+      case 'personalization':
+        // Etapa opcional se não houver personalização, mas se houver, 
+        // podemos validar se todas estão preenchidas (opcional por enquanto)
+        return true;
+      case 'review':
+        return true;
+      default:
+        return true;
+    }
+  }, [clientId, contactId, paymentMethod, paymentTerms, deliveryTime, shippingType, shippingCost, items]);
+
+  const nextStep = useCallback(() => {
+    const steps: QuoteBuilderStep[] = ['client', 'conditions', 'items', 'personalization', 'review'];
+    const currentIndex = steps.indexOf(currentStep);
+    
+    if (validateStep(currentStep)) {
+      if (currentIndex < steps.length - 1) {
+        setCurrentStep(steps[currentIndex + 1]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [currentStep, validateStep]);
+
+  const prevStep = useCallback(() => {
+    const steps: QuoteBuilderStep[] = ['client', 'conditions', 'items', 'personalization', 'review'];
+    const currentIndex = steps.indexOf(currentStep);
+    
+    if (currentIndex > 0) {
+      setCurrentStep(steps[currentIndex - 1]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentStep]);
   // ── AutoSave ──
   const { clearAutoSave } = useAutoSaveQuote({
     enabled: !!clientId && items.length > 0 && !isEditMode,
@@ -786,6 +844,12 @@ export function useQuoteBuilderState() {
     quoteId,
     isEditMode,
     loadingQuote,
+    currentStep,
+    setCurrentStep,
+    nextStep,
+    prevStep,
+    activeStep,
+    completedSteps,
     // Auth
     user,
     // State setters
