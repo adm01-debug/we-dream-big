@@ -4,6 +4,12 @@
 import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import type { Quote, QuoteItem } from "./quoteTypes";
 
+/** Half-up rounding to 2 decimals — SSOT for monetary persistence */
+export const round2 = (n: number | null | undefined): number => {
+  const v = typeof n === "number" && Number.isFinite(n) ? n : 0;
+  return Math.round((v + Number.EPSILON) * 100) / 100;
+};
+
 export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) {
   // Subtotal real = soma direta dos itens + personalizações (sem markup)
   const realSubtotal = items.reduce((sum, item) => {
