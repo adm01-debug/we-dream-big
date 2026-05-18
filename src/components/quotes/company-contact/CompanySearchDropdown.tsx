@@ -31,6 +31,7 @@ export function CompanySearchDropdown({
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const { history, addToHistory, removeFromHistory, clearHistory } = useSearchHistory("company");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
@@ -163,7 +164,6 @@ export function CompanySearchDropdown({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const { history, addToHistory, removeFromHistory, clearHistory } = useSearchHistory("company");
 
   const handleSelect = (id: string) => {
     if (id) {
@@ -216,7 +216,8 @@ export function CompanySearchDropdown({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input autoFocus={isOpen} placeholder="Buscar empresa por nome, CNPJ..." value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)} onFocus={() => setIsOpen(true)} className="pl-9 h-11 bg-background"
-          onKeyDown={(e) => { if (e.key === "Escape") { setIsOpen(false); setSearchTerm(""); } }} />
+          onKeyDown={(e) => { if (e.key === "Escape") { setIsOpen(false); setSearchTerm(""); } }}
+          data-testid="company-search-input" />
         {(loadingCompanies || loadingSearch) && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />}
       </div>
 
@@ -244,14 +245,14 @@ export function CompanySearchDropdown({
             <div className="relative">
               <ScrollArea style={{ height: `${Math.min(Math.max((filteredCompanies.length + 1 + (showHistory ? history.length + 1 : 0)), 2) * 56, 320)}px` }}>
                 <button type="button" className={cn("flex items-center gap-3 w-full px-3 py-2.5 text-left transition-colors duration-150 hover:bg-primary/10 border-b border-border/30", !companyId && "bg-primary/5")}
-                  onClick={() => handleSelect("")}><span className="text-sm text-muted-foreground">Sem empresa</span></button>
+                  onClick={() => handleSelect("")} data-testid="no-company-option"><span className="text-sm text-muted-foreground">Sem empresa</span></button>
                 {showHistory && (
-                  <div className="border-b border-border/30">
+                  <div className="border-b border-border/30" data-testid="search-history-section">
                     <div className="flex items-center justify-between px-3 py-1.5 bg-muted/20">
                       <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
                         <Clock className="h-3 w-3" /> Pesquisas recentes
                       </span>
-                      <button type="button" onClick={() => clearHistory()}
+                      <button type="button" onClick={() => clearHistory()} data-testid="clear-history-button"
                         className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-destructive transition-colors">
                         <Trash2 className="h-3 w-3" /> Limpar
                       </button>
@@ -259,8 +260,8 @@ export function CompanySearchDropdown({
                     {history.map((item) => {
                       const meta = (item.metadata || {}) as { razao_social?: string | null; cnpj?: string | null; logo_url?: string | null };
                       return (
-                        <div key={item.id} className={cn("group flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-primary/10 transition-colors border-b border-border/20 last:border-b-0", companyId === item.id && "bg-primary/10 border-l-2 border-l-primary")}>
-                          <button type="button" className="flex items-center gap-3 flex-1 min-w-0" onClick={() => handleSelect(item.id)}>
+                        <div key={item.id} data-testid={`history-item-${item.id}`} className={cn("group flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-primary/10 transition-colors border-b border-border/20 last:border-b-0", companyId === item.id && "bg-primary/10 border-l-2 border-l-primary")}>
+                          <button type="button" className="flex items-center gap-3 flex-1 min-w-0" onClick={() => handleSelect(item.id)} data-testid={`history-item-button-${item.id}`}>
                             <CompanyAvatar name={item.label} logoUrl={meta.logo_url ?? null} size="sm" />
                             <div className="flex flex-col flex-1 min-w-0">
                               <span className="text-sm font-medium truncate">{item.label}</span>
@@ -285,7 +286,7 @@ export function CompanySearchDropdown({
                 ) : (
                   <div className="py-0">
                     {filteredCompanies.map((company, index) => (
-                      <button key={company.id} type="button" className={cn("flex items-center gap-3 w-full px-3 py-2.5 text-left transition-colors duration-150 hover:bg-primary/10", index < filteredCompanies.length - 1 && "border-b border-border/30", companyId === company.id && "bg-primary/10 border-l-2 border-l-primary")}
+                      <button key={company.id} type="button" data-testid={`company-option-${company.id}`} className={cn("flex items-center gap-3 w-full px-3 py-2.5 text-left transition-colors duration-150 hover:bg-primary/10", index < filteredCompanies.length - 1 && "border-b border-border/30", companyId === company.id && "bg-primary/10 border-l-2 border-l-primary")}
                         onClick={() => handleSelect(company.id)}>
                         <CompanyAvatar name={company.name} logoUrl={company.logo_url} size="sm" />
                         <div className="flex flex-col flex-1 min-w-0">
