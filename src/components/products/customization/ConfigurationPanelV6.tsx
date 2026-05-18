@@ -6,10 +6,11 @@
  * Briefing v6 (12/02/2026).
  */
 
-import { useState, useEffect, useMemo, useRef } from "react";
-import { Loader2, Palette, Clock, Ruler, AlertCircle, Check } from "lucide-react";
+import { useState, useMemo, useRef } from "react";
+import { Loader2, Palette, Ruler, AlertCircle, Check, Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCustomizationPriceReactive } from "@/hooks/useCustomizationPrice";
 import type { TechniqueOption, CustomizationPriceResponseV6 } from "@/types/customization";
@@ -17,10 +18,12 @@ import type { TechniqueOption, CustomizationPriceResponseV6 } from "@/types/cust
 interface ConfigurationPanelV6Props {
   technique: TechniqueOption;
   quantity: number;
+  /** True quando esta técnica já foi confirmada e está no orçamento. */
+  isConfirmed?: boolean;
   onPriceCalculated: (techniqueId: string, price: CustomizationPriceResponseV6 | null, dimensions?: { width?: number; height?: number }) => void;
 }
 
-export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }: ConfigurationPanelV6Props) {
+export function ConfigurationPanelV6({ technique, quantity, isConfirmed = false, onPriceCalculated }: ConfigurationPanelV6Props) {
   // Dimensions
   const [largura, setLargura] = useState<string>(
     technique.usa_dimensao ? String(technique.efetiva_largura_max) : ""
@@ -31,6 +34,10 @@ export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }:
 
   // Colors
   const [numCores, setNumCores] = useState(1);
+
+  // Edição local: quando confirmado, bloqueia inputs até clicar em "Editar"
+  const [editing, setEditing] = useState(false);
+  const isLocked = isConfirmed && !editing;
 
   const larguraNum = parseFloat(largura) || 0;
   const alturaNum = parseFloat(altura) || 0;
@@ -44,7 +51,7 @@ export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }:
     return null;
   }, [technique, larguraNum, alturaNum]);
 
-  // Reactive price calculation with debounce
+  // Preview reativo apenas — inserção no orçamento ocorre via botão "Confirmar".
   const { price, loading, error } = useCustomizationPriceReactive(
     technique.technique_id,
     quantity,
@@ -57,17 +64,38 @@ export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }:
   const onPriceCalculatedRef = useRef(onPriceCalculated);
   onPriceCalculatedRef.current = onPriceCalculated;
 
-  // Notify parent when price or dimensions change
-  useEffect(() => {
+  const canConfirm = !!price && !loading && !error && !dimensionError;
+
+  const handleConfirm = () => {
+    if (!canConfirm || !price) return;
     const dims = technique.usa_dimensao ? { width: larguraNum, height: alturaNum } : undefined;
     onPriceCalculatedRef.current(technique.technique_id, price, dims);
-  }, [price, technique.technique_id, technique.usa_dimensao, larguraNum, alturaNum]);
+    setEditing(false);
+  };
+
+  const handleRemove = () => {
+    onPriceCalculatedRef.current(technique.technique_id, null);
+    setEditing(false);
+  };
 
   return (
-    <div className="space-y-4 p-4 rounded-lg bg-secondary/30 border border-border/50">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-        Configure a gravação
-      </p>
+    <div className={cn(
+      "space-y-4 p-4 rounded-lg border",
+      isConfirmed
+        ? "bg-primary/5 border-primary/30"
+        : "bg-secondary/30 border-border/50",
+    )}>
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          {isConfirmed && !editing ? "Gravação confirmada" : "Configure a gravação"}
+        </p>
+        {isConfirmed && !editing && (
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wide">
+            <Check className="h-3 w-3" /> Adicionada ao orçamento
+          </span>
+        )}
+      </div>
+
 
       {/* Dimension inputs (conditional) */}
       {technique.usa_dimensao && (
@@ -91,6 +119,7 @@ export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }:
                 onChange={(e) => setLargura(e.target.value)}
                 placeholder={`até ${technique.efetiva_largura_max}`}
                 className="h-9 text-sm"
+                disabled={isLocked}
               />
             </div>
             <span className="text-muted-foreground mt-5">×</span>
@@ -105,9 +134,11 @@ export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }:
                 onChange={(e) => setAltura(e.target.value)}
                 placeholder={`até ${technique.efetiva_altura_max}`}
                 className="h-9 text-sm"
+                disabled={isLocked}
               />
             </div>
           </div>
+
           {dimensionError && larguraNum > 0 && alturaNum > 0 && (
             <div className="flex items-center gap-1.5 text-xs text-destructive">
               <AlertCircle className="h-3 w-3" />
@@ -128,14 +159,18 @@ export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }:
             {Array.from({ length: technique.max_cores }, (_, i) => i + 1).map(n => (
               <button
                 key={n}
+                type="button"
+                disabled={isLocked}
                 className={cn(
                   "px-3 h-9 rounded-md text-sm font-medium transition-colors",
+                  isLocked && "opacity-50 cursor-not-allowed",
                   n === numCores
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 )}
-                onClick={() => setNumCores(n)}
+                onClick={() => !isLocked && setNumCores(n)}
               >
+
                 {n} {n === 1 ? 'cor' : 'cores'}
                 {n === 2 && ' (-10%)'}
                 {n === 3 && ' (-15%)'}
@@ -229,6 +264,68 @@ export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }:
             : "Aguardando cálculo..."}
         </div>
       )}
+
+      {/* AÇÕES — Confirmar / Editar / Remover */}
+      <div className="flex items-center gap-2 pt-1">
+        {!isConfirmed && (
+          <Button
+            type="button"
+            size="sm"
+            className="flex-1"
+            disabled={!canConfirm}
+            onClick={handleConfirm}
+          >
+            <Check className="h-4 w-4 mr-1.5" />
+            Confirmar e adicionar ao orçamento
+          </Button>
+        )}
+        {isConfirmed && !editing && (
+          <>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="flex-1"
+              onClick={() => setEditing(true)}
+            >
+              <Pencil className="h-4 w-4 mr-1.5" />
+              Editar
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={handleRemove}
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              Remover
+            </Button>
+          </>
+        )}
+        {isConfirmed && editing && (
+          <>
+            <Button
+              type="button"
+              size="sm"
+              className="flex-1"
+              disabled={!canConfirm}
+              onClick={handleConfirm}
+            >
+              <Check className="h-4 w-4 mr-1.5" />
+              Atualizar gravação
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setEditing(false)}
+            >
+              Cancelar
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
