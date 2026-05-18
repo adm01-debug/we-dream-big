@@ -21,10 +21,12 @@ vi.mock('@/lib/crm-db', () => ({
 const mockCompanies = [
   { id: '1', name: 'Alpha Corp', razao_social: 'Alpha S.A.', cnpj: '111', logo_url: null },
   { id: '2', name: 'Beta Solutions', razao_social: 'Beta Ltda', cnpj: '222', logo_url: null },
+  { id: '3', name: 'Gamma Ltd', razao_social: 'Gamma Ltda', cnpj: '333', logo_url: null },
 ];
 
 const mockHistory = [
   { id: '1', label: 'Alpha Corp', type: 'company', metadata: { cnpj: '111' }, timestamp: Date.now() },
+  { id: '2', label: 'Beta Solutions', type: 'company', metadata: { cnpj: '22.222.222/0001-22' }, timestamp: Date.now() },
 ];
 
 describe('CompanySearchDropdown', () => {
