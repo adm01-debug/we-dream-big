@@ -75,10 +75,10 @@ export function QuoteBuilderSummaryColumn({
   const [showOnlyStale, setShowOnlyStale] = useState(false);
 
   // ── Base apresentada (subtotal + markup) — referência para converter desconto %/R$ ──
-  const presentedSubtotal = useMemo(
-    () => (realSubtotal || 0) * (1 + (negotiationMarkup || 0) / 100),
-    [realSubtotal, negotiationMarkup],
-  );
+  const presentedSubtotal = useMemo(() => {
+    const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+    return round2((realSubtotal || 0) * (1 + (negotiationMarkup || 0) / 100));
+  }, [realSubtotal, negotiationMarkup]);
 
   const handleDiscountTypeChange = (next: "percent" | "amount") => {
     if (next === discountType) return;
@@ -86,16 +86,13 @@ export function QuoteBuilderSummaryColumn({
     if (presentedSubtotal > 0 && discountValue > 0) {
       if (next === "amount") {
         // % → R$
-        // Garante que o desconto em R$ não exceda o subtotal disponível
         setDiscountValue(round2(Math.min(presentedSubtotal, presentedSubtotal * (discountValue / 100))));
       } else {
         // R$ → %
-        // Garante que o desconto em % não exceda 100%
         const pct = (discountValue / presentedSubtotal) * 100;
         setDiscountValue(round2(Math.max(0, Math.min(100, pct))));
       }
     } else if (presentedSubtotal === 0 && discountValue > 0) {
-      // Se o subtotal for zero, o desconto monetário deve zerar ao converter para %
       if (next === "percent") {
         setDiscountValue(0);
       }
@@ -385,7 +382,7 @@ export function QuoteBuilderSummaryColumn({
                       <span className="tabular-nums" data-testid="discount-effective-equivalent">
                         {discountType === "percent"
                           ? `${formatCurrency(discountAmount)} sobre ${formatCurrency(presentedSubtotal)}`
-                          : `${((discountAmount / presentedSubtotal) * 100).toFixed(2).replace(".", ",")}% sobre ${formatCurrency(presentedSubtotal)}`}
+                          : `${((discountAmount / (presentedSubtotal || 1)) * 100).toFixed(2).replace(".", ",")}% sobre ${formatCurrency(presentedSubtotal)}`}
                       </span>
                     </div>
                   )}
@@ -401,7 +398,7 @@ export function QuoteBuilderSummaryColumn({
                 value={negotiationMarkup}
                 onChange={setNegotiationMarkup}
                 realSubtotal={realSubtotal}
-                apparentDiscountPercent={discountType === "percent" ? discountValue : (realSubtotal > 0 ? (discountValue / (realSubtotal * (1 + (negotiationMarkup || 0) / 100))) * 100 : 0)}
+                apparentDiscountPercent={discountType === "percent" ? discountValue : (realSubtotal > 0 ? (discountAmount / (realSubtotal * (1 + (negotiationMarkup || 0) / 100))) * 100 : 0)}
                 realDiscountPercent={realDiscountPercent}
                 maxDiscountPercent={maxDiscountPercent ?? null}
               />
@@ -409,23 +406,38 @@ export function QuoteBuilderSummaryColumn({
           )}
 
           {/* Footer */}
-          <div className="shrink-0 pt-3 mt-3 border-t border-border/50 px-4 pb-4 space-y-3">
-            {shippingType === "fob_pre" && shippingCost > 0 && (
-              <div className="flex items-center justify-between text-sm mb-2 text-muted-foreground">
-                <span>Frete (FOB)</span>
-                <span className="font-medium tabular-nums">{formatCurrency(shippingCost)}</span>
+          <div className="shrink-0 pt-3 mt-3 border-t border-border/50 px-4 pb-4 space-y-2">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground uppercase tracking-tight">
+              <span>Subtotal</span>
+              <span className="font-medium tabular-nums">{formatCurrency(presentedSubtotal)}</span>
+            </div>
+            
+            {discountAmount > 0 && (
+              <div className="flex items-center justify-between text-[11px] text-destructive">
+                <span>Desconto</span>
+                <span className="font-medium tabular-nums">-{formatCurrency(discountAmount)}</span>
               </div>
             )}
-            <div className="flex items-baseline justify-between gap-2">
+
+            {shippingType === "fob_pre" && shippingCost > 0 && (
+              <div className="flex items-center justify-between text-[11px] text-primary font-medium">
+                <span>Frete (FOB)</span>
+                <span className="tabular-nums">+{formatCurrency(shippingCost)}</span>
+              </div>
+            )}
+
+            <div className="flex items-baseline justify-between gap-2 pt-1.5 border-t border-border/30">
               <div>
                 <span className="font-bold text-base">Total</span>
                 {items.length > 0 && (
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     ≈{formatCurrency(items.reduce((s, i) => s + i.quantity, 0) > 0 ? total / items.reduce((s, i) => s + i.quantity, 0) : 0)}/un.
                   </p>
                 )}
               </div>
-              <span className="font-bold text-xl text-primary tabular-nums">{formatCurrency(total)}</span>
+              <span data-testid="summary-total-value" className="font-bold text-2xl text-primary tabular-nums tracking-tight">
+                {formatCurrency(total)}
+              </span>
             </div>
 
             {!isFormValid && (
