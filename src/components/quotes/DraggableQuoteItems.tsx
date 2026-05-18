@@ -207,11 +207,15 @@ function SortableItem({
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">Qtd:</span>
-                  <Input
+                   <Input
                     type="number"
                     min={1}
                     value={item.quantity}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdateQuantity(parseInt(e.target.value) || 1)}
+                    onKeyDown={(e) => { if (e.key === "-" || e.key === "+" || e.key === "e") e.preventDefault(); }}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const v = parseInt(e.target.value);
+                      onUpdateQuantity(Math.max(1, v || 1));
+                    }}
                     className="w-20 h-8 text-sm"
                   />
                 </div>
