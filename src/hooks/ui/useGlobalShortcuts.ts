@@ -54,11 +54,12 @@ export function useGlobalShortcuts(handlers?: ShortcutHandlers) {
 
       if (!isMod) return;
 
-      // Ctrl/Cmd + K → Open search palette (works even inside inputs)
+      // Ctrl/Cmd + K → Toggle search palette (works even inside inputs)
       if (e.key === "k" || e.key === "K") {
         e.preventDefault();
-        setOpenSearch(true);
-        handlers?.onSearchFocus?.();
+        const nextState = !searchOpen;
+        setOpenSearch(nextState);
+        if (nextState) handlers?.onSearchFocus?.();
         return;
       }
 
