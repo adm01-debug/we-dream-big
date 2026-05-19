@@ -2127,6 +2127,45 @@ export type Database = {
         }
         Relationships: []
       }
+      frontend_telemetry: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          name: string
+          session_id: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          name: string
+          session_id?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          name?: string
+          session_id?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       generated_mockups: {
         Row: {
           annotations: Json | null
