@@ -6,6 +6,7 @@
  * Ctrl/Cmd + J → Open Flow (assistente IA)
  * Ctrl/Cmd + Shift + N → New quote
  * Ctrl/Cmd + Shift + C → Open cart
+ * ? → Help / Restart Tour
  * 
  * Existing Alt shortcuts (sidebar): Alt+N novo orçamento, Alt+O orçamentos,
  *   Alt+R carrinhos, Alt+P produtos, Alt+F super filtro, Alt+M mockup, Alt+S simulador.
@@ -15,6 +16,7 @@ import { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOracleVoiceBridge } from "@/stores/oracleVoiceBridge";
 import { useSearchStore } from "@/stores/useSearchStore";
+import { useOnboardingContext } from "@/contexts/OnboardingContext";
 
 interface ShortcutHandlers {
   onSearchFocus?: () => void;
