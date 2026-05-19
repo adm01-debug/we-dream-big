@@ -17,6 +17,11 @@ interface CatalogBulkModalsProps {
 }
 
 export function CatalogBulkModals({ sel, selectionMode, totalCount }: CatalogBulkModalsProps) {
+  if (!sel) {
+    console.error("CatalogBulkModals: 'sel' prop is undefined");
+    return null;
+  }
+
   return (
     <>
       {selectionMode && (
