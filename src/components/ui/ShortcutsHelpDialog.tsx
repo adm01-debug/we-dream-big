@@ -88,11 +88,20 @@ export function ShortcutsHelpDialog() {
           </div>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-border/50 text-center">
-          <p className="text-[10px] text-muted-foreground italic">
+        <DialogFooter className="sm:justify-between items-center mt-6 pt-4 border-t border-border/50">
+          <p className="text-[10px] text-muted-foreground italic text-center sm:text-left mb-4 sm:mb-0">
             Dica: Digite <code className="text-primary font-bold">/</code> na busca para ver comandos operacionais.
           </p>
-        </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRestartTour}
+            className="gap-2 text-xs h-8 border-primary/20 hover:bg-primary/10"
+          >
+            <PlayCircle className="h-3.5 w-3.5 text-primary" />
+            Reiniciar Tour do Sistema
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
