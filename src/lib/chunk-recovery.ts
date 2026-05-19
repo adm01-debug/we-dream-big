@@ -22,6 +22,7 @@
  */
 
 import { logger } from "@/lib/logger";
+import NProgress from 'nprogress';
 
 const STORAGE_KEY = "__chunk_recovery__";
 const WINDOW_MS = 30_000;
