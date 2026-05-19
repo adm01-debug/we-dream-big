@@ -126,7 +126,7 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
             <Icon
               className={cn(
                 "h-4 w-4 shrink-0 transition-colors",
-                hasActiveChild ? "text-orange" : "group-hover:text-orange/70"
+                hasActiveChild ? "text-primary" : "group-hover:text-primary/70"
               )}
             />
             {!isCollapsed && (
