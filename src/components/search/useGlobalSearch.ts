@@ -13,7 +13,7 @@ import { playTtsAudio } from "@/hooks/voice/playTtsAudio";
 import { processVoiceTranscript } from "@/hooks/voice/processTranscript";
 import { useDebounce } from "@/hooks/common";
 import { useSearch } from "@/hooks/common";
-import { useSearchHistory } from "@/hooks/commonHistory";
+import { useSearchHistory } from "@/hooks/common";
 import { useVoiceCommandHistory, type VoiceCommandRecord } from "@/hooks/intelligence";
 import { useContextualSuggestions } from "@/hooks/intelligence";
 import type { VoiceAgentAction } from "@/hooks/voice/types";

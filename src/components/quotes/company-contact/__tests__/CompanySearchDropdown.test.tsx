@@ -2,14 +2,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CompanySearchDropdown } from '../CompanySearchDropdown';
 import { useQuery } from '@tanstack/react-query';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { useSearchHistory } from '@/hooks/commonHistory';
+import { useSearchHistory } from '@/hooks/common';
 
 // Mock dependencies
 vi.mock('@tanstack/react-query', () => ({
   useQuery: vi.fn(),
 }));
 
-vi.mock('@/hooks/commonHistory', () => ({
+vi.mock('@/hooks/common', () => ({
   useSearchHistory: vi.fn(),
 }));
 

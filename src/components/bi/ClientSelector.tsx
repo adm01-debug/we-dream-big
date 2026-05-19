@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCrmCompanies } from "@/hooks/crm";
 import { getCompanyDisplayName } from "@/types/crm";
-import { useSearchHistory } from "@/hooks/commonHistory";
+import { useSearchHistory } from "@/hooks/common";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ClientSelectorProps {

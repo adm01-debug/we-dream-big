@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCrmCompanies } from '@/hooks/crm';
 import { ClientCard } from '@/components/clients/ClientCard';
 import { getCompanyDisplayName, type CrmCompany } from '@/types/crm';
-import { useSearchHistory } from '@/hooks/commonHistory';
+import { useSearchHistory } from '@/hooks/common';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export default function ClientsPage() {
