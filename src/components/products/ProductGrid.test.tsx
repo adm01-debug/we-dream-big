@@ -20,8 +20,26 @@ vi.mock('@/contexts/SellerCartContext', () => ({
   }),
 }));
 
+vi.mock('@/contexts/CollectionsContext', () => ({
+  CollectionsProvider: ({ children }: any) => <div>{children}</div>,
+  useCollectionsContext: () => ({
+    collections: [],
+    addToCollection: vi.fn(),
+  }),
+}));
+
 vi.mock('@/hooks/ui', () => ({
   useReducedMotion: () => false,
+  useToast: () => ({ toast: vi.fn() }),
+}));
+
+// Mock internal heavy components to simplify rendering
+vi.mock('@/components/collections/AddToCollectionModal', () => ({
+  AddToCollectionModal: () => <div data-testid="mock-modal">Modal</div>,
+}));
+
+vi.mock('@/components/products/share/SharePreviewDialog', () => ({
+  SharePreviewDialog: () => <div data-testid="mock-share">Share</div>,
 }));
 
 // Mock CDN and image utility
