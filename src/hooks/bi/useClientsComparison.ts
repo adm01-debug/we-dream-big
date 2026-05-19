@@ -8,7 +8,7 @@ import { useClientSeasonality } from "./useClientSeasonality";
 import { useClientAffinity } from "./useClientAffinity";
 import { useClientCategoryAffinity } from "./useClientCategoryAffinity";
 import { useIndustryCategoryTrends } from "./useIndustryCategoryTrends";
-import { useCrmCompany } from "@/hooks/useCrmCompanies";
+import { useCrmCompany } from "@/hooks/crm";
 import { getCompanyDisplayName } from "@/types/crm";
 
 export interface ClientComparisonRow {

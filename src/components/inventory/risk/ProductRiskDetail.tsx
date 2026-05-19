@@ -40,7 +40,7 @@ import {
   aggregateDailySummaryByDate,
   getActiveFlags,
   type IntelligenceFlag,
-} from "@/hooks/useStockHistory";
+} from "@/hooks/intelligence";
 import {
   safeVelocityTrend,
   safeNumber,

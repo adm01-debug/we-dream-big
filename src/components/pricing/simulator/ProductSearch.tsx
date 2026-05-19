@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useExternalProductSearch } from '@/hooks/useExternalSimulator';
+import { useExternalProductSearch } from '@/hooks/simulation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';

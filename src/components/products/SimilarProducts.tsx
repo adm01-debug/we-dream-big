@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/hooks/products";
-import { useSimilarProducts, type SimilarProductItem } from "@/hooks/useSimilarProducts";
-import { useExternalCategoriesQuery } from "@/hooks/useExternalCategoriesQuery";
+import { useSimilarProducts, type SimilarProductItem } from "@/hooks/products";
+import { useExternalCategoriesQuery } from "@/hooks/products";
 
 interface SimilarProductsProps {
   currentProduct: Product;

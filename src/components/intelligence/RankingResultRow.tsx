@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown, Minus, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { TrendingProduct } from "@/hooks/useCommercialIntelligence";
+import type { TrendingProduct } from "@/hooks/intelligence";
 import { HighlightMatch } from "./RankingFilterToolbar";
 
 export function RankBadge({ index }: { index: number }) {

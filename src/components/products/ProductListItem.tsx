@@ -29,7 +29,7 @@ import { getSupplierColors } from "@/lib/supplier-colors";
 import { resolveColorImage, resolveColorStock, getActiveColorName, type ActiveColorFilter } from "@/utils/color-image-resolver";
 import { resolveHighlightHex } from "@/utils/color-group-hex";
 import { PriceFreshnessBadge } from "./PriceFreshnessBadge";
-import { isLightColor } from "@/hooks/useColorSystem";
+import { isLightColor } from "@/hooks/products";
 import { resolveAllMatchingColors } from "@/utils/color-variant-carousel";
 import { showUndoToast, showErrorToast } from "@/utils/undoToast";
 import { QuickAddToQuote } from "./QuickAddToQuote";

@@ -1,4 +1,4 @@
-import type { SecretStatus } from "@/hooks/useSecretsManager";
+import type { SecretStatus } from "@/hooks/admin";
 
 export interface ValidatorRule {
   /** Returns true if the value is a valid format. */

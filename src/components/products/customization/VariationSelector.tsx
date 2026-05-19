@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { Check, Maximize2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { PrintAreaV2 } from "@/hooks/useGravacaoPriceV2";
+import type { PrintAreaV2 } from "@/hooks/simulation";
 
 interface VariationSelectorProps {
   variations: PrintAreaV2[];

@@ -5,7 +5,7 @@
  * Also incorporates catalog flags (featured, newArrival, onSale) from product data.
  */
 import { useMemo } from 'react';
-import { useProductIntelligenceData, useStockVelocity } from '@/hooks/useStockHistory';
+import { useProductIntelligenceData, useStockVelocity } from '@/hooks/intelligence';
 import { generateMockIntelligence, generateMockVelocities } from '@/lib/stock-chart-utils';
 
 export type IntelligenceBadgeType =

@@ -1,4 +1,4 @@
-import type { ConnectionType } from "@/hooks/useConnectionTester";
+import type { ConnectionType } from "@/hooks/intelligence";
 
 /**
  * Mapeia o `connectionId` (curto, usado nas abas) para a `ConnectionType`

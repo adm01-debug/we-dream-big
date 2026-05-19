@@ -1,4 +1,4 @@
-import { useUpcomingCommemorativeDates, type CommemorativeDate } from "@/hooks/useCommemorativeDates";
+import { useUpcomingCommemorativeDates, type CommemorativeDate } from "@/hooks/intelligence";
 import { Calendar, Gift, ChevronRight, Sparkles, Clock, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

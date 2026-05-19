@@ -27,8 +27,8 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, Loader2, ShieldCheck, AlertTriangle, ShieldAlert, Database, Clock } from "lucide-react";
-import { useSecretsManager, type SecretStatus } from "@/hooks/useSecretsManager";
-import { useConnectionTester, type TestResult } from "@/hooks/useConnectionTester";
+import { useSecretsManager, type SecretStatus } from "@/hooks/admin";
+import { useConnectionTester, type TestResult } from "@/hooks/intelligence";
 import { resolveSource } from "./CredentialsSourceFilterContext";
 import { getErrorCopy } from "@/lib/connection-error-copy";
 import { toast } from "sonner";

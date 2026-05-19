@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Palette, Ruler, Loader2, AlertCircle } from 'lucide-react';
-import { useTechniquePricing } from '@/hooks/useTechniquePricing';
+import { useTechniquePricing } from '@/hooks/simulation';
 import type { ProductTechnique } from './types';
 
 interface CustomizationOptionsProps {

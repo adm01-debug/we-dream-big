@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowRight, TrendingUp, TrendingDown, Minus, GitCompare } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import type { QuoteVersion } from "@/hooks/useQuoteVersions";
+import type { QuoteVersion } from "@/hooks/quotes";
 import { formatCurrency } from "@/lib/format";
 
 

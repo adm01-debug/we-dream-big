@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import {
   RETEST_COOLDOWN_PRESETS_MS,
   useRetestCooldownSetting,
-} from "@/hooks/useRetestCooldownSetting";
+} from "@/hooks/admin";
 
 interface Props {
   className?: string;

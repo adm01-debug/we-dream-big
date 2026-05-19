@@ -8,7 +8,7 @@ import {
   AlertTriangle,
   type LucideIcon,
 } from "lucide-react";
-import type { ErrorKind } from "@/hooks/useConnectionTester";
+import type { ErrorKind } from "@/hooks/intelligence";
 
 export type ErrorTone = "timeout" | "network" | "dns" | "auth" | "http" | "config" | "unknown";
 

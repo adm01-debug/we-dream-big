@@ -37,7 +37,7 @@ import {
   CheckCircle,
   XCircle
 } from "lucide-react";
-import { useTecnicasUnificadas, useCategoriasTecnicas } from "@/hooks/useTecnicasUnificadas";
+import { useTecnicasUnificadas, useCategoriasTecnicas } from "@/hooks/simulation";
 import type { TecnicaUnificada, TecnicaFiltros } from "@/types/tecnica-unificada";
 
 export function TechniquesPanel() {

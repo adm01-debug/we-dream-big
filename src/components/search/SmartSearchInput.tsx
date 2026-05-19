@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useSearch, type SearchResult } from "@/hooks/common";
 import { useSearchHistory } from "@/hooks/commonHistory";
 import { useDebounce } from "@/hooks/common";
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useSpeechRecognition } from "@/hooks/intelligence";
 import { GroupedSearchResults } from "./SearchResultGroups";
 import { motion, AnimatePresence } from "framer-motion";
 

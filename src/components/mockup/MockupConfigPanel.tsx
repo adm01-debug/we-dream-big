@@ -27,7 +27,7 @@ import { MockupProductSelector, type MockupProductSelection } from "./MockupProd
 import { MultiAreaManager, type PersonalizationArea } from "./MultiAreaManager";
 import { ArtFileUpload, type ArtFileAttachment } from "./ArtFileUpload";
 import { LogoColorAnalyzer } from "./LogoColorAnalyzer";
-import type { DetectedColor } from "@/hooks/useLogoColorAnalysis";
+import type { DetectedColor } from "@/hooks/simulation";
 
 interface Technique {
   id: string;

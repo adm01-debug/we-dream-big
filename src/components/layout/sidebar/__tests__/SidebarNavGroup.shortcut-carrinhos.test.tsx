@@ -18,7 +18,7 @@ import { type NavGroup, SidebarNavGroup } from "../SidebarNavGroup";
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ isAdmin: true, isDev: true, user: { id: "u1" } }),
 }));
-vi.mock("@/hooks/useRBAC", () => ({
+vi.mock("@/hooks/auth", () => ({
   useRBAC: () => ({ hasPermission: () => true }),
 }));
 vi.mock("@/lib/routePrefetch", () => ({

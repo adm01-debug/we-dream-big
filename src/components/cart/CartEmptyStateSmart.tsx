@@ -5,8 +5,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LayoutTemplate, Copy, Package, Sparkles, ArrowRight } from "lucide-react";
-import { type SellerCart } from "@/hooks/useSellerCarts";
-import { type CartTemplateItem } from "@/hooks/useCartTemplates";
+import { type SellerCart } from "@/hooks/products";
+import { type CartTemplateItem } from "@/hooks/products";
 import { cn } from "@/lib/utils";
 
 interface SmartTemplate {

@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useToast } from '@/hooks/ui';
-import { use2FA } from '@/hooks/use2FA';
+import { use2FA } from '@/hooks/auth';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface TwoFactorSetupProps {

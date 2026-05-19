@@ -27,7 +27,7 @@ import { DiscountApprovalHeaderBadge } from "@/components/admin/DiscountApproval
 import { GlobalSearchPalette } from "@/components/search/GlobalSearchPalette";
 import { CartHeaderButton } from "@/components/cart/CartHeaderButton";
 import { useIsScrolled } from "@/hooks/ui";
-import { useCurrentSection } from "@/hooks/useCurrentSection";
+import { useCurrentSection } from "@/hooks/ui";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/roles";
 import { RoleBadge } from "@/components/RoleBadge";

@@ -11,7 +11,7 @@ import {
   useProductVariantsWithStock,
   processStockEntries,
   calculateColorSummary,
-} from "@/hooks/useVariantSupplierSources";
+} from "@/hooks/products";
 import { sortColorSummary } from "@/utils/colorSorting";
 
 type SortOrder = "nearest" | "farthest" | "quantity-desc" | "quantity-asc";

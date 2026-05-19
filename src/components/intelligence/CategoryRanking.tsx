@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from "recharts";
-import { useCategoryRanking, type CategoryRankingItem } from "@/hooks/useCommercialIntelligence";
+import { useCategoryRanking, type CategoryRankingItem } from "@/hooks/intelligence";
 import { cn } from "@/lib/utils";
 import { IntelligenceEmptyState } from "./IntelligenceEmptyState";
 

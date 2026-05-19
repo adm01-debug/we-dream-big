@@ -88,7 +88,7 @@ const mockMg = {
   saveMockupToHistory: vi.fn(),
 };
 
-vi.mock('@/hooks/useMockupGenerator', () => ({
+vi.mock('@/hooks/mockup', () => ({
   useMockupGenerator: () => mockMg,
 }));
 

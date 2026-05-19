@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { ChevronDown, Building2, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSupplierComparison } from "@/hooks/useSupplierComparison";
+import { useSupplierComparison } from "@/hooks/products";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 

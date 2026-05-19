@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ShieldCheck, Mail, KeyRound, Loader2 } from 'lucide-react';
-import { useStepUpAuth, type StepUpAction } from '@/hooks/useStepUpAuth';
+import { useStepUpAuth, type StepUpAction } from '@/hooks/auth';
 
 interface Props {
   open: boolean;

@@ -1,4 +1,4 @@
-import type { ErrorKind } from "@/hooks/useConnectionTester";
+import type { ErrorKind } from "@/hooks/intelligence";
 
 /**
  * Infere `error_kind` a partir de `error_message` + `status_code` para registros

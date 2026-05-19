@@ -2,7 +2,7 @@
  * useCatalogState — all catalog page state & logic extracted from Index.tsx
  */
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { useColorEnrichment } from '@/hooks/useColorEnrichment';
+import { useColorEnrichment } from '@/hooks/products';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Package, Heart, Users, Palette, FolderTree } from 'lucide-react';
 
@@ -23,11 +23,11 @@ import { useProductsByMaterial } from '@/hooks/productsByMaterial';
 import { useProductFuzzySearch } from '@/hooks/productsFuzzySearch';
 import { useProductsByCategory } from '@/hooks/productsByCategory';
 import { useDebounce } from '@/hooks/common';
-import { useExternalCategoriesQuery } from '@/hooks/useExternalCategoriesQuery';
-import { useCatalogRealStats } from '@/hooks/useCatalogRealStats';
+import { useExternalCategoriesQuery } from '@/hooks/products';
+import { useCatalogRealStats } from '@/hooks/products';
 import { useToast } from '@/hooks/ui';
-import { usePromoSalesRanking } from '@/hooks/usePromoSalesRanking';
-import { useSupplierSalesRanking } from '@/hooks/useSupplierSalesRanking';
+import { usePromoSalesRanking } from '@/hooks/intelligence';
+import { useSupplierSalesRanking } from '@/hooks/products';
 import { useCatalogFiltering } from './useCatalogFiltering';
 
 export type ViewMode = 'grid' | 'list' | 'table';

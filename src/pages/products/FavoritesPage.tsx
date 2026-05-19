@@ -7,7 +7,7 @@ import {
   useFavoriteTrash,
   useLegacyFavoritesMigration,
 } from "@/hooks/favoritesLists";
-import { useEnrichedFavoriteItems } from "@/hooks/useEnrichedFavoriteItems";
+import { useEnrichedFavoriteItems } from "@/hooks/favorites";
 import { useProductsContext } from "@/contexts/ProductsContext";
 import { ProductCard } from "@/components/products/ProductCard";
 import { ProductListItem } from "@/components/products/ProductListItem";
@@ -38,7 +38,7 @@ import { PriceDropBadge } from "@/components/favorites/PriceDropBadge";
 import { FavoritesEmptyStateSmart } from "@/components/favorites/FavoritesEmptyStateSmart";
 import { FavoritePresentationLauncher } from "@/components/favorites/FavoritePresentationLauncher";
 import { useFavoritesGlobalShortcuts } from "@/hooks/favoritessGlobalShortcuts";
-import { useUndoStack } from "@/hooks/useUndoStack";
+import { useUndoStack } from "@/hooks/common";
 import type { FavoritesSort } from "@/components/favorites/FavoritesSortBar";
 
 type ViewMode = "grid" | "list" | "table";

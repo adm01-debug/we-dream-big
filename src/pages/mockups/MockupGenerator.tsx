@@ -21,7 +21,7 @@ import { MockupToolbar } from "./mockup-generator/MockupToolbar";
 import { MockupEmptyState } from "./mockup-generator/MockupEmptyState";
 import { useKeyboardShortcuts } from "@/components/mockup/KeyboardShortcuts";
 import { GeneratingOverlay } from "@/components/mockup/GeneratingOverlay";
-import { useMockupGenerator } from "@/hooks/useMockupGenerator";
+import { useMockupGenerator } from "@/hooks/mockup";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTechniqueHandlers } from "./mockup-generator/MockupTechniqueHandlers";
 import type { MockupApprovalData } from "@/types/mockup-approval";

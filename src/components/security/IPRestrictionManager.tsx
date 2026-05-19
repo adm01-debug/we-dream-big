@@ -29,7 +29,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/ui';
-import { useAllowedIPs } from '@/hooks/useAllowedIPs';
+import { useAllowedIPs } from '@/hooks/admin';
 
 interface IPRestrictionManagerProps {
   targetUserId?: string;

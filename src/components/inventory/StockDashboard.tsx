@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useVariantStock } from "@/hooks/useVariantStock";
+import { useVariantStock } from "@/hooks/products";
 import { VariantStockTable } from "./VariantStockTable";
 import { SupplierRiskPanel } from "./SupplierRiskPanel";
 import { StatCard } from "./StockStatCard";

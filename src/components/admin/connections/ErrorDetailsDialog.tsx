@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import type { NormalizedSecretError } from "./secretErrors";
-import type { TestDetails } from "@/hooks/useConnectionTestDetails";
+import type { TestDetails } from "@/hooks/intelligence";
 
 interface Props {
   open: boolean;

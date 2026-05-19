@@ -5,7 +5,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Palette, Database } from "lucide-react";
-import { useTecnicasUnificadas, useCategoriasTecnicas } from "@/hooks/useTecnicasUnificadas";
+import { useTecnicasUnificadas, useCategoriasTecnicas } from "@/hooks/simulation";
 import { TechniqueFormDialog } from "./techniques-manager/TechniqueFormDialog";
 import { TechniqueTable } from "./techniques-manager/TechniqueTable";
 

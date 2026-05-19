@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useDropboxFiles } from '@/hooks/useDropboxFiles';
+import { useDropboxFiles } from '@/hooks/intelligence';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

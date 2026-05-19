@@ -28,7 +28,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { useCredentialsSourceFilter, resolveSource } from './CredentialsSourceFilterContext';
-import type { SecretStatus } from '@/hooks/useSecretsManager';
+import type { SecretStatus } from '@/hooks/admin';
 
 interface HealthData {
   activeWebhooks: number;

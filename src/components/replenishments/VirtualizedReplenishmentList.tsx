@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { ReplenishmentWithDetails } from "@/hooks/useReplenishments";
-import { type replenishmentToProduct } from "@/hooks/useReplenishmentsSelectionMode";
+import type { ReplenishmentWithDetails } from "@/hooks/products";
+import { type replenishmentToProduct } from "@/hooks/products";
 import { ProductListItem } from "@/components/products/ProductListItem";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
 import { cn } from "@/lib/utils";

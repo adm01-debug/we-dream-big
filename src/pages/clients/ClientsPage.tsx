@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useCrmCompanies } from '@/hooks/useCrmCompanies';
+import { useCrmCompanies } from '@/hooks/crm';
 import { ClientCard } from '@/components/clients/ClientCard';
 import { getCompanyDisplayName, type CrmCompany } from '@/types/crm';
 import { useSearchHistory } from '@/hooks/commonHistory';

@@ -21,7 +21,7 @@ import { PromptBank } from "@/components/magic-up/PromptBank";
 import { PromptGenerator } from "@/components/magic-up/PromptGenerator";
 import { cn } from "@/lib/utils";
 import { getCompanyDisplayName } from "@/types/crm";
-import type { useMagicUpState } from "@/hooks/useMagicUpState";
+import type { useMagicUpState } from "@/hooks/intelligence";
 import { MagicUpCampaignPanel } from "@/components/magic-up/MagicUpCampaignPanel";
 import { MagicUpBrandKitPanel } from "@/components/magic-up/MagicUpBrandKitPanel";
 import { MagicUpCreativeControls } from "@/components/magic-up/MagicUpCreativeControls";

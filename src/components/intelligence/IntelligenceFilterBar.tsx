@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { useCategories } from "@/hooks/useCategories";
-import { useSuppliers } from "@/hooks/useSuppliers";
+import { useCategories } from "@/hooks/products";
+import { useSuppliers } from "@/hooks/products";
 import { useProductsLightweight } from "@/hooks/productsLightweight";
 import { cn } from "@/lib/utils";
 

@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAriaLive } from '@/components/a11y';
-import { useProductCustomizationOptionsForMockup } from '@/hooks/useMockupTechniques';
+import { useProductCustomizationOptionsForMockup } from '@/hooks/mockup';
 import { searchCrm } from '@/lib/crm-db';
 import { getCompanyDisplayName, type CrmCompany } from '@/types/crm';
 import type { PrintAreaWithTechniques } from '@/types/gravacao';

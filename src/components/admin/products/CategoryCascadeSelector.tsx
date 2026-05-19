@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react';
 import {
   useExternalCategoriesQuery,
   type ExternalCategory,
-} from '@/hooks/useExternalCategoriesQuery';
+} from '@/hooks/products';
 import {
   Select,
   SelectContent,

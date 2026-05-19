@@ -31,7 +31,7 @@ import { isNavItemActive } from '@/lib/navigation/active-match';
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({ isAdmin: true, isDev: true, user: { id: 'u1' } }),
 }));
-vi.mock('@/hooks/useRBAC', () => ({
+vi.mock('@/hooks/auth', () => ({
   useRBAC: () => ({ hasPermission: () => true }),
 }));
 vi.mock('@/lib/routePrefetch', () => ({

@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { VariationItem } from "@/hooks/useMagicUpState";
+import type { VariationItem } from "@/hooks/intelligence";
 
 interface MagicUpVariationComparatorProps {
   variations: VariationItem[];

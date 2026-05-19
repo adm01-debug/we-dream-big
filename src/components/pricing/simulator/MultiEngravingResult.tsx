@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { useCustomizationPriceLegacy, type CustomizationPriceV2 } from '@/hooks/useGravacaoV2';
+import { useCustomizationPriceLegacy, type CustomizationPriceV2 } from '@/hooks/simulation';
 import { formatCurrency, formatNumber } from './utils';
 import type { Product, ConfiguredEngraving } from './types';
 import { toast } from 'sonner';

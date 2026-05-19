@@ -11,7 +11,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { AriaLiveProvider } from "@/components/a11y/AriaLive";
 
 // Mock das hooks que dependem de rede/Supabase
-vi.mock("@/hooks/useSecretsManager", () => ({
+vi.mock("@/hooks/admin", () => ({
   useSecretsManager: () => ({
     secrets: [],
     list: vi.fn(),

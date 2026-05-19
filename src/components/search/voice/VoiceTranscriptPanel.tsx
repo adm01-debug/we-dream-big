@@ -11,7 +11,7 @@ import {
   Trash2,
   HelpCircle,
 } from "lucide-react";
-import type { VoiceAgentAction, VoiceAgentPhase } from "@/hooks/useVoiceAgent";
+import type { VoiceAgentAction, VoiceAgentPhase } from "@/hooks/intelligence";
 import type { ReactElement } from "react";
 
 const ACTION_META: Record<string, { icon: React.ElementType; label: string; color: string }> = {

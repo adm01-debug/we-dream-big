@@ -2,7 +2,7 @@ import { Truck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSupplierSales } from "@/hooks/useCommercialIntelligence";
+import { useSupplierSales } from "@/hooks/intelligence";
 import { cn } from "@/lib/utils";
 import { IntelligenceEmptyState } from "./IntelligenceEmptyState";
 

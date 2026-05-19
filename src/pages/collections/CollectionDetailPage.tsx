@@ -48,7 +48,7 @@ import { useProductsContext } from '@/contexts/ProductsContext';
 import {
   useExternalCollections,
   useExternalCollectionProducts,
-} from '@/hooks/useExternalCollections';
+} from '@/hooks/collections';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useComparisonStore } from '@/stores/useComparisonStore';
 import { toast } from 'sonner';

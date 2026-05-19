@@ -43,7 +43,7 @@ import {
   Clock,
   Info
 } from "lucide-react";
-import { useTabelasPreco, useNomesTecnicasPreco, calcularPreco } from "@/hooks/useTecnicasUnificadas";
+import { useTabelasPreco, useNomesTecnicasPreco, calcularPreco } from "@/hooks/simulation";
 import type { TabelaPrecoTecnica, TabelaPrecoFiltros } from "@/types/tecnica-unificada";
 
 export function PricingPanel() {

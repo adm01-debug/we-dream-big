@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { useSecretsManager, type SecretStatus } from '@/hooks/useSecretsManager';
+import { useSecretsManager, type SecretStatus } from '@/hooks/admin';
 import { cn } from '@/lib/utils';
 
 type Severity = 'required' | 'recommended' | 'optional';

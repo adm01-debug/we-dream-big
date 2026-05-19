@@ -20,7 +20,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useExternalProductSearch } from '@/hooks/useExternalSimulator';
+import { useExternalProductSearch } from '@/hooks/simulation';
 import type { UseSimulatorWizardReturn } from '@/hooks/simulator/useSimulatorWizard';
 import { ProductColorGrid } from './ProductColorGrid';
 import { useWizardDrafts } from '@/hooks/simulator/useWizardDrafts';

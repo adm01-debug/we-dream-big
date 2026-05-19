@@ -1,7 +1,7 @@
 import { Database, AlertTriangle, Minus, Layers } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { SecretStatus } from "@/hooks/useSecretsManager";
+import type { SecretStatus } from "@/hooks/admin";
 
 const SUFFIXES = ["URL", "ANON_KEY", "SERVICE_ROLE_KEY"] as const;
 

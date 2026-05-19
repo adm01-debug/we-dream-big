@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { ExternalCollection } from "@/hooks/useExternalCollections";
+import type { ExternalCollection } from "@/hooks/collections";
 
 type SortKey = "name" | "products";
 type SortDir = "asc" | "desc";

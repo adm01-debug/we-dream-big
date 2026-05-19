@@ -4,7 +4,7 @@
  */
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCustomizationPricing, type PriceCalculation } from '@/hooks/useTecnicasUnificadas';
+import { useCustomizationPricing, type PriceCalculation } from '@/hooks/simulation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { ConnectionTestHistoryPanel } from "./ConnectionTestHistoryPanel";
 import { SecretField } from "./SecretField";
-import { useSecretsManager } from "@/hooks/useSecretsManager";
+import { useSecretsManager } from "@/hooks/admin";
 import { GitHubCredentialsTester } from "./GitHubCredentialsTester";
 import { IssueMcpKeyForm } from "./IssueMcpKeyForm";
 import { isFullAccess } from "@/lib/mcp/scopes";

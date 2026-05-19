@@ -8,7 +8,7 @@ import { PageSEO } from "@/components/seo/PageSEO";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, ChevronRight, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMagicUpState } from "@/hooks/useMagicUpState";
+import { useMagicUpState } from "@/hooks/intelligence";
 import { MagicUpConfigPanel } from "./magic-up/MagicUpConfigPanel";
 import { MagicUpResultPanel } from "./magic-up/MagicUpResultPanel";
 

@@ -271,7 +271,7 @@ export function useExternalTags() {
 
 // Empresas/Clientes — MIGRADO para CRM externo
 export function useExternalCompanies() {
-  logger.warn("[DEPRECATED] useExternalCompanies() → use useCrmCompanies() from '@/hooks/useCrmCompanies'");
+  logger.warn("[DEPRECATED] useExternalCompanies() → use useCrmCompanies() from '@/hooks/crm'");
   return useExternalDatabase<ExternalCompany>('companies');
 }
 

@@ -8,7 +8,7 @@ import { AdImageResult } from "@/components/magic-up/AdImageResult";
 import { MagicUpVariationComparator } from "@/components/magic-up/MagicUpVariationComparator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { useMagicUpState } from "@/hooks/useMagicUpState";
+import type { useMagicUpState } from "@/hooks/intelligence";
 
 type MagicUpStateReturn = ReturnType<typeof useMagicUpState>;
 

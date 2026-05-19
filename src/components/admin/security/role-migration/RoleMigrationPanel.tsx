@@ -28,7 +28,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, PlayCircle, FlaskConical, History, ChevronRight, Users, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useRoleMigration, type AppRole, type BatchRow, type ItemRow, type MigrationItemInput } from "@/hooks/useRoleMigration";
+import { useRoleMigration, type AppRole, type BatchRow, type ItemRow, type MigrationItemInput } from "@/hooks/admin";
 
 const ROLES: AppRole[] = ["admin", "manager", "supervisor", "vendedor", "dev"];
 const OPERATIONS = [

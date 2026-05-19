@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useExternalCompanies, useExternalProducts } from "@/hooks/useExternalDatabase";
+import { useExternalCompanies, useExternalProducts } from "@/hooks/intelligence";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

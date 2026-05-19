@@ -23,7 +23,7 @@
  *   <SafeMessage error={raw} showRawForDev={false} />  // forçar saneamento sempre
  */
 import { type ElementType, type ReactElement, createElement } from 'react';
-import { useDevGate } from '@/hooks/useDevGate';
+import { useDevGate } from '@/hooks/admin';
 import { sanitizeMessage, PUBLIC_FALLBACK_MESSAGE } from '@/lib/security/sanitize-message';
 
 export interface SafeMessageProps {

@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { DevOnly } from '../DevOnly';
 
-vi.mock('@/hooks/useDevGate', () => ({
+vi.mock('@/hooks/admin', () => ({
   useDevGate: vi.fn(),
 }));
 
-import { useDevGate } from '@/hooks/useDevGate';
+import { useDevGate } from '@/hooks/admin';
 const mockUseDevGate = vi.mocked(useDevGate);
 
 describe('<DevOnly>', () => {

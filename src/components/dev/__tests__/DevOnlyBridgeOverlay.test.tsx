@@ -5,9 +5,9 @@
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DevOnlyBridgeOverlay } from '../DevOnlyBridgeOverlay';
-import { useDevGate } from '@/hooks/useDevGate';
+import { useDevGate } from '@/hooks/admin';
 
-vi.mock('@/hooks/useDevGate', () => ({
+vi.mock('@/hooks/admin', () => ({
   useDevGate: vi.fn(),
 }));
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLoginAttempts, useLoginAttemptStats } from "@/hooks/useLoginAttempts";
+import { useLoginAttempts, useLoginAttemptStats } from "@/hooks/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

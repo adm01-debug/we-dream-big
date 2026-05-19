@@ -30,7 +30,7 @@ import {
 import {
   useAiProviders, useAiModels, useAiModelMutations,
   type AiModel, type ModelInput,
-} from "@/hooks/useAiRouter";
+} from "@/hooks/intelligence";
 
 /**
  * Capacidades canônicas usadas no router. Bate com a list em

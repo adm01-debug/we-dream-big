@@ -4,12 +4,12 @@
  */
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useClientFuzzySearch } from "@/hooks/useGenericFuzzySearch";
+import { useClientFuzzySearch } from "@/hooks/common";
 import { X, Building2, Search, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCrmInfiniteCompanySelector } from "@/hooks/useCrmCompanies";
+import { useCrmInfiniteCompanySelector } from "@/hooks/crm";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import type { MockupClient } from "./MockupConfigPanel";

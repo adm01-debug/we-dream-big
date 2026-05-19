@@ -50,7 +50,7 @@ import { QuoteBuilderSummaryColumn } from '@/components/quotes/QuoteBuilderSumma
 
 import { QuoteBuilderProductSearch } from '@/components/quotes/QuoteBuilderProductSearch';
 import { useQuoteBuilderState } from '@/hooks/quotes';
-import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
+import { useUnsavedChangesGuard } from '@/hooks/common';
 import { UnsavedChangesDialog } from '@/components/common/UnsavedChangesDialog';
 
 export default function QuoteBuilderPage() {

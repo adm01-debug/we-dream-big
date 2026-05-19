@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown, Minus, Package } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTrendingProducts } from "@/hooks/useCommercialIntelligence";
+import { useTrendingProducts } from "@/hooks/intelligence";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { IntelligenceEmptyState } from "./IntelligenceEmptyState";

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, CalendarRange, ChevronRight, Package, Building2, Flame } from "lucide-react";
-import { useNoveltiesWithDetails, useNoveltyStats } from "@/hooks/useNovelties";
+import { useNoveltiesWithDetails, useNoveltyStats } from "@/hooks/products";
 import { NoveltyBadge } from "@/components/products/NoveltyBadge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";

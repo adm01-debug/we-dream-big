@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
-import type { SecretStatus } from "@/hooks/useSecretsManager";
+import type { SecretStatus } from "@/hooks/admin";
 
 export type CredentialSource = "all" | "db" | "env" | "none";
 

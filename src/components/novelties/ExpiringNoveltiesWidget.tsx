@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Flame, Sparkles, ChevronRight, Package, Building2 } from "lucide-react";
-import { useNoveltiesWithDetails } from "@/hooks/useNovelties";
+import { useNoveltiesWithDetails } from "@/hooks/products";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";

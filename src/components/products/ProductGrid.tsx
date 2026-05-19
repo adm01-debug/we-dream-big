@@ -2,7 +2,7 @@ import { ProductCard } from "./ProductCard";
 import type { Product } from "@/hooks/products";
 import type { ActiveColorFilter } from "@/utils/color-image-resolver";
 import { useEffect, useState, useRef } from "react";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useReducedMotion } from "@/hooks/ui";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
 import { cn } from "@/lib/utils";
 

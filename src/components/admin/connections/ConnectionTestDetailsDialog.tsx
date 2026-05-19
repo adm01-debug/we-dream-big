@@ -20,8 +20,8 @@ import { cn } from "@/lib/utils";
 import {
   useConnectionTestDetails,
   type TestDetails,
-} from "@/hooks/useConnectionTestDetails";
-import type { ConnectionType, ErrorKind } from "@/hooks/useConnectionTester";
+} from "@/hooks/intelligence";
+import type { ConnectionType, ErrorKind } from "@/hooks/intelligence";
 import { getErrorCopy, getKindBadgeClass, getKindLabel } from "@/lib/connection-error-copy";
 import { maskSensitiveText } from "@/lib/sensitive-masking";
 

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Target, Plus, TrendingUp, Trophy, Calendar, Sparkles } from "lucide-react";
-import { useSalesGoals, type CreateGoalInput } from "@/hooks/useSalesGoals";
+import { useSalesGoals, type CreateGoalInput } from "@/hooks/intelligence";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";

@@ -2,7 +2,7 @@ import { memo, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Clock, Info, Loader2, RefreshCw, WifiOff, XCircle, type LucideIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { useCloudStatus } from '@/hooks/useCloudStatus';
+import { useCloudStatus } from '@/hooks/ui';
 import { DevOnly } from '@/components/dev/DevOnly';
 import { getStatusTimeline } from '@/lib/cloud-status';
 import { cn } from '@/lib/utils';

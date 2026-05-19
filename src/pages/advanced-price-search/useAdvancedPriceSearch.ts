@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useProducts } from '@/hooks/products';
-import { useExternalTechniques } from '@/hooks/useExternalDatabase';
+import { useExternalTechniques } from '@/hooks/intelligence';
 import { fetchPromobrindPriceTables } from '@/lib/external-db';
 import { useQuery } from '@tanstack/react-query';
 import { type SearchFilters, type ProductWithCalculatedPrice, type ViewMode, DEFAULT_FILTERS } from './types';

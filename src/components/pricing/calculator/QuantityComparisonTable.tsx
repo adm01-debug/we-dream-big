@@ -2,7 +2,7 @@
  * QuantityComparisonTable — Compare prices across quantities and techniques.
  */
 import { useMemo, useCallback } from 'react';
-import { useCustomizationPricing } from '@/hooks/useTecnicasUnificadas';
+import { useCustomizationPricing } from '@/hooks/simulation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calculator, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';

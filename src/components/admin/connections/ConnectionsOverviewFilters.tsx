@@ -10,7 +10,7 @@ import type {
   OverviewFilters,
   OverviewStatusFilter,
   OverviewWindowFilter,
-} from "@/hooks/useConnectionsOverviewFilters";
+} from "@/hooks/intelligence";
 
 const TYPE_OPTIONS: { value: string; label: string; Icon: typeof Database }[] = [
   { value: "supabase", label: "Supabase", Icon: Database },

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, Zap, Activity, DollarSign, Users } from "lucide-react";
-import { useAiUsageStats, useAiUsageLogs } from "@/hooks/useAiUsage";
+import { useAiUsageStats, useAiUsageLogs } from "@/hooks/intelligence";
 import { AiSummaryCard } from "./ai-usage/AiSummaryCard";
 import { AiCharts } from "./ai-usage/AiCharts";
 import { AiTables } from "./ai-usage/AiTables";

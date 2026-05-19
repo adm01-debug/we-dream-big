@@ -6,7 +6,7 @@ import {
   resolveSource,
   type CredentialSource,
 } from "./CredentialsSourceFilterContext";
-import type { SecretStatus } from "@/hooks/useSecretsManager";
+import type { SecretStatus } from "@/hooks/admin";
 
 interface Props {
   secrets: SecretStatus[];

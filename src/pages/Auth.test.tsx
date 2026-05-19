@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { HelmetProvider } from 'react-helmet-async';
 
 // Mocking useIPValidation
-vi.mock('@/hooks/useIPValidation', () => ({
+vi.mock('@/hooks/admin', () => ({
   useIPValidation: () => ({
     validateIPForAuthenticatedUser: vi.fn().mockResolvedValue({ isAllowed: true }),
     logLoginAttempt: vi.fn(),

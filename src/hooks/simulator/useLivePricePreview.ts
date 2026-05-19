@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { invokeExternalRpc } from '@/lib/external-rpc';
-import type { CustomizationPriceResponse } from '@/hooks/useGravacaoPriceV2';
+import type { CustomizationPriceResponse } from '@/hooks/simulation';
 import { adaptPriceResponse } from '@/lib/personalization/adapters';
 import type { EngravingLocation, EngravingSpecs } from '@/types/domain/simulator-wizard';
 

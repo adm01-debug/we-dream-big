@@ -4,7 +4,7 @@ import { ptBR } from "date-fns/locale";
 import { Clock, User, FileEdit, Plus, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
-import { fetchAuditHistory, type AuditEntityType } from "@/hooks/useAuditLog";
+import { fetchAuditHistory, type AuditEntityType } from "@/hooks/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";

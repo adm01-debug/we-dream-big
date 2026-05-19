@@ -31,7 +31,7 @@ import { KitLibraryFilters, type SortOption } from '@/components/kit-library/Kit
 import { KitTemplatePreviewDialog } from '@/components/kit-library/KitTemplatePreviewDialog';
 import { KitCategoryChips } from '@/components/kit-library/KitCategoryChips';
 import { useKitTemplates, type KitTemplateRow } from '@/hooks/kit-builderTemplates';
-import { useCustomKitPersistence, type CustomKitRow } from '@/hooks/useCustomKitPersistence';
+import { useCustomKitPersistence, type CustomKitRow } from '@/hooks/kit-builder';
 import { buildCustomKitInsert } from '@/lib/kit-library/buildCustomKitInsert';
 
 function getItemsCount(items: unknown): number {

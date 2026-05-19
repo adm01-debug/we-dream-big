@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { OverviewRow } from "@/hooks/useConnectionsOverview";
-import type { ConsecutiveFailureInfo } from "@/hooks/useConsecutiveFailures";
+import type { OverviewRow } from "@/hooks/intelligence";
+import type { ConsecutiveFailureInfo } from "@/hooks/common";
 import { CONSECUTIVE_FAILURE_THRESHOLD } from "@/lib/connections-config";
 
 export type OverviewStatusFilter = "all" | "ok" | "fail";

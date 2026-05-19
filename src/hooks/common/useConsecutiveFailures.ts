@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { OverviewRow } from "@/hooks/useConnectionsOverview";
+import type { OverviewRow } from "@/hooks/intelligence";
 
 export interface ConsecutiveFailureInfo {
   count: number;

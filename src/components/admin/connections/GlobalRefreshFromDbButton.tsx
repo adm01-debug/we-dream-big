@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useSecretsManager } from "@/hooks/useSecretsManager";
+import { useSecretsManager } from "@/hooks/admin";
 import { toast } from "sonner";
 
 const SKIP_CONFIRM_KEY = "connections.global_refresh.skip_confirm";

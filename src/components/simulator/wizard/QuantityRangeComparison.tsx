@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { invokeExternalRpc } from '@/lib/external-rpc';
 import { formatCurrency } from '@/lib/format';
-import type { CustomizationPriceResponse } from '@/hooks/useGravacaoPriceV2';
+import type { CustomizationPriceResponse } from '@/hooks/simulation';
 import { adaptPriceResponse } from '@/lib/personalization/adapters';
 import type { Personalization } from '@/types/domain/simulator-wizard';
 

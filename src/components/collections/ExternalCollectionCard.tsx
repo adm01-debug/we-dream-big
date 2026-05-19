@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { FolderOpen, Package, Star, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { ExternalCollection } from "@/hooks/useExternalCollections";
+import type { ExternalCollection } from "@/hooks/collections";
 
 interface ExternalCollectionCardProps {
   collection: ExternalCollection;

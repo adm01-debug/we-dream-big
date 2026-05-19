@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/ui';
-import { usePasswordResetRequests } from '@/hooks/usePasswordResetRequests';
+import { usePasswordResetRequests } from '@/hooks/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const forgotPasswordSchema = z.object({

@@ -82,7 +82,7 @@ vi.mock('@/hooks/quotes', () => ({
   })),
 }));
 
-vi.mock('@/hooks/useUnsavedChangesGuard', () => ({
+vi.mock('@/hooks/common', () => ({
   useUnsavedChangesGuard: vi.fn(() => ({
     showDialog: false,
     confirmLeave: vi.fn(),

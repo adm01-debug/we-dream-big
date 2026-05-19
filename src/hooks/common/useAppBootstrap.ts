@@ -2,12 +2,12 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useGlobalErrorCatcher } from "@/hooks/useErrorHandler";
+import { useGlobalErrorCatcher } from "@/hooks/ui";
 import { markBootSuccessful } from "@/lib/chunk-recovery";
 import { loadThemeConfig, applyThemePreset, applyRadius } from "@/lib/theme-presets";
 import { startBridgeTelemetry } from "@/lib/external-db/bridge-telemetry-client";
 import { startColdStartRecorder } from "@/lib/external-db/cold-start-recorder";
-import { useCatalogPrefetch } from "@/hooks/useCatalogPrefetch";
+import { useCatalogPrefetch } from "@/hooks/products";
 
 /**
  * useAppBootstrap — Centraliza a lógica de inicialização do App.

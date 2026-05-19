@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from "react";
-import { useOnboarding as useOnboardingHook } from "@/hooks/useOnboarding";
+import { useOnboarding as useOnboardingHook } from "@/hooks/ui";
 
 type OnboardingContextType = ReturnType<typeof useOnboardingHook>;
 

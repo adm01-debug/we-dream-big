@@ -10,7 +10,7 @@ import type { FilterState } from "@/components/filters/FilterPanel";
 import { StatsPopover } from "@/components/products/StatsPopover";
 import { LayoutPopover } from "@/components/products/LayoutPopover";
 import type { ColumnCount } from "@/components/products/ColumnSelector";
-import type { ViewMode, SortOption } from "@/hooks/useCatalogState";
+import type { ViewMode, SortOption } from "@/hooks/products";
 import { Skeleton } from "@/components/ui/skeleton";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { cn } from "@/lib/utils";

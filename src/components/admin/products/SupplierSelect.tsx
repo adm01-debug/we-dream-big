@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSuppliers } from '@/hooks/useSuppliers';
+import { useSuppliers } from '@/hooks/products';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

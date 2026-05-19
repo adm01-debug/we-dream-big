@@ -12,8 +12,8 @@ import {
   getActiveFlags,
   type IntelligenceFlag,
   type StockVelocity,
-} from "@/hooks/useStockHistory";
-import { useSupplierNames } from "@/hooks/useSupplierNames";
+} from "@/hooks/intelligence";
+import { useSupplierNames } from "@/hooks/products";
 import {
   safeVelocityTrend,
   safeNumber,

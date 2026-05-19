@@ -12,7 +12,7 @@ import { CollectionFormDialog } from "@/components/collections/CollectionFormDia
 import { ExternalCollectionCard } from "@/components/collections/ExternalCollectionCard";
 import { CollectionsHeatmap } from "@/components/collections/CollectionsHeatmap";
 import { CollectionsEmptyStateSmart } from "@/components/collections/CollectionsEmptyStateSmart";
-import { useCollectionsGlobalShortcuts } from "@/hooks/useCollectionsGlobalShortcuts";
+import { useCollectionsGlobalShortcuts } from "@/hooks/favorites";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { LayoutPopover } from "@/components/products/LayoutPopover";

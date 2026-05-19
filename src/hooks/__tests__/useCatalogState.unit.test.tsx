@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useCatalogState } from "@/hooks/useCatalogState";
+import { useCatalogState } from "@/hooks/products";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ProductsProvider } from "@/contexts/ProductsContext";
@@ -47,23 +47,23 @@ vi.mock("@/hooks/productsByCategory", () => ({
   })),
 }));
 
-vi.mock("@/hooks/useExternalCategoriesQuery", () => ({
+vi.mock("@/hooks/products", () => ({
   useExternalCategoriesQuery: vi.fn(() => ({ data: [] })),
 }));
 
-vi.mock("@/hooks/useCatalogRealStats", () => ({
+vi.mock("@/hooks/products", () => ({
   useCatalogRealStats: vi.fn(() => ({ data: null })),
 }));
 
-vi.mock("@/hooks/usePromoSalesRanking", () => ({
+vi.mock("@/hooks/intelligence", () => ({
   usePromoSalesRanking: vi.fn(() => ({ data: new Map() })),
 }));
 
-vi.mock("@/hooks/useSupplierSalesRanking", () => ({
+vi.mock("@/hooks/products", () => ({
   useSupplierSalesRanking: vi.fn(() => ({ data: new Map() })),
 }));
 
-vi.mock("@/hooks/useColorEnrichment", () => ({
+vi.mock("@/hooks/products", () => ({
   useColorEnrichment: vi.fn(() => ({ data: new Map() })),
 }));
 

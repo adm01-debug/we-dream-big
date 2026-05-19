@@ -4,14 +4,14 @@ import {
   useSecretsManager,
   type SecretStatus,
   type SecretMutationResult,
-} from '@/hooks/useSecretsManager';
+} from '@/hooks/admin';
 import { normalizeSecret } from './secretNormalizers';
 import { validateSecretName } from './secretWhitelist';
 import { validateSecret, getMinLength, MIN_SUFFIX_LENGTH } from './secretValidators';
 import { normalizeMaskedSuffix } from '@/lib/masked-suffix';
 import { withRetryBackoff, CancelledError } from './secretRetry';
 import { normalizeSecretError, type NormalizedSecretError } from './secretErrors';
-import { useConnectionTestDetails } from '@/hooks/useConnectionTestDetails';
+import { useConnectionTestDetails } from '@/hooks/intelligence';
 import { mapConnectionToTester } from './SecretField.utils';
 
 export interface FlashState {

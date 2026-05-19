@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useCallback } from "react";
-import type { VoiceAgentPhase } from "@/hooks/useVoiceAgent";
+import type { VoiceAgentPhase } from "@/hooks/intelligence";
 
 interface Particle {
   x: number;

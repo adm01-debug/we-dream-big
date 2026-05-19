@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import type { Collection } from "@/hooks/useCollections";
+import type { Collection } from "@/hooks/collections";
 
 interface CollectionGridCardProps {
   collection: Collection;

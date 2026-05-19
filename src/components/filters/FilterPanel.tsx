@@ -1,6 +1,6 @@
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SORT_OPTIONS } from "@/hooks/useAdvancedFilters";
+import { SORT_OPTIONS } from "@/hooks/products";
 import { InlineColorGroupFilter } from "./InlineColorGroupFilter";
 import { ExternalCategoryFilter } from "./ExternalCategoryFilter";
 import { DebouncedPriceInput } from "./DebouncedPriceInput";

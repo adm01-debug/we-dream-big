@@ -11,17 +11,17 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { needsConversion, ensureSupportedFormat } from '@/lib/image-converter';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMockupDraft } from '@/hooks/useMockupDraft';
+import { useMockupDraft } from '@/hooks/mockup';
 import {
   useFilteredTechniques,
   useProductCustomizationOptionsForMockup,
   type TechniqueWithLimits,
   type CustomizationOption,
-} from '@/hooks/useMockupTechniques';
-import { usePositionHistory } from '@/hooks/usePositionHistory';
+} from '@/hooks/mockup';
+import { usePositionHistory } from '@/hooks/simulation';
 import { useProductsContext } from '@/contexts/ProductsContext';
 import { getMockupWizardStep } from '@/components/mockup/mockupWizardStep';
-import { useLogoColorAnalysis } from '@/hooks/useLogoColorAnalysis';
+import { useLogoColorAnalysis } from '@/hooks/simulation';
 import { showMockupSuccessToast } from '@/components/mockup/MockupSuccessToast';
 import type { TechniqueColorConfig } from '@/components/mockup/techniqueColorUtils';
 import { invokeWithRetry, extractFunctionErrorMessage } from '@/lib/external-db/invoke';

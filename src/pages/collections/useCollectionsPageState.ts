@@ -5,10 +5,10 @@
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCollectionsContext } from "@/contexts/CollectionsContext";
-import { useExternalCollectionsManager, useExternalCollectionProductCounts } from "@/hooks/useExternalCollections";
+import { useExternalCollectionsManager, useExternalCollectionProductCounts } from "@/hooks/collections";
 import { toast } from "sonner";
 import { getDefaultColumns, type ColumnCount } from "@/components/products/ColumnSelector";
-import type { ViewMode } from "@/hooks/useCatalogState";
+import type { ViewMode } from "@/hooks/products";
 
 export function useCollectionsPageState() {
   const navigate = useNavigate();

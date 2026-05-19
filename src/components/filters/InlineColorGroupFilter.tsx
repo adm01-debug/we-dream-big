@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { useColorSystem, isLightColor } from '@/hooks/useColorSystem';
+import { useColorSystem, isLightColor } from '@/hooks/products';
 import type { ColorFilterSelection } from './ColorGroupFilter';
 
 // =====================================================

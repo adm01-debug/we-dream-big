@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
-import { useSalesHistory, type SellerRanking } from "@/hooks/useSalesHistory";
+import { useSalesHistory, type SellerRanking } from "@/hooks/intelligence";
 import { safeParseDateForChart } from "@/lib/stock-chart-utils";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { useProductInsights } from "@/hooks/productsRecommendations";

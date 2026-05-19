@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useNotifications, type WorkspaceNotification } from "@/hooks/useNotifications";
+import { useNotifications, type WorkspaceNotification } from "@/hooks/ui";
 import { useAriaLive } from "@/components/a11y/AriaLive";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";

@@ -8,9 +8,9 @@ import { useProductsByMaterial } from "@/hooks/productsByMaterial";
 import { useProductsByCategory } from "@/hooks/productsByCategory";
 import { useProductsByColor } from "@/hooks/productsByColor";
 import { useProductFuzzySearch } from "@/hooks/productsFuzzySearch";
-import { useColorEnrichment } from "@/hooks/useColorEnrichment";
-import { usePromoSalesRanking } from "@/hooks/usePromoSalesRanking";
-import { useSupplierSalesRanking } from "@/hooks/useSupplierSalesRanking";
+import { useColorEnrichment } from "@/hooks/products";
+import { usePromoSalesRanking } from "@/hooks/intelligence";
+import { useSupplierSalesRanking } from "@/hooks/products";
 import { sortProducts } from "@/utils/product-sorting";
 import { toast } from "sonner";
 

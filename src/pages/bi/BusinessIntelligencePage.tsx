@@ -44,7 +44,7 @@ import { ExecutiveSummaryButton } from '@/components/bi/ExecutiveSummaryButton';
 import { BITourGuide } from '@/components/bi/BITourGuide';
 import { useSeasonalPeakNotifications } from '@/hooks/bi/useSeasonalPeakNotifications';
 import { useClientSeasonality } from '@/hooks/bi/useClientSeasonality';
-import { useCrmCompany } from '@/hooks/useCrmCompanies';
+import { useCrmCompany } from '@/hooks/crm';
 import { getCompanyDisplayName } from '@/types/crm';
 
 export default function BusinessIntelligencePage() {

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQuoteHistory, type QuoteHistoryEntry } from "@/hooks/useQuoteHistory";
+import { useQuoteHistory, type QuoteHistoryEntry } from "@/hooks/quotes";
 import { cn } from "@/lib/utils";
 
 interface QuoteHistoryPanelProps {

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { useSecretsManager, type RotationHistoryEntry } from "@/hooks/useSecretsManager";
+import { useSecretsManager, type RotationHistoryEntry } from "@/hooks/admin";
 import { History, RefreshCw, Save, ArrowRight, Clock, User } from "lucide-react";
 import { formatMaskedSuffix } from "@/lib/masked-suffix";
 
