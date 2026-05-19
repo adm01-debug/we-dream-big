@@ -1,6 +1,6 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { logger } from "@/lib/logger";
-import { AuthContext } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { getSkeletonThreshold } from "@/config/skeleton.config";
 
@@ -22,11 +22,11 @@ export function SkeletonMonitor({
   const thresholdMs = manualThresholdMs || getSkeletonThreshold(name);
   const startTime = useRef<number>(performance.now());
   const [elapsed, setElapsed] = useState(0);
-  // Leitura defensiva: skeletons podem renderizar antes do AuthProvider montar.
-  // useContext não lança (ao contrário de useAuth) — auth fica undefined fora do provider.
-  // Overlay de debug é restrito a role `dev` real (isAdmin inclui supervisor/manager).
-  const auth = useContext(AuthContext);
-  const showDevTimer = !!auth?.isDev;
+  // SkeletonMonitor renderiza sempre dentro do AuthProvider (ver App.tsx: AppRoutes
+  // está aninhado em <AuthProvider>), então useAuth() é seguro aqui.
+  // Overlay de debug restrito a role `dev` real (isAdmin inclui supervisor/manager).
+  const { isDev } = useAuth();
+  const showDevTimer = !!isDev;
 
   useEffect(() => {
     // Only track if we are in the browser
