@@ -28,12 +28,67 @@ interface LocationPanelProps {
   quantity: number;
   /** técnica já confirmada para este local (vindo do parent). */
   confirmedPersonalization?: PersonalizationItem;
+  /** Identificador do produto — usado para chave de persistência do rascunho. */
+  productId?: string;
   onPriceCalculated: (
     locationCode: string,
     techniqueId: string,
     price: CustomizationPriceResponseV6 | null,
     dimensions?: { width?: number; height?: number },
   ) => void;
+}
+
+/** Rascunho persistido (técnica selecionada + dimensões não confirmadas). */
+interface LocationDraft {
+  techniqueId?: string;
+  width?: number;
+  height?: number;
+  colors?: number;
+  pickerOpen?: boolean;
+  savedAt: string;
+}
+
+const DRAFT_STORAGE_PREFIX = "qb:loc-draft";
+const DRAFT_TTL_MS = 1000 * 60 * 60 * 24; // 24h
+
+function draftKey(productId: string | undefined, locationCode: string): string | null {
+  if (!productId) return null;
+  return `${DRAFT_STORAGE_PREFIX}:${productId}:${locationCode}`;
+}
+
+function readDraft(key: string | null): LocationDraft | null {
+  if (!key || typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as LocationDraft;
+    if (parsed?.savedAt && Date.now() - new Date(parsed.savedAt).getTime() > DRAFT_TTL_MS) {
+      window.sessionStorage.removeItem(key);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeDraft(key: string | null, draft: Omit<LocationDraft, "savedAt">) {
+  if (!key || typeof window === "undefined") return;
+  try {
+    const payload: LocationDraft = { ...draft, savedAt: new Date().toISOString() };
+    window.sessionStorage.setItem(key, JSON.stringify(payload));
+  } catch {
+    /* quota / disabled storage — silently ignore */
+  }
+}
+
+function clearDraft(key: string | null) {
+  if (!key || typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(key);
+  } catch {
+    /* noop */
+  }
 }
 
 /** Agrupa técnicas por grupo_tecnica */
@@ -92,26 +147,63 @@ export function LocationPanel({
   location,
   quantity,
   confirmedPersonalization,
+  productId,
   onPriceCalculated,
 }: LocationPanelProps) {
-  // Inicializa com a técnica confirmada (se houver) para que ao reabrir o local
-  // o vendedor já veja o painel da gravação adicionada.
+  const storageKey = useMemo(
+    () => draftKey(productId, location.location_code),
+    [productId, location.location_code],
+  );
+
+  // Hidrata estado inicial: confirmada > rascunho persistido > nada.
+  const initialDraft = useMemo<LocationDraft | null>(
+    () => (confirmedPersonalization ? null : readDraft(storageKey)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [storageKey],
+  );
+
   const [selectedTechnique, setSelectedTechnique] = useState<TechniqueOption | null>(() => {
-    if (!confirmedPersonalization?.techniqueId) return null;
-    return (
-      location.options.find((t) => t.technique_id === confirmedPersonalization.techniqueId) ?? null
-    );
+    const techId = confirmedPersonalization?.techniqueId ?? initialDraft?.techniqueId;
+    if (!techId) return null;
+    return location.options.find((t) => t.technique_id === techId) ?? null;
   });
 
-  // Picker fica fechado por padrão se já existe técnica selecionada
-  const [isPickerOpen, setIsPickerOpen] = useState<boolean>(() => !selectedTechnique);
+  // Picker fechado por padrão se já existe técnica selecionada
+  const [isPickerOpen, setIsPickerOpen] = useState<boolean>(() => {
+    if (confirmedPersonalization) return false;
+    if (initialDraft?.techniqueId) return initialDraft.pickerOpen ?? false;
+    return true;
+  });
 
   // Guarda as últimas dimensões/cores informadas (para preservar ao trocar técnica)
   const lastDimsRef = useRef<{ width?: number; height?: number; colors?: number }>({
-    width: confirmedPersonalization?.width,
-    height: confirmedPersonalization?.height,
-    colors: confirmedPersonalization?.numberOfColors,
+    width: confirmedPersonalization?.width ?? initialDraft?.width,
+    height: confirmedPersonalization?.height ?? initialDraft?.height,
+    colors: confirmedPersonalization?.numberOfColors ?? initialDraft?.colors,
   });
+
+  // Persiste rascunho sempre que técnica/picker muda. Dimensões são persistidas em handleDimensionsChange.
+  useEffect(() => {
+    // Se há uma personalização confirmada para esta técnica, o rascunho é redundante — limpa.
+    if (
+      confirmedPersonalization &&
+      confirmedPersonalization.techniqueId === selectedTechnique?.technique_id
+    ) {
+      clearDraft(storageKey);
+      return;
+    }
+    if (!selectedTechnique) {
+      clearDraft(storageKey);
+      return;
+    }
+    writeDraft(storageKey, {
+      techniqueId: selectedTechnique.technique_id,
+      width: lastDimsRef.current.width,
+      height: lastDimsRef.current.height,
+      colors: lastDimsRef.current.colors,
+      pickerOpen: isPickerOpen,
+    });
+  }, [storageKey, selectedTechnique, isPickerOpen, confirmedPersonalization]);
 
   const grouped = useMemo(() => groupByGrupo(location.options), [location.options]);
 
@@ -119,7 +211,6 @@ export function LocationPanel({
   const firstCardRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (isPickerOpen && selectedTechnique) {
-      // só auto-focar em modo "trocar"
       const el = firstCardRef.current?.querySelector<HTMLElement>("[role='button'],button");
       el?.focus?.();
     }
@@ -165,7 +256,8 @@ export function LocationPanel({
     [location.location_code, onPriceCalculated],
   );
 
-  // Captura dimensões/cores em tempo real (mesmo sem confirmar) para preservar ao trocar técnica.
+  // Captura dimensões/cores em tempo real (mesmo sem confirmar) para preservar ao trocar técnica
+  // e persistir o rascunho — assim o vendedor recupera o que digitou ao voltar para a tela.
   const handleDimensionsChange = useCallback(
     (dims: { width?: number; height?: number; colors?: number }) => {
       lastDimsRef.current = {
@@ -173,8 +265,21 @@ export function LocationPanel({
         height: dims.height ?? lastDimsRef.current.height,
         colors: dims.colors ?? lastDimsRef.current.colors,
       };
+      // Persiste o rascunho atualizado (só se há técnica selecionada e não está confirmada).
+      if (
+        selectedTechnique &&
+        confirmedPersonalization?.techniqueId !== selectedTechnique.technique_id
+      ) {
+        writeDraft(storageKey, {
+          techniqueId: selectedTechnique.technique_id,
+          width: lastDimsRef.current.width,
+          height: lastDimsRef.current.height,
+          colors: lastDimsRef.current.colors,
+          pickerOpen: isPickerOpen,
+        });
+      }
     },
-    [],
+    [storageKey, selectedTechnique, confirmedPersonalization, isPickerOpen],
   );
 
   // Estados derivados
