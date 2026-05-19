@@ -818,10 +818,10 @@ async function handleCrud(body: any, req: Request, corsHeaders: Record<string, s
       { global: { headers: { Authorization: authHeader } } }
     );
     // getClaims is faster than getUser — verifies JWT locally without server RTT.
-    const token = authHeader.replace('Bearer ', '');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const token = authHeader.replace('Bearer ', '').trim();
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')?.trim();
 
-    if (token === serviceRoleKey) {
+    if (serviceRoleKey && token === serviceRoleKey) {
       userId = '00000000-0000-0000-0000-000000000000';
       userRole = 'dev';
     } else {
