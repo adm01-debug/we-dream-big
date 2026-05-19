@@ -145,14 +145,16 @@ describe("LocationPanel — fluxo Trocar técnica", () => {
     expect(panelA).toHaveAttribute("data-technique-id", "tech-A");
     expect(panelA).toHaveAttribute("data-initial-width", "8");
     expect(panelA).toHaveAttribute("data-initial-height", "5");
-    expect(panelA).toHaveAttribute("data-initial-colors", "1");
+    // techA tem cobra_por_cor=false → initialColors não é repassado
+    expect(panelA).toHaveAttribute("data-initial-colors", "");
 
     // Abre o picker e escolhe a técnica B
     fireEvent.click(screen.getByTestId("customization-change-technique"));
     const picker = screen.getByTestId("customization-technique-picker");
     fireEvent.click(within(picker).getByText("Transfer Digital"));
 
-    // Estado B novamente, agora com técnica B — dimensões preservadas via lastDimsRef
+    // Estado B novamente, agora com técnica B — dimensões preservadas via lastDimsRef;
+    // como techB tem cobra_por_cor=true, agora `initialColors` aparece (default 1).
     const panelB = screen.getByTestId("config-panel");
     expect(panelB).toHaveAttribute("data-technique-id", "tech-B");
     expect(panelB).toHaveAttribute("data-initial-width", "8");
