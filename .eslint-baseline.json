@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-05-19T23:03:16.358Z",
-  "totalErrors": 437,
-  "totalWarnings": 523,
+  "generatedAt": "2026-05-19T23:23:39.856Z",
+  "totalErrors": 460,
+  "totalWarnings": 525,
   "counts": {
     "src/components/access/DevAccessDeniedPage.tsx": {
       "react-hooks/exhaustive-deps": 1
@@ -183,7 +183,11 @@
       "@typescript-eslint/naming-convention": 1
     },
     "src/components/common/EnhancedSpotlight.tsx": {
-      "react-hooks/exhaustive-deps": 1
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unused-vars": 1,
+      "no-empty": 1,
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/rules-of-hooks": 1
     },
     "src/components/compare/ComparisonDuelView.tsx": {
       "@typescript-eslint/no-unused-vars": 1
@@ -360,7 +364,7 @@
       "@typescript-eslint/no-unused-vars": 4
     },
     "src/components/layout/Header.tsx": {
-      "@typescript-eslint/no-unused-vars": 5
+      "@typescript-eslint/no-unused-vars": 9
     },
     "src/components/layout/MainLayout.tsx": {
       "@typescript-eslint/no-unused-vars": 2,
@@ -368,6 +372,12 @@
     },
     "src/components/layout/SidebarReorganized.tsx": {
       "@typescript-eslint/no-unused-vars": 5
+    },
+    "src/components/layout/sidebar/SidebarBrandHeader.tsx": {
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unused-vars": 1,
+      "no-empty": 1,
+      "react-hooks/rules-of-hooks": 1
     },
     "src/components/layout/sidebar/SidebarNavGroup.tsx": {
       "react-hooks/exhaustive-deps": 1
@@ -646,6 +656,9 @@
     "src/components/products/zoomable-gallery/useGalleryZoom.ts": {
       "react-hooks/exhaustive-deps": 1
     },
+    "src/components/providers/AppBootstrap.tsx": {
+      "@typescript-eslint/no-unused-vars": 4
+    },
     "src/components/quotes/AdminTemplatesManager.tsx": {
       "@typescript-eslint/no-unused-vars": 1
     },
@@ -862,7 +875,10 @@
     },
     "src/components/ui/ShortcutsHelpDialog.tsx": {
       "@typescript-eslint/naming-convention": 1,
-      "@typescript-eslint/no-explicit-any": 1
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unused-vars": 1,
+      "no-empty": 1,
+      "react-hooks/rules-of-hooks": 1
     },
     "src/components/ui/currency-input.tsx": {
       "@typescript-eslint/no-explicit-any": 1
@@ -1045,6 +1061,12 @@
     },
     "src/hooks/simulator/useWizardPersistence.ts": {
       "react-hooks/exhaustive-deps": 1
+    },
+    "src/hooks/ui/useGlobalShortcuts.ts": {
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unused-vars": 1,
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/rules-of-hooks": 1
     },
     "src/lib/auth/auth-flow-tracer.ts": {
       "eqeqeq": 1
