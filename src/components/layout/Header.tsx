@@ -375,9 +375,15 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
                 <Palette className="h-4 w-4 mr-2" />
                 Skins
               </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">
+              <DropdownMenuItem 
+                onClick={() => {
+                  navigate("/");
+                  setTimeout(() => restartTour(), 300);
+                }}
+                className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+              >
                 <HelpCircle className="h-4 w-4 mr-2" />
-                Ajuda
+                Guia Rápido
               </DropdownMenuItem>
               {!onboardingLoading && hasCompletedTour && (
                 <DropdownMenuItem
