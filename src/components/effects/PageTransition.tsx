@@ -1,6 +1,8 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import { performanceTracker } from "@/utils/performance";
+
 
 type TransitionVariant = "fade" | "slide-up" | "slide-left" | "slide-right" | "scale" | "fade-slide";
 
