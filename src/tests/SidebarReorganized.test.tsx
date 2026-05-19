@@ -46,11 +46,14 @@ const renderSidebar = (props = { isOpen: true, onToggle: vi.fn() }) => {
   return render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthContext.Provider value={mockAuthContext as any}>
-          <SidebarReorganized {...props} />
-        </AuthContext.Provider>
+        <TooltipProvider>
+          <AuthContext.Provider value={mockAuthContext as any}>
+            <SidebarReorganized {...props} />
+          </AuthContext.Provider>
+        </TooltipProvider>
       </BrowserRouter>
     </QueryClientProvider>
+
   );
 };
 
