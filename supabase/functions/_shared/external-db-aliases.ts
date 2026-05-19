@@ -232,5 +232,6 @@ export function resolveTableAlias(
     };
   }
 
-  return { table, filters, orderBy, select: select || '*', aliasType: null };
+  const sanitizedSelect = sanitizeSelect(table, select || '*');
+  return { table, filters, orderBy, select: sanitizedSelect, aliasType: null };
 }
