@@ -196,7 +196,7 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
           </kbd>
         )}
         {!isCollapsed && item.badge !== null && (
-          <span className="ml-auto bg-orange/15 text-orange text-[10px] font-semibold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+          <span className="ml-auto bg-primary/20 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-[0_0_10px_rgba(var(--primary),0.2)] border border-primary/30">
             {item.badge}
           </span>
         )}
