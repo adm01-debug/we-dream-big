@@ -334,7 +334,10 @@ export function useCustomizationPriceV2() {
   return { calculatePrice, loading, error };
 }
 
-export function useCustomizationPriceReactive(
+/**
+ * @deprecated Use useCustomizationPriceReactive from useCustomizationPrice.ts
+ */
+export function useCustomizationPriceReactiveLegacy(
   areaId: string | null,
   quantidade: number,
   numCores: number = 1
