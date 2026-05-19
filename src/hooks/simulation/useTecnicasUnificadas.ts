@@ -38,7 +38,7 @@ export {
   type PriceTier,
   type PriceCalculation,
   type LegacyPriceTable,
-} from './tecnicas';
+} from '../tecnicas';
 
 // ============================================
 // ALIASES DE COMPATIBILIDADE
