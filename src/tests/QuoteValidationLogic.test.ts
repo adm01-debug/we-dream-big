@@ -63,9 +63,11 @@ describe('Quote Validation Logic Audit', () => {
     const data = {
       clientId: '123',
       contactId: '456',
+      paymentMethod: 'Pix',
       paymentTerms: '30 dias',
       deliveryTime: '10 dias',
       shippingType: 'cif',
+      shippingCost: 0,
       notes: longNotes
     };
 
