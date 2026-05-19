@@ -3,6 +3,8 @@ import { render, screen } from '@testing-library/react';
 import { ProductGrid } from './ProductGrid';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { SellerCartProvider } from '@/contexts/SellerCartContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,7 +17,11 @@ const queryClient = new QueryClient({
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
-      {children}
+      <TooltipProvider>
+        <SellerCartProvider>
+          {children}
+        </SellerCartProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   </BrowserRouter>
 );
