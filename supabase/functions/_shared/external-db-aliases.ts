@@ -97,6 +97,9 @@ export function mapProductRowToLegacyShape(row: Record<string, unknown>) {
   if ('origin_country' in out && !out.country_of_origin) {
     out.country_of_origin = out.origin_country;
   }
+  if ('primary_image_url' in out && !out.image_url) {
+    out.image_url = out.primary_image_url;
+  }
   return out;
 }
 
