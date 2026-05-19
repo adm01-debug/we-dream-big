@@ -14,6 +14,17 @@ import { useOnboardingContext } from "@/contexts/OnboardingContext";
 
 export function ShortcutsHelpDialog() {
   const [open, setOpen] = useState(false);
+  let onboarding: any = null;
+  try {
+    onboarding = useOnboardingContext();
+  } catch (e) {}
+
+  const handleRestartTour = () => {
+    if (onboarding) {
+      onboarding.restartTour();
+      setOpen(false);
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
