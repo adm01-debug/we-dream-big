@@ -264,6 +264,7 @@ export function LocationPanel({
           initialHeight={initialHeight}
           initialColors={initialColors}
           onPriceCalculated={handlePriceCalculated}
+          onDimensionsChange={handleDimensionsChange}
         />
       )}
     </div>
