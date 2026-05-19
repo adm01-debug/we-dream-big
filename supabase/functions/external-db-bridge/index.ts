@@ -819,16 +819,23 @@ async function handleCrud(body: any, req: Request, corsHeaders: Record<string, s
     );
     // getClaims is faster than getUser — verifies JWT locally without server RTT.
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await localSupabase.auth.getClaims(token);
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    if (claimsData?.claims?.sub && !claimsError) {
-      userId = claimsData.claims.sub;
-      const localService = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-      const { data: userRoles, error: roleError } = await localService.from('user_roles').select('role').eq('user_id', userId);
-      if (roleError) console.error('Error fetching user roles:', roleError);
-      userRole = userRoles?.[0]?.role || 'vendedor';
-    } else if (!allowPublicAccess) {
-      console.error('Auth failed:', claimsError?.message);
+    if (token === serviceRoleKey) {
+      userId = '00000000-0000-0000-0000-000000000000';
+      userRole = 'dev';
+    } else {
+      const { data: claimsData, error: claimsError } = await localSupabase.auth.getClaims(token);
+
+      if (claimsData?.claims?.sub && !claimsError) {
+        userId = claimsData.claims.sub;
+        const localService = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+        const { data: userRoles, error: roleError } = await localService.from('user_roles').select('role').eq('user_id', userId);
+        if (roleError) console.error('Error fetching user roles:', roleError);
+        userRole = userRoles?.[0]?.role || 'vendedor';
+      } else if (!allowPublicAccess) {
+        console.error('Auth failed:', claimsError?.message);
+      }
     }
   }
 
