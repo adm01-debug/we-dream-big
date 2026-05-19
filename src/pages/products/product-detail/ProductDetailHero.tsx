@@ -96,8 +96,8 @@ export function ProductDetailHero({
             productVideos={product.productVideos}
             productName={product.name}
             colors={product.variations?.map((variation: ProductVariation) => ({
-              name: variation.color.name,
-              hex: variation.color.hex,
+              name: variation.color?.name || 'Cor',
+              hex: variation.color?.hex || '#CCC',
               sku: variation.sku,
               stock: variation.stock,
               image: variation.image,
