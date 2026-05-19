@@ -264,6 +264,8 @@ jobs:
         run: npm ci
       - name: Run Fuzz Testing (Massive)
         run: npm run test:fuzz:full
+      - name: Run Contract Testing (Schema Validation)
+        run: npm run test:contract
       - name: Run Massive Stress Test
         run: npm run test:stress
       - name: Run Edge Integration Tests (Mocked Env)
