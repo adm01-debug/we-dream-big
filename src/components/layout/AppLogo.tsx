@@ -14,8 +14,9 @@ export function AppLogo({
   iconClassName, 
   textClassName, 
   showText = true,
-  variant = 'brand'
-}: AppLogoProps) {
+  variant = 'brand',
+  onClick
+}: AppLogoProps & { onClick?: () => void }) {
   const isBrandOrSidebar = variant === 'brand' || variant === 'sidebar';
   const usesBrandIcon = isBrandOrSidebar || variant === 'light';
   const iconBg = usesBrandIcon ? 'bg-primary' : 'bg-foreground';
