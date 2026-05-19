@@ -50,7 +50,8 @@ describe('ProductGrid Skeleton', () => {
         og_image_url: 'img1.jpg',
         supplier: { name: 'Supplier Test' },
         category: { name: 'Category Test' },
-        total_stock: 100
+        total_stock: 100,
+        price: 10
       } as any
     ];
     
