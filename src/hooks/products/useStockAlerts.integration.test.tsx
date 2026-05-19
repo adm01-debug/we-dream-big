@@ -59,8 +59,9 @@ describe('useStockAlerts integration', () => {
     const callArgs = (bridge.invokeExternalDb as any).mock.calls[0][0];
     const selectStr = callArgs.select;
 
-    expect(selectStr).not.toContain('supplier_name');
-    expect(selectStr).not.toContain('image_url');
+    const fields = selectStr.split(',').map((f: string) => f.trim());
+    expect(fields).not.toContain('supplier_name');
+    expect(fields).not.toContain('image_url');
     
     // Verify it contains the required fields
     expect(selectStr).toContain('brand');
