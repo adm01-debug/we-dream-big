@@ -3,8 +3,32 @@ import { render, screen } from '@testing-library/react';
 import { ProductGrid } from './ProductGrid';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { SellerCartProvider } from '@/contexts/SellerCartContext';
+
+// Mock components that require complex context
+vi.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: any) => <div>{children}</div>,
+  TooltipTrigger: ({ children }: any) => <div>{children}</div>,
+  TooltipContent: ({ children }: any) => <div>{children}</div>,
+  TooltipProvider: ({ children }: any) => <div>{children}</div>,
+}));
+
+vi.mock('@/contexts/SellerCartContext', () => ({
+  SellerCartProvider: ({ children }: any) => <div>{children}</div>,
+  useSellerCartContext: () => ({
+    isInAnyCart: () => false,
+    addToCart: vi.fn(),
+  }),
+}));
+
+vi.mock('@/hooks/ui', () => ({
+  useReducedMotion: () => false,
+}));
+
+// Mock CDN and image utility
+vi.mock('@/utils/cdn-utils', () => ({
+  getCdnUrl: (url: string) => url,
+  getSrcSet: (url: string) => undefined,
+}));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,11 +41,7 @@ const queryClient = new QueryClient({
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <SellerCartProvider>
-          {children}
-        </SellerCartProvider>
-      </TooltipProvider>
+      {children}
     </QueryClientProvider>
   </BrowserRouter>
 );
