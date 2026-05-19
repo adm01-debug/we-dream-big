@@ -1,12 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
-const replacements = {
-    '@/hooks/productsAnalytics': '@/hooks/products',
-    '@/hooks/productsIntelligenceBadges': '@/hooks/products',
-    '@/hooks/uiLockFix': '@/hooks/ui',
-    '@/hooks/useExpertConversations': '@/hooks/intelligence',
-    '@/hooks/commonHistory': '@/hooks/common',
+const domainMapping = {
+    'products': 'products',
+    'quotes': 'quotes',
+    'intelligence': 'intelligence',
+    'auth': 'auth',
+    'bi': 'bi',
+    'crm': 'crm',
+    'kit': 'kit-builder',
+    'mockup': 'mockup',
 };
 
 function processDirectory(dir) {
@@ -21,7 +24,22 @@ function processDirectory(dir) {
             let content = fs.readFileSync(fullPath, 'utf8');
             let changed = false;
 
-            for (const [oldPath, newPath] of Object.entries(replacements)) {
+            // Match @/hooks/domainSomething where domain is in domainMapping
+            for (const [domainPrefix, targetDir] of Object.entries(domainMapping)) {
+                const regex = new RegExp(`(['"])@/hooks/${domainPrefix}([A-Z][a-zA-Z]*)(['"])`, 'g');
+                if (content.match(regex)) {
+                    content = content.replace(regex, `$1@/hooks/${targetDir}$3`);
+                    changed = true;
+                }
+            }
+            
+            // Manual fixes for specific ones that don't follow the pattern
+            const manualFixes = {
+                '@/hooks/uiLockFix': '@/hooks/ui',
+                '@/hooks/commonHistory': '@/hooks/common',
+            };
+            
+            for (const [oldPath, newPath] of Object.entries(manualFixes)) {
                 const regex = new RegExp(`(['"])${oldPath}(['"])`, 'g');
                 if (content.match(regex)) {
                     content = content.replace(regex, `$1${newPath}$2`);
@@ -38,3 +56,4 @@ function processDirectory(dir) {
 }
 
 processDirectory(path.join(process.cwd(), 'src'));
+
