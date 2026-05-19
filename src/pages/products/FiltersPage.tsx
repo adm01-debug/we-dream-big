@@ -304,15 +304,54 @@ export default function FiltersPage() {
                 <>
 
                   {state.viewMode === "grid" ? (
-                    <VirtualizedProductGrid products={state.filteredProducts} onProductClick={(product) => state.selectionMode ? sel.toggleSelect(product.id) : navigate(`/produto/${product.id}`)} isFavorited={isFavorite} onToggleFavorite={toggleFavorite} isInCompare={isInCompare} onToggleCompare={toggleCompare} canAddToCompare={canAddMore} onShare={(product) => setShareProduct(product)} columns={state.gridColumns} columnSelector={<ColumnSelector value={state.gridColumns} onChange={state.setGridColumns} />} activeFiltersCount={state.activeFiltersCount} sortBy={state.sortBy} onSortChange={state.setSortBy} onOpenFilters={() => state.setMobileFiltersOpen(true)} onClearFilters={state.handleReset} viewMode={state.viewMode} onViewModeChange={state.setViewMode} showFilterBar={false} activeColorFilter={(state.filters.colorGroups.length > 0 || state.filters.colorVariations.length > 0) ? { groups: state.filters.colorGroups, variations: state.filters.colorVariations } : null} selectionMode={state.selectionMode} selectedIds={sel.selectedIds} onToggleSelect={sel.toggleSelect} />
+                    <VirtualizedProductGrid 
+                      products={state.filteredProducts} 
+                      isLoading={state.isLoadingProducts}
+                      onProductClick={(product) => state.selectionMode ? sel.toggleSelect(product.id) : navigate(`/produto/${product.id}`)} 
+                      isFavorited={isFavorite} 
+                      onToggleFavorite={toggleFavorite} 
+                      isInCompare={isInCompare} 
+                      onToggleCompare={toggleCompare} 
+                      canAddToCompare={canAddMore} 
+                      onShare={(product) => setShareProduct(product)} 
+                      columns={state.gridColumns} 
+                      columnSelector={<ColumnSelector value={state.gridColumns} onChange={state.setGridColumns} />} 
+                      activeFiltersCount={state.activeFiltersCount} 
+                      sortBy={state.sortBy} 
+                      onSortChange={state.setSortBy} 
+                      onOpenFilters={() => state.setMobileFiltersOpen(true)} 
+                      onClearFilters={state.handleReset} 
+                      viewMode={state.viewMode} 
+                      onViewModeChange={state.setViewMode} 
+                      showFilterBar={false} 
+                      activeColorFilter={(state.filters.colorGroups.length > 0 || state.filters.colorVariations.length > 0) ? { groups: state.filters.colorGroups, variations: state.filters.colorVariations } : null} 
+                      selectionMode={state.selectionMode} 
+                      selectedIds={sel.selectedIds} 
+                      onToggleSelect={sel.toggleSelect} 
+                    />
                   ) : state.viewMode === "list" ? (
                     <div className="h-[calc(100vh-280px)] min-h-[500px] overflow-y-auto rounded-xl border border-border/40 bg-gradient-to-b from-background/80 to-background/40 backdrop-blur-sm scrollbar-products shadow-inner p-4">
-                      <ProductList products={state.filteredProducts} onProductClick={(productId) => state.selectionMode ? sel.toggleSelect(productId) : navigate(`/produto/${productId}`)} onShareProduct={(product) => setShareProduct(product)} isFavorite={isFavorite} onToggleFavorite={toggleFavorite} isInCompare={isInCompare} onToggleCompare={toggleCompare} canAddToCompare={canAddMore} activeColorFilter={(state.filters.colorGroups.length > 0 || state.filters.colorVariations.length > 0) ? { groups: state.filters.colorGroups, variations: state.filters.colorVariations } : null} selectionMode={state.selectionMode} externalSelectedIds={sel.selectedIds} onToggleSelect={sel.toggleSelect} />
+                      <ProductList 
+                        products={state.filteredProducts} 
+                        isLoading={state.isLoadingProducts}
+                        onProductClick={(productId) => state.selectionMode ? sel.toggleSelect(productId) : navigate(`/produto/${productId}`)} 
+                        onShareProduct={(product) => setShareProduct(product)} 
+                        isFavorite={isFavorite} 
+                        onToggleFavorite={toggleFavorite} 
+                        isInCompare={isInCompare} 
+                        onToggleCompare={toggleCompare} 
+                        canAddToCompare={canAddMore} 
+                        activeColorFilter={(state.filters.colorGroups.length > 0 || state.filters.colorVariations.length > 0) ? { groups: state.filters.colorGroups, variations: state.filters.colorVariations } : null} 
+                        selectionMode={state.selectionMode} 
+                        externalSelectedIds={sel.selectedIds} 
+                        onToggleSelect={sel.toggleSelect} 
+                      />
                     </div>
                   ) : (
                     <div className="h-[calc(100vh-280px)] min-h-[500px] overflow-y-auto rounded-xl border border-border/40 bg-gradient-to-b from-background/80 to-background/40 backdrop-blur-sm shadow-inner">
                       <ProductTableView
                         products={state.filteredProducts}
+                        isLoading={state.isLoadingProducts}
                         onProductClick={(productId) => state.selectionMode ? sel.toggleSelect(productId) : navigate(`/produto/${productId}`)}
                         isFavorite={isFavorite}
                         onToggleFavorite={toggleFavorite}
