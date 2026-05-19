@@ -38,7 +38,8 @@ function ProductCardWrapper({
   selectionMode,
   selectedIds,
   onToggleSelect,
-  ...restProps 
+  priority,
+  ...restProps
 }: { 
   product: Product; 
   index: number; 
@@ -92,6 +93,7 @@ function ProductCardWrapper({
         product={product} 
         hideCategoryBadges={hideCategoryBadges} 
         {...restProps}
+        priority={priority}
         onClick={selectionMode ? () => onToggleSelect?.(product.id) : restProps.onClick}
       />
     </div>
@@ -174,6 +176,7 @@ export function ProductGrid({
             product={product}
             index={index}
             isVisible={isGridVisible}
+            priority={index < 8}
             onClick={onProductClick ? () => onProductClick(product.id) : undefined}
             onView={onViewProduct}
             onShare={onShareProduct}

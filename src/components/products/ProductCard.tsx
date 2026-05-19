@@ -28,6 +28,7 @@ import { SharePreviewDialog } from "./share/SharePreviewDialog";
 import { ProductCardImage } from "./ProductCardImage";
 import { ProductCardActions } from "./ProductCardActions";
 import { PriceFreshnessBadge } from "./PriceFreshnessBadge";
+import { feedback } from "@/lib/feedback";
 
 export interface ProductCardProps {
   product: Product;
@@ -92,11 +93,17 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
 
     if (variantPickerMode === 'favorite') {
       favStore.addFavorite(product.id, variantInfo);
+      feedback.light();
       toast.success(`"${product.name}" favoritado${variant?.color_name ? ` — ${variant.color_name}` : ''}`);
     } else if (variantPickerMode === 'compare') {
       const result = compStore.addToCompare(product.id, variantInfo);
-      if (!result) showErrorToast({ title: "Limite de 4 produtos para comparação atingido" });
-      else toast.success(`"${product.name}" adicionado à comparação${variant?.color_name ? ` — ${variant.color_name}` : ''}`);
+      if (!result) {
+        feedback.error();
+        showErrorToast({ title: "Limite de 4 produtos para comparação atingido" });
+      } else {
+        feedback.light();
+        toast.success(`"${product.name}" adicionado à comparação${variant?.color_name ? ` — ${variant.color_name}` : ''}`);
+      }
     } else if (variantPickerMode === 'collection') {
       setCollectionVariant(variantInfo);
       setCollectionModalOpen(true);
