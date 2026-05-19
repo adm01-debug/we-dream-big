@@ -137,16 +137,9 @@ export function ProductGrid({
     return () => clearTimeout(timer);
   }, [products, isLoading]);
 
-  if (isLoading) {
-    return (
-      <ProductGridSkeleton 
-        count={products.length > 0 ? products.length : 10} 
-        columns={columns as ColumnCount} 
-      />
-    );
-  }
+  const showEmptyState = !isLoading && products.length === 0;
 
-  if (products.length === 0) {
+  if (showEmptyState) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -161,6 +154,11 @@ export function ProductGrid({
       </div>
     );
   }
+
+  const displayProducts = isLoading && products.length === 0 
+    ? Array.from({ length: 12 }).map((_, i) => ({ id: `skeleton-${i}`, isSkeleton: true } as any))
+    : products;
+
 
   return (
     <div 
