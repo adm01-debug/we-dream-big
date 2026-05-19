@@ -43,4 +43,6 @@ export const typeConfig: Record<string, { label: string; color: string; icon: Lu
   category: { label: "Categoria", color: "bg-blue-500", icon: Tag },
   component: { label: "Componente", color: "bg-indigo-500", icon: Puzzle },
   media: { label: "Mídia", color: "bg-rose-500", icon: ImageIcon },
+  command: { label: "Comando", color: "bg-slate-700", icon: Terminal },
 };
+
