@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { sortVariationsByColor } from '@/utils/colorSorting';
 import type { Product } from '@/hooks/products';
 import type { ProductVariation } from '@/types/product-catalog';
+import { formatCurrency } from '@/lib/format';
 
 interface ProductDetailHeroProps {
   product: Product;
@@ -41,9 +42,6 @@ interface ProductDetailHeroProps {
   onOpenFutureStock: () => void;
   onOpenSupplierComparison: () => void;
 }
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
 
 const getStockStatusInfo = (status: string) => {
   switch (status) {
@@ -200,7 +198,7 @@ export function ProductDetailHero({
                 </p>
                 <div className="flex items-baseline gap-1.5">
                   <span className="font-display text-3xl font-extrabold leading-none tracking-tight text-foreground xl:text-4xl">
-                    {formatPrice(product.price)}
+                    {formatCurrency(product.price)}
                   </span>
                   <span className="text-sm font-medium text-muted-foreground/50">/un</span>
                 </div>
