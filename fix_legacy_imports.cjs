@@ -10,6 +10,7 @@ const domainMapping = {
     'crm': 'crm',
     'kit': 'kit-builder',
     'mockup': 'mockup',
+    'favorites': 'favorites',
 };
 
 function processDirectory(dir) {
