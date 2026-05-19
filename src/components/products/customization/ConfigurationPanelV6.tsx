@@ -6,7 +6,7 @@
  * Briefing v6 (12/02/2026).
  */
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Loader2, Palette, Ruler, AlertCircle, Check, Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,8 @@ interface ConfigurationPanelV6Props {
   initialHeight?: number;
   initialColors?: number;
   onPriceCalculated: (techniqueId: string, price: CustomizationPriceResponseV6 | null, dimensions?: { width?: number; height?: number }) => void;
+  /** Emitido a cada mudança de dimensão/cor (sem precisar confirmar). Usado para preservar inputs ao trocar de técnica. */
+  onDimensionsChange?: (dims: { width?: number; height?: number; colors?: number }) => void;
 }
 
 export function ConfigurationPanelV6({ 
@@ -33,7 +35,8 @@ export function ConfigurationPanelV6({
   initialWidth,
   initialHeight,
   initialColors,
-  onPriceCalculated 
+  onPriceCalculated,
+  onDimensionsChange,
 }: ConfigurationPanelV6Props) {
   // Dimensions
   const [largura, setLargura] = useState<string>(
@@ -76,7 +79,20 @@ export function ConfigurationPanelV6({
   const onPriceCalculatedRef = useRef(onPriceCalculated);
   onPriceCalculatedRef.current = onPriceCalculated;
 
+  const onDimensionsChangeRef = useRef(onDimensionsChange);
+  onDimensionsChangeRef.current = onDimensionsChange;
+
+  // Emite dimensões/cores em tempo real para o LocationPanel preservar entre trocas de técnica.
+  useEffect(() => {
+    onDimensionsChangeRef.current?.({
+      width: technique.usa_dimensao ? (larguraNum > 0 ? larguraNum : undefined) : undefined,
+      height: technique.usa_dimensao ? (alturaNum > 0 ? alturaNum : undefined) : undefined,
+      colors: technique.cobra_por_cor ? numCores : undefined,
+    });
+  }, [larguraNum, alturaNum, numCores, technique.usa_dimensao, technique.cobra_por_cor]);
+
   const canConfirm = !!price && !loading && !error && !dimensionError;
+
 
   const handleConfirm = () => {
     if (!canConfirm) {

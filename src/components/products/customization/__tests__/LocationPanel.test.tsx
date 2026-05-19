@@ -21,6 +21,7 @@ vi.mock("../ConfigurationPanelV6", () => ({
     initialWidth?: number;
     initialHeight?: number;
     initialColors?: number;
+    onDimensionsChange?: (d: { width?: number; height?: number; colors?: number }) => void;
   }) => (
     <div
       data-testid="config-panel"
@@ -28,7 +29,15 @@ vi.mock("../ConfigurationPanelV6", () => ({
       data-initial-width={props.initialWidth ?? ""}
       data-initial-height={props.initialHeight ?? ""}
       data-initial-colors={props.initialColors ?? ""}
-    />
+    >
+      <button
+        type="button"
+        data-testid="emit-dims"
+        onClick={() => props.onDimensionsChange?.({ width: 7, height: 4, colors: 2 })}
+      >
+        emit
+      </button>
+    </div>
   ),
 }));
 
@@ -136,18 +145,82 @@ describe("LocationPanel — fluxo Trocar técnica", () => {
     expect(panelA).toHaveAttribute("data-technique-id", "tech-A");
     expect(panelA).toHaveAttribute("data-initial-width", "8");
     expect(panelA).toHaveAttribute("data-initial-height", "5");
-    expect(panelA).toHaveAttribute("data-initial-colors", "1");
+    // techA tem cobra_por_cor=false → initialColors não é repassado
+    expect(panelA).toHaveAttribute("data-initial-colors", "");
 
     // Abre o picker e escolhe a técnica B
     fireEvent.click(screen.getByTestId("customization-change-technique"));
     const picker = screen.getByTestId("customization-technique-picker");
     fireEvent.click(within(picker).getByText("Transfer Digital"));
 
-    // Estado B novamente, agora com técnica B — dimensões preservadas via lastDimsRef
+    // Estado B novamente, agora com técnica B — dimensões preservadas via lastDimsRef;
+    // como techB tem cobra_por_cor=true, agora `initialColors` aparece (default 1).
     const panelB = screen.getByTestId("config-panel");
     expect(panelB).toHaveAttribute("data-technique-id", "tech-B");
     expect(panelB).toHaveAttribute("data-initial-width", "8");
     expect(panelB).toHaveAttribute("data-initial-height", "5");
     expect(panelB).toHaveAttribute("data-initial-colors", "1");
+  });
+
+  it("preserva dimensões DIGITADAS (sem confirmar) ao trocar de técnica via onDimensionsChange", () => {
+    render(<LocationPanel location={location} quantity={100} onPriceCalculated={vi.fn()} />);
+
+    // Seleciona técnica A e "digita" 7×4 com 2 cores (sem confirmar)
+    fireEvent.click(screen.getByText("Silk 1 cor"));
+    fireEvent.click(screen.getByTestId("emit-dims"));
+
+    // Troca para técnica B
+    fireEvent.click(screen.getByTestId("customization-change-technique"));
+    fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Transfer Digital"));
+
+    const panelB = screen.getByTestId("config-panel");
+    expect(panelB).toHaveAttribute("data-technique-id", "tech-B");
+    expect(panelB).toHaveAttribute("data-initial-width", "7");
+    expect(panelB).toHaveAttribute("data-initial-height", "4");
+    expect(panelB).toHaveAttribute("data-initial-colors", "2");
+  });
+
+  it("faz clamp das dimensões aos limites da nova técnica (quando menor)", () => {
+    const techSmall = makeTechnique({
+      technique_id: "tech-small",
+      tecnica_nome: "Laser pequeno",
+      efetiva_largura_max: 5,
+      efetiva_altura_max: 3,
+    });
+    const loc: GravacaoLocation = {
+      ...location,
+      options: [techA, techSmall],
+    };
+
+    render(
+      <LocationPanel
+        location={loc}
+        quantity={100}
+        confirmedPersonalization={{
+          locationCode: "LADO-A",
+          locationName: "Lado A",
+          techniqueId: "tech-A",
+          techniqueName: "Silk 1 cor",
+          grupoTecnica: "SERIGRAFIA",
+          width: 8,
+          height: 5,
+          numberOfColors: 1,
+          price: null,
+        }}
+        onPriceCalculated={vi.fn()}
+      />,
+    );
+
+    // Troca para a técnica com limites menores
+    fireEvent.click(screen.getByTestId("customization-change-technique"));
+    fireEvent.click(
+      within(screen.getByTestId("customization-technique-picker")).getByText("Laser pequeno"),
+    );
+
+    const panel = screen.getByTestId("config-panel");
+    expect(panel).toHaveAttribute("data-technique-id", "tech-small");
+    // 8 → clampado p/ 5 ; 5 → clampado p/ 3
+    expect(panel).toHaveAttribute("data-initial-width", "5");
+    expect(panel).toHaveAttribute("data-initial-height", "3");
   });
 });
