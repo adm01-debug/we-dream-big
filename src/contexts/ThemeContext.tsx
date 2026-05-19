@@ -86,16 +86,21 @@ export function ThemeProvider({
   }, [storageKey]);
 
   const setTheme = (newTheme: Theme) => {
-    localStorage.setItem(storageKey, newTheme);
-    setThemeState(newTheme);
+    const apply = () => {
+      localStorage.setItem(storageKey, newTheme);
+      setThemeState(newTheme);
+    };
+
+    if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+      (document as any).startViewTransition(apply);
+    } else {
+      apply();
+    }
   };
 
   const toggleTheme = () => {
-    if (actualTheme === 'light') {
-      setTheme('dark');
-    } else {
-      setTheme('light');
-    }
+    const nextTheme = actualTheme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
   };
 
   const value: ThemeContextType = {
