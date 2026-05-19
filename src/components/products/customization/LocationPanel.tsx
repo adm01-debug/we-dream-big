@@ -28,12 +28,67 @@ interface LocationPanelProps {
   quantity: number;
   /** técnica já confirmada para este local (vindo do parent). */
   confirmedPersonalization?: PersonalizationItem;
+  /** Identificador do produto — usado para chave de persistência do rascunho. */
+  productId?: string;
   onPriceCalculated: (
     locationCode: string,
     techniqueId: string,
     price: CustomizationPriceResponseV6 | null,
     dimensions?: { width?: number; height?: number },
   ) => void;
+}
+
+/** Rascunho persistido (técnica selecionada + dimensões não confirmadas). */
+interface LocationDraft {
+  techniqueId?: string;
+  width?: number;
+  height?: number;
+  colors?: number;
+  pickerOpen?: boolean;
+  savedAt: string;
+}
+
+const DRAFT_STORAGE_PREFIX = "qb:loc-draft";
+const DRAFT_TTL_MS = 1000 * 60 * 60 * 24; // 24h
+
+function draftKey(productId: string | undefined, locationCode: string): string | null {
+  if (!productId) return null;
+  return `${DRAFT_STORAGE_PREFIX}:${productId}:${locationCode}`;
+}
+
+function readDraft(key: string | null): LocationDraft | null {
+  if (!key || typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as LocationDraft;
+    if (parsed?.savedAt && Date.now() - new Date(parsed.savedAt).getTime() > DRAFT_TTL_MS) {
+      window.sessionStorage.removeItem(key);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeDraft(key: string | null, draft: Omit<LocationDraft, "savedAt">) {
+  if (!key || typeof window === "undefined") return;
+  try {
+    const payload: LocationDraft = { ...draft, savedAt: new Date().toISOString() };
+    window.sessionStorage.setItem(key, JSON.stringify(payload));
+  } catch {
+    /* quota / disabled storage — silently ignore */
+  }
+}
+
+function clearDraft(key: string | null) {
+  if (!key || typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(key);
+  } catch {
+    /* noop */
+  }
 }
 
 /** Agrupa técnicas por grupo_tecnica */
