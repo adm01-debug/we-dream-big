@@ -89,6 +89,17 @@ export function sanitizeExternalWriteData(table: string, data: Record<string, un
   return result;
 }
 
+export function mapProductRowToLegacyShape(row: Record<string, unknown>) {
+  const out = { ...row };
+  if ('brand' in out && !out.supplier_name) {
+    out.supplier_name = out.brand;
+  }
+  if ('origin_country' in out && !out.country_of_origin) {
+    out.country_of_origin = out.origin_country;
+  }
+  return out;
+}
+
 // ============================================
 // Price table mapping (customization_price_tables → tabela_preco_fornecedores_gravacao)
 // ============================================
