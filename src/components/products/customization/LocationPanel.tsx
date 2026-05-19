@@ -231,13 +231,39 @@ export function LocationPanel({
 
   const grouped = useMemo(() => groupByGrupo(location.options), [location.options]);
 
-  // Foco no primeiro card ao reabrir a lista (a11y)
+  // IDs estáveis para wiring de aria-controls
+  const pickerId = useId();
+
+  // Ref do botão "Trocar/Fechar" para restituir foco quando o picker fecha
+  const changeButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  // Foco no primeiro card ao reabrir a lista; foco de volta no botão ao fechar (a11y)
   const firstCardRef = useRef<HTMLDivElement | null>(null);
+  const prevPickerOpenRef = useRef<boolean>(isPickerOpen);
   useEffect(() => {
+    const wasOpen = prevPickerOpenRef.current;
     if (isPickerOpen && selectedTechnique) {
       const el = firstCardRef.current?.querySelector<HTMLElement>("[role='button'],button");
       el?.focus?.();
+    } else if (!isPickerOpen && wasOpen && selectedTechnique) {
+      // Picker fechou enquanto havia técnica selecionada → devolve foco ao trigger.
+      changeButtonRef.current?.focus?.();
     }
+    prevPickerOpenRef.current = isPickerOpen;
+  }, [isPickerOpen, selectedTechnique]);
+
+  // Mensagem para o announcer aria-live (transições de estado)
+  const [announcement, setAnnouncement] = useState<string>("");
+  useEffect(() => {
+    if (!selectedTechnique) {
+      setAnnouncement("");
+      return;
+    }
+    setAnnouncement(
+      isPickerOpen
+        ? `Seletor de técnicas aberto. Técnica atual: ${selectedTechnique.tecnica_nome}.`
+        : `Técnica selecionada: ${selectedTechnique.tecnica_nome}.`,
+    );
   }, [isPickerOpen, selectedTechnique]);
 
   const handleSelectTechnique = useCallback(
