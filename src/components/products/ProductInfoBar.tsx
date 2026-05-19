@@ -27,7 +27,7 @@ export function ProductInfoBar({
 }: ProductInfoBarProps) {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const { toast } = useToast(); // Need to import this or just use navigator
+  const { toast } = useToast();
 
   const handleCopySKU = async () => {
     try {
