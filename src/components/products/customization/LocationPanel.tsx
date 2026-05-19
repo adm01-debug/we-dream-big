@@ -339,10 +339,15 @@ export function LocationPanel({
   const handleDimensionsChange = useCallback(
     (dims: { width?: number; height?: number; colors?: number }) => {
       lastDimsRef.current = {
-        width: dims.width ?? lastDimsRef.current.width,
-        height: dims.height ?? lastDimsRef.current.height,
-        colors: dims.colors ?? lastDimsRef.current.colors,
+        width: dims.width !== undefined ? dims.width : lastDimsRef.current.width,
+        height: dims.height !== undefined ? dims.height : lastDimsRef.current.height,
+        colors: dims.colors !== undefined ? dims.colors : lastDimsRef.current.colors,
       };
+
+      // Se a técnica atual NÃO cobra por cor, forçamos colors a undefined para o rascunho
+      // Isso evita que rascunhos de Silk (monocromático) carreguem cores anteriores de um Transfer.
+      const colorsToPersist = selectedTechnique?.cobra_por_cor ? lastDimsRef.current.colors : undefined;
+
       // Persiste o rascunho atualizado (só se há técnica selecionada e não está confirmada).
       if (
         selectedTechnique &&
@@ -352,7 +357,7 @@ export function LocationPanel({
           techniqueId: selectedTechnique.technique_id,
           width: lastDimsRef.current.width,
           height: lastDimsRef.current.height,
-          colors: lastDimsRef.current.colors,
+          colors: colorsToPersist,
           pickerOpen: isPickerOpen,
         });
       }
