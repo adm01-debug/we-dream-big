@@ -359,6 +359,9 @@ export function DraggableQuoteItems({
                 onTogglePersonalization={
                   onTogglePersonalization ? () => onTogglePersonalization(index) : undefined
                 }
+                onConfirmPrice={
+                  onConfirmPrice ? () => onConfirmPrice(index) : undefined
+                }
                 renderPersonalization={
                   renderPersonalization ? () => renderPersonalization(item, index) : undefined
                 }
