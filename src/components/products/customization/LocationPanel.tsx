@@ -297,8 +297,6 @@ export function LocationPanel({
       // Variáveis para foco automático
       let forcedW = false;
       let forcedH = false;
-      let forcedW = false;
-      let forcedH = false;
       let forcedC = false;
 
       // Trocando de técnica com uma anterior já selecionada
