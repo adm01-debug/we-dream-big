@@ -13,8 +13,10 @@ import {
   Wand2,
   Tag,
   Puzzle,
+  Terminal,
   type LucideIcon,
 } from "lucide-react";
+
 
 export interface QuickAction {
   id: string;
