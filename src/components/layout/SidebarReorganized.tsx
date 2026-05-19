@@ -45,6 +45,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarBrandHeader } from "./sidebar/SidebarBrandHeader";
+import { FocusTrap } from "@/components/ui/FocusTrap";
+import { useMediaQuery } from "@/hooks/ui/useMediaQuery";
 
 import { SidebarNavGroup, type NavGroup } from "./sidebar/SidebarNavGroup";
 import { RestrictedRouteNotice } from "./sidebar/RestrictedRouteNotice";
@@ -181,6 +183,7 @@ export const SidebarReorganized = React.memo(
   }
 
   const { isAdmin, isDev } = useAuth();
+  const isMobile = useMediaQuery("(max-width: 1023px)");
 
   // Pending discount approval count for admin badge
   const { data: pendingApprovalCount } = useQuery({
@@ -322,9 +325,10 @@ export const SidebarReorganized = React.memo(
           isCollapsed ? "w-16 shadow-[20px_0_40px_rgba(0,0,0,0.3)]" : "w-64 shadow-[30px_0_60px_rgba(0,0,0,0.4)]"
         )}
       >
-        <div className={cn("flex flex-col h-full pt-16 lg:pt-0 min-h-0", isCollapsed && "overflow-visible")}>
-          {/* Brand Header */}
-          <div className="relative group/brand border-b border-white/5 bg-gradient-to-b from-white/[0.03] to-transparent">
+        <FocusTrap active={isOpen && isMobile} className="h-full" autoFocus={false}>
+          <div className={cn("flex flex-col h-full pt-16 lg:pt-0 min-h-0", isCollapsed && "overflow-visible")}>
+            {/* Brand Header */}
+            <div className="relative group/brand border-b border-white/5 bg-gradient-to-b from-white/[0.03] to-transparent">
             <SidebarBrandHeader isCollapsed={isCollapsed} />
             <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover/brand:opacity-100 transition-opacity pointer-events-none blur-xl rounded-full" />
           </div>
