@@ -293,7 +293,7 @@ export function ConfigurationPanelV6({
             )}
             <div className="flex justify-between text-sm font-bold border-t border-border/50 pt-1">
               <span className="text-foreground">TOTAL:</span>
-              <span className="text-primary">
+              <span className="text-primary" data-testid="customization-total-price">
                 R$ {price.total_cobrado.toFixed(2)}
               </span>
             </div>
