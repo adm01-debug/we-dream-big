@@ -216,7 +216,34 @@ export function useGlobalSearch() {
   // ── Semantic search ──
   const abortRef = useRef<AbortController | null>(null);
   const performSemanticSearch = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim() || searchQuery.length < 3) { setResults([]); setSearchIntent(null); return; }
+    if (!searchQuery.trim() || searchQuery.length < 2) { setResults([]); setSearchIntent(null); return; }
+
+    // ── Slash Commands ──
+    if (searchQuery.startsWith("/")) {
+      const lowerQuery = searchQuery.toLowerCase();
+      const matchedCommands = commands
+        .filter(c => 
+          c.command.toLowerCase().includes(lowerQuery) || 
+          c.keywords?.some(k => k.toLowerCase().includes(lowerQuery.slice(1)))
+        )
+        .map(c => ({
+          id: c.id,
+          title: c.label,
+          subtitle: c.description,
+          type: "command" as const,
+          href: `command:${c.id}`,
+          metadata: { iconName: c.icon }
+        }));
+      
+      setResults(matchedCommands);
+      setSearchIntent(null);
+      setIsSearching(false);
+      setIsAIProcessing(false);
+      return;
+    }
+
+    if (searchQuery.length < 3) { setResults([]); setSearchIntent(null); return; }
+
 
     // ── Cache hit ──
     const cached = searchCache.get(searchQuery);
