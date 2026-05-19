@@ -21,6 +21,7 @@ vi.mock("../ConfigurationPanelV6", () => ({
     initialWidth?: number;
     initialHeight?: number;
     initialColors?: number;
+    onDimensionsChange?: (d: { width?: number; height?: number; colors?: number }) => void;
   }) => (
     <div
       data-testid="config-panel"
@@ -28,7 +29,15 @@ vi.mock("../ConfigurationPanelV6", () => ({
       data-initial-width={props.initialWidth ?? ""}
       data-initial-height={props.initialHeight ?? ""}
       data-initial-colors={props.initialColors ?? ""}
-    />
+    >
+      <button
+        type="button"
+        data-testid="emit-dims"
+        onClick={() => props.onDimensionsChange?.({ width: 7, height: 4, colors: 2 })}
+      >
+        emit
+      </button>
+    </div>
   ),
 }));
 
