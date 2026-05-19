@@ -48,6 +48,33 @@ export function sanitizeSelect(table: string, select: string): string {
   }).join(', ');
 }
 
+export function sanitizeFilters(table: string, filters: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+  if (table !== 'products' || !filters) return filters;
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(filters)) {
+    // Handle operator suffixes like supplier_name_ilike
+    const suffixMatch = key.match(/^(.+)_(gte|lte|gt|lt|neq|like|ilike|is|in)$/);
+    if (suffixMatch) {
+      const [, col, op] = suffixMatch;
+      const renamed = PRODUCT_FIELD_RENAME_MAP[col];
+      if (renamed) {
+        result[`${renamed}_${op}`] = value;
+      } else if (!PRODUCT_COLUMNS_NOT_IN_EXTERNAL_SCHEMA.has(col)) {
+        result[key] = value;
+      }
+      continue;
+    }
+
+    const renamed = PRODUCT_FIELD_RENAME_MAP[key];
+    if (renamed) {
+      result[renamed] = value;
+    } else if (!PRODUCT_COLUMNS_NOT_IN_EXTERNAL_SCHEMA.has(key)) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
 export function sanitizeExternalWriteData(table: string, data: Record<string, unknown>) {
   if (table !== 'products') return data;
   const result: Record<string, unknown> = {};
