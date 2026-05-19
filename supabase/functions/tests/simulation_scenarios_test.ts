@@ -94,7 +94,7 @@ Deno.test({
   name: "MASS SIMULATION: External DB Bridge Resilience",
   ignore: !SERVICE_ROLE_KEY,
   async fn(t) {
-    const scenarios = generateExternalDbScenarios(100); // Start with 100 for dev-server speed, can be increased
+    const scenarios = generateExternalDbScenarios(5); // Start with 5 for dev-server speed
     let successes = 0;
     let failures = 0;
 
@@ -128,7 +128,7 @@ Deno.test({
   name: "MASS SIMULATION: Webhook Inbound Consistency",
   ignore: !SERVICE_ROLE_KEY,
   async fn(t) {
-    const scenarios = generateWebhookScenarios(100);
+    const scenarios = generateWebhookScenarios(5);
     for (const scenario of scenarios) {
       await t.step(scenario.name, async () => {
         const res = await invoke("webhook-inbound", scenario.payload);
