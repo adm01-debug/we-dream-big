@@ -69,6 +69,7 @@ function SortableItem({
   onUpdatePrice,
   onRemove,
   onTogglePersonalization,
+  onConfirmPrice,
   renderPersonalization,
   formatCurrency,
 }: SortableItemProps) {
