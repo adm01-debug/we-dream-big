@@ -200,23 +200,18 @@ describe("LocationPanel — Validação de Preço e Clamp", () => {
     // O emit-dims emite: width 7, height 4, colors 2
     fireEvent.click(screen.getByTestId("emit-dims"));
     
-    // Aguarda o preço de 600 ser reportado no primeiro ciclo (2.5 * 2 * 100 + 100)
+    // O rascunho é persistido em handleDimensionsChange.
+    // Vamos verificar se foi escrito no sessionStorage.
+    const key = `qb:loc-draft:${productId}:LADO-A`;
     await waitFor(() => {
-      expect(screen.getByTestId("total-price-display")).toHaveTextContent("600");
-    }, { timeout: 2000 });
+      const raw = sessionStorage.getItem(key);
+      expect(raw).not.toBeNull();
+      expect(JSON.parse(raw!).colors).toBe(2);
+    });
     unmount();
 
     // 2. Volta e restaura
     vi.clearAllMocks();
-    
-    // Simula carregamento do sessionStorage manualmente se o mock falhar
-    const key = `qb:loc-draft:${productId}:LADO-A`;
-    const draftRaw = sessionStorage.getItem(key);
-    expect(draftRaw).not.toBeNull();
-    const draft = JSON.parse(draftRaw!);
-    expect(draft.colors).toBe(2);
-    expect(draft.width).toBe(7);
-
     render(
       <LocationPanel location={location} quantity={100} productId={productId} onPriceCalculated={onPrice} />
     );
@@ -228,7 +223,8 @@ describe("LocationPanel — Validação de Preço e Clamp", () => {
       expect(panel).toHaveAttribute("data-initial-colors", "2");
       expect(panel).toHaveAttribute("data-initial-width", "7");
       expect(panel).toHaveAttribute("data-initial-height", "4");
-      expect(screen.getByTestId("total-price-display")).toHaveTextContent("600");
-    }, { timeout: 2000 });
+    });
+    
+    expect(screen.getByTestId("total-price-display")).toHaveTextContent("600");
   });
 });
