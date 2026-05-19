@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'https://deno.land/std@0.224.0/testing/bdd.ts';
+import { describe, it } from 'https://deno.land/std@0.224.0/testing/bdd.ts';
+import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
 import { resolveTableAlias, mapProductRowToLegacyShape } from '../_shared/external-db-aliases.ts';
 
 describe('external-db-bridge sanitization & mapping', () => {
@@ -6,15 +7,15 @@ describe('external-db-bridge sanitization & mapping', () => {
   it('should sanitize orderBy for products table', () => {
     // Test mapping: supplier_name -> brand
     const result1 = resolveTableAlias('products', {}, { column: 'supplier_name', ascending: true });
-    expect(result1.orderBy?.column).toBe('brand');
+    assertEquals(result1.orderBy?.column, 'brand');
 
     // Test nonexistent column fallback: image_url -> id (since no mapping exists)
     const result2 = resolveTableAlias('products', {}, { column: 'image_url', ascending: false });
-    expect(result2.orderBy?.column).toBe('id');
+    assertEquals(result2.orderBy?.column, 'id');
 
     // Test allowed column remains unchanged
     const result3 = resolveTableAlias('products', {}, { column: 'name', ascending: true });
-    expect(result3.orderBy?.column).toBe('name');
+    assertEquals(result3.orderBy?.column, 'name');
   });
 
   it('should rewrite filters with ilike suffixes', () => {
@@ -25,10 +26,11 @@ describe('external-db-bridge sanitization & mapping', () => {
     };
     
     const result = resolveTableAlias('products', filters);
-    expect(result.filters).toHaveProperty('brand_ilike', '%test%');
-    expect(result.filters).not.toHaveProperty('supplier_name_ilike');
-    expect(result.filters).not.toHaveProperty('image_url_ilike');
-    expect(result.filters).toHaveProperty('name_ilike', '%prod%');
+    const resFilters = result.filters as any;
+    assertEquals(resFilters['brand_ilike'], '%test%');
+    assertEquals(resFilters['supplier_name_ilike'], undefined);
+    assertEquals(resFilters['image_url_ilike'], undefined);
+    assertEquals(resFilters['name_ilike'], '%prod%');
   });
 
   it('should return both legacy and new fields in mapProductRowToLegacyShape', () => {
@@ -43,13 +45,13 @@ describe('external-db-bridge sanitization & mapping', () => {
     const mapped = mapProductRowToLegacyShape(row);
     
     // Legacy fields
-    expect(mapped.supplier_name).toBe('My Brand');
-    expect(mapped.image_url).toBe('https://example.com/img.jpg');
-    expect(mapped.country_of_origin).toBe('Brazil');
+    assertEquals(mapped.supplier_name, 'My Brand');
+    assertEquals(mapped.image_url, 'https://example.com/img.jpg');
+    assertEquals(mapped.country_of_origin, 'Brazil');
     
     // New fields preserved
-    expect(mapped.brand).toBe('My Brand');
-    expect(mapped.primary_image_url).toBe('https://example.com/img.jpg');
-    expect(mapped.origin_country).toBe('Brazil');
+    assertEquals(mapped.brand, 'My Brand');
+    assertEquals(mapped.primary_image_url, 'https://example.com/img.jpg');
+    assertEquals(mapped.origin_country, 'Brazil');
   });
 });
