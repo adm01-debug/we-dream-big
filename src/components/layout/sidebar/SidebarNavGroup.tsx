@@ -176,7 +176,8 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
         to={item.href}
         data-tour={item.tourId}
         className={cn(
-          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 group relative focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 active:scale-[0.98]",
+          "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 active:scale-[0.98]",
+
           "hover:bg-white/[0.03] hover:translate-x-1",
           isActive
             ? "bg-primary/10 text-white font-bold shadow-[0_0_15px_rgba(var(--primary),0.05)] before:absolute before:left-0 before:top-[15%] before:bottom-[15%] before:w-[3px] before:rounded-r-full before:bg-primary"
