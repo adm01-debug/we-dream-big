@@ -177,7 +177,7 @@ export function useQuoteBuilderState() {
 
   const handleShippingTypeChange = useCallback((value: string) => {
     setShippingType(value);
-    if (value !== 'fob_pre') {
+    if (value !== 'fob_pre' && shippingCost !== 0) {
       setShippingCost(0);
     }
     setTimeout(() => {
@@ -186,9 +186,11 @@ export function useQuoteBuilderState() {
         value === 'cif' ? 'CIF' : 
         value === 'fob' ? 'FOB' : 
         'FOB Pré-negociado'
-      }`);
+      }`, {
+        description: value === 'fob_pre' ? 'Lembre-se de informar o valor acordado.' : 'O custo será zerado no orçamento.',
+      });
     }, 50);
-  }, []);
+  }, [shippingCost]);
 
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [productSearch, setProductSearch] = useState('');
@@ -207,13 +209,17 @@ export function useQuoteBuilderState() {
   const completedSteps = useMemo((): QuoteBuilderStep[] => {
     const steps: QuoteBuilderStep[] = [];
     if (clientId && contactId) steps.push('client');
-    if (paymentMethod && paymentTerms && deliveryTime && shippingType) steps.push('conditions');
+    if (paymentMethod && paymentTerms && deliveryTime && shippingType) {
+      if (shippingType !== 'fob_pre' || (shippingCost > 0)) {
+        steps.push('conditions');
+      }
+    }
     if (items.length > 0) steps.push('items');
     // Consideramos personalização "concluída" se houver itens e revisarmos
     const hasAnyPersonalization = items.some((it) => (it.personalizations?.length ?? 0) > 0);
     if (hasAnyPersonalization) steps.push('personalization');
     return steps;
-  }, [clientId, contactId, items, paymentMethod, paymentTerms, deliveryTime, shippingType]);
+  }, [clientId, contactId, items, paymentMethod, paymentTerms, deliveryTime, shippingType, shippingCost]);
 
   const announce = useCallback((message: string) => {
     const announcer = document.getElementById('quote-builder-announcer');
@@ -329,7 +335,7 @@ export function useQuoteBuilderState() {
   }, [currentStep, validateStep]);
   // ── AutoSave ──
   const { clearAutoSave } = useAutoSaveQuote({
-    enabled: !!clientId && items.length > 0 && !isEditMode,
+    enabled: (!!clientId || items.length > 0) && !isEditMode,
     data: {
       clientId,
       contactId,
