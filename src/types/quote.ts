@@ -21,7 +21,7 @@ export interface Quote {
   valid_until: string | null;              // ISO date
   payment_terms: string | null;
   delivery_time: string | null;
-  shipping_type: string | null;            // 'cif' | 'fob' | 'fob_pre'
+  shipping_type: string | null;            // 'cif' (cortesia) | 'fob' (cliente paga) | 'fob_pre' (pré-negociado com cost)
   shipping_cost: number | null;
   notes: string | null;                    // Notas para cliente
   internal_notes: string | null;           // Notas internas
