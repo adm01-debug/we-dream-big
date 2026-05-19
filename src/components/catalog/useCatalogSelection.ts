@@ -148,6 +148,10 @@ export function useCatalogSelection(
   const firstSelectedId = selectedIds.size > 0 ? Array.from(selectedIds)[0] : "";
   const firstSelectedProduct = paginatedProducts.find(p => p.id === firstSelectedId);
 
+  const selectedTotalValue = useMemo(() => {
+    return bulkCartProducts.reduce((sum, p) => sum + (p.price || 0), 0);
+  }, [bulkCartProducts]);
+
   return {
     selectedIds, toggleSelect, selectAll, clearSelection,
     collectionModalOpen, setCollectionModalOpen,
@@ -155,6 +159,7 @@ export function useCatalogSelection(
     variantWizardOpen, setVariantWizardOpen,
     wizardMode, wizardSelections, bulkCartProducts,
     firstSelectedId, firstSelectedProduct,
+    selectedTotalValue,
     handleBulkFavorite, handleBulkCompare, handleBulkCollection,
     handleBulkQuote, handleBulkCart, handleBulkPDF, handleWizardComplete,
   };
