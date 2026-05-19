@@ -1,18 +1,21 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { PageSEO } from "@/components/seo/PageSEO";
 import { getCdnUrl } from '@/utils/image-utils';
 import { ProductStickyHeader } from '@/components/products/ProductStickyHeader';
-import { SimilarProducts } from '@/components/products/SimilarProducts';
-import { SmartRecommendations } from '@/components/products/SmartRecommendations';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
+
+const SimilarProducts = lazyWithRetry(() => import('@/components/products/SimilarProducts').then(m => ({ default: m.SimilarProducts })));
+const SmartRecommendations = lazyWithRetry(() => import('@/components/products/SmartRecommendations').then(m => ({ default: m.SmartRecommendations })));
+const StockHistoryChart = lazyWithRetry(() => import('@/components/products/StockHistoryChart').then(m => ({ default: m.StockHistoryChart })));
+const SalesHistoryChart = lazyWithRetry(() => import('@/components/products/SalesHistoryChart').then(m => ({ default: m.SalesHistoryChart })));
+const SupplierComparisonModal = lazyWithRetry(() => import('@/components/compare/SupplierComparisonModal').then(m => ({ default: m.SupplierComparisonModal })));
+const VariantPickerDialog = lazyWithRetry(() => import('@/components/products/VariantPickerDialog').then(m => ({ default: m.VariantPickerDialog })));
+const FutureStockModal = lazyWithRetry(() => import('@/components/products/FutureStockModal').then(m => ({ default: m.FutureStockModal })));
+const PackagingModal = lazyWithRetry(() => import('@/components/products/PackagingModal').then(m => ({ default: m.PackagingModal })));
+
 import { useSimilarProducts } from '@/hooks/products';
 import type { ProductForRecommendation } from '@/hooks/intelligence';
-import { StockHistoryChart } from '@/components/products/StockHistoryChart';
-import { SalesHistoryChart } from '@/components/products/SalesHistoryChart';
-import { SupplierComparisonModal } from '@/components/compare/SupplierComparisonModal';
-import { VariantPickerDialog } from '@/components/products/VariantPickerDialog';
-import { FutureStockModal } from '@/components/products/FutureStockModal';
-import { PackagingModal } from '@/components/products/PackagingModal';
 import { useToast } from '@/hooks/ui';
 import { useProductAnalytics } from '@/hooks/products';
 import { useProduct } from '@/hooks/products';
@@ -32,6 +35,7 @@ import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { ProductDetailHero } from "@/pages/products/product-detail/ProductDetailHero";
 import { ScrollToTopButton } from '@/components/common/ScrollToTopButton';
 import { formatCurrency } from '@/lib/format';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 export default function ProductDetail() {
@@ -54,6 +58,7 @@ export default function ProductDetail() {
   const product: Product | null | undefined = data;
   const { data: supplierTrust } = useSupplierTrust(id);
   const { data: similarItems = [] } = useSimilarProducts(product);
+  
   const aiCandidates = useMemo<ProductForRecommendation[]>(
     () =>
       similarItems.slice(0, 12).map((it) => ({
@@ -65,6 +70,7 @@ export default function ProductDetail() {
       })),
     [similarItems, product?.category?.name],
   );
+  
   const catalogFlags = useMemo(
     () =>
       product
@@ -76,8 +82,9 @@ export default function ProductDetail() {
             stock: product.stock,
           }
         : undefined,
-    [product?.featured, product?.newArrival, product?.onSale, product?.stockStatus, product?.stock], // eslint-disable-line react-hooks/exhaustive-deps
+    [product?.featured, product?.newArrival, product?.onSale, product?.stockStatus, product?.stock],
   );
+  
   const {
     badges: intellBadges,
     turnoverScore: intellTurnover,
@@ -99,6 +106,33 @@ export default function ProductDetail() {
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
   });
+
+  const jsonLd = useMemo(() => {
+    if (!product) return null;
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      description: product.description || `${product.name} - Brinde Promocional`,
+      sku: product.sku,
+      image: product.images?.filter(Boolean) || [],
+      brand: { '@type': 'Brand', name: product.supplier?.name || 'Promo Gifts' },
+      offers: {
+        '@type': 'Offer',
+        price: product.price,
+        priceCurrency: 'BRL',
+        availability:
+          product.stockStatus === 'in-stock'
+            ? 'https://schema.org/InStock'
+            : product.stockStatus === 'out-of-stock'
+              ? 'https://schema.org/OutOfStock'
+              : 'https://schema.org/LimitedAvailability',
+        seller: { '@type': 'Organization', name: 'Promo Gifts' },
+      },
+      category: product.category?.name,
+      material: product.materials?.join(', '),
+    };
+  }, [product]);
 
   useEffect(() => {
     if (product) {
@@ -229,31 +263,11 @@ export default function ProductDetail() {
         }
         ogType="product"
       />
-      <script type="application/ld+json">
-        {JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'Product',
-          name: product.name,
-          description: product.description || `${product.name} - Brinde Promocional`,
-          sku: product.sku,
-          image: product.images?.filter(Boolean) || [],
-          brand: { '@type': 'Brand', name: product.supplier?.name || 'Promo Gifts' },
-          offers: {
-            '@type': 'Offer',
-            price: product.price,
-            priceCurrency: 'BRL',
-            availability:
-              product.stockStatus === 'in-stock'
-                ? 'https://schema.org/InStock'
-                : product.stockStatus === 'out-of-stock'
-                  ? 'https://schema.org/OutOfStock'
-                  : 'https://schema.org/LimitedAvailability',
-            seller: { '@type': 'Organization', name: 'Promo Gifts' },
-          },
-          category: product.category?.name,
-          material: product.materials?.join(', '),
-        })}
-      </script>
+      {jsonLd && (
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
+      )}
 
       <ProductStickyHeader
         productId={product.id}
@@ -289,59 +303,73 @@ export default function ProductDetail() {
         />
 
         <div className="border-t border-border/60 pt-6 xl:pt-8">
-          <SimilarProducts currentProduct={product} />
+          <Suspense fallback={<div className="h-48 flex items-center justify-center"><Skeleton className="h-full w-full" /></div>}>
+            <SimilarProducts currentProduct={product} />
+          </Suspense>
         </div>
 
         {aiCandidates.length > 0 && (
           <div className="border-t border-border/60 pt-6 xl:pt-8">
-            <SmartRecommendations
-              currentProductId={product.id}
-              candidateProducts={aiCandidates}
-              maxResults={6}
-              title="Recomendações inteligentes para este produto"
-              onProductClick={(pid) => navigate(`/produto/${pid}`)}
-            />
+            <Suspense fallback={<div className="h-48 flex items-center justify-center"><Skeleton className="h-full w-full" /></div>}>
+              <SmartRecommendations
+                currentProductId={product.id}
+                candidateProducts={aiCandidates}
+                maxResults={6}
+                title="Recomendações inteligentes para este produto"
+                onProductClick={(pid) => navigate(`/produto/${pid}`)}
+              />
+            </Suspense>
           </div>
         )}
 
         <div className="grid gap-4 border-t border-border/60 pt-6 md:grid-cols-2 xl:gap-6 xl:pt-8">
-          <StockHistoryChart productId={product.id} productName={product.name} />
-          <SalesHistoryChart
-            productId={product.id}
-            productSku={product.sku}
-            productName={product.name}
-          />
+          <Suspense fallback={<Skeleton className="h-[300px] w-full" />}>
+            <StockHistoryChart productId={product.id} productName={product.name} />
+          </Suspense>
+          <Suspense fallback={<Skeleton className="h-[300px] w-full" />}>
+            <SalesHistoryChart
+              productId={product.id}
+              productSku={product.sku}
+              productName={product.name}
+            />
+          </Suspense>
         </div>
 
-        <SupplierComparisonModal
-          product={product}
-          open={supplierCompareOpen}
-          onOpenChange={setSupplierCompareOpen}
-        />
-        <FutureStockModal
-          open={futureStockOpen}
-          onOpenChange={setFutureStockOpen}
-          productId={product.id}
-          productName={product.name}
-          productSku={product.sku}
-        />
-        <PackagingModal
-          isOpen={packagingModalOpen}
-          onClose={() => setPackagingModalOpen(false)}
-          packingType={
-            product.packagingContext === 'with_customization'
-              ? product.repackingType || product.packingType
-              : product.packingType
-          }
-          packagingContext={product.packagingContext}
-          boxImage={product.boxImage}
-          boxWidthMm={product.boxWidthMm}
-          boxHeightMm={product.boxHeightMm}
-          boxLengthMm={product.boxLengthMm}
-          boxWeightKg={product.boxWeightKg}
-          boxQuantity={product.boxQuantity}
-          boxVolumeCm3={product.boxVolumeCm3}
-        />
+        <Suspense fallback={null}>
+          <SupplierComparisonModal
+            product={product}
+            open={supplierCompareOpen}
+            onOpenChange={setSupplierCompareOpen}
+          />
+        </Suspense>
+        <Suspense fallback={null}>
+          <FutureStockModal
+            open={futureStockOpen}
+            onOpenChange={setFutureStockOpen}
+            productId={product.id}
+            productName={product.name}
+            productSku={product.sku}
+          />
+        </Suspense>
+        <Suspense fallback={null}>
+          <PackagingModal
+            isOpen={packagingModalOpen}
+            onClose={() => setPackagingModalOpen(false)}
+            packingType={
+              product.packagingContext === 'with_customization'
+                ? product.repackingType || product.packingType
+                : product.packingType
+            }
+            packagingContext={product.packagingContext}
+            boxImage={product.boxImage}
+            boxWidthMm={product.boxWidthMm}
+            boxHeightMm={product.boxHeightMm}
+            boxLengthMm={product.boxLengthMm}
+            boxWeightKg={product.boxWeightKg}
+            boxQuantity={product.boxQuantity}
+            boxVolumeCm3={product.boxVolumeCm3}
+          />
+        </Suspense>
       </div>
 
       <FloatingCompareBar />
@@ -358,14 +386,16 @@ export default function ProductDetail() {
       />
 
       {id && (
-        <VariantPickerDialog
-          open={favPickerOpen}
-          onOpenChange={setFavPickerOpen}
-          productId={id}
-          productName={product.name}
-          mode="favorite"
-          onComplete={handleFavoriteVariantSelected}
-        />
+        <Suspense fallback={null}>
+          <VariantPickerDialog
+            open={favPickerOpen}
+            onOpenChange={setFavPickerOpen}
+            productId={id}
+            productName={product.name}
+            mode="favorite"
+            onComplete={handleFavoriteVariantSelected}
+          />
+        </Suspense>
       )}
       <ScrollToTopButton />
     </>
