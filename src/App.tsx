@@ -58,6 +58,7 @@ const App = () => {
                         <AppRoutes />
                       </AppProviders>
                     </EnhancedErrorBoundary>
+                    </AppBootstrap>
                   </AppBootstrapContainer>
                 </AuthProvider>
               </BrowserRouter>
