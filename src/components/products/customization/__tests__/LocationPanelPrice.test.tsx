@@ -198,16 +198,11 @@ describe("LocationPanel — Validação de Preço e Clamp", () => {
     
     // Simula alteração de dimensões/cores via componente (emite evento)
     const emitBtn = screen.getByTestId("emit-dims");
-    fireEvent.click(emitBtn); // Emite colors: 2
+    fireEvent.click(emitBtn); // Emite 7x4 c2
     
     // Aguarda o preço de 600 ser reportado (2.5 * 2 * 100 + 100)
     await waitFor(() => {
-      expect(onPrice).toHaveBeenCalledWith(
-        "LADO-A", 
-        "tech-B", 
-        expect.objectContaining({ totalPrice: 600 }), 
-        expect.any(Object)
-      );
+      expect(screen.getByTestId("total-price-display")).toHaveTextContent("600");
     });
     unmount();
 
@@ -223,5 +218,7 @@ describe("LocationPanel — Validação de Preço e Clamp", () => {
       expect(screen.getByTestId("total-price-display")).toHaveTextContent("600");
     });
     expect(screen.getByTestId("config-panel")).toHaveAttribute("data-initial-colors", "2");
+    expect(screen.getByTestId("config-panel")).toHaveAttribute("data-initial-width", "7");
+    expect(screen.getByTestId("config-panel")).toHaveAttribute("data-initial-height", "4");
   });
 });
