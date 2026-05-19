@@ -83,7 +83,10 @@ function normalize(html: string): string {
     .replace(/radix-[a-z0-9:_-]+/gi, "radix-XXX")
     .replace(/aria-describedby="[^"]*"/g, 'aria-describedby="XXX"')
     .replace(/aria-labelledby="[^"]*"/g, 'aria-labelledby="XXX"')
-    .replace(/id="[^"]*"/g, 'id="XXX"');
+    .replace(/id="[^"]*"/g, 'id="XXX"')
+    // ChartSkeleton usa Math.random() para a altura das barras (não-determinístico).
+    // Normalizamos o style inline de altura para manter o snapshot estável.
+    .replace(/style="height:\s*[\d.]+%;?"/g, 'style="height:XXX"');
 }
 
 describe("Skeletons — snapshots estruturais (UI estável + sem ref warning)", () => {

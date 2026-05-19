@@ -79,7 +79,7 @@ vi.mock("@elevenlabs/react", () => ({
   useElevenLabsConversation: vi.fn().mockReturnValue({ status: "idle", start: vi.fn(), stop: vi.fn() }),
 }));
 
-vi.mock("@/hooks/useVoiceAgent", () => ({
+vi.mock("@/hooks/intelligence/useVoiceAgent", () => ({
   useVoiceAgent: vi.fn().mockReturnValue({
     phase: "idle", partialTranscript: "", finalTranscript: "", agentResponse: "",
     error: null, startListening: vi.fn(), stopListening: vi.fn(), stopSpeaking: vi.fn(), reset: vi.fn(),

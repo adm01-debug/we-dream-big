@@ -114,11 +114,13 @@ Para cada projeto Supabase você precisa de:
    - **Project URL** → vira `*_SUPABASE_URL`
    - **anon public key** → vira `*_SUPABASE_ANON_KEY`
    - **service_role key** → vira `*_SUPABASE_SERVICE_ROLE_KEY` / `*_SUPABASE_SERVICE_KEY`
-3. Aplicar as migrações em `supabase/migrations/` no projeto principal:
+3. Aplicar as migrações em `supabase/migrations/` em projeto Supabase novo/vazio (uso típico de dev local):
    ```bash
    npx supabase link --project-ref <seu-project-ref>
-   npx supabase db push
+   npx supabase migration up
    ```
+
+   > ⚠️ **NUNCA** use o comando destrutivo de sincronização forçada (`db&nbsp;push`) em ambiente com dados ou contra produção — ver [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) para o procedimento correto. O CI bloqueia essa string via `scripts/check-no-db-push.mjs`.
 4. Deployar as edge functions (opcional em dev — feito via CI):
    ```bash
    npx supabase functions deploy --project-ref <seu-project-ref>

@@ -36,7 +36,7 @@ vi.mock("@/stores/useComparisonStore", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useSearch", () => ({
+vi.mock("@/hooks/common/useSearch", () => ({
   useSearch: vi.fn().mockReturnValue({ results: [], loading: false, search: vi.fn() }),
 }));
 
@@ -123,7 +123,7 @@ vi.mock("@/data/mockData", () => ({
   SUPPLIERS: [],
 }));
 
-vi.mock("@/hooks/useCatalogState", () => ({
+vi.mock("@/hooks/products/useCatalogState", () => ({
   useCatalogState: vi.fn().mockReturnValue({
     products: [],
     filteredProducts: [],

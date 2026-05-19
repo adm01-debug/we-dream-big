@@ -19,7 +19,7 @@ vi.mock("@/hooks/productss", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useTecnicasUnificadas", () => ({
+vi.mock("@/hooks/simulation/useTecnicasUnificadas", () => ({
   useCustomizationPricing: vi.fn().mockReturnValue({
     data: null,
     loading: false,
