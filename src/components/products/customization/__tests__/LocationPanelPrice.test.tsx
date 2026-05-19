@@ -195,9 +195,12 @@ describe("LocationPanel — Validação de Preço e Clamp", () => {
       <LocationPanel location={location} quantity={100} productId={productId} onPriceCalculated={onPrice} />
     );
     fireEvent.click(screen.getByText("Transfer Digital"));
-    fireEvent.click(screen.getByTestId("emit-dims")); // 2 cores
     
-    // Aguarda preço B ser reportado
+    // Simula alteração de dimensões/cores via componente (emite evento)
+    const emitBtn = screen.getByTestId("emit-dims");
+    fireEvent.click(emitBtn); // Emite colors: 2
+    
+    // Aguarda o preço de 600 ser reportado (2.5 * 2 * 100 + 100)
     await waitFor(() => {
       expect(onPrice).toHaveBeenCalledWith(
         "LADO-A", 
@@ -209,11 +212,13 @@ describe("LocationPanel — Validação de Preço e Clamp", () => {
     unmount();
 
     // 2. Volta e restaura
+    vi.clearAllMocks();
     render(
       <LocationPanel location={location} quantity={100} productId={productId} onPriceCalculated={onPrice} />
     );
 
-    // Na restauração do rascunho, o panel emite o preço baseado nos valores salvos (colors: 2)
+    // O rascunho deve ter salvo colors: 2. 
+    // O mock recalcula o preço (600) logo no mount baseado na prop initialColors.
     await waitFor(() => {
       expect(screen.getByTestId("total-price-display")).toHaveTextContent("600");
     });
