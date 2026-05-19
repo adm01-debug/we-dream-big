@@ -282,6 +282,12 @@ export function LocationPanel({
         );
       }
 
+      // Clamp de cores se a nova técnica tiver limite menor
+      const maxCores = technique.max_cores || 1;
+      if (lastDimsRef.current.colors > maxCores) {
+        lastDimsRef.current.colors = maxCores;
+      }
+
       setSelectedTechnique(technique);
       setIsPickerOpen(false);
     },
