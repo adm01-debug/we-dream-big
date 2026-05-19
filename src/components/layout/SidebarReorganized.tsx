@@ -395,11 +395,9 @@ export const SidebarReorganized = React.memo(
               </div>
             ))}
           </nav>
-
-
-
         </div>
-      </aside>
+      </FocusTrap>
+    </aside>
     </>
   );
 }
