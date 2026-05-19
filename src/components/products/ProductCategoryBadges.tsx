@@ -48,11 +48,15 @@ export function ProductCategoryBadges({
   const { data: categoryIcons = [] } = useCategoryIcons();
   
   // Combinar categoria principal com grupos adicionais (sem duplicatas)
-  const allCategories = [category];
+  const allCategories: Category[] = [];
+  
+  if (category) {
+    allCategories.push(category);
+  }
   
   if (groups && groups.length > 0) {
     groups.forEach(group => {
-      if (!allCategories.some(c => c.id === group.id)) {
+      if (group && !allCategories.some(c => c.id === group.id)) {
         allCategories.push(group);
       }
     });

@@ -13,11 +13,13 @@ import { playTtsAudio } from "@/hooks/voice/playTtsAudio";
 import { processVoiceTranscript } from "@/hooks/voice/processTranscript";
 import { useDebounce, useSearch, useSearchHistory } from "@/hooks/common";
 import { useContextualSuggestions, useVoiceCommandHistory, type VoiceCommandRecord } from "@/hooks/intelligence";
+import { useSlashCommands, type CommandDefinition } from "@/hooks/ui/useSlashCommands";
 import type { VoiceAgentAction } from "@/hooks/voice/types";
+
 import { createProductFuseOptions, rankProductSearchResults } from "@/utils/product-search";
 import type { ExternalProduct } from "@/types/external-db";
 
-export type SearchResultType = "product" | "client" | "quote" | "collection" | "kit" | "mockup" | "art_file" | "cart_template" | "reminder" | "conversation" | "magic_up" | "category" | "component" | "media";
+export type SearchResultType = "product" | "client" | "quote" | "collection" | "kit" | "mockup" | "art_file" | "cart_template" | "reminder" | "conversation" | "magic_up" | "category" | "component" | "media" | "command";
 
 export interface SearchResult {
   id: string;
@@ -83,6 +85,8 @@ export function useGlobalSearch() {
   } = useVoiceCommandHistory();
 
   const { suggestions: contextualSuggestions, routeContext } = useContextualSuggestions({ searchQuery: query });
+  const { commands } = useSlashCommands(() => setOpen(false));
+
 
   // ── Voice Agent (ElevenLabs + AI) ──
   const handleVoiceAction = useCallback((action: VoiceAgentAction) => {
@@ -212,7 +216,34 @@ export function useGlobalSearch() {
   // ── Semantic search ──
   const abortRef = useRef<AbortController | null>(null);
   const performSemanticSearch = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim() || searchQuery.length < 3) { setResults([]); setSearchIntent(null); return; }
+    if (!searchQuery.trim() || searchQuery.length < 2) { setResults([]); setSearchIntent(null); return; }
+
+    // ── Slash Commands ──
+    if (searchQuery.startsWith("/")) {
+      const lowerQuery = searchQuery.toLowerCase();
+      const matchedCommands = commands
+        .filter(c => 
+          c.command.toLowerCase().includes(lowerQuery) || 
+          c.keywords?.some(k => k.toLowerCase().includes(lowerQuery.slice(1)))
+        )
+        .map(c => ({
+          id: c.id,
+          title: c.label,
+          subtitle: c.description,
+          type: "command" as const,
+          href: `command:${c.id}`,
+          metadata: { iconName: c.icon }
+        }));
+      
+      setResults(matchedCommands);
+      setSearchIntent(null);
+      setIsSearching(false);
+      setIsAIProcessing(false);
+      return;
+    }
+
+    if (searchQuery.length < 3) { setResults([]); setSearchIntent(null); return; }
+
 
     // ── Cache hit ──
     const cached = searchCache.get(searchQuery);
@@ -520,6 +551,17 @@ export function useGlobalSearch() {
   useEffect(() => { performSemanticSearch(debouncedQuery); }, [debouncedQuery, performSemanticSearch]);
 
   const handleSelect = useCallback((href: string, saveToHistory = true) => {
+    // ── Execute Slash Command ──
+    if (href.startsWith("command:")) {
+      const cmdId = href.split(":")[1];
+      const cmd = commands.find(c => c.id === cmdId);
+      if (cmd) {
+        cmd.action();
+        setOpen(false); setQuery(""); setResults([]); setSearchIntent(null); setTypingSuggestions([]);
+        return;
+      }
+    }
+
     if (saveToHistory && query.trim()) {
       addGlobalHistoryItem({
         id: `history-${query.trim()}`,
@@ -529,6 +571,7 @@ export function useGlobalSearch() {
       pushRecentSearch(query.trim());
     }
     setOpen(false); setQuery(""); setResults([]); setSearchIntent(null); setTypingSuggestions([]);
+
     // Support external URLs (art_file fallback) and "_blank" via Cmd/Ctrl+Enter elsewhere
     if (/^https?:\/\//.test(href)) window.open(href, "_blank", "noopener,noreferrer");
     else navigate(href);

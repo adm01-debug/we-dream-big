@@ -12,8 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Package, FileText, Loader2, Sparkles,
-  Brain, Mic, Search, ChevronRight,
+  Brain, Mic, Search, ChevronRight, Terminal,
+  Sun, Moon, LogOut, PlusCircle, Users, Calculator, LifeBuoy,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { useGlobalSearch } from "./useGlobalSearch";
 import { typeConfig } from "./search-types";
@@ -30,6 +32,10 @@ const quickActions: QuickAction[] = [
   { id: "products", title: "Catálogo de Produtos", description: "Ver todos os produtos", icon: <Package className="h-4 w-4" />, href: "/" },
   { id: "quotes", title: "Orçamentos", description: "Ver todos os orçamentos", icon: <FileText className="h-4 w-4" />, href: "/orcamentos" },
 ];
+const commandIconMap: Record<string, any> = {
+  Sun, Moon, LogOut, PlusCircle, Users, Calculator, LifeBuoy, Package, Terminal
+};
+
 
 export function GlobalSearchPalette() {
   const s = useGlobalSearch();
@@ -177,7 +183,8 @@ export function GlobalSearchPalette() {
           {!s.isSearching && Object.entries(s.groupedResults).map(([type, items]) => {
             const config = typeConfig[type];
             if (!config) return null;
-            const Icon = config.icon;
+            const BaseIcon = config.icon;
+
             return (
               <CommandGroup key={type} heading={config.label + "s"} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300 [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:pb-2">
                 {items.map((result, i) => (
@@ -189,8 +196,16 @@ export function GlobalSearchPalette() {
                     style={staggerStyle(i, 50)}
                   >
                     <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm", `${config.color}/10`)}>
-                      <Icon className={cn("h-4.5 w-4.5", config.color.replace("bg-", "text-"))} />
+                      {type === "command" && result.metadata?.iconName ? (
+                        (() => {
+                          const CmdIcon = commandIconMap[result.metadata.iconName as string] || Terminal;
+                          return <CmdIcon className={cn("h-4.5 w-4.5", config.color.replace("bg-", "text-"))} />;
+                        })()
+                      ) : (
+                        <BaseIcon className={cn("h-4.5 w-4.5", config.color.replace("bg-", "text-"))} />
+                      )}
                     </div>
+
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate text-[13px]">
                         <HighlightMatch text={result.title} query={s.query} />
