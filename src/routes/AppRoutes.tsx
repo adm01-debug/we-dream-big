@@ -21,18 +21,21 @@ function RouteSuspense({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // Start progress on pathname change (navigation)
+    // Start progress and performance tracking on pathname change (navigation)
     NProgress.start();
+    performanceTracker.startRouteTransition(pathname);
     
     // Complete progress after a short delay (once the new route should be rendering)
     const timer = setTimeout(() => {
       NProgress.done();
+      performanceTracker.endRouteTransition(pathname);
     }, 200);
 
     return () => {
       clearTimeout(timer);
       NProgress.done();
     };
+
   }, [pathname]);
 
   return <Suspense fallback={getFallback(pathname)}>{children}</Suspense>;
