@@ -4,7 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, AlertTriangle, Loader2, RotateCcw, FileDown } from 'lucide-react';
 import { type BatchImportProgress, type BatchImportResult, generateErrorReportCSV } from '@/lib/external-db/batch-import';
 import { toast } from 'sonner';
-import type { ValidationResult } from './types';
+import type { ValidationResult } from "@/pages/advanced-price-search/types";
 
 function downloadBlob(content: string, filename: string, type: string) {
   const blob = new Blob([content], { type });

@@ -3,7 +3,7 @@ import { CheckCircle2, Mail, ArrowLeft, ExternalLink, Rocket } from 'lucide-reac
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { SpaceScene } from './auth/AuthBranding';
+import { SpaceScene } from "@/pages/auth/AuthBranding";
 import { PageSEO } from '@/components/seo/PageSEO';
 import { AppLogo } from '@/components/layout/AppLogo';
 

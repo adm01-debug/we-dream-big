@@ -3,7 +3,7 @@ import { useProducts } from '@/hooks/products';
 import { useExternalTechniques } from '@/hooks/intelligence';
 import { fetchPromobrindPriceTables } from '@/lib/external-db';
 import { useQuery } from '@tanstack/react-query';
-import { type SearchFilters, type ProductWithCalculatedPrice, type ViewMode, DEFAULT_FILTERS } from './types';
+import { type SearchFilters, type ProductWithCalculatedPrice, type ViewMode, DEFAULT_FILTERS } from "@/pages/advanced-price-search/types";
 
 export function useAdvancedPriceSearch() {
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);

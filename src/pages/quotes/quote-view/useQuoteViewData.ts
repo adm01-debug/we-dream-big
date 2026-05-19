@@ -14,7 +14,7 @@ import {
   formatCurrency as formatCurrencyHelper,
   calcPersTotal,
   formatCNPJ,
-} from './QuoteActionHandlers';
+} from "@/pages/quotes/quote-view/QuoteActionHandlers";
 
 export function useQuoteViewData(id: string | undefined) {
   const { fetchQuote, logQuoteHistory, duplicateQuote } = useQuotes();

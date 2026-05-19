@@ -3,7 +3,7 @@
  * Cálculos de preço para kits
  */
 
-import type { KitItem, KitBox, KitPersonalization } from './types';
+import type { KitItem, KitBox, KitPersonalization } from "@/pages/advanced-price-search/types";
 
 // ============================================
 // CÁLCULOS DE PREÇO

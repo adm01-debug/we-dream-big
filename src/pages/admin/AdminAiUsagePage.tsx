@@ -7,11 +7,11 @@ import { PageSEO } from "@/components/seo/PageSEO";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, Zap, Activity, DollarSign, Users } from "lucide-react";
 import { useAiUsageStats, useAiUsageLogs } from "@/hooks/intelligence";
-import { AiSummaryCard } from "./ai-usage/AiSummaryCard";
-import { AiCharts } from "./ai-usage/AiCharts";
-import { AiTables } from "./ai-usage/AiTables";
-import { AiQuotaManager } from "./ai-usage/AiQuotaManager";
-import { MarketIntelInsightsUsagePanel } from "./ai-usage/MarketIntelInsightsUsagePanel";
+import { AiSummaryCard } from "@/pages/admin/ai-usage/AiSummaryCard";
+import { AiCharts } from "@/pages/admin/ai-usage/AiCharts";
+import { AiTables } from "@/pages/admin/ai-usage/AiTables";
+import { AiQuotaManager } from "@/pages/admin/ai-usage/AiQuotaManager";
+import { MarketIntelInsightsUsagePanel } from "@/pages/admin/ai-usage/MarketIntelInsightsUsagePanel";
 
 const formatCurrency = (val: number) => `$${val.toFixed(4)}`;
 const formatNumber = (val: number) => val.toLocaleString("pt-BR");

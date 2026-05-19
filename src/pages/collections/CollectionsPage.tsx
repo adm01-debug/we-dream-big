@@ -32,7 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useCollectionsPageState } from "./collections/useCollectionsPageState";
+import { useCollectionsPageState } from "@/pages/collections/useCollectionsPageState";
 
 function relativeTime(dateStr: string | undefined) {
   if (!dateStr) return null;

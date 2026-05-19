@@ -44,7 +44,7 @@ import {
   statusConfig,
   formatCurrency,
   formatResponseTime,
-} from './quotes-dashboard/useQuotesDashboard';
+} from "@/pages/quotes/quotes-dashboard/useQuotesDashboard";
 
 export default function QuotesDashboardPage() {
   const navigate = useNavigate();

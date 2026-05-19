@@ -27,7 +27,7 @@ import { MagicUpBrandKitPanel } from "@/components/magic-up/MagicUpBrandKitPanel
 import { MagicUpCreativeControls } from "@/components/magic-up/MagicUpCreativeControls";
 import { MagicUpRefinementActions } from "@/components/magic-up/MagicUpRefinementActions";
 import { MagicUpBatchGenerationPanel } from "@/components/magic-up/MagicUpBatchGenerationPanel";
-import { BRIEF_OPTIONS, toHuman, type MagicUpBrief } from "./magicUpStrategy";
+import { BRIEF_OPTIONS, toHuman, type MagicUpBrief } from "@/pages/magic-up/magicUpStrategy";
 
 type MagicUpStateReturn = ReturnType<typeof useMagicUpState>;
 

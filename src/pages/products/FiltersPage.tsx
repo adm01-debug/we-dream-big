@@ -30,8 +30,8 @@ import { useComparisonStore } from "@/stores/useComparisonStore";
 import type { VoiceAgentAction } from "@/hooks/voice/types";
 import { useOracleVoiceBridge } from "@/stores/oracleVoiceBridge";
 import { toast } from "sonner";
-import { useFiltersPageState } from "./filters/useFiltersPageState";
-import { useFiltersSelectionMode } from "./filters/useFiltersSelectionMode";
+import { useFiltersPageState } from "@/pages/filters/useFiltersPageState";
+import { useFiltersSelectionMode } from "@/pages/filters/useFiltersSelectionMode";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 

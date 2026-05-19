@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, ChevronRight, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMagicUpState } from "@/hooks/intelligence";
-import { MagicUpConfigPanel } from "./magic-up/MagicUpConfigPanel";
-import { MagicUpResultPanel } from "./magic-up/MagicUpResultPanel";
+import { MagicUpConfigPanel } from "@/pages/magic-up/MagicUpConfigPanel";
+import { MagicUpResultPanel } from "@/pages/magic-up/MagicUpResultPanel";
 
 // ─── Sub-components ──────────────────────────────────────────────────
 

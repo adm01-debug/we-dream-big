@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/ui';
 import { supabase } from '@/integrations/supabase/client';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { LegalFooter } from '@/components/auth/LegalFooter';
-import { SpaceScene } from './auth/AuthBranding';
+import { SpaceScene } from "@/pages/auth/AuthBranding";
 import { motion, AnimatePresence } from 'framer-motion';
 
 const resetPasswordSchema = z

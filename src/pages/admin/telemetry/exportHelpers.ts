@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import type { TelemetryRow, TimeFilter } from './useTelemetryData';
+import type { TelemetryRow, TimeFilter } from "@/pages/admin/telemetry/useTelemetryData";
 
 export function exportCSV(rows: TelemetryRow[], timeFilter: TimeFilter) {
   if (!rows.length) { toast.warning('Sem dados para exportar'); return; }

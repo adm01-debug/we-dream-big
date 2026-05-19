@@ -5,7 +5,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Copy, Link, Unlink, Loader2 } from "lucide-react";
-import type { ProductGroupMember } from "./types";
+import type { ProductGroupMember } from "@/pages/advanced-price-search/types";
 
 interface GroupInheritanceSectionProps {
   productMembership: ProductGroupMember;

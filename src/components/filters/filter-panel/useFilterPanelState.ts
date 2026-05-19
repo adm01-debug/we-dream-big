@@ -5,7 +5,7 @@ import { useMaterialFilter } from "@/hooks/products";
 import { useSuppliers } from "@/hooks/products";
 import { useRamoAtividadeFilter } from "@/hooks/crm";
 import { useAdvancedFilters, SORT_OPTIONS } from "@/hooks/products";
-import type { FilterState, FilterPanelProps } from "./types";
+import type { FilterState, FilterPanelProps } from "@/pages/advanced-price-search/types";
 
 export function useFilterPanelState(
   filters: FilterState,

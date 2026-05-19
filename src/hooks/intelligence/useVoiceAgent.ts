@@ -12,10 +12,10 @@ import {
   isWebSpeechSupported,
   isWebSpeechActive,
 } from './voice/webSpeechFallback';
-import type { VoiceAgentAction, VoiceAgentPhase, UseVoiceAgentOptions } from './voice/types';
+import type { VoiceAgentAction, VoiceAgentPhase, UseVoiceAgentOptions } from "@/pages/advanced-price-search/types";
 import { logger } from '@/lib/logger';
 
-export type { VoiceAgentAction, VoiceAgentPhase } from './voice/types';
+export type { VoiceAgentAction, VoiceAgentPhase } from "@/pages/advanced-price-search/types";
 
 const ERROR_RESET_DELAY_MS = 5000;
 const PROCESSING_ERROR_RESET_DELAY_MS = 3000;

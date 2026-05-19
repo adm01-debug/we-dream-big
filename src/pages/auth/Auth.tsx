@@ -27,7 +27,7 @@ import {
   Rocket,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthBrandingPanel, Starfield, SpaceScene } from './auth/AuthBranding';
+import { AuthBrandingPanel, Starfield, SpaceScene } from "@/pages/auth/AuthBranding";
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

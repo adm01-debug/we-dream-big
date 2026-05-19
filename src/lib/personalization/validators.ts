@@ -11,7 +11,7 @@ import type {
   ValidationResult,
   ValidationError,
   ValidationWarning,
-} from './types';
+} from "@/pages/advanced-price-search/types";
 
 // ============================================
 // TABLE VALIDATION

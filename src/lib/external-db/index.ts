@@ -46,6 +46,6 @@ export { fetchPromobrindPriceTables, findBestPriceTable } from './price-tables';
 export type { PromobrindPriceTable } from './price-tables';
 
 // Legacy hook-level exports (existing modules)
-export * from './types';
+export * from "@/pages/advanced-price-search/types";
 export * from './tables';
 export { extractFunctionErrorMessage } from './invoke';

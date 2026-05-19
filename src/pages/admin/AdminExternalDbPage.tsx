@@ -14,7 +14,7 @@ import {
   diffColumns,
   buildMarkdownReport,
   type TableDiff,
-} from "./engraving-schema-diff";
+} from "@/pages/admin/engraving-schema-diff";
 import {
   getContractMismatches,
   getRecentMismatches,

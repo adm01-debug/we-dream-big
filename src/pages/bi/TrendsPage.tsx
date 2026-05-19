@@ -14,8 +14,8 @@ import { TrendingUp, Search, Package, Calendar, RefreshCw, Download } from 'luci
 import { format, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PageSEO } from '@/components/seo/PageSEO';
-import { ProductsTabContent, SearchesTabContent } from './trends/TrendsCharts';
-import { TrendsKpiCards } from './trends/TrendsKpiCards';
+import { ProductsTabContent, SearchesTabContent } from "@/pages/trends/TrendsCharts";
+import { TrendsKpiCards } from "@/pages/trends/TrendsKpiCards";
 import { UnmetDemandCard } from '@/components/intelligence/UnmetDemandCard';
 import { HotSearchesCard } from '@/components/intelligence/HotSearchesCard';
 import { ConversionFunnel } from '@/components/intelligence/ConversionFunnel';
@@ -38,7 +38,7 @@ import {
   MOCK_PRODUCTS,
   MOCK_SEARCHES,
   buildMockDaily,
-} from './trends/trends-mock';
+} from "@/pages/trends/trends-mock";
 import { Badge } from '@/components/ui/badge';
 
 type DateRange = '7d' | '30d' | '90d';

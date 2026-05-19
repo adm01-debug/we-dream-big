@@ -20,7 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { type ProductStockSummary } from "@/types/stock";
 import { ProductRiskDetail } from "./risk/ProductRiskDetail";
-import { deriveSeverity, SEVERITY_ORDER, type RiskProduct, type RiskSeverity } from "./risk/types";
+import { deriveSeverity, SEVERITY_ORDER, type RiskProduct, type RiskSeverity } from "@/pages/advanced-price-search/types";
 
 // ---------- Main Panel ----------
 

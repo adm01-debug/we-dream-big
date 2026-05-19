@@ -20,7 +20,7 @@ import {
   ORGANIZATION_ID,
   createEmptyContact,
   createEmptyPixKey,
-} from './types';
+} from "@/pages/advanced-price-search/types";
 
 export function useSuppliersManager() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);

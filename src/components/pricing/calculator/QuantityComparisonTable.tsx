@@ -12,7 +12,7 @@ import {
   availableSizes,
   formatCurrency,
   formatNumber,
-} from './types';
+} from "@/pages/advanced-price-search/types";
 
 interface Props {
   product: CalcProduct;

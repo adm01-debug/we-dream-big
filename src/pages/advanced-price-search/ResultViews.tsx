@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Package } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { type ProductWithCalculatedPrice, formatCurrency } from './types';
+import { type ProductWithCalculatedPrice, formatCurrency } from "@/pages/advanced-price-search/types";
 
 export function ProductCardResult({ product, quantity }: { product: ProductWithCalculatedPrice; quantity: number }) {
   const { priceBreakdown, matchingTechnique } = product;

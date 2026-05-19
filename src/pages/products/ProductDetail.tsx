@@ -29,7 +29,7 @@ import { FloatingCompareBar } from '@/components/compare/FloatingCompareBar';
 import { MobileProductActions } from '@/components/mobile/MobileProductActions';
 import { useRecentlyViewedStore } from '@/stores/useRecentlyViewedStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
-import { ProductDetailHero } from './product-detail/ProductDetailHero';
+import { ProductDetailHero } from "@/pages/products/product-detail/ProductDetailHero";
 import { ScrollToTopButton } from '@/components/common/ScrollToTopButton';
 import { formatCurrency } from '@/lib/format';
 

@@ -12,9 +12,9 @@ import { MOCK_MATCH_PRODUCTS } from '@/data/mock-match-products';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MatchFiltersPanel } from './product-match/MatchFiltersPanel';
-import { ProductSearchPanel } from './product-match/ProductSearchPanel';
-import { SelectedProductCard, MatchCard, MATCH_TYPE_CONFIG } from './product-match/MatchCards';
+import { MatchFiltersPanel } from "@/pages/products/product-match/MatchFiltersPanel";
+import { ProductSearchPanel } from "@/pages/products/product-match/ProductSearchPanel";
+import { SelectedProductCard, MatchCard, MATCH_TYPE_CONFIG } from "@/pages/products/product-match/MatchCards";
 import { cn } from '@/lib/utils';
 import { Search, Target, Package, Zap, Sparkles } from 'lucide-react';
 

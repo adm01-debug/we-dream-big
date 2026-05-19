@@ -19,7 +19,7 @@ import {
   type VideoVariant,
   VIDEO_TYPES,
   formatBytes,
-} from './types';
+} from "@/pages/advanced-price-search/types";
 import { VideoMetaEditor } from './VideoMetaEditor';
 
 interface Props {

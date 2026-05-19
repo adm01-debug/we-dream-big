@@ -47,8 +47,8 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PageSEO } from '@/components/seo/PageSEO';
-import { useSellerCartsPage } from './seller-carts/useSellerCartsPage';
-import { CartSidebar } from './seller-carts/CartSidebar';
+import { useSellerCartsPage } from "@/pages/products/seller-carts/useSellerCartsPage";
+import { CartSidebar } from "@/pages/products/seller-carts/CartSidebar";
 
 export default function SellerCartsPage() {
   return (

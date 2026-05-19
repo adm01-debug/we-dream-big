@@ -3,7 +3,7 @@
  * Used when external DB is unavailable
  */
 
-import type { KitBox, KitItem } from './types';
+import type { KitBox, KitItem } from "@/pages/advanced-price-search/types";
 
 export const MOCK_BOXES: KitBox[] = [
   {

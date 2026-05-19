@@ -36,13 +36,13 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { PageSEO } from '@/components/seo/PageSEO';
-import { useAdvancedPriceSearch } from './advanced-price-search/useAdvancedPriceSearch';
+import { useAdvancedPriceSearch } from "@/pages/advanced-price-search/useAdvancedPriceSearch";
 import {
   ProductCardResult,
   ProductTableResult,
   ProductListResult,
-} from './advanced-price-search/ResultViews';
-import { formatCurrency, QUANTITY_OPTIONS } from './advanced-price-search/types';
+} from "@/pages/advanced-price-search/ResultViews";
+import { formatCurrency, QUANTITY_OPTIONS } from "@/pages/advanced-price-search/types";
 
 function FilterSection({
   title,

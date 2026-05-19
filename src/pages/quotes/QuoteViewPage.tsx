@@ -26,7 +26,7 @@ import { QuoteItemsTable } from "@/components/quotes/QuoteItemsTable";
 import { QuoteTotalsSummary } from "@/components/quotes/QuoteTotalsSummary";
 import { PdfGenerationDialog } from "@/components/quotes/PdfGenerationDialog";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
-import { useQuoteViewData } from "./quote-view/useQuoteViewData";
+import { useQuoteViewData } from "@/pages/quotes/quote-view/useQuoteViewData";
 import { useDiscountApproval, type DiscountApprovalRequest } from "@/hooks/quotes";
 
 const statusConfig = Object.fromEntries(
