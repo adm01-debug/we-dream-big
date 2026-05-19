@@ -20,7 +20,8 @@ Deno.serve(async (req) => {
     } catch (authErr) {
       const authHeader = req.headers.get("Authorization");
       const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-      console.log(`[cnpj-lookup] Auth Debug: token_len=${authHeader?.length}, env_key_len=${serviceRoleKey?.length}, env_key_start=${serviceRoleKey?.slice(0, 5)}`);
+      const simKey = Deno.env.get('SIMULATION_BYPASS_KEY');
+      console.log(`[cnpj-lookup] Auth Debug: token_len=${authHeader?.length}, has_sim_key=${!!simKey}, sim_key_len=${simKey?.length}`);
       return authErrorResponse(authErr, corsHeaders);
     }
 
