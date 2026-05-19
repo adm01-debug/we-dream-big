@@ -96,7 +96,7 @@ function SortHeader({
 }
 
 export const ProductTableView = memo(function ProductTableView({
-  products, onProductClick, isFavorite, onToggleFavorite, isInCompare, onToggleCompare,
+  products, isLoading = false, onProductClick, isFavorite, onToggleFavorite, isInCompare, onToggleCompare,
   canAddToCompare = true, onShareProduct, highlightColors = [], activeColorFilter,
   selectionMode, selectedIds, onToggleSelect,
   hasMore, isLoadingMore, totalEstimate, filteredCount, loadMoreRef, itemsPerPage, onLoadMore,
