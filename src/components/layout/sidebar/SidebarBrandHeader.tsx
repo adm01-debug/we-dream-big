@@ -1,5 +1,7 @@
 import { forwardRef } from "react";
 import { AppLogo } from "../AppLogo";
+import { useOnboardingContext } from "@/contexts/OnboardingContext";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarBrandHeaderProps {
   isCollapsed: boolean;
@@ -7,17 +9,30 @@ interface SidebarBrandHeaderProps {
 
 export const SidebarBrandHeader = forwardRef<HTMLDivElement, SidebarBrandHeaderProps>(
   ({ isCollapsed }, ref) => {
+    const navigate = useNavigate();
+    let onboarding: any = null;
+    try {
+      onboarding = useOnboardingContext();
+    } catch (e) {}
+
+    const handleLogoClick = () => {
+      navigate("/");
+      if (onboarding && !isCollapsed) {
+        onboarding.restartTour();
+      }
+    };
+
     if (isCollapsed) {
       return (
         <div ref={ref} className="flex flex-col items-center justify-center py-6 mb-2">
-          <AppLogo showText={false} variant="sidebar" />
+          <AppLogo showText={false} variant="sidebar" onClick={handleLogoClick} />
         </div>
       );
     }
 
     return (
       <div ref={ref} className="px-4 py-5 mb-2">
-        <AppLogo variant="sidebar" textClassName="text-sm" />
+        <AppLogo variant="sidebar" textClassName="text-sm" onClick={handleLogoClick} />
       </div>
     );
   }

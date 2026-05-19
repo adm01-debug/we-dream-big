@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useOnboardingContext } from "@/contexts/OnboardingContext";
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Fuse from 'fuse.js';
@@ -18,6 +19,16 @@ export function EnhancedSpotlight() {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { isDev, isAdmin } = useAuth();
+  let onboarding: any = null;
+  try {
+    onboarding = useOnboardingContext();
+  } catch (e) {}
+
+  const handleRestartTour = () => {
+    if (onboarding) {
+      onboarding.restartTour();
+    }
+  };
 
   // Load recent actions from localStorage
   useEffect(() => {
@@ -38,7 +49,7 @@ export function EnhancedSpotlight() {
   };
 
   const items: SpotlightItem[] = useMemo(() => {
-    const all = buildSpotlightItems(navigate);
+    const all = buildSpotlightItems(navigate, handleRestartTour);
     // Esconde itens cujas rotas exigem papel que o usuário não tem.
     return filterByRoutePermission(all, (i) => i.path, { isDev, isAdmin });
   }, [navigate, isDev, isAdmin]);

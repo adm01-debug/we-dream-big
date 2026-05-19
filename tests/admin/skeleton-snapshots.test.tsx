@@ -18,7 +18,7 @@
  *   tests/admin/__snapshots__/skeleton-snapshots.test.tsx.snap
  * e são commitados — code review julga se a mudança é intencional.
  */
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, cleanup } from "@testing-library/react";
 import { Suspense } from "react";
 import { installReactWarningGuard } from "../helpers/react-warning-guard";
@@ -33,6 +33,14 @@ import {
   GenericSkeleton,
   getFallback,
 } from "@/components/layout/SkeletonLoaders";
+
+// SkeletonMonitor (envolvido por makeSkeleton) chama useAuth() para decidir
+// se mostra o overlay de debug do tempo de skeleton. Em testes de renderização
+// isolada, não temos AuthProvider — mockamos com um stub mínimo.
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({ userRole: null, user: null, isLoading: false }),
+}));
+
 
 afterEach(() => cleanup());
 
@@ -84,9 +92,10 @@ function normalize(html: string): string {
     .replace(/aria-describedby="[^"]*"/g, 'aria-describedby="XXX"')
     .replace(/aria-labelledby="[^"]*"/g, 'aria-labelledby="XXX"')
     .replace(/id="[^"]*"/g, 'id="XXX"')
-    // ChartSkeleton usa Math.random() para a altura das barras (não-determinístico).
-    // Normalizamos o style inline de altura para manter o snapshot estável.
-    .replace(/style="height:\s*[\d.]+%;?"/g, 'style="height:XXX"');
+    // ChartSkeleton (usado em DashboardSkeleton) gera alturas das barras com
+    // Math.random() — normalizamos para que o snapshot capture estrutura
+    // (que o teste valida) e não os valores randômicos (que mudam por execução).
+    .replace(/style="height:\s*[0-9.]+%;?"/g, 'style="height:RANDOM%"');
 }
 
 describe("Skeletons — snapshots estruturais (UI estável + sem ref warning)", () => {

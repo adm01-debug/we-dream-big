@@ -14,15 +14,16 @@ export function AppLogo({
   iconClassName, 
   textClassName, 
   showText = true,
-  variant = 'brand'
-}: AppLogoProps) {
+  variant = 'brand',
+  onClick
+}: AppLogoProps & { onClick?: () => void }) {
   const isBrandOrSidebar = variant === 'brand' || variant === 'sidebar';
   const usesBrandIcon = isBrandOrSidebar || variant === 'light';
   const iconBg = usesBrandIcon ? 'bg-primary' : 'bg-foreground';
   const iconColor = usesBrandIcon ? 'text-primary-foreground' : 'text-background';
 
   return (
-    <div className={cn("flex items-center gap-3", className)}>
+    <div className={cn("flex items-center gap-3", className, onClick && "cursor-pointer")} onClick={onClick}>
       <div className={cn(
         "relative inline-flex items-center justify-center rounded-xl shadow-[0_0_15px_rgba(var(--primary),0.3)] transition-all duration-300 shrink-0 overflow-hidden",
         !iconClassName?.includes('h-') && (variant === 'sidebar' ? "h-9 w-9" : "h-10 w-10"),

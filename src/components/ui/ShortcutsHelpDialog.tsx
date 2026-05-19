@@ -5,12 +5,26 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Command, Search, ShoppingCart, Plus, MessageSquare, Package, SlidersHorizontal, ImagePlus, Calculator } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Command, Search, ShoppingCart, Plus, MessageSquare, Package, SlidersHorizontal, ImagePlus, Calculator, PlayCircle } from "lucide-react";
+import { useOnboardingContext } from "@/contexts/OnboardingContext";
 
 export function ShortcutsHelpDialog() {
   const [open, setOpen] = useState(false);
+  let onboarding: any = null;
+  try {
+    onboarding = useOnboardingContext();
+  } catch (e) {}
+
+  const handleRestartTour = () => {
+    if (onboarding) {
+      onboarding.restartTour();
+      setOpen(false);
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -74,11 +88,20 @@ export function ShortcutsHelpDialog() {
           </div>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-border/50 text-center">
-          <p className="text-[10px] text-muted-foreground italic">
+        <DialogFooter className="sm:justify-between items-center mt-6 pt-4 border-t border-border/50">
+          <p className="text-[10px] text-muted-foreground italic text-center sm:text-left mb-4 sm:mb-0">
             Dica: Digite <code className="text-primary font-bold">/</code> na busca para ver comandos operacionais.
           </p>
-        </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRestartTour}
+            className="gap-2 text-xs h-8 border-primary/20 hover:bg-primary/10"
+          >
+            <PlayCircle className="h-3.5 w-3.5 text-primary" />
+            Reiniciar Tour do Sistema
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
