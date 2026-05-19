@@ -9,6 +9,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppProviders } from "@/components/providers/AppProviders";
+import { AppBootstrap } from "@/components/providers/AppBootstrap";
 import { AccessibilityProvider, AriaLiveProvider } from "@/components/a11y";
 import { BridgeStatusBanner } from "@/components/BridgeStatusBanner";
 import { CloudStatusBanner } from "@/components/system/CloudStatusBanner";
@@ -42,6 +43,7 @@ const App = () => {
               <BrowserRouter future={{ v7_relativeSplatPath: true }}>
                 <AuthProvider>
                   <AppBootstrapContainer>
+                    <AppBootstrap>
                     <EnhancedErrorBoundary>
                       <AppProviders>
                         <Toaster />
@@ -56,6 +58,7 @@ const App = () => {
                         <AppRoutes />
                       </AppProviders>
                     </EnhancedErrorBoundary>
+                    </AppBootstrap>
                   </AppBootstrapContainer>
                 </AuthProvider>
               </BrowserRouter>

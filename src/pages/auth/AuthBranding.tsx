@@ -396,7 +396,7 @@ const FEATURE_ITEMS = [
   { label: "IA", desc: "ASSISTENTE PESSOAL", icon: Brain },
 ];
 
-export function AuthBrandingPanel() {
+export function AuthBrandingPanel({ onLogoClick }: { onLogoClick?: () => void }) {
   return (
     <div className="flex w-full lg:w-1/2 relative min-h-screen items-center">
       {/* Content */}
@@ -412,7 +412,7 @@ export function AuthBrandingPanel() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="flex items-center gap-4"
           >
-            <AppLogo variant="light" iconClassName="h-[3.25rem] w-[3.25rem] rounded-xl shadow-blue-500/40" textClassName="text-4xl" />
+            <AppLogo variant="light" iconClassName="h-[3.25rem] w-[3.25rem] rounded-xl shadow-blue-500/40" textClassName="text-4xl" onClick={onLogoClick} />
           </motion.div>
 
           <div className="space-y-5 max-w-lg flex flex-col items-center">
