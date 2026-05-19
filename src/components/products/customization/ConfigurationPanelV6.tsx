@@ -79,7 +79,20 @@ export function ConfigurationPanelV6({
   const onPriceCalculatedRef = useRef(onPriceCalculated);
   onPriceCalculatedRef.current = onPriceCalculated;
 
+  const onDimensionsChangeRef = useRef(onDimensionsChange);
+  onDimensionsChangeRef.current = onDimensionsChange;
+
+  // Emite dimensões/cores em tempo real para o LocationPanel preservar entre trocas de técnica.
+  useEffect(() => {
+    onDimensionsChangeRef.current?.({
+      width: technique.usa_dimensao ? (larguraNum > 0 ? larguraNum : undefined) : undefined,
+      height: technique.usa_dimensao ? (alturaNum > 0 ? alturaNum : undefined) : undefined,
+      colors: technique.cobra_por_cor ? numCores : undefined,
+    });
+  }, [larguraNum, alturaNum, numCores, technique.usa_dimensao, technique.cobra_por_cor]);
+
   const canConfirm = !!price && !loading && !error && !dimensionError;
+
 
   const handleConfirm = () => {
     if (!canConfirm) {
