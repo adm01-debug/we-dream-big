@@ -132,6 +132,7 @@ const navGroups: NavGroup[] = [
       { icon: Sparkles, label: "Prompts IA", href: "/admin/prompts-ia", devOnly: true },
       { icon: Workflow, label: "Workflows IA", href: "/admin/workflows", devOnly: true },
       { icon: Activity, label: "Telemetria", href: "/admin/telemetria", devOnly: true },
+      { icon: Gauge, label: "Performance UX", href: "/admin/client-performance", devOnly: true },
       { icon: DollarSign, label: "Validade de Preços", href: "/admin/validade-precos", devOnly: true },
       { icon: ShieldCheck, label: "Auditoria RBAC", href: "/admin/rbac-rotas", devOnly: true },
     ],
