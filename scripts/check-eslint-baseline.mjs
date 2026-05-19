@@ -108,7 +108,7 @@ for (const [file, rules] of Object.entries(baselineCounts)) {
     const baseN = norm(raw);
     const curN = norm(current[file]?.[rule]);
     const improved = Math.max(0, baseN.e - curN.e) + Math.max(0, baseN.w - curN.w);
-    if (improved > 0) improvements.push({ file, rule, baseline: baseN.e + baseN.w, current: curN.e + curN.w });
+    if (improved > 0) improvements.push({ file, rule, improved });
   }
 }
 
@@ -119,7 +119,7 @@ console.log(
 
 
 if (improvements.length) {
-  const improved = improvements.reduce((s, i) => s + (i.baseline - i.current), 0);
+  const improved = improvements.reduce((s, i) => s + i.improved, 0);
   console.log(
     `✨ Drift positivo: ${improved} erro(s) eliminado(s) em ${improvements.length} par(es) file:rule. Considere atualizar o baseline.`
   );
