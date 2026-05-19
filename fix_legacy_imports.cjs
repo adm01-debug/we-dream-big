@@ -1,18 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const domainMapping = {
-    'products': 'products',
-    'quotes': 'quotes',
-    'intelligence': 'intelligence',
-    'auth': 'auth',
-    'bi': 'bi',
-    'crm': 'crm',
-    'kit': 'kit-builder',
-    'mockup': 'mockup',
-    'favorites': 'favorites',
-    'comparison': 'comparison',
-};
+const domains = [
+    'products', 'quotes', 'intelligence', 'auth', 'bi', 'crm', 
+    'kit-builder', 'mockup', 'favorites', 'comparison', 'common', 'admin'
+];
 
 function processDirectory(dir) {
     const files = fs.readdirSync(dir, { withFileTypes: true });
@@ -26,36 +18,22 @@ function processDirectory(dir) {
             let content = fs.readFileSync(fullPath, 'utf8');
             let changed = false;
 
-            // Match @/hooks/domainSomething where domain is in domainMapping
-            for (const [domainPrefix, targetDir] of Object.entries(domainMapping)) {
-                const regex = new RegExp(`(['"])@/hooks/${domainPrefix}([A-Z][a-zA-Z]*)(['"])`, 'g');
+            for (const domain of domains) {
+                const regex = new RegExp(`(['"])@/hooks/${domain}([A-Z][a-zA-Z]*)(['"])`, 'g');
                 if (content.match(regex)) {
-                    content = content.replace(regex, `$1@/hooks/${targetDir}$3`);
-                    changed = true;
-                }
-            }
-            
-            // Manual fixes for specific ones that don't follow the pattern
-            const manualFixes = {
-                '@/hooks/uiLockFix': '@/hooks/ui',
-                '@/hooks/commonHistory': '@/hooks/common',
-            };
-            
-            for (const [oldPath, newPath] of Object.entries(manualFixes)) {
-                const regex = new RegExp(`(['"])${oldPath}(['"])`, 'g');
-                if (content.match(regex)) {
-                    content = content.replace(regex, `$1${newPath}$2`);
+                    content = content.replace(regex, `$1@/hooks/${domain}$3`);
                     changed = true;
                 }
             }
 
             if (changed) {
                 fs.writeFileSync(fullPath, content);
-                console.log(`Updated legacy imports in ${fullPath}`);
+                console.log(`Cleaned up imports in ${fullPath}`);
             }
         }
     }
 }
 
 processDirectory(path.join(process.cwd(), 'src'));
+
 
