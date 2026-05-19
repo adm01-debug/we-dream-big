@@ -386,6 +386,8 @@ export const SidebarReorganized = React.memo(
                   <div className="my-1.5 mx-auto w-4 h-px bg-sidebar-border/30" />
                 )}
                 <SidebarNavGroup
+                  key={group.id}
+
                   group={group}
                   isOpen={openGroups[group.id] ?? false}
                   isCollapsed={isCollapsed}
