@@ -147,26 +147,63 @@ export function LocationPanel({
   location,
   quantity,
   confirmedPersonalization,
+  productId,
   onPriceCalculated,
 }: LocationPanelProps) {
-  // Inicializa com a técnica confirmada (se houver) para que ao reabrir o local
-  // o vendedor já veja o painel da gravação adicionada.
+  const storageKey = useMemo(
+    () => draftKey(productId, location.location_code),
+    [productId, location.location_code],
+  );
+
+  // Hidrata estado inicial: confirmada > rascunho persistido > nada.
+  const initialDraft = useMemo<LocationDraft | null>(
+    () => (confirmedPersonalization ? null : readDraft(storageKey)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [storageKey],
+  );
+
   const [selectedTechnique, setSelectedTechnique] = useState<TechniqueOption | null>(() => {
-    if (!confirmedPersonalization?.techniqueId) return null;
-    return (
-      location.options.find((t) => t.technique_id === confirmedPersonalization.techniqueId) ?? null
-    );
+    const techId = confirmedPersonalization?.techniqueId ?? initialDraft?.techniqueId;
+    if (!techId) return null;
+    return location.options.find((t) => t.technique_id === techId) ?? null;
   });
 
-  // Picker fica fechado por padrão se já existe técnica selecionada
-  const [isPickerOpen, setIsPickerOpen] = useState<boolean>(() => !selectedTechnique);
+  // Picker fechado por padrão se já existe técnica selecionada
+  const [isPickerOpen, setIsPickerOpen] = useState<boolean>(() => {
+    if (confirmedPersonalization) return false;
+    if (initialDraft?.techniqueId) return initialDraft.pickerOpen ?? false;
+    return true;
+  });
 
   // Guarda as últimas dimensões/cores informadas (para preservar ao trocar técnica)
   const lastDimsRef = useRef<{ width?: number; height?: number; colors?: number }>({
-    width: confirmedPersonalization?.width,
-    height: confirmedPersonalization?.height,
-    colors: confirmedPersonalization?.numberOfColors,
+    width: confirmedPersonalization?.width ?? initialDraft?.width,
+    height: confirmedPersonalization?.height ?? initialDraft?.height,
+    colors: confirmedPersonalization?.numberOfColors ?? initialDraft?.colors,
   });
+
+  // Persiste rascunho sempre que técnica/picker muda. Dimensões são persistidas em handleDimensionsChange.
+  useEffect(() => {
+    // Se há uma personalização confirmada para esta técnica, o rascunho é redundante — limpa.
+    if (
+      confirmedPersonalization &&
+      confirmedPersonalization.techniqueId === selectedTechnique?.technique_id
+    ) {
+      clearDraft(storageKey);
+      return;
+    }
+    if (!selectedTechnique) {
+      clearDraft(storageKey);
+      return;
+    }
+    writeDraft(storageKey, {
+      techniqueId: selectedTechnique.technique_id,
+      width: lastDimsRef.current.width,
+      height: lastDimsRef.current.height,
+      colors: lastDimsRef.current.colors,
+      pickerOpen: isPickerOpen,
+    });
+  }, [storageKey, selectedTechnique, isPickerOpen, confirmedPersonalization]);
 
   const grouped = useMemo(() => groupByGrupo(location.options), [location.options]);
 
@@ -174,7 +211,6 @@ export function LocationPanel({
   const firstCardRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (isPickerOpen && selectedTechnique) {
-      // só auto-focar em modo "trocar"
       const el = firstCardRef.current?.querySelector<HTMLElement>("[role='button'],button");
       el?.focus?.();
     }
@@ -220,7 +256,8 @@ export function LocationPanel({
     [location.location_code, onPriceCalculated],
   );
 
-  // Captura dimensões/cores em tempo real (mesmo sem confirmar) para preservar ao trocar técnica.
+  // Captura dimensões/cores em tempo real (mesmo sem confirmar) para preservar ao trocar técnica
+  // e persistir o rascunho — assim o vendedor recupera o que digitou ao voltar para a tela.
   const handleDimensionsChange = useCallback(
     (dims: { width?: number; height?: number; colors?: number }) => {
       lastDimsRef.current = {
@@ -228,8 +265,21 @@ export function LocationPanel({
         height: dims.height ?? lastDimsRef.current.height,
         colors: dims.colors ?? lastDimsRef.current.colors,
       };
+      // Persiste o rascunho atualizado (só se há técnica selecionada e não está confirmada).
+      if (
+        selectedTechnique &&
+        confirmedPersonalization?.techniqueId !== selectedTechnique.technique_id
+      ) {
+        writeDraft(storageKey, {
+          techniqueId: selectedTechnique.technique_id,
+          width: lastDimsRef.current.width,
+          height: lastDimsRef.current.height,
+          colors: lastDimsRef.current.colors,
+          pickerOpen: isPickerOpen,
+        });
+      }
     },
-    [],
+    [storageKey, selectedTechnique, confirmedPersonalization, isPickerOpen],
   );
 
   // Estados derivados
