@@ -145,9 +145,13 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden hover:bg-primary/10 hover:text-primary h-8 w-8 sm:h-9 sm:w-9"
+            className="lg:hidden hover:bg-primary/10 hover:text-primary h-8 w-8 sm:h-9 sm:w-9 focus-visible:ring-2 focus-visible:ring-primary"
             onClick={onMenuToggle}
-           aria-label="Menu"><Menu className="h-5 w-5" />
+            aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={sidebarOpen}
+          >
+            <Menu className="h-5 w-5" />
+
           </Button>
 
           {/* #1 — Seção atual como âncora */}
