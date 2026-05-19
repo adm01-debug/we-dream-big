@@ -30,7 +30,7 @@ export default defineConfig(({ mode }: { mode: string }) => ({
   esbuild: {
     pure: mode === 'production' ? ['console.log', 'console.debug', 'console.info'] : [],
     drop: (mode === 'production' ? ['debugger'] : []) as ('console' | 'debugger')[],
-    legalComments: 'none',
+    legalComments: 'none' as const,
     treeShaking: true,
   },
   
