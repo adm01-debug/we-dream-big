@@ -19,6 +19,16 @@ export function EnhancedSpotlight() {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { isDev, isAdmin } = useAuth();
+  let onboarding: any = null;
+  try {
+    onboarding = useOnboardingContext();
+  } catch (e) {}
+
+  const handleRestartTour = () => {
+    if (onboarding) {
+      onboarding.restartTour();
+    }
+  };
 
   // Load recent actions from localStorage
   useEffect(() => {
