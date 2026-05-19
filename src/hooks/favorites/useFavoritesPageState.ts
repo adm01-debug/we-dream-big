@@ -4,7 +4,7 @@ import {
   useFavoriteLists,
   useFavoriteTrash,
   useLegacyFavoritesMigration,
-} from '@/hooks/favoritesLists';
+} from '@/hooks/favorites';
 import { useEnrichedFavoriteItems } from '@/hooks/favorites';
 import { useProductsContext } from '@/contexts/ProductsContext';
 import { useCatalogSelection } from '@/components/catalog/useCatalogSelection';

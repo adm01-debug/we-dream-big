@@ -17,7 +17,7 @@ import type { Product } from '@/hooks/products';
 import { useProductsContext } from '@/contexts/ProductsContext';
 import { useSearch } from '@/hooks/common';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
-import { useFavoriteQuickAdd } from '@/hooks/favoritesQuickAdd';
+import { useFavoriteQuickAdd } from '@/hooks/favorites';
 import { useComparisonStore } from '@/stores/useComparisonStore';
 import { useProductsByMaterial } from '@/hooks/products';
 import { useProductFuzzySearch } from '@/hooks/products';

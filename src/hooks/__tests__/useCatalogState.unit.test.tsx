@@ -75,7 +75,7 @@ vi.mock("@/hooks/products", () => ({
   useCatalogFiltering: vi.fn((args) => args.realProducts || []),
 }));
 
-vi.mock("@/hooks/favoritesQuickAdd", () => ({
+vi.mock("@/hooks/favorites", () => ({
   useFavoriteQuickAdd: vi.fn(() => ({
     handleFavoriteClick: vi.fn(),
     defaultList: null,

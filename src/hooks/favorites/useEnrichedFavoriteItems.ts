@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useFavoriteListItems, type FavoriteListItem } from "@/hooks/favoritesLists";
+import { useFavoriteListItems, type FavoriteListItem } from "@/hooks/favorites";
 import { useProductsContext } from "@/contexts/ProductsContext";
 import type { Product } from "@/types/product";
 
