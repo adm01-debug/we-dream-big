@@ -4,7 +4,7 @@
 import {
   Package, FileText, Calculator, Settings, Home, Palette, Layers, Box,
   Calendar, Zap, BarChart3, Filter, PlusCircle, RefreshCw, Download,
-  Printer, HelpCircle, Moon, Sun, BookOpen, Grid,
+  Printer, HelpCircle, Moon, Sun, BookOpen, Grid, Activity,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
