@@ -107,14 +107,20 @@ test.describe('Quote Module - Elite UI Validation', () => {
     await expect(pdfButton).toBeVisible();
     await pdfButton.click();
     
-    // Check if dialog opens
-    await expect(page.getByText('Gerar Proposta PDF')).toBeVisible();
-    
-    const generateButton = page.getByRole('button', { name: /Baixar PDF/i });
-    await expect(generateButton).toBeVisible();
-    
-    // Note: We don't verify the actual file download in this environment as easily, 
-    // but verifying the button exists and triggers the dialog is elite.
+    // Check if dialog opens and we are in preview stage
+    await expect(page.getByText('Gerar Proposta PDF', { exact: false })).toBeVisible();
+    await expect(page.getByText('Confira as informações antes de enviar')).toBeVisible();
+
+    // Click "Gerar PDF" inside the dialog to start rendering
+    const generatePdfButton = page.getByRole('button', { name: 'Gerar PDF', exact: true });
+    await generatePdfButton.click();
+
+    // Wait for stage transition to "ready" (Check mark and "PDF pronto!" label)
+    await expect(page.getByText('PDF pronto!', { timeout: 20000 })).toBeVisible();
+
+    // Verify "Baixar" button is now visible
+    const downloadButton = page.getByRole('button', { name: 'Baixar', exact: true });
+    await expect(downloadButton).toBeVisible();
   });
 
   test('should validate rounding for fractional unit prices', async ({ page }) => {
