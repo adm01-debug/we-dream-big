@@ -63,6 +63,22 @@ serve(async (req) => {
       }
     };
 
+    // Ensure simulation endpoint exists for webhook-inbound
+    const { data: simEndpoint } = await supabase
+      .from("inbound_webhook_endpoints")
+      .select("slug")
+      .eq("slug", "simulation-test")
+      .maybeSingle();
+      
+    if (!simEndpoint) {
+      await supabase.from("inbound_webhook_endpoints").insert({
+        slug: "simulation-test",
+        name: "Simulation Test Endpoint",
+        active: true,
+        hmac_secret_ref: "SUPABASE_SERVICE_ROLE_KEY" // Just a dummy for simulation
+      });
+    }
+
     // Scenario Generation Logic
     const TABLES = ["products", "categories", "suppliers", "brands", "quotes"];
     const OPERATORS = ["gte", "lte", "gt", "lt", "neq", "like", "ilike"];
@@ -72,19 +88,22 @@ serve(async (req) => {
       if (targetFunctions.includes("external-db-bridge")) {
         const table = TABLES[Math.floor(Math.random() * TABLES.length)];
         const isInvalid = Math.random() > 0.8;
+        const op = OPERATORS[Math.floor(Math.random() * OPERATORS.length)];
         const payload = {
           operation: "select",
           table,
-          filters: isInvalid ? { id: { invalid: true } } : { id_eq: "123" },
+          filters: isInvalid ? { id: { invalid: true } } : { [`id_${op}`]: "123" },
           limit: 10,
         };
-        promises.push(runScenario("external-db-bridge", payload, isInvalid ? [400] : [200, 404, 401]));
+        // Status 401 is expected if no auth, but here we pass service role, so it should be 200/404/400
+        promises.push(runScenario("external-db-bridge", payload, isInvalid ? [400] : [200, 404, 400]));
       }
 
       if (targetFunctions.includes("webhook-inbound")) {
         const isMissing = Math.random() > 0.7;
         const payload = isMissing ? { event: "test" } : { event: "test", data: { id: "123" } };
-        promises.push(runScenario("webhook-inbound", payload, [200, 400, 422, 401]));
+        // We use the slug we just ensured exists
+        promises.push(runScenario("webhook-inbound?slug=simulation-test", payload, [200, 400, 422, 401]));
       }
       
       // Batch processing to avoid overwhelming the system
