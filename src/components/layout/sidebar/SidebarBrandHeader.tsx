@@ -32,7 +32,7 @@ export const SidebarBrandHeader = forwardRef<HTMLDivElement, SidebarBrandHeaderP
 
     return (
       <div ref={ref} className="px-4 py-5 mb-2">
-        <AppLogo variant="sidebar" textClassName="text-sm" />
+        <AppLogo variant="sidebar" textClassName="text-sm" onClick={handleLogoClick} />
       </div>
     );
   }
