@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NoveltyBadge } from "./NoveltyBadge";
 import { cn } from "@/lib/utils";
-import { isLightColor } from "@/hooks/useColorSystem";
+import { isLightColor } from "@/hooks/products";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import type { MatchedColorVariant } from "@/utils/color-variant-carousel";
 

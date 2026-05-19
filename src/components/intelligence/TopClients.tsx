@@ -1,7 +1,7 @@
 import { Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTopClients } from "@/hooks/useCommercialIntelligence";
+import { useTopClients } from "@/hooks/intelligence";
 
 export function TopClients({ days = 30, categoryId, supplierId }: { days?: number; categoryId?: string | null; supplierId?: string | null }) {
   const { data: clients, isLoading } = useTopClients(days, categoryId, supplierId);

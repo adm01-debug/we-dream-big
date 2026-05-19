@@ -2,7 +2,7 @@
  * Cart export utilities — CSV, PDF, share link
  */
 import { toast } from "sonner";
-import type { SellerCart } from "@/hooks/useSellerCarts";
+import type { SellerCart } from "@/hooks/products";
 import { formatCurrency } from "../CartUtilComponents";
 
 export function exportCartToCSV(cart: SellerCart) {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { CheckCircle2, XCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ErrorKind } from "@/hooks/useConnectionTester";
+import type { ErrorKind } from "@/hooks/intelligence";
 import { getErrorCopy } from "@/lib/connection-error-copy";
 import { inferErrorKind } from "@/lib/error-kind-inference";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";

@@ -1,9 +1,7 @@
-/**
- * Simulator Hooks - Barrel export
- * 
- * Hooks para o simulador de personalização
- */
-
-export { useSimulatorWizard, type UseSimulatorWizardReturn } from './useSimulatorWizard';
-export { useLivePricePreview, type LivePriceEstimate } from './useLivePricePreview';
-export { useWizardDrafts, type WizardDraft } from './useWizardDrafts';
+// Exporting all hooks from simulator
+export * from "@/hooks/simulator/useLivePricePreview";
+export * from "@/hooks/simulator/useSimulatorWizard";
+export * from "@/hooks/simulator/useUndoRedo";
+export * from "@/hooks/simulator/useWizardDrafts";
+export * from "@/hooks/simulator/useWizardPersistence";
+export * from "@/hooks/simulator/useWizardPricing";

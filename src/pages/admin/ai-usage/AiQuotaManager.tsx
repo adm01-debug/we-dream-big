@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Settings2, Save } from "lucide-react";
-import { useAiQuotas, useUpdateQuota } from "@/hooks/useAiUsage";
+import { useAiQuotas, useUpdateQuota } from "@/hooks/intelligence";
 import { toast } from "sonner";
 
 const ROLE_LABELS: Record<string, string> = {

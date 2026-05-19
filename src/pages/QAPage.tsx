@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDevGate } from '@/hooks/useDevGate';
+import { useDevGate } from '@/hooks/admin';
 import { devInfraGate } from '@/lib/system/dev-gate/DevInfraGate';
 
 export default function QAPage() {

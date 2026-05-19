@@ -11,7 +11,7 @@ import type {
   ColorOption,
   SizeOption,
   PriceTier,
-} from './types';
+} from "@/pages/advanced-price-search/types";
 
 // ============================================
 // TABLE SELECTION

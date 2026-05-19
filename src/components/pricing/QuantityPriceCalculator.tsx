@@ -4,7 +4,7 @@
  */
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCustomizationPricing, type PriceCalculation } from '@/hooks/useTecnicasUnificadas';
+import { useCustomizationPricing, type PriceCalculation } from '@/hooks/simulation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -16,8 +16,8 @@ import { ProductSearch as UnifiedProductSearch } from './simulator/ProductSearch
 import { TechniqueMultiSelector } from './calculator/TechniqueMultiSelector';
 import { TechniqueConfigCard } from './calculator/TechniqueConfigCard';
 import { QuantityComparisonTable } from './calculator/QuantityComparisonTable';
-import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, formatNumber } from './calculator/types';
-import type { Product as SimulatorProduct } from './simulator/types';
+import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, formatNumber } from "./calculator/types";
+import type { Product as SimulatorProduct } from "@/pages/advanced-price-search/types";
 
 interface QuantityPriceCalculatorProps {
   productBasePrice?: number;

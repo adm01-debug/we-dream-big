@@ -18,7 +18,7 @@ import { DevOnlyBridgeOverlay } from "@/components/dev/DevOnlyBridgeOverlay";
 import { RouteScrollReset } from "@/components/common/RouteScrollReset";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ThemeInitializer } from "@/components/ThemeInitializer";
-import { useAppBootstrap } from "@/hooks/useAppBootstrap";
+import { useAppBootstrap } from "@/hooks/common";
 import { AppRoutes } from "@/routes/AppRoutes";
 import { RoutePrefetcher } from "@/routes/RoutePrefetcher";
 import "./App.css";

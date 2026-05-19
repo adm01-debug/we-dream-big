@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCrmCompanies } from "@/hooks/useCrmCompanies";
+import { useCrmCompanies } from "@/hooks/crm";
 import { getCompanyDisplayName } from "@/types/crm";
-import { useSearchHistory } from "@/hooks/useSearchHistory";
+import { useSearchHistory } from "@/hooks/common";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ClientSelectorProps {

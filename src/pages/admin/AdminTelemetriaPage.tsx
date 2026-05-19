@@ -16,15 +16,15 @@ import {
   formatTime,
   type SeverityFilter,
   type TimeFilter,
-} from './telemetry/useTelemetryData';
-import { useErrorCounters } from './telemetry/useErrorCounters';
-import { exportCSV, exportPDF } from './telemetry/exportHelpers';
+} from "@/pages/admin/telemetry/useTelemetryData";
+import { useErrorCounters } from "@/pages/admin/telemetry/useErrorCounters";
+import { exportCSV, exportPDF } from "@/pages/admin/telemetry/exportHelpers";
 import {
   CardSkeleton,
   BannerSkeleton,
   ChartsSkeleton,
   GridCardsSkeleton,
-} from './telemetry/TelemetrySkeletons';
+} from "@/pages/admin/telemetry/TelemetrySkeletons";
 import { InstrumentationToggleButton } from '@/components/admin/telemetry/InstrumentationToggleButton';
 
 // ============================================================================

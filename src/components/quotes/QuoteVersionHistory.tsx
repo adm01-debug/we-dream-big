@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useQuoteVersions, type QuoteVersion } from "@/hooks/useQuoteVersions";
+import { useQuoteVersions, type QuoteVersion } from "@/hooks/quotes";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { formatCurrency } from "@/lib/format";
 

@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useExternalProducts } from "@/hooks/useExternalDatabase";
+import { useExternalProducts } from "@/hooks/intelligence";
 import type { ExternalProduct } from "@/lib/external-db/types";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;

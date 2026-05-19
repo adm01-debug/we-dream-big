@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { Collection } from '@/hooks/useCollections';
+import type { Collection } from '@/hooks/collections';
 
 type SortKey = 'name' | 'products' | 'featured' | 'updated';
 type SortDir = 'asc' | 'desc';

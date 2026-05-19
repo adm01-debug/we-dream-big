@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRBAC } from "@/hooks/useRBAC";
+import { useRBAC } from "@/hooks/auth";
 import { getPrefetchHandlers } from "@/lib/routePrefetch";
 import { isDevOnlyPath, isAdminOnlyPath } from "@/lib/navigation/restricted-routes";
 import { isNavItemActive } from "@/lib/navigation/active-match";

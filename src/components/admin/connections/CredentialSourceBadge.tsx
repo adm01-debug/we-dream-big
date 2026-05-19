@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { resolveSource } from "./CredentialsSourceFilterContext";
-import type { SecretStatus } from "@/hooks/useSecretsManager";
+import type { SecretStatus } from "@/hooks/admin";
 
 interface Props {
   status?: SecretStatus;

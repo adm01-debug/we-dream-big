@@ -3,8 +3,8 @@
  */
 import { Clock, DollarSign, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/hooks/useSimulation';
-import type { TechniqueWithRecommendation } from '@/hooks/useTechniqueRecommendations';
+import { formatCurrency } from '@/hooks/simulation';
+import type { TechniqueWithRecommendation } from '@/hooks/simulation';
 
 // Miniaturas de exemplo por categoria de técnica
 export const TECHNIQUE_THUMBNAILS: Record<string, string> = {

@@ -20,7 +20,7 @@
  *   </DevOnly>
  */
 import { memo, type ReactNode } from 'react';
-import { useDevGate } from '@/hooks/useDevGate';
+import { useDevGate } from '@/hooks/admin';
 
 export interface DevOnlyProps {
   children: ReactNode;

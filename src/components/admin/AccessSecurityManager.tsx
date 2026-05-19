@@ -2,7 +2,7 @@
  * AccessSecurityManager — Refactored orchestrator
  * Sub-components extracted to ./access-security/
  */
-import { useAccessSecurity } from "@/hooks/useAccessSecurity";
+import { useAccessSecurity } from "@/hooks/auth";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, MapPin, ShieldAlert, Wifi } from "lucide-react";

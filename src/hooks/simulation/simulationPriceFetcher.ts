@@ -21,7 +21,7 @@ import {
   fetchProductPrintAreasV2,
   type CustomizationPriceResponse,
   type PrintAreaV2,
-} from '@/hooks/useGravacaoPriceV2';
+} from '@/hooks/simulation';
 import { adaptPriceResponse } from '@/lib/personalization/adapters';
 import type { Technique, TechniqueSettings, SimulationOption } from '@/types/simulation';
 import { logger } from '@/lib/logger';

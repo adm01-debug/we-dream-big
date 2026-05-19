@@ -42,7 +42,7 @@ import {
   subscribeSecretsManagerCalls,
   type SecretsManagerCallSample,
 } from "@/lib/telemetry/secretsManagerCallMetrics";
-import { useSecretsManager } from "@/hooks/useSecretsManager";
+import { useSecretsManager } from "@/hooks/admin";
 import { toast } from "sonner";
 
 const MAX_RECENT = 8;

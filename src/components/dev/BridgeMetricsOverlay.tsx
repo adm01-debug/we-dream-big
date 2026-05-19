@@ -3,7 +3,7 @@
  * em tempo real — latência, payload de resposta, status e request-id.
  */
 import { memo, useCallback, useState } from 'react';
-import { useDevGate } from '@/hooks/useDevGate';
+import { useDevGate } from '@/hooks/admin';
 import { useBridgeMetrics, type BridgeMetricsFilter, type BridgeMetricsTab } from '@/hooks/dev/useBridgeMetrics';
 import { BridgeCallItem } from './metrics/BridgeCallItem';
 import { BridgeMetricsSummary } from './metrics/BridgeMetricsSummary';

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DatabaseZap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useSecretsManager } from "@/hooks/useSecretsManager";
+import { useSecretsManager } from "@/hooks/admin";
 import { toast } from "sonner";
 
 interface RefreshFromDbButtonProps {

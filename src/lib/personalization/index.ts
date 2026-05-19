@@ -20,7 +20,7 @@
  * - Nunca duplicar lógica de transformação nos hooks
  */
 
-export * from './types';
+export * from "@/pages/advanced-price-search/types";
 export * from './calculators';
 export * from './validators';
 export * from './selectors';

@@ -13,7 +13,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { usePlatformFailureMetrics, type PlatformFailureMetrics } from './usePlatformFailureMetrics';
+import { usePlatformFailureMetrics, type PlatformFailureMetrics } from "@/pages/admin/telemetry/usePlatformFailureMetrics";
 
 const STORAGE_KEY = 'admin.telemetry.failureAlertConfig';
 

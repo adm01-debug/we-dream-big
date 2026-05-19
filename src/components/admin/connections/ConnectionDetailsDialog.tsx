@@ -29,7 +29,7 @@ import {
   useSecretsManager,
   type RotationHistoryEntry,
   type SecretStatus,
-} from "@/hooks/useSecretsManager";
+} from "@/hooks/admin";
 
 type ConnectionStatus = ReturnType<typeof resolveSupabaseConnectionStatus>;
 

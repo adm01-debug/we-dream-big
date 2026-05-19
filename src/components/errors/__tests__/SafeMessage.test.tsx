@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { SafeMessage } from '@/components/errors/SafeMessage';
 
 const gateState = { isAllowed: false, isDev: false };
-vi.mock('@/hooks/useDevGate', () => ({
+vi.mock('@/hooks/admin', () => ({
   useDevGate: () => gateState,
 }));
 

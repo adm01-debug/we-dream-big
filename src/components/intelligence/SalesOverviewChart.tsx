@@ -21,7 +21,7 @@ import { Loader2, ShoppingCart, FileText, DollarSign, Users, Target, Package } f
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import { KpiCard } from "@/components/ui/kpi-card";
-import { useSalesHistoryMacro } from "@/hooks/useSalesHistoryMacro";
+import { useSalesHistoryMacro } from "@/hooks/intelligence";
 import { safeParseDateForChart } from "@/lib/stock-chart-utils";
 
 interface Props {

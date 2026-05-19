@@ -32,7 +32,7 @@ import {
   useAiModels, useAiRouting, useAiRoutingMutations,
   capabilitiesToArray, capabilitiesFromArray,
   type AiFunctionRouting, type RoutingInput,
-} from "@/hooks/useAiRouter";
+} from "@/hooks/intelligence";
 
 const KNOWN_CAPABILITIES = [
   "chat", "streaming", "tools", "json_mode",

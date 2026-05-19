@@ -2,7 +2,7 @@
  * buildCustomKitInsert — Helper tipado para construir payloads de insert/update em custom_kits.
  * Remove a necessidade de `as never` em chamadas Supabase.
  */
-import type { CustomKitRow } from '@/hooks/useCustomKitPersistence';
+import type { CustomKitRow } from '@/hooks/kit-builder';
 
 export type CustomKitInsertPayload = Omit<
   CustomKitRow,

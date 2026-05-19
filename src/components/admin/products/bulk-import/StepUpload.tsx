@@ -2,7 +2,7 @@ import { useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, Download, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
-import { MAX_ROWS, TARGET_FIELDS, TEMPLATE_EXAMPLES, ALIAS_MAP, type ColumnMapping } from './types';
+import { MAX_ROWS, TARGET_FIELDS, TEMPLATE_EXAMPLES, ALIAS_MAP, type ColumnMapping } from "./types";
 
 interface StepUploadProps {
   onFileProcessed: (headers: string[], rows: Record<string, unknown>[], fileName: string, mapping: ColumnMapping) => void;

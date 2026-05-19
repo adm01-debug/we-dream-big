@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/hooks/useSimulation";
+import { formatCurrency } from "@/hooks/simulation";
 import type { SimulationOption, Product } from "@/types/simulation";
 
 export interface SimulationScenario {

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/ui";
 import {
   Package, TrendingDown, RefreshCw, Truck, CheckCircle2, XCircle, Palette, Loader2, AlertCircle, X,
   ChevronDown, ChevronRight, Clock, BarChart3, Shield, Download,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useVariantStock } from "@/hooks/useVariantStock";
+import { useVariantStock } from "@/hooks/products";
 import { VariantStockTable } from "./VariantStockTable";
 import { SupplierRiskPanel } from "./SupplierRiskPanel";
 import { StatCard } from "./StockStatCard";

@@ -2,10 +2,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConnectionsOverviewTable } from '../ConnectionsOverviewTable';
 import { useAuth } from '@/contexts/AuthContext';
-import { useConnectionsOverview } from '@/hooks/useConnectionsOverview';
-import { useConnectionTester } from '@/hooks/useConnectionTester';
-import { useConsecutiveFailures } from '@/hooks/useConsecutiveFailures';
-import { useSecretsManager } from '@/hooks/useSecretsManager';
+import { useConnectionsOverview } from '@/hooks/intelligence';
+import { useConnectionTester } from '@/hooks/intelligence';
+import { useConsecutiveFailures } from '@/hooks/common';
+import { useSecretsManager } from '@/hooks/admin';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Mocks
@@ -13,23 +13,23 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
-vi.mock('@/hooks/useConnectionsOverview', () => ({
+vi.mock('@/hooks/intelligence', () => ({
   useConnectionsOverview: vi.fn(),
 }));
 
-vi.mock('@/hooks/useConnectionTester', () => ({
+vi.mock('@/hooks/intelligence', () => ({
   useConnectionTester: vi.fn(),
 }));
 
-vi.mock('@/hooks/useConsecutiveFailures', () => ({
+vi.mock('@/hooks/common', () => ({
   useConsecutiveFailures: vi.fn(),
 }));
 
-vi.mock('@/hooks/useSecretsManager', () => ({
+vi.mock('@/hooks/admin', () => ({
   useSecretsManager: vi.fn(),
 }));
 
-vi.mock('@/hooks/useConnectionsOverviewFilters', () => ({
+vi.mock('@/hooks/intelligence', () => ({
   useConnectionsOverviewFilters: vi.fn(() => ({
     filters: { types: [], status: [], window: 'all', onlyConsecutiveFailures: false },
     activeCount: 0,

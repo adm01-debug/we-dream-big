@@ -1,4 +1,4 @@
-import type { SecretMutationResult, SecretError } from "@/hooks/useSecretsManager";
+import type { SecretMutationResult, SecretError } from "@/hooks/admin";
 
 /**
  * Detects retryable network errors: timeouts, fetch failures, 5xx responses.

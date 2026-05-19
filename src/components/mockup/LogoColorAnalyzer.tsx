@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { searchPantone, type PantoneColor } from '@/data/pantone-coated';
-import type { DetectedColor } from '@/hooks/useLogoColorAnalysis';
+import type { DetectedColor } from '@/hooks/simulation';
 
 interface LogoColorAnalyzerProps {
   colors: DetectedColor[];

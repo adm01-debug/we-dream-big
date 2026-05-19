@@ -12,7 +12,7 @@
  * precisa ser tocado.
  */
 
-import type { CustomizationPriceFlat } from '@/hooks/useGravacaoPriceV2';
+import type { CustomizationPriceFlat } from '@/hooks/simulation';
 import { detectPriceSchema, warnUnknownSchemaOnce, type PriceSchemaVersion } from './schema-detection';
 import { validateRpcPayload } from '@/lib/personalization/rpc-validator';
 import { PRICE_CONTRACT } from '@/lib/personalization/rpc-contracts';

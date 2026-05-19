@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { ReplenishmentWithDetails } from "@/hooks/useReplenishments";
+import type { ReplenishmentWithDetails } from "@/hooks/products";
 import type { ColumnCount } from "@/components/products/ColumnSelector";
 import { ReplenishmentGridCard } from "./ReplenishmentCards";
 

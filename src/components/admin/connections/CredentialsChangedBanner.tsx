@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, RefreshCw, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useSecretsManager } from '@/hooks/useSecretsManager';
+import { useSecretsManager } from '@/hooks/admin';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 

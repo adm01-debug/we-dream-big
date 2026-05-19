@@ -1,6 +1,6 @@
 import { render, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ContinuousRockets } from './AuthBranding';
+import { ContinuousRockets } from "@/pages/auth/AuthBranding";
 
 // Mock lucide-react to avoid icon rendering issues in test
 vi.mock('lucide-react', () => ({

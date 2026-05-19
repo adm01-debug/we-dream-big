@@ -3,7 +3,7 @@
  * Critérios: recência > 2× intervalo médio entre pedidos OU recência > 90d combinada com queda recente.
  */
 import { useMemo } from "react";
-import { useClientBI } from "./useClientBI";
+import { useClientBI } from "@/hooks/bi/useClientBI";
 
 export interface ChurnRiskResult {
   atRisk: boolean;

@@ -7,9 +7,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { EnhancedErrorBoundary } from '../EnhancedErrorBoundary';
-import { useDevGate } from '@/hooks/useDevGate';
+import { useDevGate } from '@/hooks/admin';
 
-vi.mock('@/hooks/useDevGate', () => ({
+vi.mock('@/hooks/admin', () => ({
   useDevGate: vi.fn(),
 }));
 

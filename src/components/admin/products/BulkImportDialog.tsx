@@ -27,7 +27,7 @@ import {
   type Step,
   type ColumnMapping,
   type ValidationResult,
-} from './bulk-import/types';
+} from "@/pages/advanced-price-search/types";
 import { StepUpload } from './bulk-import/StepUpload';
 import { StepMapping } from './bulk-import/StepMapping';
 import { StepPreview } from './bulk-import/StepPreview';

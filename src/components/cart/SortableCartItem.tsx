@@ -21,7 +21,7 @@ import {
   MessageSquare, ChevronDown, Calculator, MoveRight, CopyPlus,
   AlertTriangle,
 } from "lucide-react";
-import { type SellerCart, type SellerCartItem } from "@/hooks/useSellerCarts";
+import { type SellerCart, type SellerCartItem } from "@/hooks/products";
 import { PriceLabel } from "./CartUtilComponents";
 
 interface SortableCartItemProps {

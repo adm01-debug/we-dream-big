@@ -33,7 +33,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 
 // Mock hooks that use network/Supabase to avoid async leaks during tests
-vi.mock('@/hooks/useSecretsManager', () => ({
+vi.mock('@/hooks/admin', () => ({
   useSecretsManager: () => ({
     secrets: [],
     isLoading: false,
@@ -46,7 +46,7 @@ vi.mock('@/hooks/useSecretsManager', () => ({
   }),
 }));
 
-vi.mock('@/hooks/usePasswordResetRequests', () => ({
+vi.mock('@/hooks/auth', () => ({
   usePasswordResetRequests: () => ({
     requests: [],
     pendingCount: 0,

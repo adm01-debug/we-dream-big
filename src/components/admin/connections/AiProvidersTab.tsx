@@ -27,7 +27,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useAiProviders, useAiProviderMutations, type AiProvider, type AiApiFormat, type ProviderInput } from "@/hooks/useAiRouter";
+import { useAiProviders, useAiProviderMutations, type AiProvider, type AiApiFormat, type ProviderInput } from "@/hooks/intelligence";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 

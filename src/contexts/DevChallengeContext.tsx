@@ -26,7 +26,7 @@
  */
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import { StepUpAuthDialog } from "@/components/auth/StepUpAuthDialog";
-import type { StepUpAction } from "@/hooks/useStepUpAuth";
+import type { StepUpAction } from "@/hooks/auth";
 
 interface ChallengeRequest {
   action: StepUpAction;

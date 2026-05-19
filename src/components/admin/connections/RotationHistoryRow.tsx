@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useSecretsManager, type RotationHistoryEntry } from "@/hooks/useSecretsManager";
+import { useSecretsManager, type RotationHistoryEntry } from "@/hooks/admin";
 import { RotationHistoryDialog } from "./RotationHistoryDialog";
 import { formatMaskedSuffix } from "@/lib/masked-suffix";
 

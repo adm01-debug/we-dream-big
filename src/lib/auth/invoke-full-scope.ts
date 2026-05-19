@@ -27,7 +27,7 @@
  *   else toast.error(...);
  */
 import { supabase } from "@/integrations/supabase/client";
-import type { StepUpAction } from "@/hooks/useStepUpAuth";
+import type { StepUpAction } from "@/hooks/auth";
 import { handleStepUpError } from "@/lib/auth/step-up-error";
 
 interface ChallengeFn {

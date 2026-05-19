@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useQuoteBuilderState } from '../useQuoteBuilderState';
+import { useQuoteBuilderState } from "@/hooks/quotes/useQuoteBuilderState";
 import { toast } from 'sonner';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -21,7 +21,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock dos hooks customizados
-vi.mock('@/hooks/useQuotes', () => ({
+vi.mock('@/hooks/quotes', () => ({
   useQuotes: () => ({
     createQuote: vi.fn(),
     updateQuote: vi.fn(),
@@ -30,19 +30,19 @@ vi.mock('@/hooks/useQuotes', () => ({
   }),
 }));
 
-vi.mock('@/hooks/useQuoteTemplates', () => ({
+vi.mock('@/hooks/quotes', () => ({
   useQuoteTemplates: () => ({
     templates: [],
   }),
 }));
 
-vi.mock('@/hooks/useSellerDiscountLimits', () => ({
+vi.mock('@/hooks/quotes', () => ({
   useSellerDiscountLimits: () => ({
     myLimit: 50,
   }),
 }));
 
-vi.mock('@/hooks/useDiscountApproval', () => ({
+vi.mock('@/hooks/quotes', () => ({
   useDiscountApproval: () => ({
     requestApproval: vi.fn(),
   }),
@@ -54,7 +54,7 @@ vi.mock('@/contexts/AuthContext', () => ({
   }),
 }));
 
-vi.mock('@/hooks/useQuoteItems', () => ({
+vi.mock('@/hooks/quotes', () => ({
   useQuoteItems: () => ({
     items: [],
     setItems: vi.fn(),

@@ -12,7 +12,7 @@ import type {
   PriceTableInput,
   TechniqueInput,
   PriceTier,
-} from './types';
+} from "@/pages/advanced-price-search/types";
 
 import type {
   TabelaPrecoTecnica,

@@ -15,8 +15,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { BackButton } from '@/components/common/BackButton';
 import { KitAIPromptDialog } from '@/components/kit-builder/KitAIPromptDialog';
 import { KitIdentityPicker } from '@/components/kit-builder/KitIdentityPicker';
-import { useRBAC } from '@/hooks/useRBAC';
-import { useTemplateSnapshot } from '@/hooks/useTemplateSnapshot';
+import { useRBAC } from '@/hooks/auth';
+import { useTemplateSnapshot } from '@/hooks/kit-builder';
 import type { KitIdentity, KitState } from '@/lib/kit-builder';
 import { cn } from '@/lib/utils';
 

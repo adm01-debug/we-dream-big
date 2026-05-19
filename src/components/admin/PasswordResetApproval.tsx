@@ -17,7 +17,7 @@ import {
 import {
   usePasswordResetRequests,
   type PasswordResetRequest,
-} from '@/hooks/usePasswordResetRequests';
+} from '@/hooks/auth';
 
 export function PasswordResetApproval() {
   const { requests, isLoading, approveRequest, rejectRequest } = usePasswordResetRequests();

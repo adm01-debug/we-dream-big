@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { useSecretsManager } from "@/hooks/useSecretsManager";
+import { useSecretsManager } from "@/hooks/admin";
 import { ExpectedKeysMatchPanel } from "./ExpectedKeysMatchPanel";
 import { LastSyncRunPanel } from "./LastSyncRunPanel";
 import { CredentialCacheMetricsPanel } from "./CredentialCacheMetricsPanel";

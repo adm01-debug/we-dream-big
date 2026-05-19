@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PasswordResetApproval } from "@/components/admin/PasswordResetApproval";
 import { DiscountManagementPanel } from "@/components/admin/DiscountManagementPanel";
-import { usePasswordResetRequests } from "@/hooks/usePasswordResetRequests";
+import { usePasswordResetRequests } from "@/hooks/auth";
 
 import { useUserManagement } from "@/components/admin/users/useUserManagement";
 import { UserStatsCards } from "@/components/admin/users/UserStatsCards";

@@ -16,7 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useFavoritesStore } from "@/stores/useFavoritesStore";
 import { useComparisonStore } from "@/stores/useComparisonStore";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/ui";
 import { useOnboardingContext } from "@/contexts/OnboardingContext";
 import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
 
@@ -26,8 +26,8 @@ import { DiscountApprovalHeaderBadge } from "@/components/admin/DiscountApproval
 
 import { GlobalSearchPalette } from "@/components/search/GlobalSearchPalette";
 import { CartHeaderButton } from "@/components/cart/CartHeaderButton";
-import { useIsScrolled } from "@/hooks/useScroll";
-import { useCurrentSection } from "@/hooks/useCurrentSection";
+import { useIsScrolled } from "@/hooks/ui";
+import { useCurrentSection } from "@/hooks/ui";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/roles";
 import { RoleBadge } from "@/components/RoleBadge";
@@ -218,7 +218,7 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
                   className="relative h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all duration-200"
                   onClick={() => navigate("/favoritos")}
                   onMouseEnter={() => {
-                    import("../../pages/FavoritesPage");
+                    import("@/pages/products/FavoritesPage");
                   }}
                 >
                   <Heart className="h-[17px] w-[17px]" strokeWidth={1.75} />
@@ -242,7 +242,7 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
                   className="relative h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all duration-200"
                   onClick={() => navigate("/comparar")}
                   onMouseEnter={() => {
-                    import("../../pages/ComparePage");
+                    import("@/pages/products/ComparePage");
                   }}
                 >
                   <GitCompare className="h-[17px] w-[17px]" strokeWidth={1.75} />

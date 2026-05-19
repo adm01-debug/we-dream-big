@@ -13,7 +13,7 @@ import {
   getProductStock,
   type PromobrindProduct,
 } from '@/lib/external-db';
-import { useAuditLog } from '@/hooks/useAuditLog';
+import { useAuditLog } from '@/hooks/admin';
 import { toast } from 'sonner';
 import type { ProductFormData } from '@/components/admin/products/ProductFormSchema';
 import { Loader2, ArrowLeft, History, Pencil, Copy, FileDown } from 'lucide-react';

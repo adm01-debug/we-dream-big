@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import type { VoiceAgentPhase } from "@/hooks/useVoiceAgent";
+import type { VoiceAgentPhase } from "@/hooks/intelligence";
 
 function getThemeHSL(): [number, number, number] {
   if (typeof window === "undefined") return [25, 95, 53];

@@ -26,15 +26,15 @@ import {
 import { cn } from "@/lib/utils";
 import { ConnectionStatusBadge } from "./ConnectionStatusBadge";
 import { LatencyBadge } from "./LatencyBadge";
-import { useConnectionsOverview, type OverviewRow } from "@/hooks/useConnectionsOverview";
-import { useConnectionTester, type ConnectionType } from "@/hooks/useConnectionTester";
+import { useConnectionsOverview, type OverviewRow } from "@/hooks/intelligence";
+import { useConnectionTester, type ConnectionType } from "@/hooks/intelligence";
 import { ConnectionsOverviewFilters } from "./ConnectionsOverviewFilters";
-import { applyFilters, useConnectionsOverviewFilters } from "@/hooks/useConnectionsOverviewFilters";
+import { applyFilters, useConnectionsOverviewFilters } from "@/hooks/intelligence";
 import { ConnectionTestDetailsDialog } from "./ConnectionTestDetailsDialog";
 import { ConnectionTimelineDrawer } from "./ConnectionTimelineDrawer";
-import { useConsecutiveFailures } from "@/hooks/useConsecutiveFailures";
+import { useConsecutiveFailures } from "@/hooks/common";
 import { CONSECUTIVE_FAILURE_THRESHOLD } from "@/lib/connections-config";
-import { useSecretsManager } from "@/hooks/useSecretsManager";
+import { useSecretsManager } from "@/hooks/admin";
 import { ConnectionRowSourceBadge } from "./ConnectionRowSourceBadge";
 
 const TYPE_META: Record<string, { label: string; Icon: typeof Database }> = {

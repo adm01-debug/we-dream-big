@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, CalendarPlus, CalendarRange, CalendarDays, Building2 } from "lucide-react";
-import { useNoveltyStats } from "@/hooks/useNovelties";
+import { useNoveltyStats } from "@/hooks/products";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 

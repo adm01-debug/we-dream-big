@@ -3,8 +3,8 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { use2FA } from '@/hooks/use2FA';
-import { useAllowedIPs } from '@/hooks/useAllowedIPs';
+import { use2FA } from '@/hooks/auth';
+import { useAllowedIPs } from '@/hooks/admin';
 
 export interface SecurityMetrics {
   score: number;

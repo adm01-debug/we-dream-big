@@ -1,6 +1,6 @@
 import { useState, useCallback, type MouseEvent } from 'react';
 import { ChevronRight, ChevronDown, Folder, FolderOpen, X, ChevronLeft, Layers } from 'lucide-react';
-import { useCategoriesTree, type CategoryNode, type CategoryTreeItem } from '@/hooks/useCategoriesTree';
+import { useCategoriesTree, type CategoryNode, type CategoryTreeItem } from '@/hooks/products';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

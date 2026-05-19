@@ -26,8 +26,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatCurrency, type KitBox, type KitItem, type KitItemPersonalization } from '@/lib/kit-builder';
-import { useProductCustomizationOptions } from '@/hooks/useProductCustomizationOptions';
-import { useCustomizationPriceReactive } from '@/hooks/useCustomizationPrice';
+import { useProductCustomizationOptions } from '@/hooks/products';
+import { useCustomizationPriceReactive } from '@/hooks/simulation';
 import type { GravacaoLocation } from '@/types/customization';
 
 interface PersonalizationConfigProps {

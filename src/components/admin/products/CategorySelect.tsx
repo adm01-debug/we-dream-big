@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { useExternalCategoriesQuery, type ExternalCategory } from '@/hooks/useExternalCategoriesQuery';
+import { useExternalCategoriesQuery, type ExternalCategory } from '@/hooks/products';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -32,8 +32,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { KpiCard } from "@/components/ui/kpi-card";
-import { useMarketIntelligenceMacro, type MacroSupplierMetrics, type MacroMarketPoint, type MacroMarketKpis } from "@/hooks/useMarketIntelligenceMacro";
-import { useSupplierNames } from "@/hooks/useSupplierNames";
+import { useMarketIntelligenceMacro, type MacroSupplierMetrics, type MacroMarketPoint, type MacroMarketKpis } from "@/hooks/intelligence";
+import { useSupplierNames } from "@/hooks/products";
 import { safeParseDateForChart } from "@/lib/stock-chart-utils";
 import { SupplierChartFilter } from "@/components/products/SupplierChartFilter";
 

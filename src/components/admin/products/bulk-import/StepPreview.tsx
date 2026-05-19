@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { CheckCircle2, XCircle, AlertTriangle, RefreshCw, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ImportMode } from '@/lib/external-db/batch-import';
-import type { ValidationResult, ColumnMapping } from './types';
+import type { ValidationResult, ColumnMapping } from "@/pages/advanced-price-search/types";
 
 interface StepPreviewProps {
   validationResults: ValidationResult[];

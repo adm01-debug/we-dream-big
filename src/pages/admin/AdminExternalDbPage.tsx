@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useExternalDbInspect } from "@/hooks/useExternalDbInspect";
+import { useExternalDbInspect } from "@/hooks/intelligence";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import {
   diffColumns,
   buildMarkdownReport,
   type TableDiff,
-} from "./engraving-schema-diff";
+} from "@/pages/admin/engraving-schema-diff";
 import {
   getContractMismatches,
   getRecentMismatches,

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Volume2, Mic, Loader2, Sparkles } from "lucide-react";
-import type { VoiceAgentPhase } from "@/hooks/useVoiceAgent";
+import type { VoiceAgentPhase } from "@/hooks/intelligence";
 import { usePhaseColors } from "./usePhaseColors";
 import { FlowingWaveRing, ParticleField, LightRays } from "./VoiceVisualEffects";
 

@@ -26,13 +26,13 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { VisuallyHidden } from "@/components/a11y/VisuallyHidden";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/hooks/useProducts";
+import type { Product } from "@/hooks/products";
 import { ProductCategoryBadges } from "./ProductCategoryBadges";
 import { QuickViewGallery } from "./quick-view/QuickViewGallery";
 import { ProductColorSelector, type ProductColor } from "./ProductColorSelector";
 import { sortByColorGroup } from "@/utils/colorSorting";
 import { toast } from "sonner";
-import { useProductImages, type ProductImage } from "@/hooks/useProductImages";
+import { useProductImages, type ProductImage } from "@/hooks/products";
 import { getCdnUrl, getSrcSet, getColorImages, type ProductImageMeta } from "@/utils/image-utils";
 import { PriceFreshnessBadge } from "@/components/products/PriceFreshnessBadge";
 

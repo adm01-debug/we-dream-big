@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useCatalogState } from "@/hooks/useCatalogState";
+import { useCatalogState } from "@/hooks/products";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ProductsProvider } from "@/contexts/ProductsContext";
@@ -9,7 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import React from "react";
 
 // Mock all internal hooks used by useCatalogState to avoid side effects and hangs
-vi.mock("@/hooks/useProductsLightweight", () => ({
+vi.mock("@/hooks/products", () => ({
   useProductsCatalog: vi.fn(() => ({
     data: { pages: [{ products: [], totalEstimate: 0 }] },
     isLoading: false,
@@ -21,7 +21,7 @@ vi.mock("@/hooks/useProductsLightweight", () => ({
   })),
 }));
 
-vi.mock("@/hooks/useSearch", () => ({
+vi.mock("@/hooks/common", () => ({
   useSearch: vi.fn(() => ({
     suggestions: [],
     quickSuggestions: [],
@@ -31,7 +31,7 @@ vi.mock("@/hooks/useSearch", () => ({
   })),
 }));
 
-vi.mock("@/hooks/useProductsByMaterial", () => ({
+vi.mock("@/hooks/products", () => ({
   useProductsByMaterial: vi.fn(() => ({
     productIds: [],
     hasFilter: false,
@@ -39,7 +39,7 @@ vi.mock("@/hooks/useProductsByMaterial", () => ({
   })),
 }));
 
-vi.mock("@/hooks/useProductsByCategory", () => ({
+vi.mock("@/hooks/products", () => ({
   useProductsByCategory: vi.fn(() => ({
     productIds: [],
     hasFilter: false,
@@ -47,35 +47,35 @@ vi.mock("@/hooks/useProductsByCategory", () => ({
   })),
 }));
 
-vi.mock("@/hooks/useExternalCategoriesQuery", () => ({
+vi.mock("@/hooks/products", () => ({
   useExternalCategoriesQuery: vi.fn(() => ({ data: [] })),
 }));
 
-vi.mock("@/hooks/useCatalogRealStats", () => ({
+vi.mock("@/hooks/products", () => ({
   useCatalogRealStats: vi.fn(() => ({ data: null })),
 }));
 
-vi.mock("@/hooks/usePromoSalesRanking", () => ({
+vi.mock("@/hooks/intelligence", () => ({
   usePromoSalesRanking: vi.fn(() => ({ data: new Map() })),
 }));
 
-vi.mock("@/hooks/useSupplierSalesRanking", () => ({
+vi.mock("@/hooks/products", () => ({
   useSupplierSalesRanking: vi.fn(() => ({ data: new Map() })),
 }));
 
-vi.mock("@/hooks/useColorEnrichment", () => ({
+vi.mock("@/hooks/products", () => ({
   useColorEnrichment: vi.fn(() => ({ data: new Map() })),
 }));
 
-vi.mock("@/hooks/useProductFuzzySearch", () => ({
+vi.mock("@/hooks/products", () => ({
   useProductFuzzySearch: vi.fn(() => ({ results: [], hasSearch: false })),
 }));
 
-vi.mock("@/hooks/useCatalogFiltering", () => ({
+vi.mock("@/hooks/products", () => ({
   useCatalogFiltering: vi.fn((args) => args.realProducts || []),
 }));
 
-vi.mock("@/hooks/useFavoriteQuickAdd", () => ({
+vi.mock("@/hooks/favorites", () => ({
   useFavoriteQuickAdd: vi.fn(() => ({
     handleFavoriteClick: vi.fn(),
     defaultList: null,

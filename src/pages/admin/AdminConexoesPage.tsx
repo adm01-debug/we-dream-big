@@ -34,7 +34,7 @@ import { AiProvidersTab } from "@/components/admin/connections/AiProvidersTab";
 import { AiModelsTab } from "@/components/admin/connections/AiModelsTab";
 import { AiRoutingTab } from "@/components/admin/connections/AiRoutingTab";
 import { useCallback, useEffect, useState } from "react";
-import { useSecretsManager } from "@/hooks/useSecretsManager";
+import { useSecretsManager } from "@/hooks/admin";
 import { useSeverityChangeNotifier } from "@/components/admin/connections/useSeverityChangeNotifier";
 import { useZoneVisibility, type ZoneId } from "@/components/admin/connections/useZoneVisibility";
 import { useZoneCollapse } from "@/components/admin/connections/useZoneCollapse";

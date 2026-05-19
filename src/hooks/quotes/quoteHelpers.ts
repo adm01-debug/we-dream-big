@@ -2,7 +2,7 @@
  * quoteHelpers — Cálculos e payloads reutilizáveis de orçamentos
  */
 import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
-import type { Quote, QuoteItem } from "./quoteTypes";
+import type { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
 
 /** Half-up rounding to 2 decimals — SSOT for monetary persistence */
 export const round2 = (n: number | null | undefined): number => {

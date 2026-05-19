@@ -49,7 +49,7 @@ import {
   useSecretsManager,
   type SecretStatus,
   type RotationHistoryEntry,
-} from '@/hooks/useSecretsManager';
+} from '@/hooks/admin';
 import { ALLOWED_SECRET_NAMES } from './secretWhitelist';
 import { formatMaskedSuffix, normalizeMaskedSuffix } from '@/lib/masked-suffix';
 

@@ -21,13 +21,13 @@ import { PromptBank } from "@/components/magic-up/PromptBank";
 import { PromptGenerator } from "@/components/magic-up/PromptGenerator";
 import { cn } from "@/lib/utils";
 import { getCompanyDisplayName } from "@/types/crm";
-import type { useMagicUpState } from "@/hooks/useMagicUpState";
+import type { useMagicUpState } from "@/hooks/intelligence";
 import { MagicUpCampaignPanel } from "@/components/magic-up/MagicUpCampaignPanel";
 import { MagicUpBrandKitPanel } from "@/components/magic-up/MagicUpBrandKitPanel";
 import { MagicUpCreativeControls } from "@/components/magic-up/MagicUpCreativeControls";
 import { MagicUpRefinementActions } from "@/components/magic-up/MagicUpRefinementActions";
 import { MagicUpBatchGenerationPanel } from "@/components/magic-up/MagicUpBatchGenerationPanel";
-import { BRIEF_OPTIONS, toHuman, type MagicUpBrief } from "./magicUpStrategy";
+import { BRIEF_OPTIONS, toHuman, type MagicUpBrief } from "@/pages/magic-up/magicUpStrategy";
 
 type MagicUpStateReturn = ReturnType<typeof useMagicUpState>;
 

@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { formatCurrency, formatNumber } from './utils';
-import type { CustomizationPriceV2 } from '@/hooks/useGravacaoV2';
+import type { CustomizationPriceV2 } from '@/hooks/simulation';
 import { toast } from 'sonner';
 
 interface PriceResultV51Props {

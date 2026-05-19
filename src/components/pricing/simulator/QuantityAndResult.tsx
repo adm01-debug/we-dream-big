@@ -29,9 +29,9 @@ import {
   useCustomizationPriceLegacy, 
   useFaixasPrecoOficial, 
   type CustomizationPriceV2 
-} from '@/hooks/useGravacaoV2';
+} from '@/hooks/simulation';
 import { formatCurrency, formatNumber } from './utils';
-import type { Product, ProductTechnique } from './types';
+import type { Product, ProductTechnique } from "@/pages/advanced-price-search/types";
 import { toast } from 'sonner';
 
 interface QuantityAndResultProps {

@@ -13,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle2, RefreshCcw, ShieldCheck, ChevronDown, ChevronUp } from "lucide-react";
-import { useDevAccessAudit } from "@/hooks/useDevAccessAudit";
+import { useDevAccessAudit } from "@/hooks/admin";
 
 export function DevAccessAuditAlert() {
   const { enabled, loading, results, blocked, ranAt, run } = useDevAccessAudit();

@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { resolveSource } from "./CredentialsSourceFilterContext";
-import type { SecretStatus } from "@/hooks/useSecretsManager";
+import type { SecretStatus } from "@/hooks/admin";
 
 interface Props {
   secrets: SecretStatus[];

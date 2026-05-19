@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useCategoryIcons } from "@/hooks/useCategoryIcons";
-import { useMaterialFilter } from "@/hooks/useMaterialFilter";
-import { useSuppliers } from "@/hooks/useSuppliers";
-import { useRamoAtividadeFilter } from "@/hooks/useRamoAtividadeFilter";
-import { useAdvancedFilters, SORT_OPTIONS } from "@/hooks/useAdvancedFilters";
-import type { FilterState, FilterPanelProps } from "./types";
+import { useDebounce } from "@/hooks/common";
+import { useCategoryIcons } from "@/hooks/products";
+import { useMaterialFilter } from "@/hooks/products";
+import { useSuppliers } from "@/hooks/products";
+import { useRamoAtividadeFilter } from "@/hooks/crm";
+import { useAdvancedFilters, SORT_OPTIONS } from "@/hooks/products";
+import type { FilterState, FilterPanelProps } from "@/pages/advanced-price-search/types";
 
 export function useFilterPanelState(
   filters: FilterState,

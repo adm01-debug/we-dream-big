@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { KpiCard } from "@/components/ui/kpi-card";
-import { useCommercialKPIs } from "@/hooks/useCommercialIntelligence";
+import { useCommercialKPIs } from "@/hooks/intelligence";
 
 interface Props {
   days: number;

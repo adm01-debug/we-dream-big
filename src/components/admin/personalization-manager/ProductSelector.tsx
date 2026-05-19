@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, Search, Loader2 } from "lucide-react";
-import type { Product, ProductGroup } from "./types";
+import type { Product, ProductGroup } from "@/pages/advanced-price-search/types";
 
 interface ProductSelectorProps {
   searchQuery: string;

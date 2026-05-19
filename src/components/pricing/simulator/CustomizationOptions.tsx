@@ -8,8 +8,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Palette, Ruler, Loader2, AlertCircle } from 'lucide-react';
-import { useTechniquePricing } from '@/hooks/useTechniquePricing';
-import type { ProductTechnique } from './types';
+import { useTechniquePricing } from '@/hooks/simulation';
+import type { ProductTechnique } from "@/pages/advanced-price-search/types";
 
 interface CustomizationOptionsProps {
   technique: ProductTechnique;

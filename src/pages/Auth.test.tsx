@@ -1,12 +1,12 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Auth from './Auth';
+import Auth from "@/pages/auth/Auth";
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { HelmetProvider } from 'react-helmet-async';
 
 // Mocking useIPValidation
-vi.mock('@/hooks/useIPValidation', () => ({
+vi.mock('@/hooks/admin', () => ({
   useIPValidation: () => ({
     validateIPForAuthenticatedUser: vi.fn().mockResolvedValue({ isAllowed: true }),
     logLoginAttempt: vi.fn(),

@@ -12,7 +12,7 @@ import { detectProductBounds } from "@/lib/product-bounds-detector";
 import { MockupApprovalPreview } from "./MockupApprovalPreview";
 import type { MockupApprovalData } from "@/types/mockup-approval";
 import type { MockupClient } from "@/components/mockup/MockupConfigPanel";
-import type { DetectedColor } from "@/hooks/useLogoColorAnalysis";
+import type { DetectedColor } from "@/hooks/simulation";
 
 interface MockupLayoutButtonsProps {
   /** The AI-generated mockup URL */

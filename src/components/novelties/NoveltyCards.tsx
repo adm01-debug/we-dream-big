@@ -11,7 +11,7 @@ import { NoveltyBadge } from "@/components/products/NoveltyBadge";
 import { ProductSparkline } from "@/components/products/ProductSparkline";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
 import { cn } from "@/lib/utils";
-import type { NoveltyWithDetails } from "@/hooks/useNovelties";
+import type { NoveltyWithDetails } from "@/hooks/products";
 
 function isFresh(detectedAt: string): boolean {
   return Math.floor((Date.now() - new Date(detectedAt).getTime()) / 86400000) <= 2;

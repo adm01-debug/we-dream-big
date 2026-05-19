@@ -8,7 +8,7 @@
  * - Keep messages action-oriented (what to do next).
  * - Avoid raw stack traces, HTTP codes or English jargon.
  */
-import type { SecretError } from "@/hooks/useSecretsManager";
+import type { SecretError } from "@/hooks/admin";
 
 export type SecretErrorCategory =
   | "permission"

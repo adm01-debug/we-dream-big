@@ -11,7 +11,7 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { logger } from "@/lib/logger";
 import type {
   Product, ProductGroup, ProductGroupMember, Component, Location, Technique, LocationTechnique,
-} from "./types";
+} from "@/pages/advanced-price-search/types";
 
 export function usePersonalizationManager() {
   const queryClient = useQueryClient();

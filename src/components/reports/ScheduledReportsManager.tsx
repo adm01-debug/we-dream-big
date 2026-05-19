@@ -17,7 +17,7 @@ import {
   type ReportFrequency,
   type ReportType,
   type CreateReportInput,
-} from '@/hooks/useScheduledReports';
+} from '@/hooks/intelligence';
 
 export function ScheduledReportsManager() {
   const { reports, isLoading, createReport, toggleActive, deleteReport, FREQUENCY_LABELS, REPORT_TYPE_LABELS } = useScheduledReports();

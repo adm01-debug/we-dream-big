@@ -2,13 +2,13 @@
  * useClientsComparison — paraleliza dados de até 3 clientes para comparação lado-a-lado.
  * Composição de hooks BI existentes (sem novas RPCs).
  */
-import { useClientHealthScore } from "./useClientHealthScore";
-import { useClientBI } from "./useClientBI";
-import { useClientSeasonality } from "./useClientSeasonality";
-import { useClientAffinity } from "./useClientAffinity";
-import { useClientCategoryAffinity } from "./useClientCategoryAffinity";
-import { useIndustryCategoryTrends } from "./useIndustryCategoryTrends";
-import { useCrmCompany } from "@/hooks/useCrmCompanies";
+import { useClientHealthScore } from "@/hooks/bi/useClientHealthScore";
+import { useClientBI } from "@/hooks/bi/useClientBI";
+import { useClientSeasonality } from "@/hooks/bi/useClientSeasonality";
+import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
+import { useClientCategoryAffinity } from "@/hooks/bi/useClientCategoryAffinity";
+import { useIndustryCategoryTrends } from "@/hooks/bi/useIndustryCategoryTrends";
+import { useCrmCompany } from "@/hooks/crm";
 import { getCompanyDisplayName } from "@/types/crm";
 
 export interface ClientComparisonRow {

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { resolveSource } from "./CredentialsSourceFilterContext";
 import { useExplainMode } from "./ExplainModeContext";
-import type { SecretStatus, SecretError } from "@/hooks/useSecretsManager";
+import type { SecretStatus, SecretError } from "@/hooks/admin";
 
 /**
  * CardSourceDiagnostic — modo debug por card.

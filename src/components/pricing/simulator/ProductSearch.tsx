@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
-import { useExternalProductSearch } from '@/hooks/useExternalSimulator';
+import { useExternalProductSearch } from '@/hooks/simulation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Package, X } from 'lucide-react';
 import { formatCurrency } from './utils';
-import type { Product } from './types';
+import type { Product } from "@/pages/advanced-price-search/types";
 
 interface ProductSearchProps {
   onSelect: (product: Product | null) => void;

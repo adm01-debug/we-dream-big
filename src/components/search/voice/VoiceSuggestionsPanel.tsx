@@ -4,7 +4,7 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Keyboard, X } from "lucide-react";
-import type { VoiceAgentPhase } from "@/hooks/useVoiceAgent";
+import type { VoiceAgentPhase } from "@/hooks/intelligence";
 import type { VoiceHistoryEntry } from "@/hooks/voice/useVoiceHistory";
 
 const SUGGESTION_COMMANDS = [

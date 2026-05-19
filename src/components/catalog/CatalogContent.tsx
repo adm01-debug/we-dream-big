@@ -17,10 +17,10 @@ import { SelectionCheckbox } from '@/components/common/SelectionCheckbox';
 import { CatalogBulkModals } from './CatalogBulkModals';
 import { useCatalogSelection } from './useCatalogSelection';
 import { cn } from '@/lib/utils';
-import type { Product } from '@/hooks/useProducts';
-import type { ViewMode } from '@/hooks/useCatalogState';
+import type { Product } from '@/hooks/products';
+import type { ViewMode } from '@/hooks/products';
 import type { ColumnCount } from '@/components/products/ColumnSelector';
-import { SparklineSalesProvider } from '@/hooks/useSparklineSales';
+import { SparklineSalesProvider } from '@/hooks/intelligence';
 
 interface CatalogContentProps {
   viewMode: ViewMode;

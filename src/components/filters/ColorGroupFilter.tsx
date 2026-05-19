@@ -15,7 +15,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { useColorSystem, ColorGroup, ColorNuance, isLightColor } from '@/hooks/useColorSystem';
+import { useColorSystem, ColorGroup, ColorNuance, isLightColor } from '@/hooks/products';
 
 // =====================================================
 // TIPOS

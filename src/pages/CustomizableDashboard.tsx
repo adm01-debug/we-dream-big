@@ -24,7 +24,7 @@ import { ScopeBadge } from '@/components/common/ScopeBadge';
 import { ScheduledReportsManager } from '@/components/reports/ScheduledReportsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCurrentOrgId } from '@/hooks/useCurrentOrgId';
+import { useCurrentOrgId } from '@/hooks/common';
 import { useSalesScope } from '@/lib/auth/visibility-scope';
 import { toast } from 'sonner';
 

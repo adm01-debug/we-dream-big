@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useDeviceDetection } from '@/hooks/useDeviceDetection';
-import { useToast } from '@/hooks/use-toast';
+import { useDeviceDetection } from '@/hooks/admin';
+import { useToast } from '@/hooks/ui';
 import { 
   Monitor, 
   Smartphone, 

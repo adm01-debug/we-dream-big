@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useCustomizationPriceReactive } from "@/hooks/useCustomizationPrice";
+import { useCustomizationPriceReactive } from "@/hooks/simulation";
 import type { TechniqueOption, CustomizationPriceResponseV6 } from "@/types/customization";
 
 interface ConfigurationPanelV6Props {

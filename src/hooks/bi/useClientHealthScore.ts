@@ -11,9 +11,9 @@
  * Tier: 🟢 Saudável >75 · 🟡 Atenção 50-75 · 🔴 Risco <50
  */
 import { useMemo } from "react";
-import { useClientBI } from "./useClientBI";
-import { useClientVsIndustry } from "./useClientVsIndustry";
-import { useClientSeasonality } from "./useClientSeasonality";
+import { useClientBI } from "@/hooks/bi/useClientBI";
+import { useClientVsIndustry } from "@/hooks/bi/useClientVsIndustry";
+import { useClientSeasonality } from "@/hooks/bi/useClientSeasonality";
 
 export type HealthTier = "healthy" | "attention" | "risk" | "unknown";
 

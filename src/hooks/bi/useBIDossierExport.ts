@@ -4,7 +4,7 @@
  */
 import { useCallback, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCrmCompany } from "@/hooks/useCrmCompanies";
+import { useCrmCompany } from "@/hooks/crm";
 import { useClientBI } from "@/hooks/bi/useClientBI";
 import { useClientVsIndustry } from "@/hooks/bi/useClientVsIndustry";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
