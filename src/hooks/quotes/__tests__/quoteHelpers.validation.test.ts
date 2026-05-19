@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateDiscount } from '../quoteHelpers';
+import { validateDiscount } from "@/hooks/quotes/quoteHelpers";
 
 describe('quoteHelpers validation logic', () => {
   it('throws error when percent is > 100', () => {

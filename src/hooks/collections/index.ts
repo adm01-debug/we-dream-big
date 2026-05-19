@@ -1,3 +1,3 @@
 // Exporting all hooks from collections
-export * from './useCollections';
-export * from './useExternalCollections';
+export * from "@/hooks/collections/useCollections";
+export * from "@/hooks/collections/useExternalCollections";

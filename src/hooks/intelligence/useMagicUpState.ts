@@ -16,7 +16,7 @@ import { getCompanyDisplayName, type CrmCompany } from '@/types/crm';
 import type { PrintAreaWithTechniques } from '@/types/gravacao';
 import type { ScenePrompt } from '@/components/magic-up/PromptBank';
 import type { GenerationHistoryItem } from '@/components/magic-up/AdImageResult';
-import { useMagicUpGeneration } from './useMagicUpGeneration';
+import { useMagicUpGeneration } from "@/hooks/intelligence/useMagicUpGeneration";
 import {
   DEFAULT_BRAND_KIT,
   DEFAULT_BRIEF,

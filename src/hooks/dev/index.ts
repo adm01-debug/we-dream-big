@@ -1,2 +1,2 @@
 // Exporting all hooks from dev
-export * from './useBridgeMetrics';
+export * from "@/hooks/dev/useBridgeMetrics";

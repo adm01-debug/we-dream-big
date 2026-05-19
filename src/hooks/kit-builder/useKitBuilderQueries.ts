@@ -17,7 +17,7 @@ import {
 import { MOCK_BOXES, MOCK_ITEMS } from '@/lib/kit-builder/mock-data';
 
 // Import transformers from the main hook file
-import { transformToKitBox, transformToKitItem } from './useKitBuilderTransformers';
+import { transformToKitBox, transformToKitItem } from "@/hooks/kit-builder/useKitBuilderTransformers";
 import { logger } from '@/lib/logger';
 
 function filterBoxes(

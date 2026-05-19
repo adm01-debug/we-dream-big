@@ -1,7 +1,7 @@
 // Exporting all hooks from simulator
-export * from './useLivePricePreview';
-export * from './useSimulatorWizard';
-export * from './useUndoRedo';
-export * from './useWizardDrafts';
-export * from './useWizardPersistence';
-export * from './useWizardPricing';
+export * from "@/hooks/simulator/useLivePricePreview";
+export * from "@/hooks/simulator/useSimulatorWizard";
+export * from "@/hooks/simulator/useUndoRedo";
+export * from "@/hooks/simulator/useWizardDrafts";
+export * from "@/hooks/simulator/useWizardPersistence";
+export * from "@/hooks/simulator/useWizardPricing";

@@ -12,7 +12,7 @@ import {
   type Technique,
   type SelectedClient,
   type ProductColor,
-} from "./useMagicUpState";
+} from "@/hooks/intelligence/useMagicUpState";
 import type { ScenePrompt } from "@/components/magic-up/PromptBank";
 import type { GenerationHistoryItem } from "@/components/magic-up/AdImageResult";
 import { buildQualityDiagnosis, type MagicUpBatchVariant, type MagicUpBrandKit, type MagicUpBrief, type MagicUpCampaign, type MagicUpCopyPack, type MagicUpCreativeControls, type MagicUpCurationStatus, type MagicUpQualityDiagnosis, type MagicUpQualityScore, type MagicUpRefinement } from "@/pages/magic-up/magicUpStrategy";

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQuoteItems } from '../useQuoteItems';
+import { useQuoteItems } from "@/hooks/quotes/useQuoteItems";
 
 describe('useQuoteItems Auto-Expand', () => {
   beforeEach(() => {

@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSalesScope } from '@/lib/auth/visibility-scope';
-import { emptyKpis, type DailySalesPoint, type SalesKpis, type SellerRanking } from './useSalesHistory';
+import { emptyKpis, type DailySalesPoint, type SalesKpis, type SellerRanking } from "@/hooks/intelligence/useSalesHistory";
 
 export function useSalesHistoryMacro(days = 30) {
   const { user } = useAuth();

@@ -11,7 +11,7 @@ import {
   type VariantStock,
   defaultStockFilters,
 } from '@/types/stock';
-import { fetchAndProcessStockData } from './stock/stockFetcher';
+import { fetchAndProcessStockData } from "@/hooks/stock/stockFetcher";
 
 export function useVariantStock() {
   const [filters, setFilters] = useState<StockFilters>(defaultStockFilters);

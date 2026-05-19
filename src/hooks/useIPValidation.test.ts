@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useIPValidation } from './useIPValidation';
+import { useIPValidation } from "@/hooks/admin/useIPValidation";
 import { supabase } from '@/integrations/supabase/client';
 
 // Mock Supabase

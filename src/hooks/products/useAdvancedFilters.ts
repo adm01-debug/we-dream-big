@@ -7,7 +7,7 @@ import {
   type ExternalCategory,
   type ExternalTechnique,
   type ExternalSupplier,
-} from './useExternalDatabase';
+} from "@/hooks/intelligence/useExternalDatabase";
 
 // Re-exportar tipos e constantes dos novos arquivos
 export type {

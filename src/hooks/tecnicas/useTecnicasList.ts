@@ -10,7 +10,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { TECNICAS_QUERY_OPTIONS } from '@/lib/query-config';
-import { TECNICAS_QUERY_KEYS } from './keys';
+import { TECNICAS_QUERY_KEYS } from "@/hooks/tecnicas/keys";
 import type { 
   TecnicaUnificada, 
   TecnicaResumo,

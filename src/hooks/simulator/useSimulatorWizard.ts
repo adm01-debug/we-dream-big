@@ -22,11 +22,11 @@ import {
   isStepComplete,
   canNavigateToStep,
 } from '@/types/domain/simulator-wizard';
-import { useWizardPricing } from './useWizardPricing';
-import { useWizardPersistence, loadSession, clearSession } from './useWizardPersistence';
-import { useUndoableReducer } from './useUndoRedo';
+import { useWizardPricing } from "@/hooks/simulator/useWizardPricing";
+import { useWizardPersistence, loadSession, clearSession } from "@/hooks/simulator/useWizardPersistence";
+import { useUndoableReducer } from "@/hooks/simulator/useUndoRedo";
 import { logger } from "@/lib/logger";
-import { wizardReducer, initialState } from './wizardReducer';
+import { wizardReducer, initialState } from "@/hooks/simulator/wizardReducer";
 
 export function useSimulatorWizard() {
   const savedSession = useRef(loadSession());

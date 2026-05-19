@@ -1,4 +1,4 @@
 // Exporting all hooks from gravacao
-export * from './useFornecedoresGravacao';
-export * from './useTecnicasGravacao';
-export * from './useVariantesGravacao';
+export * from "@/hooks/gravacao/useFornecedoresGravacao";
+export * from "@/hooks/gravacao/useTecnicasGravacao";
+export * from "@/hooks/gravacao/useVariantesGravacao";

@@ -4,7 +4,7 @@
 import { useMemo } from "react";
 import type { Product } from "@/hooks/products";
 import type { FilterState } from "@/components/filters/FilterPanel";
-import type { SortOption } from "./useCatalogState";
+import type { SortOption } from "@/hooks/products/useCatalogState";
 import { sortProducts } from "@/utils/product-sorting";
 
 interface CatalogFilteringOptions {

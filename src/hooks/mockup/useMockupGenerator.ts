@@ -38,7 +38,7 @@ import {
   generateMockupApi,
   downloadMockupAsPdf,
   deleteMockupFromDb,
-} from './mockup/mockupGenerationService';
+} from "@/hooks/mockup/mockupGenerationService";
 
 // Re-export types for consumers
 export type { Technique, GeneratedMockup };

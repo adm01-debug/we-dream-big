@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
-import { useMaterialGroups } from "./useMaterialGroups";
-import { useMaterialsComplete } from "./useMaterialTypes";
+import { useMaterialGroups } from "@/hooks/products/useMaterialGroups";
+import { useMaterialsComplete } from "@/hooks/products/useMaterialTypes";
 import { type MaterialGroup, type MaterialComplete } from "@/services/materialService";
 
 export interface MaterialFilterState {

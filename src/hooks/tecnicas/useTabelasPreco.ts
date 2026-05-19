@@ -10,7 +10,7 @@ import {
   rawToTabelaPrecoTecnica,
   transformRawToTabelas 
 } from '@/lib/personalization';
-import { TECNICAS_QUERY_KEYS } from './keys';
+import { TECNICAS_QUERY_KEYS } from "@/hooks/tecnicas/keys";
 import type { 
   TabelaPrecoTecnica,
   TabelaPrecoFiltros,

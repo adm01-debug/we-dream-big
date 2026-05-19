@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import Fuse from 'fuse.js';
-import type { Product } from './useProducts';
+import type { Product } from "@/hooks/products/useProducts";
 import { createProductFuseOptions, rankProductSearchResults } from '@/utils/product-search';
 
 /**

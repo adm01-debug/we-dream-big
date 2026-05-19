@@ -4,7 +4,7 @@ import { type Product } from "@/hooks/products";
 import { CATEGORIES, SUPPLIERS } from "@/data/mockData";
 import { ProductsContext } from "@/contexts/ProductsContext";
 import { createProductFuseOptions, rankProductSearchResults } from "@/utils/product-search";
-import { useSearchHistory } from "./useSearchHistory";
+import { useSearchHistory } from "@/hooks/common/useSearchHistory";
 
 export interface SearchResult {
   type: "product" | "category" | "supplier" | "history";

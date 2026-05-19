@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
-import { useRamosAtividadeGroups } from "./useRamoAtividade";
-import { useSegmentosCompletos } from "./useRamoAtividadeFilho";
+import { useRamosAtividadeGroups } from "@/hooks/crm/useRamoAtividade";
+import { useSegmentosCompletos } from "@/hooks/crm/useRamoAtividadeFilho";
 import type { RamoAtividadeGroup, SegmentoComplete, RamoAtividadeFilterState } from "@/types/ramo-atividade";
 
 export interface UseRamoAtividadeFilterReturn {

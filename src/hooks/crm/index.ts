@@ -1,7 +1,7 @@
 // Exporting all hooks from crm
-export * from './useClientTopProducts';
-export * from './useCrmCompanies';
-export * from './useProdutoRamoAtividade';
-export * from './useRamoAtividade';
-export * from './useRamoAtividadeFilho';
-export * from './useRamoAtividadeFilter';
+export * from "@/hooks/crm/useClientTopProducts";
+export * from "@/hooks/crm/useCrmCompanies";
+export * from "@/hooks/crm/useProdutoRamoAtividade";
+export * from "@/hooks/crm/useRamoAtividade";
+export * from "@/hooks/crm/useRamoAtividadeFilho";
+export * from "@/hooks/crm/useRamoAtividadeFilter";

@@ -23,7 +23,7 @@ import {
   checkItemFits,
   calculateTotalKitPrice,
 } from '@/lib/kit-builder';
-import { useKitBuilderQueries } from './useKitBuilderQueries';
+import { useKitBuilderQueries } from "@/hooks/kit-builder/useKitBuilderQueries";
 
 // ============================================
 // HOOK PRINCIPAL

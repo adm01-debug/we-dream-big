@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { ConnectionType } from "./useConnectionTester";
+import type { ConnectionType } from "@/hooks/intelligence/useConnectionTester";
 
 export interface TestHistoryItem {
   id: string;

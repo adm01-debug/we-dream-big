@@ -9,10 +9,10 @@ import { useCurrentOrgId } from '@/hooks/common';
 import { useSalesScope } from '@/lib/auth/visibility-scope';
 import { applySellerScope } from '@/lib/auth/apply-seller-scope';
 import { logger } from '@/lib/logger';
-import { getSinceDate, aggregateSegments, aggregateClients } from './intelligence/intelligenceHelpers';
+import { getSinceDate, aggregateSegments, aggregateClients } from "@/hooks/intelligence/intelligenceHelpers";
 
 // Re-export types
-export type { FilterParams } from './intelligence/intelligenceHelpers';
+export type { FilterParams } from "@/hooks/intelligence/intelligenceHelpers";
 
 export interface IntelligenceKPI {
   totalQuotes: number; totalOrders: number; conversionRate: number;

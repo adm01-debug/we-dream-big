@@ -1,6 +1,6 @@
 // Exporting all hooks from comparison
-export * from './useComparison';
-export * from './useComparisonScore';
-export * from './useComparisonShortcuts';
-export * from './useComparisonSync';
-export * from './useComparisonWeights';
+export * from "@/hooks/comparison/useComparison";
+export * from "@/hooks/comparison/useComparisonScore";
+export * from "@/hooks/comparison/useComparisonShortcuts";
+export * from "@/hooks/comparison/useComparisonSync";
+export * from "@/hooks/comparison/useComparisonWeights";

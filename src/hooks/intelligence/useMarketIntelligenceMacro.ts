@@ -5,7 +5,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
-import type { StockDailySummary } from './useStockHistory';
+import type { StockDailySummary } from "@/hooks/intelligence/useStockHistory";
 
 export interface MacroMarketPoint {
   date: string;

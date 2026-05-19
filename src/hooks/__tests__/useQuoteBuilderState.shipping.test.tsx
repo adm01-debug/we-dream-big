@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useQuoteBuilderState } from '../useQuoteBuilderState';
+import { useQuoteBuilderState } from "@/hooks/quotes/useQuoteBuilderState";
 import { toast } from 'sonner';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

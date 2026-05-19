@@ -14,10 +14,10 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { useMultipleTechniquePricing } from './useTechniquePricingOptions';
-import { useSimulatorPreferences } from './useSimulatorPreferences';
-import { fetchAllOptions } from './simulation/simulationPriceFetcher';
-import { copyOptionToClipboard, copyAllOptionsToClipboard } from './simulation/simulationClipboard';
+import { useMultipleTechniquePricing } from "@/hooks/simulation/useTechniquePricingOptions";
+import { useSimulatorPreferences } from "@/hooks/simulation/useSimulatorPreferences";
+import { fetchAllOptions } from "@/hooks/simulation/simulationPriceFetcher";
+import { copyOptionToClipboard, copyAllOptionsToClipboard } from "@/hooks/simulation/simulationClipboard";
 import type {
   Product,
   Client,
@@ -595,4 +595,4 @@ export function useSimulation() {
 }
 
 // Re-export for backward compat
-export { formatCurrency } from './simulation/simulationClipboard';
+export { formatCurrency } from "@/hooks/simulation/simulationClipboard";

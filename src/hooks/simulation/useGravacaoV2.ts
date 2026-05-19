@@ -10,14 +10,14 @@ import { invokeExternalDb } from '@/lib/external-db';
 import { invokeExternalRpc } from '@/lib/external-rpc';
 
 // Re-export types & helpers for backward compat
-export type { TabelaPrecoOficial, FaixaPrecoOficial, CustomizationPriceV2, PrintAreaWithTechniques } from './gravacao/gravacao-types';
+export type { TabelaPrecoOficial, FaixaPrecoOficial, CustomizationPriceV2, PrintAreaWithTechniques } from "@/hooks/gravacao/gravacao-types";
 export {
   TECHNIQUE_COLORS, TECHNIQUE_ICONS, AREA_SHAPES, QUANTITY_TIERS_REFERENCE,
   getTechniqueColor, getTechniqueIcon, formatPrice,
   calculateTotalWithColorDiscount, calculateSetupCost, findPriceTier, calculateCustomizationTotal,
-} from './gravacao/gravacao-constants';
+} from "@/hooks/gravacao/gravacao-constants";
 
-import type { TabelaPrecoOficial, FaixaPrecoOficial, CustomizationPriceV2, PrintAreaWithTechniques } from './gravacao/gravacao-types';
+import type { TabelaPrecoOficial, FaixaPrecoOficial, CustomizationPriceV2, PrintAreaWithTechniques } from "@/hooks/gravacao/gravacao-types";
 
 // Row shape returned by 'tabela_preco_gravacao_oficial' table queries.
 type TecnicaRow = {

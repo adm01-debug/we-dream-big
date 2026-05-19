@@ -28,7 +28,7 @@ import { useCatalogRealStats } from '@/hooks/products';
 import { useToast } from '@/hooks/ui';
 import { usePromoSalesRanking } from '@/hooks/intelligence';
 import { useSupplierSalesRanking } from '@/hooks/products';
-import { useCatalogFiltering } from './useCatalogFiltering';
+import { useCatalogFiltering } from "@/hooks/products/useCatalogFiltering";
 
 export type ViewMode = 'grid' | 'list' | 'table';
 export type SortOption =

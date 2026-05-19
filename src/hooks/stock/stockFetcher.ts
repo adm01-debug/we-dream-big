@@ -13,7 +13,7 @@ import {
   calculateAvailableStock,
   aggregateVariantsToProduct,
 } from '@/types/stock';
-import { generateStockAlerts } from './stockAlerts';
+import { generateStockAlerts } from "@/hooks/stock/stockAlerts";
 
 // ============================================
 // TIPOS PARA API EXTERNA

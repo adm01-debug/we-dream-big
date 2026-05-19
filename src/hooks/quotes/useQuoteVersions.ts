@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useQuotes, type Quote } from "./useQuotes";
+import { useQuotes, type Quote } from "@/hooks/quotes/useQuotes";
 
 export interface QuoteVersion {
   id: string;

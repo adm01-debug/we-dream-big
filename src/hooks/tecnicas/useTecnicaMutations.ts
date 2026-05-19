@@ -5,7 +5,7 @@
  */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invokeExternalDbSingle } from '@/lib/external-db';
-import { TECNICAS_QUERY_KEYS } from './keys';
+import { TECNICAS_QUERY_KEYS } from "@/hooks/tecnicas/keys";
 import type { PersonalizationTechniqueRaw } from '@/types/tecnica-unificada';
 import { toast } from 'sonner';
 

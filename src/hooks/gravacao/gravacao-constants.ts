@@ -3,7 +3,7 @@
  * Extraído de useGravacaoV2.ts
  */
 
-import type { TabelaPrecoOficial, FaixaPrecoOficial } from './gravacao-types';
+import type { TabelaPrecoOficial, FaixaPrecoOficial } from "@/hooks/gravacao/gravacao-types";
 
 // ============================================
 // CONSTANTES

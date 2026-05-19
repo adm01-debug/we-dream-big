@@ -8,7 +8,7 @@ import { createClientLogger } from '@/lib/telemetry/structuredLogger';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { quoteService } from '@/services/quoteService';
-import type { Quote, QuoteItem, PersonalizationTechnique } from './quotes/quoteTypes';
+import type { Quote, QuoteItem, PersonalizationTechnique } from "@/hooks/quotes/quoteTypes";
 import { supabase } from '@/integrations/supabase/client';
 
 export type {
@@ -16,7 +16,7 @@ export type {
   QuoteItem,
   QuoteItemPersonalization,
   PersonalizationTechnique,
-} from './quotes/quoteTypes';
+} from "@/hooks/quotes/quoteTypes";
 
 export function useQuotes() {
   const { user } = useAuth();

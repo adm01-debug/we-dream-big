@@ -4,7 +4,7 @@
  * Sprint 3: também calcula deltas vs período anterior (90d atual vs 90d anteriores).
  */
 import { useMemo } from "react";
-import { useClientOrdersHistory } from "./useClientOrdersHistory";
+import { useClientOrdersHistory } from "@/hooks/bi/useClientOrdersHistory";
 import { MOCK_CLIENT_STATS } from "@/lib/bi/mockData";
 
 export interface PeriodDelta {

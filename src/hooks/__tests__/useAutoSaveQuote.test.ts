@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { migratePayload } from '../useAutoSaveQuote';
+import { migratePayload } from "@/hooks/quotes/useAutoSaveQuote";
 
 // Redefining current version to match the file
 const CURRENT_VERSION = 2;
