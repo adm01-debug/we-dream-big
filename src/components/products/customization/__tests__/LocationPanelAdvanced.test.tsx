@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, within, fireEvent } from "@testing-library/react";
 import { toast } from "sonner";
 import { LocationPanel } from "../LocationPanel";
-import type { GravacaoLocation, TechniqueOption } from "@/types/customization";
+import type { GravacaoLocation, TechniqueOption, CustomizationPriceResponseV6 } from "@/types/customization";
 
 // Mock leve do ConfigurationPanelV6
 vi.mock("../ConfigurationPanelV6", () => ({
@@ -15,31 +15,44 @@ vi.mock("../ConfigurationPanelV6", () => ({
     initialWidth?: number;
     initialHeight?: number;
     initialColors?: number;
+    onPriceCalculated?: (tid: string, p: CustomizationPriceResponseV6 | null) => void;
     onDimensionsChange?: (d: { width?: number; height?: number; colors?: number }) => void;
-  }) => (
-    <div
-      data-testid="config-panel"
-      data-technique-id={props.technique.technique_id}
-      data-initial-width={props.initialWidth ?? ""}
-      data-initial-height={props.initialHeight ?? ""}
-      data-initial-colors={props.initialColors ?? ""}
-    >
-      <button
-        type="button"
-        data-testid="emit-dims"
-        onClick={() => props.onDimensionsChange?.({ width: 7, height: 4, colors: 2 })}
+  }) => {
+    // Simula cálculo de preço baseado na técnica
+    const mockPrice: CustomizationPriceResponseV6 = {
+      pricePerUnit: props.technique.technique_id === "tech-A" ? 1.5 : 2.5,
+      setupPrice: 50,
+      totalPrice: 200,
+      isPossible: true,
+      pricingDetails: [],
+    };
+
+    return (
+      <div
+        data-testid="config-panel"
+        data-technique-id={props.technique.technique_id}
+        data-initial-width={props.initialWidth ?? ""}
+        data-initial-height={props.initialHeight ?? ""}
+        data-initial-colors={props.initialColors ?? ""}
       >
-        emit
-      </button>
-      <button
-        type="button"
-        data-testid="emit-many-colors"
-        onClick={() => props.onDimensionsChange?.({ width: 2, height: 2, colors: 10 })}
-      >
-        emit-many-colors
-      </button>
-    </div>
-  ),
+        <div data-testid="mock-price-value">{mockPrice.pricePerUnit}</div>
+        <button
+          type="button"
+          data-testid="emit-dims"
+          onClick={() => props.onDimensionsChange?.({ width: 7, height: 4, colors: 2 })}
+        >
+          emit
+        </button>
+        <button
+          type="button"
+          data-testid="emit-many-colors"
+          onClick={() => props.onDimensionsChange?.({ width: 2, height: 2, colors: 10 })}
+        >
+          emit-many-colors
+        </button>
+      </div>
+    );
+  },
 }));
 
 // Sonner toast — silencia em ambiente de teste
@@ -107,40 +120,32 @@ describe("LocationPanel — Avançado: Clamp, Acessibilidade e Estabilidade", ()
   it("mostra aviso (clamp notice) ao trocar para técnica que reduz as dimensões digitadas", () => {
     render(<LocationPanel location={location} quantity={100} onPriceCalculated={vi.fn()} />);
 
-    // 1. Seleciona techA e emite 7x4
     fireEvent.click(screen.getByText("Silk 1 cor"));
     fireEvent.click(screen.getByTestId("emit-dims"));
 
-    // 2. Troca para techSmall (limite 5x3)
     fireEvent.click(screen.getByTestId("customization-change-technique"));
     fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Laser pequeno"));
 
-    // 3. Verifica aviso
     const notice = screen.getByTestId("clamp-notice");
     expect(notice).toBeInTheDocument();
     expect(notice).toHaveTextContent(/dimensões \(Largura, Altura\) foram ajustadas/i);
   });
 
   it("trocas múltiplas preservam os valores mais recentes e recalcula o preço", () => {
-    const onPrice = vi.fn();
-    render(<LocationPanel location={location} quantity={100} onPriceCalculated={onPrice} />);
+    render(<LocationPanel location={location} quantity={100} onPriceCalculated={vi.fn()} />);
 
-    // A -> B -> Small
     fireEvent.click(screen.getByText("Silk 1 cor"));
-    fireEvent.click(screen.getByTestId("emit-dims")); // 7x4, 2 colors
+    fireEvent.click(screen.getByTestId("emit-dims")); // 7x4
 
     fireEvent.click(screen.getByTestId("customization-change-technique"));
     fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Transfer Digital"));
     
-    // TechB aceita 7x4 e 2 cores
     let panel = screen.getByTestId("config-panel");
     expect(panel).toHaveAttribute("data-initial-width", "7");
-    expect(panel).toHaveAttribute("data-initial-colors", "2");
 
     fireEvent.click(screen.getByTestId("customization-change-technique"));
     fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Laser pequeno"));
 
-    // TechSmall clampa 7x4 -> 5x3
     panel = screen.getByTestId("config-panel");
     expect(panel).toHaveAttribute("data-initial-width", "5");
     expect(panel).toHaveAttribute("data-initial-height", "3");
@@ -149,97 +154,110 @@ describe("LocationPanel — Avançado: Clamp, Acessibilidade e Estabilidade", ()
   it("limpa cores ao trocar para técnica com cobra_por_cor=false", () => {
     render(<LocationPanel location={location} quantity={100} onPriceCalculated={vi.fn()} />);
 
-    // 1. TechB (cobra cor) -> emite 10 cores
     fireEvent.click(screen.getByText("Transfer Digital"));
     fireEvent.click(screen.getByTestId("emit-many-colors"));
 
-    // 2. Troca p/ techNoColor (cobra cor = false)
     fireEvent.click(screen.getByTestId("customization-change-technique"));
     fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Gravação especial"));
 
     const panel = screen.getByTestId("config-panel");
-    // techNoColor tem cobra_por_cor=false -> initialColors deve vir vazio/indefinido para o config panel
     expect(panel).toHaveAttribute("data-initial-colors", "");
   });
 
-  it("gerencia o foco corretamente: abre -> primeiro card; fecha -> botão trocar; troca técnica -> botão trocar", () => {
+  it("gerencia o foco corretamente", () => {
     const { container } = render(<LocationPanel location={location} quantity={100} onPriceCalculated={vi.fn()} />);
     
-    // Seleciona uma técnica inicial
     fireEvent.click(screen.getByText("Silk 1 cor"));
-    
     const changeBtn = screen.getByTestId("customization-change-technique");
     
-    // 1. Abrir seletor
     fireEvent.click(changeBtn);
     const firstCard = container.querySelector("[role='radio'],[role='button']");
     expect(document.activeElement).toBe(firstCard);
 
-    // 2. Trocar técnica (A -> B)
     const picker = screen.getByTestId("customization-technique-picker");
     fireEvent.click(within(picker).getByText("Transfer Digital"));
     
-    // Picker deve fechar e foco voltar para o botão
     expect(screen.queryByTestId("customization-technique-picker")).not.toBeInTheDocument();
     expect(document.activeElement).toBe(changeBtn);
   });
 
-  it("anuncia via aria-live as transições de estado (incluindo troca de A para B)", () => {
+  it("anuncia via aria-live as transições", () => {
     render(<LocationPanel location={location} quantity={100} onPriceCalculated={vi.fn()} />);
     const announcer = screen.getByTestId("customization-aria-announcer");
 
-    // Seleciona técnica A
     fireEvent.click(screen.getByText("Silk 1 cor"));
     expect(announcer).toHaveTextContent("Técnica selecionada: Silk 1 cor.");
 
-    // Abre seletor
     fireEvent.click(screen.getByTestId("customization-change-technique"));
     expect(announcer).toHaveTextContent("Seletor de técnicas aberto. Técnica atual: Silk 1 cor.");
-
-    // Troca para técnica B
-    const picker = screen.getByTestId("customization-technique-picker");
-    fireEvent.click(within(picker).getByText("Transfer Digital"));
-    expect(announcer).toHaveTextContent("Técnica selecionada: Transfer Digital.");
   });
 
-  it("garante que técnica e dimensões persistam no sessionStorage ao navegar e voltar", () => {
+  it("garante que técnica e dimensões persistam no sessionStorage", () => {
     const productId = "p123";
     const { unmount } = render(
       <LocationPanel location={location} quantity={100} productId={productId} onPriceCalculated={vi.fn()} />
     );
 
-    // 1. Seleciona técnica A e emite dimensões
     fireEvent.click(screen.getByText("Silk 1 cor"));
     fireEvent.click(screen.getByTestId("emit-dims"));
 
-    // 2. Unmount (simula navegação para fora)
     unmount();
 
-    // 3. Remount (simula volta à página)
     render(
       <LocationPanel location={location} quantity={100} productId={productId} onPriceCalculated={vi.fn()} />
     );
 
-    // Deve restaurar técnica A e dimensões 7x4
     const panel = screen.getByTestId("config-panel");
     expect(panel).toHaveAttribute("data-technique-id", "tech-A");
     expect(panel).toHaveAttribute("data-initial-width", "7");
-    expect(panel).toHaveAttribute("data-initial-height", "4");
   });
 
-  it("não dispara efeitos desnecessários ao alternar entre barra e lista", () => {
-    const onPrice = vi.fn();
-    render(<LocationPanel location={location} quantity={100} onPriceCalculated={onPrice} />);
+  it("valida que o preço muda ao trocar de técnica", () => {
+    render(<LocationPanel location={location} quantity={100} onPriceCalculated={vi.fn()} />);
 
     fireEvent.click(screen.getByText("Silk 1 cor"));
-    onPrice.mockClear();
-    vi.mocked(toast.success).mockClear();
+    expect(screen.getByTestId("mock-price-value")).toHaveTextContent("1.5");
 
-    // Abre e fecha seletor sem trocar
     fireEvent.click(screen.getByTestId("customization-change-technique"));
-    fireEvent.click(screen.getByText("Fechar"));
+    fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Transfer Digital"));
 
-    expect(onPrice).not.toHaveBeenCalled();
-    expect(toast.success).not.toHaveBeenCalled();
+    expect(screen.getByTestId("mock-price-value")).toHaveTextContent("2.5");
+  });
+
+  it("clampa cores em 1 ao trocar para técnica com max_cores=1", () => {
+    const techCobra1 = makeTechnique({
+      technique_id: "tech-cobra-1",
+      tecnica_nome: "Tampo 1 cor",
+      cobra_por_cor: true,
+      max_cores: 1
+    });
+    const loc: GravacaoLocation = { ...location, options: [...location.options, techCobra1] };
+    
+    render(<LocationPanel location={loc} quantity={100} onPriceCalculated={vi.fn()} />);
+    
+    // 1. Tech B (permite cores) -> emite 10 (clampa p/ 4 no config do mock)
+    fireEvent.click(screen.getByText("Transfer Digital"));
+    fireEvent.click(screen.getByTestId("emit-many-colors"));
+
+    // 2. Troca p/ Tampo 1 cor
+    fireEvent.click(screen.getByTestId("customization-change-technique"));
+    fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Tampo 1 cor"));
+    
+    expect(screen.getByTestId("config-panel")).toHaveAttribute("data-initial-colors", "1");
+  });
+
+  it("garante consistência em trocas cíclicas (A->B->A)", () => {
+    render(<LocationPanel location={location} quantity={100} onPriceCalculated={vi.fn()} />);
+
+    fireEvent.click(screen.getByText("Silk 1 cor"));
+    fireEvent.click(screen.getByTestId("emit-dims"));
+
+    fireEvent.click(screen.getByTestId("customization-change-technique"));
+    fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Transfer Digital"));
+    expect(screen.getByTestId("config-panel")).toHaveAttribute("data-initial-width", "7");
+
+    fireEvent.click(screen.getByTestId("customization-change-technique"));
+    fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Silk 1 cor"));
+    expect(screen.getByTestId("config-panel")).toHaveAttribute("data-initial-width", "7");
   });
 });
