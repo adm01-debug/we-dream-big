@@ -43,7 +43,9 @@ serve(async (req) => {
         name: "Simulation Test Endpoint",
         active: true,
         source_system: "simulation",
-        hmac_secret_ref: "SUPABASE_SERVICE_ROLE_KEY"
+        hmac_secret_ref: "SUPABASE_SERVICE_ROLE_KEY",
+        created_by: "7b565451-7eb6-4063-a74b-8ce4dca8703d",
+        allowed_events: ["test"]
       });
       if (insertError) {
         throw new Error(`Error creating simulation endpoint: ${insertError.message}`);
