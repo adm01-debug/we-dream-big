@@ -20,22 +20,22 @@ export function RoutePrefetcher() {
     if (pathname === "/auth" || pathname === "/login") {
       // Prefetch dashboard early
       import("@/pages/Index");
-      import("@/pages/FiltersPage");
+      import("@/pages/products/FiltersPage");
     } else if (pathname === "/") {
       // Prefetch heavy pages from dashboard + Auth (sessão pode expirar)
-      import("@/pages/FiltersPage");
-      import("@/pages/QuotesListPage");
-      import("@/pages/ClientsPage");
-      import("@/pages/Auth");
+      import("@/pages/products/FiltersPage");
+      import("@/pages/quotes/QuotesListPage");
+      import("@/pages/clients/ClientsPage");
+      import("@/pages/auth/Auth");
     } else if (pathname === "/produtos") {
-      import("@/pages/ProductDetail");
-      import("@/pages/PriceSimulatorPage");
+      import("@/pages/products/ProductDetail");
+      import("@/pages/tools/PriceSimulatorPage");
     }
 
     // Secondary priority prefetch
     const timeoutId = setTimeout(() => {
-      if (pathname !== "/orcamentos/novo") import("@/pages/QuoteBuilderPage");
-      if (pathname === "/produtos") import("@/pages/MockupGenerator");
+      if (pathname !== "/orcamentos/novo") import("@/pages/quotes/QuoteBuilderPage");
+      if (pathname === "/produtos") import("@/pages/mockups/MockupGenerator");
     }, 2500);
 
     return () => clearTimeout(timeoutId);
