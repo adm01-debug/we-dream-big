@@ -34,13 +34,21 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 // Mock services and utils
-vi.mock('@/services/authService', () => ({
-  authService: {
-    fetchAAL: vi.fn().mockResolvedValue({ currentLevel: 'aal1', nextLevel: 'aal1', hasMFA: false }),
-    fetchProfile: vi.fn().mockResolvedValue({ data: null, error: null }),
-    queryRoles: vi.fn().mockResolvedValue({ data: [], error: null }),
-  },
-}));
+vi.mock('@/services/authService', async (importOriginal) => {
+  const actual: { authService: Record<string, unknown> } = await importOriginal();
+  return {
+    authService: {
+      // Preserva o signOut real (chama supabase.rpc + supabase.auth.signOut,
+      // ambos mockados no nível do supabase) e sobrescreve só as queries.
+      ...actual.authService,
+      fetchAAL: vi
+        .fn()
+        .mockResolvedValue({ currentLevel: 'aal1', nextLevel: 'aal1', hasMFA: false }),
+      fetchProfile: vi.fn().mockResolvedValue({ data: null, error: null }),
+      queryRoles: vi.fn().mockResolvedValue({ data: [], error: null }),
+    },
+  };
+});
 
 const wrapper = ({ children }: { children: ReactNode }) => <AuthProvider>{children}</AuthProvider>;
 
