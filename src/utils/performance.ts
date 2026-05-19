@@ -1,3 +1,5 @@
+import { telemetryService } from "@/services/telemetryService";
+
 /**
  * Utility for tracking application performance metrics.
  * 
