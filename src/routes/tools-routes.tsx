@@ -14,6 +14,7 @@ import {
   ProductMatchPage,
   SimuladorWizard,
   StockDashboardPage,
+  SimulationPage,
 } from "./lazy-pages";
 
 /**
@@ -41,5 +42,6 @@ export const toolsRoutes = (
     <Route path="/ferramentas/bi/comparar" element={<ClientComparatorPage />} />
     <Route path="/match" element={<ProductMatchPage />} />
     <Route path="/dropbox" element={<DropboxBrowserPage />} />
+    <Route path="/simulacao" element={<SimulationPage />} />
   </>
 );
