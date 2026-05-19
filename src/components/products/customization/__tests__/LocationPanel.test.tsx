@@ -352,6 +352,7 @@ describe("LocationPanel — fluxo Trocar técnica", () => {
     const techLimited = makeTechnique({
       technique_id: "tech-lim",
       tecnica_nome: "Laser 1 cor",
+      cobra_por_cor: true,
       max_cores: 1,
     });
     const loc: GravacaoLocation = {
@@ -361,9 +362,9 @@ describe("LocationPanel — fluxo Trocar técnica", () => {
 
     render(<LocationPanel location={loc} quantity={100} onPriceCalculated={vi.fn()} />);
 
-    // 1. Seleciona techB (max_cores 4) e define 3 cores via emit-dims
+    // 1. Seleciona techB (max_cores 4) e define 2 cores via emit-dims
     fireEvent.click(screen.getByText("Transfer Digital"));
-    fireEvent.click(screen.getByTestId("emit-dims")); // {width: 7, height: 4, colors: 2} -> lastDimsRef.colors = 2
+    fireEvent.click(screen.getByTestId("emit-dims")); // Emite colors: 2
 
     // 2. Troca para techLimited (max_cores 1)
     fireEvent.click(screen.getByTestId("customization-change-technique"));
