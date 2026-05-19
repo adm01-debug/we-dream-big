@@ -257,7 +257,10 @@ export function buildActions({ goTo, actualTheme, setTheme, setOpen }: BuildActi
       label: "Atalhos de Teclado",
       description: "Ver todos os atalhos disponíveis",
       icon: <BookOpen className="h-4 w-4" />,
-      action: () => { setOpen(false); },
+      action: () => { 
+        setOpen(false);
+        window.dispatchEvent(new CustomEvent("open-shortcuts-help"));
+      },
       keywords: ["atalhos", "shortcuts", "keyboard", "teclado"],
       category: "help",
     },
