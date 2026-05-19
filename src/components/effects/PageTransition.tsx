@@ -55,6 +55,10 @@ export function PageTransition({
   const location = useLocation();
   const selectedVariant = variants[variant];
 
+  useEffect(() => {
+    performanceTracker.mark(`page-transition-start:${location.pathname}`);
+  }, [location.pathname]);
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -62,7 +66,16 @@ export function PageTransition({
         initial={selectedVariant.initial}
         animate={selectedVariant.animate}
         exit={selectedVariant.exit}
+        onAnimationComplete={() => {
+          performanceTracker.mark(`page-transition-end:${location.pathname}`);
+          performanceTracker.measure(
+            `Page Animation: ${location.pathname}`,
+            `page-transition-start:${location.pathname}`,
+            `page-transition-end:${location.pathname}`
+          );
+        }}
         transition={{
+
           duration,
           ease: [0.4, 0, 0.2, 1],
         }}
