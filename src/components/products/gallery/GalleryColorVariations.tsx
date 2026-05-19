@@ -38,9 +38,10 @@ interface GalleryColorVariationsProps {
   colors: ColorMedia[];
   selectedColorIndex: number;
   onColorSelect: (index: number) => void;
+  activeColorName?: string | null;
 }
 
-export function GalleryColorVariations({ colors, selectedColorIndex, onColorSelect }: GalleryColorVariationsProps) {
+export function GalleryColorVariations({ colors, selectedColorIndex, onColorSelect, activeColorName }: GalleryColorVariationsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sortedColors = sortByColorGroup(colors, (c) => c.name, (c) => c.hex);
 
@@ -70,7 +71,7 @@ export function GalleryColorVariations({ colors, selectedColorIndex, onColorSele
           {sortedColors.map((color) => {
             const originalIndex = colors.findIndex(c => c.name === color.name && c.sku === color.sku);
             const hasVideos = color.videos && color.videos.length > 0;
-            const isSelected = selectedColorIndex === originalIndex;
+            const isSelected = selectedColorIndex === originalIndex || (activeColorName && color.name === activeColorName);
             const displayStock = color.stock !== undefined ? Math.max(0, color.stock) : undefined;
             const stockStatus = displayStock !== undefined
               ? displayStock === 0 ? { color: "text-destructive", label: "Sem estoque" }

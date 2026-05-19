@@ -75,7 +75,7 @@ export function QuantityCalculator({
           </div>
         </div>
       </div>
-      <Button className="w-full gap-2" size="lg">
+      <Button className="w-full gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] font-bold" size="lg">
         <Calculator className="h-4 w-4" />
         Adicionar {customQuantity.toLocaleString('pt-BR')} un ao Orçamento
       </Button>
