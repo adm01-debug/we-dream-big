@@ -230,6 +230,7 @@ export function attemptChunkRecovery(error: unknown): Promise<boolean> {
         "[chunk-recovery] limite de hard-reloads atingido — exibindo tela de erro",
         { attempts, windowMs: WINDOW_MS },
       );
+      NProgress.done();
       return false;
     }
 
@@ -239,6 +240,10 @@ export function attemptChunkRecovery(error: unknown): Promise<boolean> {
       max: MAX_HARD_RELOADS,
       url,
     });
+
+    // Progress feedback before reload
+    NProgress.set(0.8);
+    NProgress.start();
 
     // Sonda opcional: se conseguimos a URL e ela ainda está down,
     // espera um pouco mais antes de recarregar (back-off curto).
