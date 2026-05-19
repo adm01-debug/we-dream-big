@@ -162,6 +162,7 @@ export function ConfigurationPanelV6({
                 placeholder={`até ${technique.efetiva_largura_max}`}
                 className="h-9 text-sm"
                 disabled={isLocked}
+                data-testid="customization-width-input"
               />
             </div>
             <span className="text-muted-foreground mt-5">×</span>
