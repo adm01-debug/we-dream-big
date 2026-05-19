@@ -130,6 +130,9 @@ export const ProductTableView = memo(function ProductTableView({
   }, [sortCol]);
 
   const sorted = useMemo(() => {
+    if (isLoading && products.length === 0) {
+      return Array.from({ length: 12 }).map((_, i) => ({ id: `skeleton-${i}`, isSkeleton: true } as any));
+    }
     return [...products].sort((a, b) => {
       const dir = sortDir === "asc" ? 1 : -1;
       switch (sortCol) {
