@@ -68,6 +68,9 @@ class PerformanceTracker {
         
         this.saveHistory();
 
+        // Push to remote telemetry if it's an outlier
+        telemetryService.logPerformance(name, measure.duration);
+
         if (process.env.NODE_ENV === 'development') {
           console.log(`[Performance] ${name}: ${measure.duration.toFixed(2)}ms`);
         }
