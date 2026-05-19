@@ -165,20 +165,45 @@ export function LocationPanel({
     [location.location_code, onPriceCalculated],
   );
 
+  // Captura dimensões/cores em tempo real (mesmo sem confirmar) para preservar ao trocar técnica.
+  const handleDimensionsChange = useCallback(
+    (dims: { width?: number; height?: number; colors?: number }) => {
+      lastDimsRef.current = {
+        width: dims.width ?? lastDimsRef.current.width,
+        height: dims.height ?? lastDimsRef.current.height,
+        colors: dims.colors ?? lastDimsRef.current.colors,
+      };
+    },
+    [],
+  );
+
   // Estados derivados
   const showPicker = !selectedTechnique || isPickerOpen;
   const showConfig = !!selectedTechnique;
 
-  // Dimensões iniciais a passar para o ConfigurationPanel:
-  // - se a técnica selecionada é exatamente a confirmada, usa o que veio do parent;
-  // - caso contrário, usa o último valor digitado (para preservar ao trocar).
+  // Dimensões iniciais para o ConfigurationPanel:
+  // - técnica = a confirmada → usa o snapshot persistido;
+  // - troca de técnica → usa últimas dimensões digitadas, com clamp aos limites da nova técnica
+  //   (evita estourar largura/altura máxima quando a nova técnica é menor).
+  const clamp = (v: number | undefined, max: number | undefined) =>
+    v == null ? undefined : max != null && v > max ? max : v;
+
   const isSameAsConfirmed =
     selectedTechnique?.technique_id === confirmedPersonalization?.techniqueId;
-  const initialWidth = isSameAsConfirmed ? confirmedPersonalization?.width : lastDimsRef.current.width;
-  const initialHeight = isSameAsConfirmed ? confirmedPersonalization?.height : lastDimsRef.current.height;
-  const initialColors = isSameAsConfirmed
+  const rawWidth = isSameAsConfirmed ? confirmedPersonalization?.width : lastDimsRef.current.width;
+  const rawHeight = isSameAsConfirmed ? confirmedPersonalization?.height : lastDimsRef.current.height;
+  const rawColors = isSameAsConfirmed
     ? confirmedPersonalization?.numberOfColors
     : lastDimsRef.current.colors;
+  const initialWidth = selectedTechnique?.usa_dimensao
+    ? clamp(rawWidth, selectedTechnique?.efetiva_largura_max)
+    : undefined;
+  const initialHeight = selectedTechnique?.usa_dimensao
+    ? clamp(rawHeight, selectedTechnique?.efetiva_altura_max)
+    : undefined;
+  const initialColors = selectedTechnique?.cobra_por_cor
+    ? clamp(rawColors, selectedTechnique?.max_cores)
+    : undefined;
 
   return (
     <div className="space-y-3" data-testid="customization-location-panel">
