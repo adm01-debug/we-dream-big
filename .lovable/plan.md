@@ -1,34 +1,78 @@
-I will switch the application's primary Supabase instance to your external database and migrate the existing tables.
 
-**Note on Auth & Edge Functions:**
-*   **Auth:** Your external Supabase must have the same Authentication providers and settings configured for login to work seamlessly.
-*   **Edge Functions:** These will be updated to point to the external database by injecting the new credentials into their environment.
-*   **Storage:** Buckets must be manually recreated in the external Supabase to match the current ones.
+# Foco-na-Técnica: novo comportamento do passo 2 → 3 do Orçamento
 
-### Proposed Changes
+## Objetivo
+Quando o vendedor selecionar uma técnica de gravação para um local, a lista das demais técnicas deve **sumir** e a UI deve avançar imediatamente para os campos de **tamanho/cores** daquela técnica. O vendedor mantém uma forma rápida e óbvia de **trocar a técnica** caso queira.
 
-#### 1. Database Migration
-*   Export the current database schema and data from the internal Supabase.
-*   Since I have service role access to both, I will use a script to migrate the core tables and their content to your external instance.
-*   I will prioritize tables like `profiles`, `organizations`, and others visible in your current schema.
+---
 
-#### 2. Supabase Client Update
-*   Modify `src/integrations/supabase/client.ts` to use `EXTERNAL_SUPABASE_URL` and `EXTERNAL_SUPABASE_ANON_KEY` from your secrets.
-*   This will ensure the frontend immediately starts talking to your external database.
+## Como ficaria a tela (3 estados do painel da localização)
 
-#### 3. Edge Functions Configuration
-*   Update any existing Edge Functions to use the `EXTERNAL_SUPABASE_URL` and `EXTERNAL_SUPABASE_SERVICE_ROLE_KEY` for server-side operations.
+### Estado A — Nenhuma técnica selecionada (igual hoje)
+```text
+TÉCNICAS PARA [PEITO ESQUERDO]                       [3 técnicas]
+────────────────────────────────────────────────────
+SILK
+  ▢ Silk 1 cor
+  ▢ Silk até 4 cores
+TRANSFER
+  ▢ Transfer digital
+```
 
-#### 4. Verification
-*   Run a connectivity test to ensure the frontend can read/write to the external database.
-*   Verify that the Auth session can still be established (if the external DB is configured correctly).
+### Estado B — Técnica selecionada (NOVO)
+A lista some. No topo aparece uma **barra compacta da técnica escolhida** com botão "Trocar". Abaixo, o painel de configuração (tamanho/cores) já visível, sem rolagem extra.
+```text
+TÉCNICA SELECIONADA                                   [Trocar ▾]
+┌──────────────────────────────────────────────────┐
+│ ● Silk até 4 cores   · SILK · até 4 cores        │
+└──────────────────────────────────────────────────┘
 
-### Technical Details
-*   I will create a migration script `scripts/migrate-to-external.ts` that uses the Supabase JS client to copy data between instances.
-*   I will update `src/integrations/supabase/client.ts` to look for the external credentials first.
-*   I will check if there are any hardcoded references to the old project ID.
+CONFIGURAR TAMANHO
+  Largura (cm) [____]    Altura (cm) [____]
+  Nº de cores  [▾ 1 ]
+  ──────────────────────────────────────────
+  Preço unit.: R$ X,XX    Total local: R$ Y,YY
+  [ Confirmar e adicionar ao orçamento ]
+```
 
-**Next steps after approval:**
-1. Execute the migration script.
-2. Update the client code.
-3. Test and verify.
+### Estado C — Vendedor clica "Trocar"
+A lista de técnicas reaparece (mesmo visual do Estado A), com a técnica atual já marcada. Selecionar outra confirma a troca; selecionar a mesma fecha o "modo trocar" e volta ao Estado B sem alterar nada.
+
+---
+
+## Regras de comportamento
+
+1. **Auto-colapso ao selecionar:** ao clicar em uma `TechniqueCard`, o `LocationPanel` esconde a lista e mostra a barra-resumo + `ConfigurationPanelV6` imediatamente. Sem cliques extras.
+2. **Persistência de dimensões:** se o vendedor já tinha preenchido largura/altura/cores e troca de técnica, os valores são **mantidos** (pré-preenchidos na nova técnica) — só o preço é recalculado. Evita retrabalho.
+3. **Troca confirmada:** clicar em "Trocar" abre a lista mas **não apaga** a técnica atual nem o preço já calculado. Só ao clicar em uma técnica diferente é que ocorre a substituição; um toast curto avisa "Técnica alterada: X → Y".
+4. **Desmarcar é diferente de trocar:** clicar novamente na técnica atual dentro do modo trocar **fecha o seletor** e volta ao Estado B. Para remover de fato, usar o botão existente "Remover gravação" do resumo (sem mudança).
+5. **Bloqueio Circular 360 x Lado A/B:** regra já existente continua válida — não é afetada por este redesign.
+6. **Sticky do header de locais:** o bloco sticky (stepper + tabs de locais) permanece intacto. Apenas o conteúdo abaixo muda entre os 3 estados.
+7. **Acessibilidade:** botão "Trocar" com `aria-expanded`, foco devolvido para a primeira `TechniqueCard` quando a lista reabre; barra-resumo com `role="status"`.
+
+---
+
+## Detalhes técnicos
+
+Arquivo principal: `src/components/products/customization/LocationPanel.tsx`.
+
+- Adicionar estado local `isPickerOpen: boolean` (default `false`).
+  - `selectedTechnique = null` → forçar `isPickerOpen = true` (Estado A).
+  - `selectedTechnique != null && !isPickerOpen` → Estado B.
+  - `selectedTechnique != null && isPickerOpen` → Estado C.
+- `handleSelectTechnique` passa a:
+  - Se está no Estado A → setSelected + `setIsPickerOpen(false)`.
+  - Se está no Estado C e clica a mesma → apenas `setIsPickerOpen(false)`.
+  - Se está no Estado C e clica outra → `setSelected(novo)` + `setIsPickerOpen(false)` + toast "Técnica alterada".
+- Novo subcomponente leve `SelectedTechniqueBar` (inline no mesmo arquivo) renderizando nome + grupo + botão "Trocar".
+- Passar `initialWidth/Height/Colors` da técnica anterior para a nova via um `ref` em `LocationPanel` (`lastDimsRef`) para preservar dimensões na troca.
+- Nenhuma mudança no schema, no hook `useQuoteBuilderState`, no `ProductCustomizationOptions.tsx` (apenas comportamento interno do `LocationPanel`) nem na persistência em `quote_item_personalizations`.
+- Teste E2E novo: `e2e/quote-builder-technique-switch.spec.ts` — seleciona técnica, valida que demais somem, clica "Trocar", troca por outra, valida toast e que dimensões foram preservadas.
+
+---
+
+## Fora de escopo
+- Nenhuma alteração visual no Stepper, no resumo do orçamento, no fluxo de salvar, na regra Circular/Lado A-B, nem no `ConfigurationPanelV6`.
+- Sem mudanças de backend.
+
+Posso seguir com a implementação assim que aprovar.
