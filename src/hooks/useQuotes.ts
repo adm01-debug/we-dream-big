@@ -19,6 +19,7 @@ import {
   buildItemsInsertPayload,
   buildPersonalizationsInsertPayload,
   STATUS_LABELS,
+  round2,
 } from './quotes/quoteHelpers';
 
 // Re-export types for backward compatibility
@@ -143,6 +144,7 @@ export function useQuotes() {
     const itemsPayload = buildItemsInsertPayload(items, quoteId).map((item) => ({
       ...item,
       product_name: item.product_name?.trim().slice(0, 255),
+      unit_price: round2(item.unit_price), // Garantia extra
       notes: item.notes?.trim().slice(0, 1000),
     }));
     const { data: insertedItems, error: itemsErr } = await supabase
@@ -253,6 +255,10 @@ export function useQuotes() {
         .select('*');
       if (updErr) throw new Error(updErr.message);
 
+      // rls-allow: delete cascade garantido ou limpeza manual via RLS
+      await supabase.from('quote_item_personalizations').delete().in('quote_item_id', 
+        (await supabase.from('quote_items').select('id').eq('quote_id', quoteId)).data?.map(i => i.id) || []
+      );
       await supabase.from('quote_items').delete().eq('quote_id', quoteId);
       await insertItemsWithPersonalizations(items, quoteId);
 

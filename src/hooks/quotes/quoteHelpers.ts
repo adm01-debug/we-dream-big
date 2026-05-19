@@ -35,12 +35,12 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
 
   // Subtotal apresentado = subtotal real * (1 + markup/100). É o que o cliente vê e o que vai para o banco em `subtotal`.
   const subtotal = markup > 0
-    ? Math.round(realSubtotal * (1 + markup / 100) * 100) / 100
+    ? round2(realSubtotal * (1 + markup / 100))
     : realSubtotal;
 
   // Desconto APARENTE aplicado sobre subtotal apresentado
   const discountAmount = quote.discount_percent
-    ? subtotal * (quote.discount_percent / 100)
+    ? round2(subtotal * (quote.discount_percent / 100))
     : (quote.discount_amount || 0);
   const shippingCostValue = quote.shipping_type === "fob_pre"
     ? round2(quote.shipping_cost || 0) 
@@ -50,7 +50,7 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
   // Desconto REAL: comparado ao subtotal real (usado para alçada)
   const finalBeforeShipping = subtotal - discountAmount;
   const realDiscountPercent = realSubtotal > 0
-    ? Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal) * 10000) / 100
+    ? round2(((realSubtotal - finalBeforeShipping) / realSubtotal) * 100)
     : 0;
 
   return { subtotal: round2(subtotal), realSubtotal: round2(realSubtotal), discountAmount: round2(discountAmount), total: round2(total), realDiscountPercent, markup };

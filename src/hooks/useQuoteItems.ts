@@ -53,6 +53,7 @@ export function useQuoteItems(initialItems: QuoteItem[] = []) {
           setActiveItemIndex(existingIndex);
           // Auto-expand existing item too
           setExpandedItems((p) => new Set(p).add(existingIndex));
+          toast.info(`Quantidade de "${product.name}" aumentada.`);
           return newItems;
         }
 
