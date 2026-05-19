@@ -183,7 +183,8 @@ export function GlobalSearchPalette() {
           {!s.isSearching && Object.entries(s.groupedResults).map(([type, items]) => {
             const config = typeConfig[type];
             if (!config) return null;
-            const Icon = config.icon;
+            const BaseIcon = config.icon;
+
             return (
               <CommandGroup key={type} heading={config.label + "s"} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300 [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:pb-2">
                 {items.map((result, i) => (
