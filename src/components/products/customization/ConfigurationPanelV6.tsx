@@ -162,6 +162,7 @@ export function ConfigurationPanelV6({
                 placeholder={`até ${technique.efetiva_largura_max}`}
                 className="h-9 text-sm"
                 disabled={isLocked}
+                data-testid="customization-width-input"
               />
             </div>
             <span className="text-muted-foreground mt-5">×</span>
@@ -177,6 +178,7 @@ export function ConfigurationPanelV6({
                 placeholder={`até ${technique.efetiva_altura_max}`}
                 className="h-9 text-sm"
                 disabled={isLocked}
+                data-testid="customization-height-input"
               />
             </div>
           </div>
@@ -210,6 +212,7 @@ export function ConfigurationPanelV6({
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 )}
+                data-testid={`customization-color-button-${n}`}
                 onClick={() => !isLocked && setNumCores(n)}
               >
 
@@ -290,7 +293,7 @@ export function ConfigurationPanelV6({
             )}
             <div className="flex justify-between text-sm font-bold border-t border-border/50 pt-1">
               <span className="text-foreground">TOTAL:</span>
-              <span className="text-primary">
+              <span className="text-primary" data-testid="customization-total-price">
                 R$ {price.total_cobrado.toFixed(2)}
               </span>
             </div>
