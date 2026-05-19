@@ -23,6 +23,7 @@ import {
   sanitizeExternalWriteData,
   mapTechniqueRowToLegacyShape,
   mapPriceTableRowToLegacyShape,
+  mapProductRowToLegacyShape,
 } from "../_shared/external-db-aliases.ts";
 import { emitTelemetry, classifyDuration, VERY_SLOW_QUERY_THRESHOLD_MS, SLOW_QUERY_THRESHOLD_MS } from "../_shared/external-db-telemetry.ts";
 import { getCached, setCache } from "../_shared/external-db-cache.ts";
