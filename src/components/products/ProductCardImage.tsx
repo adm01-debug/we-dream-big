@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { NoveltyBadge } from "./NoveltyBadge";
 import { cn } from "@/lib/utils";
 import { isLightColor } from "@/hooks/useColorSystem";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import type { MatchedColorVariant } from "@/utils/color-variant-carousel";
 
 interface ProductCardImageProps {
@@ -69,25 +70,17 @@ export const ProductCardImage = memo(function ProductCardImage({
       } : undefined}
     >
       {/* Image */}
-      <img
+      <OptimizedImage
         src={cardImageUrl}
-        srcSet={cardSrcSet}
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
         alt={activeColorName ? `${product.name} - ${activeColorName}` : product.name}
         title={activeColorName ? `${product.name} - ${activeColorName}` : product.name}
         className={cn(
           "w-full h-full object-contain ease-out",
-          hasMultipleVariants ? "transition-all duration-300" : "transition-all duration-700",
-          imageLoaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-sm scale-[1.05]"
+          hasMultipleVariants ? "transition-all duration-300" : "transition-all duration-700"
         )}
         style={imageLoaded ? { transform: `scale(${computedImageScale})`, willChange: "transform" } : undefined}
-        loading="eager"
-        fetchPriority="high"
         onLoad={onImageLoad}
-        onError={(e) => {
-          const img = e.currentTarget;
-          if (!img.dataset.fallback) { img.dataset.fallback = '1'; img.srcset = ''; img.src = product.images[0] || '/placeholder.svg'; }
-        }}
+        containerClassName="h-full w-full"
       />
 
       {/* Active color badge (mobile) */}

@@ -6,6 +6,7 @@ import { useState, useRef, useEffect, memo, forwardRef, useCallback } from "reac
 import { GenderBadge } from "./GenderBadge";
 import { Building2, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { getCdnUrl, getSrcSet } from "@/utils/image-utils";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -56,6 +57,7 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
   activeColorFilter,
 }, ref) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isHovered, setIsHovered] = useState(false);
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);
   const [collectionVariant, setCollectionVariant] = useState<{ color_name?: string | null; color_hex?: string | null; variant_id?: string | null; thumbnail?: string | null } | undefined>(undefined);
@@ -172,6 +174,7 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
       className={cn(
         "group relative overflow-hidden rounded-xl sm:rounded-2xl bg-card cursor-pointer card-lift",
         "transition-all duration-300 ease-out active:scale-[0.98] active:transition-transform active:duration-100 touch-manipulation",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
         product.featured && "ring-2 ring-primary/20 shadow-lg",
         hasHighlightedColor ? "border-2" : "border-[1.5px] border-primary/20 hover:border-primary/50 hover:shadow-xl",
       )}
@@ -182,14 +185,10 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
       onMouseEnter={() => {
         setIsHovered(true);
         // Prefetch product details when hovering to make "click to open" instant
-        const prefetchKey = ['promobrind-product', product.id];
-        // Global prefetch helper if available
-        if ((window as Record<string, unknown>).queryClient) {
-          (window as Record<string, { prefetchQuery: (opts: unknown) => void }>).queryClient.prefetchQuery({
-             queryKey: ['promobrind-product', product.id],
-             staleTime: 15 * 60 * 1000
-          });
-        }
+        queryClient.prefetchQuery({
+           queryKey: ['promobrind-product', product.id],
+           staleTime: 15 * 60 * 1000
+        });
       }}
       onMouseLeave={() => { setIsHovered(false); setActionsOpen(false); }}
       aria-label={`Ver detalhes de ${product.name}`}
