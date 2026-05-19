@@ -196,26 +196,30 @@ export function ProductList({
   return (
     <>
       <div className="flex flex-col gap-2">
-        {products.map((product, index) => (
-          <ProductListItemWrapper
-            key={product.id}
-            product={product}
-            index={index}
-            isSelected={selectedIds.has(product.id)}
-            selectionMode={selectionMode}
-            onToggleSelect={toggleSelect}
-            onClick={onProductClick ? () => onProductClick(product.id) : undefined}
-            onView={onViewProduct}
-            onShare={onShareProduct}
-            onFavorite={onFavoriteProduct}
-            isFavorited={isFavorite ? isFavorite(product.id) : false}
-            onToggleFavorite={onToggleFavorite}
-            isInCompare={isInCompare ? isInCompare(product.id) : false}
-            onToggleCompare={onToggleCompare}
-            canAddToCompare={canAddToCompare}
-            highlightColors={highlightColors}
-            activeColorFilter={activeColorFilter}
-          />
+        {displayProducts.map((product, index) => (
+          (product as any).isSkeleton ? (
+            <ProductCardSkeleton key={product.id} variant="compact" />
+          ) : (
+            <ProductListItemWrapper
+              key={product.id}
+              product={product}
+              index={index}
+              isSelected={selectedIds.has(product.id)}
+              selectionMode={selectionMode}
+              onToggleSelect={toggleSelect}
+              onClick={onProductClick ? () => onProductClick(product.id) : undefined}
+              onView={onViewProduct}
+              onShare={onShareProduct}
+              onFavorite={onFavoriteProduct}
+              isFavorited={isFavorite ? isFavorite(product.id) : false}
+              onToggleFavorite={onToggleFavorite}
+              isInCompare={isInCompare ? isInCompare(product.id) : false}
+              onToggleCompare={onToggleCompare}
+              canAddToCompare={canAddToCompare}
+              highlightColors={highlightColors}
+              activeColorFilter={activeColorFilter}
+            />
+          )
         ))}
       </div>
 
