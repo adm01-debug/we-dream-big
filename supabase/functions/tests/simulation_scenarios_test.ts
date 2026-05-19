@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "https://deno.land/std@0.168.0/testing/asserts.ts";
+import { assert, assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 
 /**
  * SIMULATION SUITE: Webhooks & Edge Functions
@@ -149,7 +149,7 @@ Deno.test({
   async fn() {
     // This is a high-level consistency check
     // 1. Write a temporary product via bridge
-    const testId = `sim-test-${crypto.randomUUID()}`;
+    const testId = `sim-test-${Math.random().toString(36).substring(2)}`;
     const insertRes = await invoke("external-db-bridge", {
       operation: "insert",
       table: "products",
