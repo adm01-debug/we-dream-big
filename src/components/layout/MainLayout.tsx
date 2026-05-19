@@ -22,6 +22,7 @@ import { GlobalOverlay } from "./GlobalOverlay";
 const GlobalCommandBar = lazyWithRetry(() => import("@/components/command/GlobalCommandBar").then(m => ({ default: m.GlobalCommandBar })));
 const PersistentBreadcrumbs = lazyWithRetry(() => import("@/components/common/PersistentBreadcrumbs").then(m => ({ default: m.PersistentBreadcrumbs })));
 import { cn } from "@/lib/utils";
+import { ShortcutsHelpDialog } from "@/components/ui/ShortcutsHelpDialog";
 
 
 interface MainLayoutProps {
