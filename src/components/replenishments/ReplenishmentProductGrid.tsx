@@ -134,7 +134,7 @@ export function ReplenishmentProductGrid() {
           </div>
           <div className={`grid ${getGridColsClass(gridColumns)} ${getGridGapClass(gridColumns)}`}>
             {Array.from({ length: 10 }).map((_, i) => (
-              <ProductCardSkeleton key={i} />
+              <ProductCardSkeleton key={i} variant={viewMode === "list" ? "compact" : "default"} />
             ))}
           </div>
         </div>
