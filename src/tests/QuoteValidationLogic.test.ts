@@ -2,30 +2,34 @@ import { describe, it, expect } from 'vitest';
 import { quoteFormSchema, quoteItemSchema } from '../lib/validations/quoteSchema';
 
 describe('Quote Validation Logic Audit', () => {
-  it('should require shipping cost when FOB is selected', () => {
+  it('should require shipping cost when fob_pre is selected', () => {
     const data = {
       clientId: '123',
       contactId: '456',
+      paymentMethod: 'Pix',
       paymentTerms: '30 dias',
       deliveryTime: '10 dias',
-      shippingType: 'fob',
-      // shippingCost missing or 0
+      shippingType: 'fob_pre',
+      shippingCost: 0
     };
 
     const result = quoteFormSchema.safeParse(data);
     expect(result.success).toBe(false);
     
-    const errors = !result.success ? result.error.flatten().fieldErrors : {};
-    expect(errors.shippingCost).toContain('Valor do frete é obrigatório para modalidade FOB');
+    const issues = !result.success ? result.error.issues : [];
+    const shippingError = issues.find(i => i.path.includes('shippingCost'));
+    expect(shippingError?.message).toBe('Valor do frete inconsistente com a modalidade selecionada');
   });
 
-  it('should allow empty shipping cost when CIF is selected', () => {
+  it('should allow zero shipping cost when CIF is selected', () => {
     const data = {
       clientId: '123',
       contactId: '456',
+      paymentMethod: 'Pix',
       paymentTerms: '30 dias',
       deliveryTime: '10 dias',
       shippingType: 'cif',
+      shippingCost: 0,
       discountValue: 0
     };
 
