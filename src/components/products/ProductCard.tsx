@@ -45,6 +45,7 @@ export interface ProductCardProps {
   isNovelty?: boolean;
   noveltyDaysRemaining?: number;
   activeColorFilter?: ActiveColorFilter | null;
+  priority?: boolean;
 }
 
 export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(function ProductCard({ 
@@ -53,6 +54,7 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
   isInCompare = false, onToggleCompare, canAddToCompare = true,
   hideCategoryBadges = false, isNovelty = false, noveltyDaysRemaining,
   activeColorFilter,
+  priority = false,
 }, ref) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -243,6 +245,7 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
         safeVariantIdx={safeVariantIdx}
         onImageLoad={() => setImageLoaded(true)}
         onVariantChange={(idx) => { setActiveVariantIdx(idx); setImageLoaded(false); }}
+        priority={priority}
       />
 
       {/* Quick Actions FAB */}

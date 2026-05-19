@@ -13,6 +13,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import type { MatchedColorVariant } from "@/utils/color-variant-carousel";
 
 interface ProductCardImageProps {
+  priority?: boolean;
   product: {
     name: string;
     featured?: boolean;
@@ -47,6 +48,7 @@ export const ProductCardImage = memo(function ProductCardImage({
   highlightColors, activeColorFilter,
   allMatchingVariants, hasMultipleVariants, safeVariantIdx,
   onImageLoad, onVariantChange,
+  priority = false,
 }: ProductCardImageProps) {
   return (
     <div
@@ -81,6 +83,7 @@ export const ProductCardImage = memo(function ProductCardImage({
         style={imageLoaded ? { transform: `scale(${computedImageScale})`, willChange: "transform" } : undefined}
         onLoad={onImageLoad}
         containerClassName="h-full w-full"
+        priority={priority}
       />
 
       {/* Active color badge (mobile) */}

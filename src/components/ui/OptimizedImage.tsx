@@ -6,6 +6,7 @@ import { ImageOff } from 'lucide-react';
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackClassName?: string;
   containerClassName?: string;
+  priority?: boolean;
 }
 
 /**
@@ -21,14 +22,19 @@ export function OptimizedImage({
   className,
   fallbackClassName,
   containerClassName,
+  priority = false,
   ...props
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState(false);
-  const [isInView, setIsInView] = useState(false);
+  const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
+    if (priority) {
+      setIsInView(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -44,7 +50,7 @@ export function OptimizedImage({
     }
 
     return () => observer.disconnect();
-  }, [src]);
+  }, [src, priority]);
 
   return (
     <div className={cn("relative overflow-hidden bg-muted/20", containerClassName)}>
@@ -68,7 +74,8 @@ export function OptimizedImage({
           )}
           onLoad={() => setIsLoaded(true)}
           onError={() => setError(true)}
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
+          {...(priority ? { fetchpriority: "high" } as any : {})}
           {...props}
         />
       )}
