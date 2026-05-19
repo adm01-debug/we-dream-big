@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useSearchHistory } from '../useSearchHistory';
+import { useSearchHistory } from '../common/useSearchHistory';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 describe('useSearchHistory', () => {
