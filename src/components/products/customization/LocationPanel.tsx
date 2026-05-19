@@ -9,7 +9,7 @@
  *    selecionar outra técnica troca e mantém as dimensões já preenchidas.
  */
 
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect, useId } from "react";
 import { Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
