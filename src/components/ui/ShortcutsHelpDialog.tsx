@@ -5,9 +5,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Command, Search, ShoppingCart, Plus, MessageSquare, Package, SlidersHorizontal, ImagePlus, Calculator } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Command, Search, ShoppingCart, Plus, MessageSquare, Package, SlidersHorizontal, ImagePlus, Calculator, PlayCircle } from "lucide-react";
+import { useOnboardingContext } from "@/contexts/OnboardingContext";
 
 export function ShortcutsHelpDialog() {
   const [open, setOpen] = useState(false);
