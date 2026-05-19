@@ -300,4 +300,80 @@ describe("LocationPanel — fluxo Trocar técnica", () => {
     // Barra-resumo agora reflete a técnica B
     expect(screen.getByTestId("config-panel")).toHaveAttribute("data-technique-id", "tech-B");
   });
+
+  it("exibe a lista agrupada por grupo_tecnica quando nenhuma técnica foi selecionada", () => {
+    const techC = makeTechnique({
+      technique_id: "tech-C",
+      tecnica_nome: "Sublimação",
+      grupo_tecnica: "SUBLIMACAO",
+    });
+    const loc: GravacaoLocation = {
+      ...location,
+      options: [techA, techB, techC],
+    };
+
+    render(<LocationPanel location={loc} quantity={100} onPriceCalculated={vi.fn()} />);
+
+    // Verifica agrupamentos (TechniquePicker renderiza nomes de grupo)
+    expect(screen.getByText("SERIGRAFIA")).toBeInTheDocument();
+    expect(screen.getByText("TRANSFER")).toBeInTheDocument();
+    expect(screen.getByText("SUBLIMACAO")).toBeInTheDocument();
+
+    // Todas as técnicas visíveis
+    expect(screen.getByText("Silk 1 cor")).toBeInTheDocument();
+    expect(screen.getByText("Transfer Digital")).toBeInTheDocument();
+    expect(screen.getByText("Sublimação")).toBeInTheDocument();
+  });
+
+  it("garante que ao trocar de técnica o preço muda mantendo dimensões digitadas", () => {
+    const onPrice = vi.fn();
+    render(<LocationPanel location={location} quantity={100} onPriceCalculated={onPrice} />);
+
+    // 1. Seleciona techA e digita 7x4
+    fireEvent.click(screen.getByText("Silk 1 cor"));
+    fireEvent.click(screen.getByTestId("emit-dims")); // Emite {width: 7, height: 4, colors: 2}
+
+    onPrice.mockClear();
+
+    // 2. Troca para techB
+    fireEvent.click(screen.getByTestId("customization-change-technique"));
+    fireEvent.click(
+      within(screen.getByTestId("customization-technique-picker")).getByText("Transfer Digital"),
+    );
+
+    // O ConfigurationPanelV6 deve ser montado com as dimensões 7x4 e emitir o preço da techB
+    const panel = screen.getByTestId("config-panel");
+    expect(panel).toHaveAttribute("data-technique-id", "tech-B");
+    expect(panel).toHaveAttribute("data-initial-width", "7");
+    expect(panel).toHaveAttribute("data-initial-height", "4");
+  });
+
+  it("clampa o número de cores ao trocar para técnica com limite menor", () => {
+    const techLimited = makeTechnique({
+      technique_id: "tech-lim",
+      tecnica_nome: "Laser 1 cor",
+      max_cores: 1,
+    });
+    const loc: GravacaoLocation = {
+      ...location,
+      options: [techB, techLimited], // techB permite 4 cores
+    };
+
+    render(<LocationPanel location={loc} quantity={100} onPriceCalculated={vi.fn()} />);
+
+    // 1. Seleciona techB (max_cores 4) e define 3 cores via emit-dims
+    fireEvent.click(screen.getByText("Transfer Digital"));
+    fireEvent.click(screen.getByTestId("emit-dims")); // {width: 7, height: 4, colors: 2} -> lastDimsRef.colors = 2
+
+    // 2. Troca para techLimited (max_cores 1)
+    fireEvent.click(screen.getByTestId("customization-change-technique"));
+    fireEvent.click(
+      within(screen.getByTestId("customization-technique-picker")).getByText("Laser 1 cor"),
+    );
+
+    // 3. Verifica se as cores foram clampadas p/ 1
+    const panel = screen.getByTestId("config-panel");
+    expect(panel).toHaveAttribute("data-technique-id", "tech-lim");
+    expect(panel).toHaveAttribute("data-initial-colors", "1");
+  });
 });
