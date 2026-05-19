@@ -88,9 +88,16 @@ export function ThemeProvider({
   }, [storageKey]);
 
   const setTheme = (newTheme: Theme) => {
+    performanceTracker.startThemeChange(newTheme);
     const apply = () => {
       localStorage.setItem(storageKey, newTheme);
       setThemeState(newTheme);
+      // We assume the transition ends after state update and class application in the next frame
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          performanceTracker.endThemeChange(newTheme);
+        });
+      });
     };
 
     if (typeof document !== 'undefined' && 'startViewTransition' in document) {
@@ -99,6 +106,7 @@ export function ThemeProvider({
       apply();
     }
   };
+
 
   const toggleTheme = () => {
     const nextTheme = actualTheme === 'light' ? 'dark' : 'light';
