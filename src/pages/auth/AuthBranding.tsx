@@ -396,7 +396,7 @@ const FEATURE_ITEMS = [
   { label: "IA", desc: "ASSISTENTE PESSOAL", icon: Brain },
 ];
 
-export function AuthBrandingPanel() {
+export function AuthBrandingPanel({ onLogoClick }: { onLogoClick?: () => void }) {
   return (
     <div className="flex w-full lg:w-1/2 relative min-h-screen items-center">
       {/* Content */}
