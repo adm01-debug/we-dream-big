@@ -42,6 +42,7 @@ serve(async (req) => {
         slug: "simulation-test",
         name: "Simulation Test Endpoint",
         active: true,
+        source_system: "simulation",
         hmac_secret_ref: "SUPABASE_SERVICE_ROLE_KEY"
       });
       if (insertError) {
