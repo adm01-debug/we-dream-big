@@ -235,21 +235,24 @@ describe("LocationPanel — fluxo Trocar técnica", () => {
     expect(panelBefore).toHaveAttribute("data-technique-id", "tech-A");
     vi.mocked(toast.success).mockClear();
 
-    // Reabre picker e clica na MESMA técnica
+    // Reabre picker — painel deve continuar MONTADO (apenas oculto via [hidden])
     fireEvent.click(screen.getByTestId("customization-change-technique"));
+    const panelDuringPicker = screen.getByTestId("config-panel");
+    expect(panelDuringPicker).toBe(panelBefore); // mesma instância DOM = sem remount
+    expect(panelDuringPicker.parentElement).toHaveAttribute("hidden");
+
+    // Clica na MESMA técnica
     fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Silk 1 cor"));
 
-    // Picker fecha
+    // Picker fecha; painel reaparece (mesma instância, sem recálculo)
     expect(screen.queryByTestId("customization-technique-picker")).not.toBeInTheDocument();
-
-    // Mesma instância do painel (referência preservada → não houve remount → sem recálculo)
     const panelAfter = screen.getByTestId("config-panel");
     expect(panelAfter).toBe(panelBefore);
     expect(panelAfter).toHaveAttribute("data-technique-id", "tech-A");
+    expect(panelAfter.parentElement).not.toHaveAttribute("hidden");
 
-    // Nenhum toast de troca disparado
+    // Nenhum toast de troca
     expect(toast.success).not.toHaveBeenCalled();
-
     // Nenhum side-effect de preço
     expect(onPrice).not.toHaveBeenCalled();
   });
