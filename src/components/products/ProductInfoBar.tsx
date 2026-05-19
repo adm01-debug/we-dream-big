@@ -33,6 +33,10 @@ export function ProductInfoBar({
     try {
       await navigator.clipboard.writeText(sku);
       setCopied(true);
+      toast({
+        title: "SKU copiado",
+        description: `O código ${sku} foi copiado para sua área de transferência.`,
+      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // silent fail
