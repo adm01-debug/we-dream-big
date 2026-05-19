@@ -72,6 +72,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const layoutContent = (
     <div className="min-h-screen bg-background print:min-h-0" role="document">
       <GlobalOverlay />
+      <ShortcutsHelpDialog />
       <div className="print:hidden">
         <SkipToContent />
       </div>
