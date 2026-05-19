@@ -28,6 +28,21 @@ export async function authenticateRequest(req: Request): Promise<AuthResult> {
   const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+  const rawToken = authHeader.slice(7).trim();
+  const localServiceClient = createClient(supabaseUrl, serviceRoleKey);
+
+  // ⚡ FAST-PATH: Bypasse para chamadas do sistema (service_role)
+  // Útil para automações, webhooks internos e testes de contrato.
+  const trimmedServiceKey = serviceRoleKey?.trim();
+  if (trimmedServiceKey && rawToken === trimmedServiceKey) {
+    return {
+      userId: '00000000-0000-0000-0000-000000000000', // System user
+      userRole: 'dev',
+      userRoles: ['dev', 'service_role'],
+      localServiceClient
+    };
+  }
+
   // Validate token using getUser (works with all supabase-js versions)
   const userClient = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } },
@@ -48,12 +63,7 @@ export async function authenticateRequest(req: Request): Promise<AuthResult> {
 
   const userId = user.id;
 
-  // Fetch ALL roles using service role client (bypasses RLS)
-  const localServiceClient = createClient(supabaseUrl, serviceRoleKey);
-
   // Onda 15 / item 6.2: bloqueia tokens emitidos antes de uma revogacao.
-  // Extrai o token bruto do Authorization header (sem "Bearer ").
-  const rawToken = authHeader.slice(7).trim();
   const revoked = await isTokenRevoked(localServiceClient, userId, rawToken);
   if (revoked) {
     throw { status: 401, message: 'Sessao foi revogada. Faca login novamente.' };
