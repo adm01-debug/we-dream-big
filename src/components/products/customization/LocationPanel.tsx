@@ -363,7 +363,7 @@ export function LocationPanel({
     ? clamp(rawHeight, selectedTechnique?.efetiva_altura_max)
     : undefined;
   const initialColors = selectedTechnique?.cobra_por_cor
-    ? clamp(rawColors, selectedTechnique?.max_cores)
+    ? clamp(rawColors ?? 1, selectedTechnique?.max_cores)
     : undefined;
 
   return (
