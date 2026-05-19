@@ -668,7 +668,9 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
               return { success: false, error: retryError.message };
             }
 
-            const retryResult = { records: retryData || [], count: null };
+            let records = (retryData ?? []) as Record<string, unknown>[];
+            if (qTable === 'products') records = records.map(mapProductRowToLegacyShape);
+            const retryResult = { records, count: null };
             if (qCacheKey) setCache(qCacheKey, retryResult);
             console.log(`[batch] ♻️ Query ${idx} (${qTable}) retry OK in ${retryDuration}ms, ${retryData?.length ?? 0} records`);
             return { success: true, data: retryResult };
