@@ -1,8 +1,8 @@
 /**
  * useGlobalSearch — Hook that encapsulates all search logic for GlobalSearchPalette.
- * Extracted to reduce the component from 1033 to ~300 lines (UI only).
  */
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useSearchStore } from "@/stores/useSearchStore";
 import { useOracleVoiceBridge } from "@/stores/oracleVoiceBridge";
 import Fuse from "fuse.js";
 import { useNavigate } from "react-router-dom";
@@ -61,7 +61,7 @@ export interface AppliedFilter {
 }
 
 export function useGlobalSearch() {
-  const [open, setOpen] = useState(false);
+  const { open, setOpen, voiceOverlayOpen, setVoiceOverlayOpen } = useSearchStore();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -69,7 +69,6 @@ export function useGlobalSearch() {
   const [searchIntent, setSearchIntent] = useState<SearchIntent | null>(null);
   const [popularProducts, setPopularProducts] = useState<PopularProduct[]>([]);
   const [typingSuggestions, setTypingSuggestions] = useState<string[]>([]);
-  const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
   const navigate = useNavigate();
   const debouncedQuery = useDebounce(query, 500);
   
