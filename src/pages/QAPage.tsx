@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { PageSEO } from '@/components/seo/PageSEO';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,10 +58,21 @@ export default function QAPage() {
   ];
 
   return (
-    <div className="min-h-screen space-y-8 bg-background p-4 md:p-8">
-      <header className="flex flex-col gap-4 border-b pb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">QA Responsive Playground</h1>
+    <>
+      <PageSEO 
+        title="QA Playground" 
+        description="Ambiente de testes para validação de layout, responsividade e acessibilidade." 
+        path="/qa"
+      />
+      <div className="min-h-screen space-y-8 bg-background p-4 md:p-8 animate-fade-in">
+        <header className="flex flex-col gap-4 border-b pb-6">
+          <div>
+            <h1 
+              data-testid="page-title-qa"
+              className="text-3xl font-bold tracking-tight font-display"
+            >
+              QA Responsive Playground
+            </h1>
           <p className="text-muted-foreground">
             Valide layout, overflow e estados dos componentes em diferentes larguras.
           </p>
@@ -276,6 +288,7 @@ export default function QAPage() {
           (1920px)
         </p>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }
