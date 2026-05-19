@@ -25,6 +25,7 @@ vi.mock("@/hooks/admin", () => ({
     saving: false,
     save: vi.fn(),
   }),
+  RETEST_COOLDOWN_PRESETS_MS: [3000, 10000, 30000, 60000],
 }));
 
 vi.mock("@/components/admin/connections/useSeverityChangeNotifier", () => ({
