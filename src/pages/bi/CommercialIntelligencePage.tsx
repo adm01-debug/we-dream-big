@@ -10,7 +10,7 @@ import { ProductRankingSearch } from "@/components/intelligence/ProductRankingSe
 import { CategoryRanking } from "@/components/intelligence/CategoryRanking";
 import { SupplierSales } from "@/components/intelligence/SupplierSales";
 import { Brain, Clock } from "lucide-react";
-import { useDebouncedFilters } from "@/hooks/commondFilters";
+import { useDebouncedFilters } from "@/hooks/common";
 
 export default function CommercialIntelligencePage() {
   const [lastRefresh] = useState<Date>(new Date());
