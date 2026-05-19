@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 export interface ProductListProps {
   products: Product[];
+  isLoading?: boolean;
   onProductClick?: (productId: string) => void;
   onViewProduct?: (product: Product) => void;
   onShareProduct?: (product: Product) => void;
