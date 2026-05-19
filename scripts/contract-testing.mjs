@@ -76,6 +76,26 @@ const CONTRACTS = [
         validateResponse: (data) => data.error !== undefined
       }
     ]
+  },
+  {
+    name: "webhook-inbound",
+    endpoint: "webhook-inbound?slug=simulation-test",
+    scenarios: [
+      {
+        description: "Valid simulation payload with HMAC",
+        payload: { event: "contract-test", id: "123" },
+        expectedStatus: 200,
+        headers: { "x-signature-256": "sha256=fake-signature-for-sim" }, // In simulation mode it might bypass or expect a specific key
+        // Note: webhook-inbound usually requires a real HMAC based on the endpoint's secret.
+        // For contract testing, we might need to mock or use the simulation-test endpoint which is designed for this.
+      },
+      {
+        description: "Missing signature",
+        payload: { event: "test" },
+        expectedStatus: 401,
+        validateResponse: (data) => data.error === "Assinatura inválida"
+      }
+    ]
   }
 ];
 
