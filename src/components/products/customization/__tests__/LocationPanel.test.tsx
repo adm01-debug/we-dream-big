@@ -10,6 +10,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, within, fireEvent } from "@testing-library/react";
+import { toast } from "sonner";
 import { LocationPanel } from "../LocationPanel";
 import type { GravacaoLocation, TechniqueOption } from "@/types/customization";
 
@@ -222,5 +223,37 @@ describe("LocationPanel — fluxo Trocar técnica", () => {
     // 8 → clampado p/ 5 ; 5 → clampado p/ 3
     expect(panel).toHaveAttribute("data-initial-width", "5");
     expect(panel).toHaveAttribute("data-initial-height", "3");
+  });
+
+  it("clicar na MESMA técnica apenas fecha o picker — sem toast, sem remount do painel, sem recálculo", () => {
+    const onPrice = vi.fn();
+    render(<LocationPanel location={location} quantity={100} onPriceCalculated={onPrice} />);
+
+    // Seleciona técnica A
+    fireEvent.click(screen.getByText("Silk 1 cor"));
+    const panelBefore = screen.getByTestId("config-panel");
+    expect(panelBefore).toHaveAttribute("data-technique-id", "tech-A");
+    vi.mocked(toast.success).mockClear();
+
+    // Reabre picker — painel deve continuar MONTADO (apenas oculto via [hidden])
+    fireEvent.click(screen.getByTestId("customization-change-technique"));
+    const panelDuringPicker = screen.getByTestId("config-panel");
+    expect(panelDuringPicker).toBe(panelBefore); // mesma instância DOM = sem remount
+    expect(panelDuringPicker.parentElement).toHaveAttribute("hidden");
+
+    // Clica na MESMA técnica
+    fireEvent.click(within(screen.getByTestId("customization-technique-picker")).getByText("Silk 1 cor"));
+
+    // Picker fecha; painel reaparece (mesma instância, sem recálculo)
+    expect(screen.queryByTestId("customization-technique-picker")).not.toBeInTheDocument();
+    const panelAfter = screen.getByTestId("config-panel");
+    expect(panelAfter).toBe(panelBefore);
+    expect(panelAfter).toHaveAttribute("data-technique-id", "tech-A");
+    expect(panelAfter.parentElement).not.toHaveAttribute("hidden");
+
+    // Nenhum toast de troca
+    expect(toast.success).not.toHaveBeenCalled();
+    // Nenhum side-effect de preço
+    expect(onPrice).not.toHaveBeenCalled();
   });
 });
