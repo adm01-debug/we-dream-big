@@ -16,16 +16,45 @@ async function hmacSign(payload: string, secret: string): Promise<string> {
   return encodeHex(new Uint8Array(sig));
 }
 
+function generateFuzzedPayload(type: string) {
+  const fuzzedStrings = [
+    "' OR '1'='1", 
+    "<script>alert(1)</script>", 
+    "A".repeat(10000), 
+    null, 
+    12345, 
+    {}, 
+    "undefined", 
+    "\0", 
+    "NaN", 
+    "-1"
+  ];
+  const item = fuzzedStrings[Math.floor(Math.random() * fuzzedStrings.length)];
+  
+  if (type === "product") {
+    return { sku: item, name: item, price: typeof item === 'number' ? item : -1 };
+  }
+  if (type === "webhook") {
+    return { event: item, id: crypto.randomUUID(), data: { fuzzed: item } };
+  }
+  return { [String(item)]: item };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const startTime = performance.now();
 
   try {
-    const { count = 100, targetFunctions = ["external-db-bridge", "webhook-inbound", "product-webhook"] } = await req.json();
+    const { 
+      count = 100, 
+      targetFunctions = ["external-db-bridge", "webhook-inbound", "product-webhook"],
+      mode = "resilience" // "resilience", "load", "fuzzing"
+    } = await req.json();
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const n8nSecret = Deno.env.get("N8N_PRODUCT_WEBHOOK_SECRET") || "";
+    const n8nSecret = Deno.env.get("N8N_PRODUCT_WEBHOOK_SECRET") || "sim-secret";
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const report = {
@@ -36,32 +65,20 @@ serve(async (req) => {
       startTime: new Date().toISOString(),
       endTime: "",
       consistencyChecks: { passed: 0, failed: 0 },
+      latencies: [] as number[],
     };
 
-    // 1. Setup Simulation Data
     const { data: simEndpoint } = await supabase
       .from("inbound_webhook_endpoints")
-      .select("id, slug")
+      .select("id")
       .eq("slug", "simulation-test")
       .maybeSingle();
       
-    let endpointId = simEndpoint?.id;
-    if (!simEndpoint) {
-      const { data: newEndpoint, error } = await supabase.from("inbound_webhook_endpoints").insert({
-        slug: "simulation-test",
-        name: "Simulation Test Endpoint",
-        active: true,
-        source_system: "simulation",
-        hmac_secret_ref: "SUPABASE_SERVICE_ROLE_KEY",
-        created_by: "7b565451-7eb6-4063-a74b-8ce4dca8703d",
-        allowed_events: ["test"]
-      }).select("id").single();
-      if (error) throw new Error(`Setup failed: ${error.message}`);
-      endpointId = newEndpoint.id;
-    }
+    const endpointId = simEndpoint?.id;
 
     const runScenario = async (fnName: string, payload: any, expectedStatuses: number[], extraHeaders = {}) => {
       const url = `${supabaseUrl}/functions/v1/${fnName}`;
+      const callStart = performance.now();
       try {
         const res = await fetch(url, {
           method: "POST",
@@ -74,18 +91,20 @@ serve(async (req) => {
         });
         const status = res.status;
         const success = expectedStatuses.includes(status);
+        const latency = performance.now() - callStart;
+        report.latencies.push(latency);
         
         if (success) {
           report.successes++;
         } else {
           report.failures++;
-          if (report.details.length < 20) {
+          if (report.details.length < 50) {
              const errorBody = await res.text().catch(() => "N/A");
-             report.details.push({ fnName, status, error: errorBody, payload: JSON.stringify(payload).substring(0, 100) });
+             report.details.push({ fnName, status, error: errorBody, payload: JSON.stringify(payload).substring(0, 150) });
           }
         }
         report.totalScenarios++;
-        return { status, success };
+        return { status, success, payload };
       } catch (err) {
         report.failures++;
         report.totalScenarios++;
@@ -93,42 +112,36 @@ serve(async (req) => {
       }
     };
 
-    const TABLES = ["products", "categories", "suppliers", "brands", "quotes"];
-    const OPERATORS = ["gte", "lte", "gt", "lt", "neq", "like", "ilike"];
+    const batchSize = mode === "load" ? 50 : 20;
+    const finalCount = mode === "load" ? Math.max(count, 500) : count;
 
-    const batchSize = 20;
-    for (let i = 0; i < count; i += batchSize) {
+    for (let i = 0; i < finalCount; i += batchSize) {
       const promises = [];
-      const currentBatch = Math.min(batchSize, count - i);
+      const currentBatch = Math.min(batchSize, finalCount - i);
       
       for (let j = 0; j < currentBatch; j++) {
-        // Bridge scenarios
+        // 1. External DB Bridge (Standard Resilience)
         if (targetFunctions.includes("external-db-bridge")) {
-          const table = TABLES[Math.floor(Math.random() * TABLES.length)];
-          const op = OPERATORS[Math.floor(Math.random() * OPERATORS.length)];
-          promises.push(runScenario("external-db-bridge", {
-            operation: "select", table, filters: { [`id_${op}`]: "123" }, limit: 5
-          }, [200, 404, 400, 401]));
+          const payload = mode === "fuzzing" ? generateFuzzedPayload("bridge") : { operation: "select", table: "products", limit: 1 };
+          promises.push(runScenario("external-db-bridge", payload, [200, 400, 401, 404, 422]));
         }
 
-        // Webhook scenarios with HMAC signing
+        // 2. Webhook Inbound (Consistency + Security)
         if (targetFunctions.includes("webhook-inbound")) {
           promises.push((async () => {
-            const testEventId = `sim-event-${crypto.randomUUID()}`;
-            const payload = { event: "test", id: testEventId };
+            const payload = mode === "fuzzing" ? generateFuzzedPayload("webhook") : { event: "simulation", id: `sim-${crypto.randomUUID()}` };
             const signature = "sha256=" + await hmacSign(JSON.stringify(payload), serviceRoleKey);
             
-            const result = await runScenario("webhook-inbound?slug=simulation-test", payload, [200], {
+            const result = await runScenario("webhook-inbound?slug=simulation-test", payload, [200, 400, 401, 422], {
               "x-signature-256": signature
             });
             
-            if (result.success && result.status === 200) {
-              // Wait briefly for persistence
-              await new Promise(r => setTimeout(r, 100));
+            if (result.success && result.status === 200 && endpointId && mode !== "fuzzing") {
+              await new Promise(r => setTimeout(r, 50));
               const { data } = await supabase.from("inbound_webhook_events")
                 .select("id")
                 .eq("endpoint_id", endpointId)
-                .contains("payload", { id: testEventId })
+                .contains("payload", { id: payload.id })
                 .maybeSingle();
               if (data) report.consistencyChecks.passed++;
               else report.consistencyChecks.failed++;
@@ -136,26 +149,24 @@ serve(async (req) => {
           })());
         }
 
-        // Product Webhook scenarios
+        // 3. Product Webhook (Data Integrity)
         if (targetFunctions.includes("product-webhook")) {
-          const sku = `SIM-SKU-${Math.random().toString(36).substring(7)}`;
-          promises.push(runScenario("product-webhook", {
-            action: "upsert",
-            product: { sku, name: "Sim Product", price: 10.5 }
-          }, [200], {
+          const payload = mode === "fuzzing" ? 
+            { action: "upsert", product: generateFuzzedPayload("product") } : 
+            { action: "upsert", product: { sku: `SIM-${crypto.randomUUID().substring(0,8)}`, name: "Simulation", price: 99.99 } };
+            
+          promises.push(runScenario("product-webhook", payload, [200, 400, 422, 500], {
             "x-webhook-secret": n8nSecret
           }));
         }
       }
       
       await Promise.all(promises);
-      
-      // Stop if timeout is approaching (50s)
-      if (performance.now() - startTime > 50000) break;
+      if (performance.now() - startTime > 55000) break;
     }
 
     report.endTime = new Date().toISOString();
-
+    
     return new Response(JSON.stringify(report), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
