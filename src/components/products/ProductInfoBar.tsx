@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Building2, CalendarClock, GitCompare, Copy, Check } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -26,12 +27,16 @@ export function ProductInfoBar({
 }: ProductInfoBarProps) {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const { toast } = useToast(); // Need to import this or just use navigator
+  const { toast } = useToast();
 
   const handleCopySKU = async () => {
     try {
       await navigator.clipboard.writeText(sku);
       setCopied(true);
+      toast({
+        title: "SKU copiado",
+        description: `O código ${sku} foi copiado para sua área de transferência.`,
+      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // silent fail

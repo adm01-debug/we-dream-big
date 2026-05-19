@@ -84,7 +84,7 @@ export function useGlobalShortcuts(handlers?: ShortcutHandlers) {
         return;
       }
     },
-    [navigate, openOracle, handlers]
+    [navigate, openOracle, handlers, searchOpen, setOpenSearch]
   );
 
   useEffect(() => {

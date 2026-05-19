@@ -46,6 +46,7 @@ export * from "@/hooks/products/useSupplierFiscalData";
 export * from "@/hooks/products/useSupplierNames";
 export * from "@/hooks/products/useSupplierSalesRanking";
 export * from "@/hooks/products/useSupplierTrust";
+export * from "@/hooks/products/useStockAlerts";
 export * from "@/hooks/products/useSuppliers";
 export * from "@/hooks/products/useVariantStock";
 export * from "@/hooks/products/useVariantSupplierSources";
