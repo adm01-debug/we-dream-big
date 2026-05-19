@@ -49,7 +49,7 @@ export function EnhancedSpotlight() {
   };
 
   const items: SpotlightItem[] = useMemo(() => {
-    const all = buildSpotlightItems(navigate);
+    const all = buildSpotlightItems(navigate, handleRestartTour);
     // Esconde itens cujas rotas exigem papel que o usuário não tem.
     return filterByRoutePermission(all, (i) => i.path, { isDev, isAdmin });
   }, [navigate, isDev, isAdmin]);
