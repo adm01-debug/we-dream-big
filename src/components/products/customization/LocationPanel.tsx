@@ -10,10 +10,11 @@
  */
 
 import { useState, useMemo, useCallback, useRef, useEffect, useId } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Info } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TechniqueCard } from "./TechniqueCard";
 import { ConfigurationPanelV6 } from "./ConfigurationPanelV6";
 import type {
@@ -266,6 +267,8 @@ export function LocationPanel({
     );
   }, [isPickerOpen, selectedTechnique]);
 
+  const [clampNotice, setClampNotice] = useState<string | null>(null);
+
   const handleSelectTechnique = useCallback(
     (technique: TechniqueOption) => {
       // Estado C → clicou na mesma técnica: apenas fecha o picker
@@ -274,12 +277,31 @@ export function LocationPanel({
         return;
       }
 
+      setClampNotice(null);
+
       // Trocando de técnica com uma anterior já selecionada
       if (selectedTechnique && selectedTechnique.technique_id !== technique.technique_id) {
         toast.success(
           `Técnica alterada: ${selectedTechnique.tecnica_nome} → ${technique.tecnica_nome}`,
           { duration: 2500 },
         );
+
+        // Verifica se haverá clamp de dimensões
+        const currentW = lastDimsRef.current.width;
+        const currentH = lastDimsRef.current.height;
+        const currentC = lastDimsRef.current.colors;
+
+        const forcedW = technique.usa_dimensao && currentW != null && currentW > (technique.efetiva_largura_max || 0);
+        const forcedH = technique.usa_dimensao && currentH != null && currentH > (technique.efetiva_altura_max || 0);
+        const forcedC = technique.cobra_por_cor && currentC != null && currentC > (technique.max_cores || 1);
+
+        if (forcedW || forcedH || forcedC) {
+          const reasons = [];
+          if (forcedW) reasons.push("Largura");
+          if (forcedH) reasons.push("Altura");
+          if (forcedC) reasons.push("Cores");
+          setClampNotice(`As dimensões (${reasons.join(", ")}) foram ajustadas aos limites da nova técnica.`);
+        }
       }
 
       // Clamp de cores se a nova técnica tiver limite menor
@@ -381,13 +403,24 @@ export function LocationPanel({
 
       {/* Barra resumo da técnica selecionada (Estado B/C) */}
       {showConfig && (
-        <SelectedTechniqueBar
-          technique={selectedTechnique}
-          isPickerOpen={isPickerOpen}
-          pickerId={pickerId}
-          changeButtonRef={changeButtonRef}
-          onChangeClick={() => setIsPickerOpen((v) => !v)}
-        />
+        <div className="space-y-2">
+          <SelectedTechniqueBar
+            technique={selectedTechnique}
+            isPickerOpen={isPickerOpen}
+            pickerId={pickerId}
+            changeButtonRef={changeButtonRef}
+            onChangeClick={() => setIsPickerOpen((v) => !v)}
+          />
+
+          {clampNotice && !isPickerOpen && (
+            <Alert variant="default" className="bg-amber-50 border-amber-200 py-2" data-testid="clamp-notice">
+              <Info className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-xs text-amber-800">
+                {clampNotice}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
       )}
 
       {/* Picker de técnicas (Estado A ou C) */}
