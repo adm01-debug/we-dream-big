@@ -122,6 +122,9 @@ async function runContractTests() {
           console.log("❌ FAIL");
           console.log(`    Esperado: ${scenario.expectedStatus}, Obtido: ${actualStatus}`);
           console.log(`    Resposta: ${JSON.stringify(responseData)}`);
+          if (actualStatus === 401) {
+             console.log(`    Dica: Erro de autenticação. Verifique se SUPABASE_SERVICE_ROLE_KEY no .env bate com o projeto.`);
+          }
           failedCount++;
         }
       } catch (err) {
