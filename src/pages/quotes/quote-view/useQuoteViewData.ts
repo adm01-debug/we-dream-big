@@ -68,8 +68,9 @@ export function useQuoteViewData(id: string | undefined) {
     const discountValue = quote.discount_percent
       ? Math.round(fullSubtotal * (quote.discount_percent / 100) * 100) / 100
       : quote.discount_amount || 0;
+    // Apenas 'fob_pre' (FOB Pré-negociado) tem custo no total. 'fob' = cliente paga, sem cost.
     const shipValue =
-      quote.shipping_type === 'fob' || quote.shipping_type === 'fob_pre'
+      quote.shipping_type === 'fob_pre'
         ? quote.shipping_cost || 0
         : 0;
     const computedTotal = fullSubtotal - discountValue + shipValue;
