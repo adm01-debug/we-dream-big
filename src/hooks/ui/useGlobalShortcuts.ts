@@ -27,7 +27,7 @@ let lastGAt = 0;
 export function useGlobalShortcuts(handlers?: ShortcutHandlers) {
   const navigate = useNavigate();
   const openOracle = useOracleVoiceBridge((s) => s.openOracle);
-  const setOpenSearch = useSearchStore((s) => s.setOpen);
+  const { open: searchOpen, setOpen: setOpenSearch } = useSearchStore();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
