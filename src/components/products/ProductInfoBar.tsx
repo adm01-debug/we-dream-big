@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Building2, CalendarClock, GitCompare, Copy, Check } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
