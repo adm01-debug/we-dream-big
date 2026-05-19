@@ -5,6 +5,9 @@ import * as externalDb from '@/lib/external-db';
 vi.mock('@/lib/external-db', () => ({
   fetchPromobrindProducts: vi.fn(),
   fetchPromobrindProductById: vi.fn(),
+  getProductImageUrl: vi.fn((p) => `http://example.com/${p.sku}.jpg`),
+  getProductStock: vi.fn((p) => p.stock || 0),
+  getProductPrice: vi.fn((p) => p.price || 0),
 }));
 
 describe('productService', () => {
