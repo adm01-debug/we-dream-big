@@ -12,8 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Package, FileText, Loader2, Sparkles,
-  Brain, Mic, Search, ChevronRight,
+  Brain, Mic, Search, ChevronRight, Terminal,
+  Sun, Moon, LogOut, PlusCircle, Users, Calculator, LifeBuoy,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { useGlobalSearch } from "./useGlobalSearch";
 import { typeConfig } from "./search-types";
