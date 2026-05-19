@@ -85,10 +85,12 @@ export const CatalogContent = memo(function CatalogContent({
   activeProductId,
   setActiveProductId,
 }: CatalogContentProps) {
-  const { selectedIds, onToggleSelect, setSelectedCount } = useCatalogSelection(
+  const selection = useCatalogSelection(
     paginatedProducts,
+    selectionMode,
     onSelectedCountChange
   );
+  const { selectedIds, toggleSelect: onToggleSelect } = selection;
 
   if (shouldShowCatalogSkeleton) {
     if (viewMode === "list") {
@@ -224,11 +226,9 @@ export const CatalogContent = memo(function CatalogContent({
       )}
 
       <CatalogBulkModals
+        sel={selection}
         selectionMode={selectionMode}
-        selectedCount={selectedIds.size}
-        selectedIds={selectedIds}
-        onClearSelection={() => setSelectedCount(0)}
-        products={paginatedProducts}
+        totalCount={totalEstimate || filteredProducts.length}
       />
       
       <ScrollToTopButton className="fixed bottom-6 right-6 z-50" />
