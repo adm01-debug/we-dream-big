@@ -23,6 +23,7 @@ import {
   sanitizeExternalWriteData,
   mapTechniqueRowToLegacyShape,
   mapPriceTableRowToLegacyShape,
+  mapProductRowToLegacyShape,
 } from "../_shared/external-db-aliases.ts";
 import { emitTelemetry, classifyDuration, VERY_SLOW_QUERY_THRESHOLD_MS, SLOW_QUERY_THRESHOLD_MS } from "../_shared/external-db-telemetry.ts";
 import { getCached, setCache } from "../_shared/external-db-cache.ts";
@@ -668,7 +669,9 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
               return { success: false, error: retryError.message };
             }
 
-            const retryResult = { records: retryData || [], count: null };
+            let records = (retryData ?? []) as Record<string, unknown>[];
+            if (qTable === 'products') records = records.map(mapProductRowToLegacyShape);
+            const retryResult = { records, count: null };
             if (qCacheKey) setCache(qCacheKey, retryResult);
             console.log(`[batch] ♻️ Query ${idx} (${qTable}) retry OK in ${retryDuration}ms, ${retryData?.length ?? 0} records`);
             return { success: true, data: retryResult };
@@ -678,7 +681,9 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
           return { success: false, error: selectError.message };
         }
 
-        const result = { records: selectData || [], count };
+        let records = (selectData ?? []) as Record<string, unknown>[];
+        if (qTable === 'products') records = records.map(mapProductRowToLegacyShape);
+        const result = { records, count };
         if (qCacheKey) setCache(qCacheKey, result);
 
         const icon = duration >= VERY_SLOW_QUERY_THRESHOLD_MS ? '🔴' : duration >= SLOW_QUERY_THRESHOLD_MS ? '🟡' : '✅';
@@ -1185,6 +1190,7 @@ async function handleSelect(externalSupabase: any, table: string, opts: any) {
       let records = retryData || [];
       if (aliasType === 'technique') records = records.map(mapTechniqueRowToLegacyShape);
       if (aliasType === 'priceTable') records = records.map(mapPriceTableRowToLegacyShape);
+      if (table === 'products') records = (records as Record<string, unknown>[]).map(mapProductRowToLegacyShape);
       emitTelemetry({ operation: 'select', table, limit: 50, offset: safeOffset, countMode: 'none', durationMs: retryDuration, status: classifyDuration(retryDuration), recordCount: records.length });
       console.log(`[retry] Selected ${records.length} records from ${table} (offset=${safeOffset}, limit=50)`);
       return { records, count: null };
@@ -1229,6 +1235,7 @@ async function handleSelect(externalSupabase: any, table: string, opts: any) {
       let records = retryData || [];
       if (aliasType === 'technique') records = records.map(mapTechniqueRowToLegacyShape);
       if (aliasType === 'priceTable') records = records.map(mapPriceTableRowToLegacyShape);
+      if (table === 'products') records = (records as Record<string, unknown>[]).map(mapProductRowToLegacyShape);
 
       emitTelemetry({
         operation: 'select',
@@ -1259,6 +1266,7 @@ async function handleSelect(externalSupabase: any, table: string, opts: any) {
   const rowsAsRecords = () => records as Record<string, unknown>[];
   if (aliasType === 'technique') records = rowsAsRecords().map(mapTechniqueRowToLegacyShape);
   if (aliasType === 'priceTable') records = rowsAsRecords().map(mapPriceTableRowToLegacyShape);
+  if (table === 'products') records = rowsAsRecords().map(mapProductRowToLegacyShape);
 
   emitTelemetry({ operation: 'select', table, limit: safeLimit, offset: safeOffset, countMode, durationMs: selectDuration, status: classifyDuration(selectDuration), recordCount: records.length });
   console.log(`Selected ${records.length} records from ${table} (offset=${safeOffset}, limit=${safeLimit}, count=${count ?? 'n/a'})`);

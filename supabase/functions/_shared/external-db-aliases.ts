@@ -28,12 +28,52 @@ const PRODUCT_COLUMNS_NOT_IN_EXTERNAL_SCHEMA = new Set([
   'cfop', 'csosn', 'icms_rate', 'pis_rate', 'cofins_rate', 'tax_regime',
   'stock_unit', 'has_commercial_packaging',
   'box_internal_height_cm', 'box_internal_width_cm', 'box_internal_length_cm',
-  'country_of_origin', 'image_url',
+  'country_of_origin', 'image_url', 'supplier_name', 'images'
 ]);
 
 const PRODUCT_FIELD_RENAME_MAP: Record<string, string> = {
   'country_of_origin': 'origin_country',
+  'supplier_name': 'brand',
 };
+
+export function sanitizeSelect(table: string, select: string): string {
+  if (table !== 'products' || !select || select === '*') return select;
+  
+  const fields = select.split(',').map(f => f.trim());
+  const sanitized = fields.filter(f => !PRODUCT_COLUMNS_NOT_IN_EXTERNAL_SCHEMA.has(f) || PRODUCT_FIELD_RENAME_MAP[f]);
+  
+  return sanitized.map(f => {
+    const renamed = PRODUCT_FIELD_RENAME_MAP[f];
+    return renamed ? `${renamed}` : f;
+  }).join(', ');
+}
+
+export function sanitizeFilters(table: string, filters: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+  if (table !== 'products' || !filters) return filters;
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(filters)) {
+    // Handle operator suffixes like supplier_name_ilike
+    const suffixMatch = key.match(/^(.+)_(gte|lte|gt|lt|neq|like|ilike|is|in)$/);
+    if (suffixMatch) {
+      const [, col, op] = suffixMatch;
+      const renamed = PRODUCT_FIELD_RENAME_MAP[col];
+      if (renamed) {
+        result[`${renamed}_${op}`] = value;
+      } else if (!PRODUCT_COLUMNS_NOT_IN_EXTERNAL_SCHEMA.has(col)) {
+        result[key] = value;
+      }
+      continue;
+    }
+
+    const renamed = PRODUCT_FIELD_RENAME_MAP[key];
+    if (renamed) {
+      result[renamed] = value;
+    } else if (!PRODUCT_COLUMNS_NOT_IN_EXTERNAL_SCHEMA.has(key)) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
 
 export function sanitizeExternalWriteData(table: string, data: Record<string, unknown>) {
   if (table !== 'products') return data;
@@ -47,6 +87,20 @@ export function sanitizeExternalWriteData(table: string, data: Record<string, un
     result[key] = value;
   }
   return result;
+}
+
+export function mapProductRowToLegacyShape(row: Record<string, unknown>) {
+  const out = { ...row };
+  if ('brand' in out && !out.supplier_name) {
+    out.supplier_name = out.brand;
+  }
+  if ('origin_country' in out && !out.country_of_origin) {
+    out.country_of_origin = out.origin_country;
+  }
+  if ('primary_image_url' in out && !out.image_url) {
+    out.image_url = out.primary_image_url;
+  }
+  return out;
 }
 
 // ============================================
@@ -219,5 +273,7 @@ export function resolveTableAlias(
     };
   }
 
-  return { table, filters, orderBy, select: select || '*', aliasType: null };
+  const sanitizedSelect = sanitizeSelect(table, select || '*');
+  const sanitizedFilters = sanitizeFilters(table, filters);
+  return { table, filters: sanitizedFilters, orderBy, select: sanitizedSelect, aliasType: null };
 }

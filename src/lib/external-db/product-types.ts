@@ -9,7 +9,8 @@ export interface PromobrindProduct {
   sale_price?: number | null;
   /** @deprecated Use sale_price */
   base_price?: number | null;
-  image_url: string | null;
+  /** @deprecated No longer exists in external DB. Use primary_image_url or images */
+  image_url?: string | null;
   images: string[] | null;
   primary_image_url: string | null;
   og_image_url?: string | null;
@@ -17,6 +18,7 @@ export interface PromobrindProduct {
   main_category_id: string | null;
   supplier_id: string | null;
   supplier_reference: string | null;
+  /** @deprecated No longer exists in external DB. Use brand */
   supplier_name?: string | null;
   description: string | null;
   short_description: string | null;
