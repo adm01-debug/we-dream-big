@@ -18,6 +18,7 @@ export interface PromobrindProduct {
   main_category_id: string | null;
   supplier_id: string | null;
   supplier_reference: string | null;
+  /** @deprecated No longer exists in external DB. Use brand */
   supplier_name?: string | null;
   description: string | null;
   short_description: string | null;
