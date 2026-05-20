@@ -1,11 +1,9 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
+import { getCorsHeaders, handleCorsPreflight } from "../_shared/cors.ts";
+import { authorize } from "../_shared/authorize.ts";
 
 async function hmacSign(payload: string, secret: string): Promise<string> {
   const enc = new TextEncoder();
@@ -40,8 +38,21 @@ function generateFuzzedPayload(type: string) {
   return { [String(item)]: item };
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "simulation-orchestrator", requestId, req });
+
+  const preflight = handleCorsPreflight(req);
+  if (preflight) return preflight;
+
+  const corsHeaders = getCorsHeaders(req);
+
+  // Dev-only: ferramenta de simulação/fuzzing/load com service_role interno.
+  const auth = await authorize(req, { requireRole: "dev" });
+  if (!auth.ok) {
+    log.warn("simulation_denied", { reason: "insufficient_role" });
+    return auth.response;
+  }
 
   const startTime = performance.now();
 
@@ -213,15 +224,21 @@ serve(async (req) => {
       }).eq("id", run.id);
     }
     
-    return new Response(JSON.stringify(report), {
+    log.info("simulation_completed", {
+      total: report.totalScenarios,
+      successes: report.successes,
+      failures: report.failures,
+    });
+    return log.respond(new Response(JSON.stringify(report), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
-    });
+    }));
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    log.error("simulation_failed", { error: errorMessage });
+    return log.respond(new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
-    });
+    }));
   }
 });

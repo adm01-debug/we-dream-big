@@ -134,6 +134,8 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "mcp-keys-revoke": { category: "dev", rationale: "MCP keys — has_role(dev) inline", enforcedBy: "custom" },
   "mcp-keys-rotate": { category: "dev", rationale: "MCP keys — has_role(dev) + step-up token", enforcedBy: "custom" },
   "mcp-keys-update": { category: "dev", rationale: "MCP keys — has_role(dev) inline", enforcedBy: "custom" },
+  "simulation-orchestrator": { category: "dev", rationale: "Simulação/fuzzing/load com service_role — dev only via shared-authorize", enforcedBy: "shared-authorize" },
+  "sync-external-db": { category: "dev", rationale: "Sync cross-DB com service_role — dev only via shared-authorize", enforcedBy: "shared-authorize" },
 
   // ---------------- Scoped (auth custom) ----------------
   "mcp-server": { category: "scoped", rationale: "Token MCP com escopos read/write/admin", enforcedBy: "custom" },

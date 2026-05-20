@@ -1,24 +1,33 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
+import { getCorsHeaders, handleCorsPreflight } from "../_shared/cors.ts";
+import { authorize } from "../_shared/authorize.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "sync-external-db", requestId, req });
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  const preflight = handleCorsPreflight(req);
+  if (preflight) return preflight;
+
+  const corsHeaders = getCorsHeaders(req);
+
+  // Dev-only: sincronização cross-DB com service_role nos dois lados.
+  const auth = await authorize(req, { requireRole: "dev" });
+  if (!auth.ok) {
+    log.warn("sync_denied", { reason: "insufficient_role" });
+    return auth.response;
   }
 
   try {
     const { table, direction = "to-external", since } = await req.json();
 
     if (!table) {
-      return new Response(JSON.stringify({ error: "Table name is required" }), {
+      return log.respond(new Response(JSON.stringify({ error: "Table name is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      }));
     }
 
     // 1. Conexão com Supabase Interno (Lovable)
@@ -31,18 +40,18 @@ serve(async (req) => {
     const externalKey = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("EXTERNAL_SUPABASE_SERVICE_KEY");
 
     if (!externalUrl || !externalKey) {
-       return new Response(JSON.stringify({ error: "External Supabase credentials not configured" }), {
+       return log.respond(new Response(JSON.stringify({ error: "External Supabase credentials not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      }));
     }
 
     const externalSupabase = createClient(externalUrl, externalKey);
 
-    let sourceClient = direction === "to-external" ? internalSupabase : externalSupabase;
-    let targetClient = direction === "to-external" ? externalSupabase : internalSupabase;
+    const sourceClient = direction === "to-external" ? internalSupabase : externalSupabase;
+    const targetClient = direction === "to-external" ? externalSupabase : internalSupabase;
 
-    console.log(`Starting sync for table ${table} in direction ${direction}${since ? ` since ${since}` : ''}`);
+    log.info("sync_started", { table, direction, since: since ?? null });
 
     // 3. Buscar dados da origem
     let query = sourceClient.from(table).select("*").limit(1000);
@@ -57,9 +66,9 @@ serve(async (req) => {
     if (sourceError) throw sourceError;
 
     if (!sourceData || sourceData.length === 0) {
-      return new Response(JSON.stringify({ message: "No data to sync", count: 0 }), {
+      return log.respond(new Response(JSON.stringify({ message: "No data to sync", count: 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      }));
     }
 
     // 4. Inserir/Atualizar no destino (Upsert)
@@ -69,21 +78,22 @@ serve(async (req) => {
 
     if (syncError) throw syncError;
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    log.info("sync_completed", { table, direction, count: sourceData.length });
+    return log.respond(new Response(JSON.stringify({
+      success: true,
       message: `Synced ${sourceData.length} records to ${direction === "to-external" ? 'external' : 'internal'} database.`,
       count: sourceData.length,
       last_updated: sourceData.length > 0 ? sourceData.reduce((max, r) => (r.updated_at > max ? r.updated_at : max), sourceData[0].updated_at) : null
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    }));
 
   } catch (error) {
-    console.error("Sync error:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    log.error("sync_failed", { error: errorMessage });
+    return log.respond(new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    }));
   }
 });
