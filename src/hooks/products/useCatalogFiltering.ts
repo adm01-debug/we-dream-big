@@ -65,7 +65,8 @@ export function useCatalogFiltering({
       result = result.filter((p) => {
         if (!p.colors?.length) return false;
         
-        return p.colors.some((c: Record<string, string>) => {
+        // Use for...of for slightly better performance on large sets
+        for (const c of p.colors) {
           if (colorFilterSet.size > 0 && colorFilterSet.has(c.name)) return true;
           
           if (colorVariationSet.size > 0) {
@@ -79,11 +80,11 @@ export function useCatalogFiltering({
             const cName = (c.name || '').toLowerCase().trim();
             
             if (colorGroupSet.has(gSlug) || colorGroupSet.has(gName)) return true;
+            // groupArray is small, so some is fine
             if (groupArray.some(s => cName.includes(s))) return true;
           }
-          
-          return false;
-        });
+        }
+        return false;
       });
     }
 
@@ -129,7 +130,7 @@ export function useCatalogFiltering({
 
     return result;
   }, [
-    filters.priceRange, filters.inStock, filters.materiais, // De-structure simple filter primitives
+    filters.priceRange[0], filters.priceRange[1], filters.inStock, filters.materiais, 
     sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, 
     hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, 
     hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, 

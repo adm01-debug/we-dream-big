@@ -95,8 +95,10 @@ export const CatalogContent = memo(function CatalogContent({
     if (viewMode === "list") {
       return (
         <div className="space-y-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <ProductListItemSkeleton key={i} />
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="animate-in fade-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${i * 30}ms` }}>
+              <ProductListItemSkeleton />
+            </div>
           ))}
         </div>
       );
@@ -111,9 +113,11 @@ export const CatalogContent = memo(function CatalogContent({
         "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5": gridColumns === 5,
         "grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6": gridColumns === 6,
         "grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8": gridColumns === 8,
-      }, gridColumns >= 8 ? 'gap-x-4 gap-y-8' : gridColumns >= 6 ? 'gap-x-6 gap-y-8' : 'gap-x-8 gap-y-8')}>
+      }, gridColumns >= 8 ? 'gap-x-4 gap-y-8' : gridColumns >= 6 ? 'gap-x-6 gap-y-8' : 'gap-x-4 sm:gap-x-6 lg:gap-x-8 gap-y-8')}>
         {Array.from({ length: 12 }).map((_, i) => (
-          <ProductCardSkeleton key={i} />
+          <div key={i} className="animate-in fade-in duration-300" style={{ animationDelay: `${i * 40}ms` }}>
+            <ProductCardSkeleton />
+          </div>
         ))}
       </div>
     );
@@ -138,7 +142,7 @@ export const CatalogContent = memo(function CatalogContent({
   }
 
   return (
-    <div className="space-y-8 pb-12 relative">
+    <div className="space-y-8 pb-12 relative animate-in fade-in duration-500">
       <SparklineSalesProvider>
         {viewMode === "grid" && (
           <ProductGrid

@@ -137,6 +137,7 @@ export function useOnboarding() {
 
         if (error && error.code !== "PGRST116") {
           console.error("Error fetching onboarding:", error);
+          setIsLoading(false);
           return;
         }
 
@@ -144,27 +145,39 @@ export function useOnboarding() {
           setOnboardingId(data.id);
           setHasCompletedTour(data.has_completed_tour || false);
           setCurrentStep(data.current_step || 0);
-          // Show tour if user hasn't completed it
           if (!data.has_completed_tour) {
             setShowTour(true);
           }
         } else {
-          // Create onboarding record for new user
-          const { data: newData, error: insertError } = await supabase
+          // Double check if record was created in the meantime to avoid race conditions
+          const { data: retryData } = await supabase
             .from("user_onboarding")
-            .insert({
-              user_id: user.id,
-              has_completed_tour: false,
-              current_step: 0,
-            })
-            .select()
-            .single();
+            .select("*")
+            .eq("user_id", user.id)
+            .maybeSingle();
+            
+          if (retryData) {
+            setOnboardingId(retryData.id);
+            setHasCompletedTour(retryData.has_completed_tour || false);
+            setCurrentStep(retryData.current_step || 0);
+            if (!retryData.has_completed_tour) setShowTour(true);
+          } else {
+            const { data: newData, error: insertError } = await supabase
+              .from("user_onboarding")
+              .insert({
+                user_id: user.id,
+                has_completed_tour: false,
+                current_step: 0,
+              })
+              .select()
+              .single();
 
-          if (insertError) {
-            console.error("Error creating onboarding:", insertError);
-          } else if (newData) {
-            setOnboardingId(newData.id);
-            setShowTour(true);
+            if (insertError) {
+              console.error("Error creating onboarding:", insertError);
+            } else if (newData) {
+              setOnboardingId(newData.id);
+              setShowTour(true);
+            }
           }
         }
       } catch (err) {

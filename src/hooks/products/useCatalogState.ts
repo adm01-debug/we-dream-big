@@ -1,7 +1,7 @@
 /**
  * useCatalogState — all catalog page state & logic extracted from Index.tsx
  */
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue } from 'react';
 import { useCatalogRealStats, useColorEnrichment, useExternalCategoriesQuery, useProductFuzzySearch, useProductsByCategory, useProductsByMaterial, useProductsCatalog, useSupplierSalesRanking, type Product } from "@/hooks/products";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Package, Heart, Users, Palette, FolderTree } from 'lucide-react';
@@ -63,7 +63,11 @@ export function useCatalogState() {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [viewMode, setViewModeState] = useState<ViewMode>(getPersistedViewMode);
   const setViewMode = useCallback((mode: ViewMode) => {
-    setViewModeState(mode);
+    setIsTransitioning(true);
+    React.startTransition(() => {
+      setViewModeState(mode);
+      setIsTransitioning(false);
+    });
     try {
       localStorage.setItem(VIEW_MODE_KEY, mode);
     } catch {
@@ -72,14 +76,25 @@ export function useCatalogState() {
   }, []);
   const [gridColumns, setGridColumnsState] = useState<ColumnCount>(getDefaultColumns);
   const setGridColumns = useCallback((cols: ColumnCount) => {
-    setGridColumnsState(cols);
+    setIsTransitioning(true);
+    React.startTransition(() => {
+      setGridColumnsState(cols);
+      setIsTransitioning(false);
+    });
     try {
       localStorage.setItem(GRID_COLUMNS_KEY, String(cols));
     } catch {
       /* empty */
     }
   }, []);
-  const [sortBy, setSortBy] = useState<SortOption>('relevance');
+  const [sortBy, setSortByState] = useState<SortOption>('relevance');
+  const setSortBy = useCallback((s: SortOption) => {
+    setIsTransitioning(true);
+    React.startTransition(() => {
+      setSortByState(s);
+      setIsTransitioning(false);
+    });
+  }, []);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedCount, setSelectedCount] = useState(0);
   const [activeProductId, setActiveProductId] = useState<string | null>(null);
@@ -111,6 +126,7 @@ export function useCatalogState() {
   const [isSearching, setIsSearching] = useState(false);
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const debouncedServerSearch = useDebounce(searchQuery, 400);
 
@@ -178,7 +194,9 @@ export function useCatalogState() {
   }, [searchQueryFromUrl]);
 
   useEffect(() => {
-    setDisplayCount(ITEMS_PER_PAGE);
+    React.startTransition(() => {
+      setDisplayCount(ITEMS_PER_PAGE);
+    });
   }, [filters, sortBy, searchQuery]);
 
   const activeFiltersCount = useMemo(() => {
@@ -227,9 +245,20 @@ export function useCatalogState() {
     supplierSalesMap,
   });
 
+  const [lastNonTransitionedProducts, setLastNonTransitionedProducts] = useState<Product[]>([]);
+  const deferredIsTransitioning = useDeferredValue(isTransitioning);
+
+  useEffect(() => {
+    if (!deferredIsTransitioning) {
+      setLastNonTransitionedProducts(filteredProducts);
+    }
+  }, [filteredProducts, deferredIsTransitioning]);
+
+  const displayFilteredProducts = isTransitioning ? lastNonTransitionedProducts : filteredProducts;
+
   const rawPaginatedProducts = useMemo(
-    () => filteredProducts.slice(0, displayCount),
-    [filteredProducts, displayCount],
+    () => displayFilteredProducts.slice(0, displayCount),
+    [displayFilteredProducts, displayCount],
   );
 
   const hasColorFilterActive =

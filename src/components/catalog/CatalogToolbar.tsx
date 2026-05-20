@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useDeferredValue } from "react";
 import { SORT_OPTIONS } from "@/constants/filters";
 import { Filter, ArrowUpDown, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,7 @@ interface CatalogToolbarProps {
   selectionMode: boolean;
   onToggleSelectionMode: () => void;
   selectedCount?: number;
+  isTransitioning?: boolean;
 }
 
 export function CatalogToolbar({
@@ -59,8 +60,11 @@ export function CatalogToolbar({
   viewMode, setViewMode,
   gridColumns, setGridColumns,
   selectionMode, onToggleSelectionMode,
-  selectedCount = 0,
-}: CatalogToolbarProps) {
+    selectedCount = 0,
+    isTransitioning = false,
+  }: CatalogToolbarProps) {
+    const deferredIsTransitioning = useDeferredValue(isTransitioning);
+
   return (
     <div className="flex items-center justify-between gap-2 flex-wrap">
       <div className="flex items-center gap-2 flex-shrink-0">
@@ -183,7 +187,21 @@ export function CatalogToolbar({
           </TooltipContent>
         </Tooltip>
 
-        <div className="hidden sm:block">
+        <div className="hidden sm:flex items-center gap-2">
+          <AnimatePresence>
+            {deferredIsTransitioning && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                className="flex items-center gap-1.5 px-2 py-1 bg-muted/30 rounded-full border border-primary/20"
+              >
+                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">Otimizando...</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <LayoutPopover
             viewMode={viewMode}
             setViewMode={setViewMode}

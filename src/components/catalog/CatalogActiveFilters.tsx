@@ -18,7 +18,7 @@ export function CatalogActiveFilters({ filters, setFilters, activeFiltersCount }
   if (activeFiltersCount === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-1 duration-300">
       {filters.colors.map((color) => (
         <Badge
           key={color}
