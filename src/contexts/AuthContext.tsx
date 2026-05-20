@@ -9,6 +9,7 @@ import { getRandomGreeting, getHighestRole, isSupervisorOrAbove as checkIsSuperv
 import { authService } from "@/services/authService";
 import { useProfileRoles } from "@/hooks/auth/useProfileRoles";
 import { useAuthMFA } from "@/hooks/auth/useAuthMFA";
+import { setSafeToastRoles } from "@/lib/security/safeToast";
 
 // Tipos de role conforme app_role enum no banco.
 export type AppRole = "dev" | "supervisor" | "agente" | "admin" | "manager" | "vendedor";
@@ -157,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Sync safeToast
   useEffect(() => {
-    import('@/lib/security/safeToast').then(({ setSafeToastRoles }) => setSafeToastRoles(userRoles));
+    setSafeToastRoles(userRoles);
   }, [userRoles]);
 
   const signIn = async (email: string, password: string) => {
