@@ -11,7 +11,7 @@
     "build:dev": "node scripts/generate-health.mjs && vite build --mode development",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:quality": "vitest run --exclude 'tests/hooks/**'",
+    "test:quality": "vitest run --exclude 'tests/hooks/**' --shard=1/4 && vitest run --exclude 'tests/hooks/**' --shard=2/4 && vitest run --exclude 'tests/hooks/**' --shard=3/4 && vitest run --exclude 'tests/hooks/**' --shard=4/4",
     "test:watch": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
