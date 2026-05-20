@@ -115,8 +115,9 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
       result.current.goToStep('items');
     });
 
-    // Validates 'client' and 'conditions'. 'conditions' will fail.
-    expect(toast.error).toHaveBeenCalledWith('Preencha todas as condições comerciais');
+    // Ao pular para 'items', valida 'conditions' (entre client e items na ordem
+    // atual). Sem forma de pagamento, a validação falha com erro específico.
+    expect(toast.error).toHaveBeenCalledWith('Selecione a forma de pagamento');
     expect(result.current.currentStep).toBe('client');
   });
 
