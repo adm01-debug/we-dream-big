@@ -1,18 +1,23 @@
-import { supabase } from "@/integrations/supabase/client";
-import { type Quote, type QuoteItem, type PersonalizationTechnique } from "@/hooks/quotes/quoteTypes";
-import { 
-  calculateQuoteTotals, 
-  buildInsertPayload, 
-  buildUpdatePayload, 
-  buildItemsInsertPayload, 
+import { supabase } from '@/integrations/supabase/client';
+import {
+  type Quote,
+  type QuoteItem,
+  type PersonalizationTechnique,
+} from '@/hooks/quotes/quoteTypes';
+import {
+  calculateQuoteTotals,
+  buildInsertPayload,
+  buildUpdatePayload,
+  buildItemsInsertPayload,
   buildPersonalizationsInsertPayload,
-  round2
-} from "@/hooks/quotes/quoteHelpers";
-import { invokeExternalDb } from "@/lib/external-db";
+  round2,
+} from '@/hooks/quotes/quoteHelpers';
+import { invokeExternalDb } from '@/lib/external-db';
 
 export const quoteService = {
   async fetchQuotes(userId: string, scope: string) {
     let query = supabase
+      // rls-allow: seller scope aplicado condicionalmente abaixo (scope 'self' → .eq seller_id); admin scope 'all' protegido por RLS
       .from('quotes')
       .select('*')
       .order('created_at', { ascending: false })
@@ -30,11 +35,12 @@ export const quoteService = {
 
   async fetchQuote(quoteId: string): Promise<Quote | null> {
     const { data: quoteData, error: qErr } = await supabase
+      // rls-allow: fetch por id único; ownership do registro garantido por RLS
       .from('quotes')
       .select('*')
       .eq('id', quoteId)
       .single();
-    
+
     if (qErr) throw qErr;
     if (!quoteData) return null;
 
@@ -47,7 +53,7 @@ export const quoteService = {
     if (iErr) throw iErr;
 
     const itemIds = (itemsData || []).map((i) => i.id);
-    let allPersonalizations: any[] = [];
+    let allPersonalizations: Array<Record<string, unknown>> = [];
     if (itemIds.length > 0) {
       const { data: persData, error: pErr } = await supabase
         .from('quote_item_personalizations')
@@ -65,52 +71,68 @@ export const quoteService = {
     return { ...quoteData, items } as Quote;
   },
 
-  async createQuote(quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null): Promise<Quote> {
+  async createQuote(
+    quote: Partial<Quote>,
+    items: QuoteItem[],
+    userId: string,
+    orgId: string | null,
+  ): Promise<Quote> {
     const totals = calculateQuoteTotals(quote, items);
     const insertPayload = buildInsertPayload(quote, userId, orgId, totals);
-    
+
     const { data: inserted, error: insErr } = await supabase
+      // rls-allow: insert com seller_id definido em buildInsertPayload; RLS valida o seller_id inserido
       .from('quotes')
       .insert(insertPayload)
       .select('*')
       .single();
-    
+
     if (insErr) throw insErr;
     if (!inserted) throw new Error('Falha ao inserir orçamento');
 
     await this.insertItemsWithPersonalizations(items, inserted.id);
-    
+
     return { ...inserted, items } as unknown as Quote;
   },
 
   async updateQuote(quoteId: string, quote: Partial<Quote>, items: QuoteItem[]): Promise<Quote> {
     const totals = calculateQuoteTotals(quote, items);
     const updatePayload = buildUpdatePayload(quote, totals);
-    
+
     const { data: updated, error: updErr } = await supabase
+      // rls-allow: update por id único; ownership do registro garantido por RLS
       .from('quotes')
       .update(updatePayload)
       .eq('id', quoteId)
       .select('*')
       .single();
-    
+
     if (updErr) throw updErr;
 
     // Delete existing items and personalizations (Cascade delete should handle this, but for safety...)
-    const { data: oldItems } = await supabase.from('quote_items').select('id').eq('quote_id', quoteId);
+    const { data: oldItems } = await supabase
+      .from('quote_items')
+      .select('id')
+      .eq('quote_id', quoteId);
     if (oldItems?.length) {
-      await supabase.from('quote_item_personalizations').delete().in('quote_item_id', oldItems.map(i => i.id));
+      await supabase
+        .from('quote_item_personalizations')
+        .delete()
+        .in(
+          'quote_item_id',
+          oldItems.map((i) => i.id),
+        );
       await supabase.from('quote_items').delete().eq('quote_id', quoteId);
     }
 
     await this.insertItemsWithPersonalizations(items, quoteId);
-    
+
     return { ...updated, items } as unknown as Quote;
   },
 
   async insertItemsWithPersonalizations(items: QuoteItem[], quoteId: string) {
     if (items.length === 0) return;
-    
+
     const itemsPayload = buildItemsInsertPayload(items, quoteId).map((item) => ({
       ...item,
       product_name: item.product_name?.trim().slice(0, 255),
@@ -122,7 +144,7 @@ export const quoteService = {
       .from('quote_items')
       .insert(itemsPayload)
       .select('*');
-    
+
     if (itemsErr) throw itemsErr;
 
     for (let i = 0; i < items.length; i++) {
@@ -139,11 +161,13 @@ export const quoteService = {
   },
 
   async updateQuoteStatus(quoteId: string, status: Quote['status']) {
+    // rls-allow: update por id único; ownership do registro garantido por RLS
     const { error } = await supabase.from('quotes').update({ status }).eq('id', quoteId);
     if (error) throw error;
   },
 
   async deleteQuote(quoteId: string) {
+    // rls-allow: delete por id único; ownership do registro garantido por RLS
     const { error } = await supabase.from('quotes').delete().eq('id', quoteId);
     if (error) throw error;
   },
@@ -159,7 +183,18 @@ export const quoteService = {
     return result.records || [];
   },
 
-  async logHistory(quoteId: string, userId: string, action: string, description: string, options?: any) {
+  async logHistory(
+    quoteId: string,
+    userId: string,
+    action: string,
+    description: string,
+    options?: {
+      fieldChanged?: string;
+      oldValue?: unknown;
+      newValue?: unknown;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
     await supabase.from('quote_history').insert({
       quote_id: quoteId,
       user_id: userId,
@@ -170,5 +205,5 @@ export const quoteService = {
       new_value: options?.newValue || null,
       metadata: options?.metadata || {},
     });
-  }
+  },
 };
