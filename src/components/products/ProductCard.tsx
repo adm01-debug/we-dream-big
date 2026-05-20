@@ -193,10 +193,7 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
       onMouseEnter={() => {
         setIsHovered(true);
         // Prefetch product details when hovering to make "click to open" instant
-        queryClient.prefetchQuery({
-           queryKey: ['promobrind-product', product.id],
-           staleTime: 15 * 60 * 1000
-        });
+        prefetchProduct(product.id);
       }}
       onMouseLeave={() => { setIsHovered(false); setActionsOpen(false); }}
       aria-label={`Ver detalhes de ${product.name}`}
