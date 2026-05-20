@@ -155,58 +155,32 @@ test.describe("@smoke Google OAuth — wiring até /auth/callback", () => {
       });
     });
 
-    // 3. Faz o PRÓPRIO app gravar o code_verifier (abordagem robusta, validada
-    //    por trace: o signInWithOAuth real gera e grava o verifier 22x, mas o
-    //    redirect top-level + route.abort destruía o contexto de execução,
-    //    deixando o localStorage ilegível para o teste).
-    //    Adivinhar a chave `sb-<ref>-auth-token-code-verifier` e injetar via
-    //    addInitScript NÃO funciona (o gotrue lê vazio — confirmado por trace:
-    //    "code verifier should be non-empty"). Em vez disso, deixamos o app
-    //    gerar/gravar o verifier com a chave/storage REAIS e impedimos o
-    //    redirect: override de window.location.assign (no-op). Assim o contexto
-    //    fica intacto e o verifier persiste na MESMA origem até /auth/callback.
-    await page.addInitScript(() => {
-      try {
-        Object.defineProperty(window.location, "assign", {
-          configurable: true,
-          value: () => {
-            /* no-op: impede o redirect top-level para o authorize, preservando
-               o contexto de execução e o localStorage da origem do app. */
-          },
-        });
-      } catch {
-        /* alguns engines não permitem redefinir location.assign — ignora. */
-      }
-    });
-    // Rede de segurança: caso o override falhe e o redirect dispare, aborta o
-    // request de authorize (com o override ativo, nenhum request sai).
-    await page.route(AUTHORIZE_GLOB, (route) => route.abort());
+    // 3. Injeta o code_verifier ANTES de visitar o callback.
+    //    exchangeCodeForSession exige o verifier no storage. Fazer o app gerá-lo
+    //    via clique real + override de window.location NÃO funciona neste ambiente:
+    //    o redirect top-level (signInWithOAuth usa window.location.href, não
+    //    .assign) deixa o documento opaco e `localStorage` lança SecurityError.
+    //    Injetamos um verifier não-vazio na chave canônica
+    //    `sb-<ref>-auth-token-code-verifier` (ref derivado do MESMO SUPABASE_URL
+    //    usado nos globs → casa com a storageKey real do supabase-js).
+    const projectRef = new URL(SUPABASE_URL).hostname.split(".")[0];
+    await page.addInitScript(
+      ([key, verifier]) => {
+        try {
+          window.localStorage.setItem(key, verifier);
+        } catch {
+          /* storage indisponível no contexto — ignora */
+        }
+      },
+      [
+        `sb-${projectRef}-auth-token-code-verifier`,
+        "e2e-mock-pkce-verifier-0123456789abcdefghijklmnopqrstuvwxyz",
+      ] as const,
+    );
 
-    await gotoAndSettle(page, "/login");
-    await expectVisibleByTestId(page, "social-login-google");
-    await page.addStyleTag({
-      content: `*, *::before, *::after { animation-play-state: paused !important; transition: none !important; }`,
-    });
-    // force:true: este click é SETUP (fazer o app gerar/gravar o verifier); o
-    // click "de verdade" já é validado no teste 40.
-    await page.locator('[data-testid="social-login-google"]').click({ force: true });
-
-    // Espera o app persistir o code_verifier (signInWithOAuth é async: gera o
-    // code_challenge via crypto.subtle e só então grava). Com o redirect virado
-    // no-op, o contexto fica intacto e a leitura do localStorage é confiável.
-    await expect
-      .poll(
-        () =>
-          page.evaluate(() =>
-            Object.keys(window.localStorage).some((k) => k.endsWith("-code-verifier")),
-          ),
-        { timeout: 8_000 },
-      )
-      .toBe(true);
-
-    // 4. Visita o callback com um code fake (mesma origem → verifier preservado).
-    //    O SSOCallbackPage chama exchangeCodeForSession, que acha o verifier
-    //    gravado pelo app e faz o POST /token (mockado acima).
+    // 4. Visita o callback com um code fake. O SSOCallbackPage chama
+    //    exchangeCodeForSession, que acha o verifier injetado e faz o POST /token
+    //    (mockado acima).
     await page.goto("/auth/callback?code=e2e-mock-code", { waitUntil: "domcontentloaded" });
 
     // 4. O wiring do callback é "trocar o code por sessão". Validamos exatamente
