@@ -1,7 +1,6 @@
-
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { AuthBrandingPanel } from "@/pages/auth/AuthBranding";
+import { AuthBrandingPanel } from '@/pages/auth/AuthBranding';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock components and icons
@@ -21,7 +20,7 @@ vi.mock('@/components/layout/AppLogo', () => ({
 }));
 
 vi.mock('./AuthBranding', async () => {
-  const actual = await vi.importActual('./AuthBranding') as any;
+  const actual = (await vi.importActual('./AuthBranding')) as any;
   return {
     ...actual,
     ContinuousRockets: () => <div data-testid="rockets" />,
@@ -33,36 +32,37 @@ describe('AuthBrandingPanel Visual Classes', () => {
     const { container } = render(
       <BrowserRouter>
         <AuthBrandingPanel />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
-    
+
     const grid = container.querySelector('.grid-cols-2');
     expect(grid).toBeInTheDocument();
-    
+
     const classes = grid?.className || '';
     expect(classes).toContain('w-full');
-    expect(classes).toContain('lg:w-[105%]');
-    expect(classes).toContain('xl:w-[110%]');
-    expect(classes).toContain('lg:-mx-[2.5%]');
-    expect(classes).toContain('xl:-mx-[5%]');
+    expect(classes).toContain('pt-6');
+
+    // A largura responsiva agora vem do translate no wrapper interno (motion.div).
+    const inner = container.querySelector('.lg\\:translate-x-\\[5\\%\\]');
+    expect(inner).toBeInTheDocument();
   });
 
   it('has correct padding and gap classes', () => {
     const { container } = render(
       <BrowserRouter>
         <AuthBrandingPanel />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
-    
+
     const grid = container.querySelector('.grid-cols-2');
     expect(grid?.className).toContain('gap-3');
     expect(grid?.className).toContain('sm:gap-5');
-    
-    const cards = container.querySelectorAll('.rounded-2xl');
-    cards.forEach(card => {
-      expect(card.className).toContain('px-4');
-      expect(card.className).toContain('sm:px-6');
-      expect(card.className).toContain('h-[99px]');
+
+    const cards = container.querySelectorAll('.rounded-3xl');
+    expect(cards.length).toBeGreaterThan(0);
+    cards.forEach((card) => {
+      expect(card.className).toContain('px-5');
+      expect(card.className).toContain('h-[88px]');
     });
   });
 
@@ -70,9 +70,9 @@ describe('AuthBrandingPanel Visual Classes', () => {
     const { container } = render(
       <BrowserRouter>
         <AuthBrandingPanel />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
-    
+
     const mainDiv = container.firstChild as HTMLElement;
     const classes = mainDiv.className.split(' ');
     expect(classes).toContain('flex');
@@ -80,5 +80,4 @@ describe('AuthBrandingPanel Visual Classes', () => {
     expect(classes).toContain('w-full');
     expect(classes).toContain('lg:w-1/2');
   });
-
 });
