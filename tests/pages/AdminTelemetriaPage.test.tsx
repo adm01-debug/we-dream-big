@@ -176,10 +176,10 @@ describe('AdminTelemetriaPage - Rendering', () => {
     }, { timeout: 15000 });
   });
 
-  it('renders inside MainLayout', async () => {
+  it('renderiza o conteúdo da página (layout aplicado via rota, não pela página)', async () => {
     setupSupabaseMock([]);
     render(<AdminTelemetriaPage />);
-    expect(screen.getByTestId('main-layout')).toBeInTheDocument();
+    expect(screen.getByTestId('page-title-telemetria')).toBeInTheDocument();
   });
 
   it('renders all 4 stat cards', async () => {
