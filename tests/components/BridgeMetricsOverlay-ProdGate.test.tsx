@@ -42,8 +42,10 @@ describe('BridgeMetricsOverlay - Gating de Produção', () => {
     expect(container.textContent).toContain('bridge metrics');
   });
 
-  it('retorna null se o gate SSOT REJEITAR (mesmo que seja dev)', () => {
-    vi.mocked(useDevGate).mockReturnValue({ isAllowed: false, isDev: true });
+  // O overlay é gateado por isDev (role dev real), não por isAllowed: ver
+  // BridgeMetricsOverlay.tsx (`if (!isDev) return null`).
+  it('retorna null quando não é dev (gate rejeita)', () => {
+    vi.mocked(useDevGate).mockReturnValue({ isAllowed: false, isDev: false });
     const { container } = render(<BridgeMetricsOverlay />);
     expect(container).toBeEmptyDOMElement();
   });
