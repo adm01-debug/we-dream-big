@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Auth from '@/pages/auth/Auth';
 import { BrowserRouter } from 'react-router-dom';
@@ -66,15 +66,17 @@ describe('Auth Page', () => {
     expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
-  it('shows forgot password form when link is clicked', () => {
+  it('shows forgot password form when link is clicked', async () => {
     renderAuth();
     const forgotLink = screen.getByTestId('login-forgot-link');
 
     fireEvent.click(forgotLink);
 
-    // Check for forgot password form elements
-    expect(screen.getByText(/Esqueceu sua senha\?/i)).toBeInTheDocument();
+    // O ForgotPasswordForm entra via AnimatePresence (montagem assíncrona).
+    expect(await screen.findByText(/Esqueceu sua senha\?/i)).toBeInTheDocument();
 
-    expect(screen.queryByTestId('login-password-input')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByTestId('login-password-input')).not.toBeInTheDocument(),
+    );
   });
 });
