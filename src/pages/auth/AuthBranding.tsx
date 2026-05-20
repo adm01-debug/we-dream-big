@@ -99,8 +99,17 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
   }, []);
 
   useEffect(() => {
-    const rocketInterval = setInterval(() => spawnRocket(), 2000);
-    
+    // Burst inicial determinístico de 7 foguetes (delays escalonados) — restaura
+    // o comportamento do antigo ContinuousRockets que o smoke e2e valida
+    // (e2e/flows/23-rocket-animation-snapshot.spec.ts espera 7 itens).
+    const ROCKET_BURST_DELAYS = [0, 200, 500, 900, 1400, 2000, 2800];
+    const burstTimers = ROCKET_BURST_DELAYS.map((d) => setTimeout(() => spawnRocket(), d));
+    // Após o burst, recicla foguetes em cadência sustentada (começa depois do
+    // último delay p/ não competir com a contagem do burst).
+    let rocketInterval: ReturnType<typeof setInterval> | undefined;
+    const sustainTimer = setTimeout(() => {
+      rocketInterval = setInterval(() => spawnRocket(), 2800);
+    }, 3200);
     // Meteor shower interval
     const meteorInterval = setInterval(() => {
       const id = Date.now();
@@ -150,7 +159,9 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
     }));
 
     return () => {
-      clearInterval(rocketInterval);
+      burstTimers.forEach(clearTimeout);
+      clearTimeout(sustainTimer);
+      if (rocketInterval) clearInterval(rocketInterval);
       clearInterval(meteorInterval);
     };
   }, [spawnRocket, config.astroCount, config.spacing, config.individualAstronauts]);
@@ -318,9 +329,11 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       ))}
 
       {/* Rockets rising from bottom to top */}
+      <div data-testid="rocket-container" className="absolute inset-0 pointer-events-none">
       {rockets.map((r) => (
         <div
           key={r.id}
+          data-testid="rocket-item"
           className="absolute bottom-[-100px]"
           style={{
             left: `${r.left}%`,
@@ -358,6 +371,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 });
