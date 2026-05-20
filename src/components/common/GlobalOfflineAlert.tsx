@@ -44,7 +44,7 @@ export function GlobalOfflineAlert() {
     };
   }, []);
 
-  if (!isOffline || dismissed) return null;
+  if (!showOverlay) return null;
 
   return (
     <AnimatePresence>
