@@ -1,13 +1,13 @@
-import { Fragment } from "react";
-import { createRoot } from "react-dom/client";
-import { HelmetProvider } from "react-helmet-async";
-import { registerServiceWorker } from "@/lib/sw-register";
-import { installGlobalErrorHandlers } from "@/lib/error-reporter";
-import { initSentry } from "@/lib/sentry";
-import { installSafeToast } from "@/lib/security/safeToast";
-import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
-import App from "./App.tsx";
-import "./index.css";
+import { Fragment } from 'react';
+import { createRoot } from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async';
+import { registerServiceWorker } from '@/lib/sw-register';
+import { installGlobalErrorHandlers } from '@/lib/error-reporter';
+import { initSentry } from '@/lib/sentry';
+import { installSafeToast } from '@/lib/security/safeToast';
+import EnhancedErrorBoundary from '@/components/errors/EnhancedErrorBoundary';
+import App from './App.tsx';
+import './index.css';
 
 // Initialize Sentry FIRST (no-op if VITE_SENTRY_DSN is unset)
 initSentry();
@@ -19,7 +19,7 @@ installGlobalErrorHandlers();
 // Idempotente; respeita o Dev Infra Messages Gate.
 installSafeToast();
 
-const root = document.getElementById("root");
+const root = document.getElementById('root');
 
 if (!root) {
   throw new Error('❌ Elemento root não encontrado no DOM');
@@ -36,12 +36,11 @@ createRoot(root).render(
         <App />
       </EnhancedErrorBoundary>
     </HelmetProvider>
-  </Fragment>
+  </Fragment>,
 );
 
-// Service Worker disabled in all environments to resolve 412 caching issues
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(r => r.unregister());
-  });
+// Register Service Worker for PWA support
+// Performance Note: This enables caching and offline support
+if (import.meta.env.PROD) {
+  registerServiceWorker();
 }

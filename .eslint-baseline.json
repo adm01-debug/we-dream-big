@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-05-20T19:51:25.193Z",
-  "totalErrors": 442,
-  "totalWarnings": 525,
+  "generatedAt": "2026-05-20T21:27:31.193Z",
+  "totalErrors": 443,
+  "totalWarnings": 529,
   "counts": {
     "src/components/access/DevAccessDeniedPage.tsx": {
       "react-hooks/exhaustive-deps": {
@@ -1073,7 +1073,7 @@
     },
     "src/components/products/ProductCard.tsx": {
       "@typescript-eslint/no-unused-vars": {
-        "e": 3,
+        "e": 4,
         "w": 0
       }
     },
@@ -1091,7 +1091,7 @@
     },
     "src/components/products/ProductCardSkeleton.tsx": {
       "@typescript-eslint/no-unused-vars": {
-        "e": 1,
+        "e": 2,
         "w": 0
       }
     },
@@ -1387,7 +1387,7 @@
     },
     "src/components/providers/AppBootstrap.tsx": {
       "@typescript-eslint/no-unused-vars": {
-        "e": 4,
+        "e": 3,
         "w": 0
       }
     },
@@ -2069,10 +2069,16 @@
         "w": 1
       }
     },
+    "src/hooks/products/useCatalogFiltering.ts": {
+      "react-hooks/exhaustive-deps": {
+        "e": 0,
+        "w": 3
+      }
+    },
     "src/hooks/products/useCatalogState.ts": {
       "react-hooks/exhaustive-deps": {
         "e": 0,
-        "w": 1
+        "w": 2
       }
     },
     "src/hooks/products/useCategoriesTree.ts": {
@@ -2385,12 +2391,6 @@
       "@typescript-eslint/no-unused-vars": {
         "e": 0,
         "w": 1
-      }
-    },
-    "src/main.tsx": {
-      "@typescript-eslint/no-unused-vars": {
-        "e": 1,
-        "w": 0
       }
     },
     "src/pages/QAPage.tsx": {
@@ -2733,7 +2733,7 @@
         "w": 1
       },
       "@typescript-eslint/no-explicit-any": {
-        "e": 4,
+        "e": 5,
         "w": 0
       },
       "no-console": {

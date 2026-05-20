@@ -81,8 +81,14 @@ export const CatalogContent = memo(function CatalogContent({
     if (viewMode === 'list') {
       return (
         <div className="space-y-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <ProductListItemSkeleton key={i} />
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="duration-300 animate-in fade-in slide-in-from-left-2"
+              style={{ animationDelay: `${i * 30}ms` }}
+            >
+              <ProductListItemSkeleton />
+            </div>
           ))}
         </div>
       );
@@ -105,11 +111,17 @@ export const CatalogContent = memo(function CatalogContent({
             ? 'gap-x-4 gap-y-8'
             : gridColumns >= 6
               ? 'gap-x-6 gap-y-8'
-              : 'gap-x-8 gap-y-8',
+              : 'gap-x-4 gap-y-8 sm:gap-x-6 lg:gap-x-8',
         )}
       >
         {Array.from({ length: 12 }).map((_, i) => (
-          <ProductCardSkeleton key={i} />
+          <div
+            key={i}
+            className="duration-300 animate-in fade-in"
+            style={{ animationDelay: `${i * 40}ms` }}
+          >
+            <ProductCardSkeleton />
+          </div>
         ))}
       </div>
     );
@@ -134,7 +146,7 @@ export const CatalogContent = memo(function CatalogContent({
   }
 
   return (
-    <div className="relative space-y-8 pb-12">
+    <div className="relative space-y-8 pb-12 duration-500 animate-in fade-in">
       <SparklineSalesProvider>
         {viewMode === 'grid' && (
           <ProductGrid

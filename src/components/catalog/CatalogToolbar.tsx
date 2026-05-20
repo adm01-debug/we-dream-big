@@ -77,19 +77,10 @@ export function CatalogToolbar({
   selectedCount = 0,
   isTransitioning = false,
 }: CatalogToolbarProps) {
-  // `useDeferredValue` evita flicker: o esmaecer só "pega" quando o React
-  // termina o trabalho pesado da transição (troca de view/filtro), em vez de
-  // piscar a cada render intermediário.
   const deferredIsTransitioning = useDeferredValue(isTransitioning);
 
   return (
-    <div
-      aria-busy={deferredIsTransitioning}
-      className={cn(
-        'flex flex-wrap items-center justify-between gap-2 transition-opacity duration-200',
-        deferredIsTransitioning && 'opacity-60',
-      )}
-    >
+    <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="flex flex-shrink-0 items-center gap-2">
         <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
           <Tooltip>
@@ -225,7 +216,23 @@ export function CatalogToolbar({
           </TooltipContent>
         </Tooltip>
 
-        <div className="hidden sm:block">
+        <div className="hidden items-center gap-2 sm:flex">
+          <AnimatePresence>
+            {deferredIsTransitioning && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-muted/30 px-2 py-1"
+              >
+                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                <span className="text-[10px] font-medium uppercase tracking-tighter text-muted-foreground">
+                  Otimizando...
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <LayoutPopover
             viewMode={viewMode}
             setViewMode={setViewMode}

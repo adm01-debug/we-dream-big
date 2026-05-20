@@ -1,7 +1,7 @@
 /**
  * useCatalogState — all catalog page state & logic extracted from Index.tsx
  */
-import React, { useState, useMemo, useEffect, useRef, useCallback, useTransition } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue } from 'react';
 import {
   useCatalogRealStats,
   useColorEnrichment,
@@ -70,36 +70,40 @@ export function useCatalogState() {
 
   const searchQueryFromUrl = searchParams.get('search') || '';
 
-  // Trocar view/colunas/ordenação/filtros dispara um re-render pesado (filtragem
-  // e re-layout de milhares de produtos). `useTransition` mantém a UI responsiva
-  // e expõe `isTransitioning` para feedback visual (ex.: a toolbar esmaece).
-  const [isTransitioning, startTransition] = useTransition();
-
-  const [filters, setFiltersState] = useState<FilterState>(defaultFilters);
-  const setFilters = useCallback((f: FilterState) => {
-    startTransition(() => setFiltersState(f));
-  }, []);
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [viewMode, setViewModeState] = useState<ViewMode>(getPersistedViewMode);
   const setViewMode = useCallback((mode: ViewMode) => {
+    setIsTransitioning(true);
+    React.startTransition(() => {
+      setViewModeState(mode);
+      setIsTransitioning(false);
+    });
     try {
       localStorage.setItem(VIEW_MODE_KEY, mode);
     } catch {
       /* empty */
     }
-    startTransition(() => setViewModeState(mode));
   }, []);
   const [gridColumns, setGridColumnsState] = useState<ColumnCount>(getDefaultColumns);
   const setGridColumns = useCallback((cols: ColumnCount) => {
+    setIsTransitioning(true);
+    React.startTransition(() => {
+      setGridColumnsState(cols);
+      setIsTransitioning(false);
+    });
     try {
       localStorage.setItem(GRID_COLUMNS_KEY, String(cols));
     } catch {
       /* empty */
     }
-    startTransition(() => setGridColumnsState(cols));
   }, []);
   const [sortBy, setSortByState] = useState<SortOption>('relevance');
   const setSortBy = useCallback((s: SortOption) => {
-    startTransition(() => setSortByState(s));
+    setIsTransitioning(true);
+    React.startTransition(() => {
+      setSortByState(s);
+      setIsTransitioning(false);
+    });
   }, []);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedCount, setSelectedCount] = useState(0);
@@ -132,6 +136,7 @@ export function useCatalogState() {
   const [isSearching, setIsSearching] = useState(false);
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const debouncedServerSearch = useDebounce(searchQuery, 400);
 
@@ -199,7 +204,9 @@ export function useCatalogState() {
   }, [searchQueryFromUrl]);
 
   useEffect(() => {
-    setDisplayCount(ITEMS_PER_PAGE);
+    React.startTransition(() => {
+      setDisplayCount(ITEMS_PER_PAGE);
+    });
   }, [filters, sortBy, searchQuery]);
 
   const activeFiltersCount = useMemo(() => {
@@ -248,9 +255,20 @@ export function useCatalogState() {
     supplierSalesMap,
   });
 
+  const [lastNonTransitionedProducts, setLastNonTransitionedProducts] = useState<Product[]>([]);
+  const deferredIsTransitioning = useDeferredValue(isTransitioning);
+
+  useEffect(() => {
+    if (!deferredIsTransitioning) {
+      setLastNonTransitionedProducts(filteredProducts);
+    }
+  }, [filteredProducts, deferredIsTransitioning]);
+
+  const displayFilteredProducts = isTransitioning ? lastNonTransitionedProducts : filteredProducts;
+
   const rawPaginatedProducts = useMemo(
-    () => filteredProducts.slice(0, displayCount),
-    [filteredProducts, displayCount],
+    () => displayFilteredProducts.slice(0, displayCount),
+    [displayFilteredProducts, displayCount],
   );
 
   const hasColorFilterActive =
@@ -471,7 +489,7 @@ export function useCatalogState() {
     setSortBy('name');
     setSearchQuery('');
     navigate('/', { replace: true });
-  }, [navigate, setFilters, setSortBy]);
+  }, [navigate]);
 
   const handleViewProduct = useCallback(
     (product: Product) => {

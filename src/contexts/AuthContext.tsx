@@ -20,6 +20,7 @@ import {
 import { authService } from '@/services/authService';
 import { useProfileRoles } from '@/hooks/auth/useProfileRoles';
 import { useAuthMFA } from '@/hooks/auth/useAuthMFA';
+import { setSafeToastRoles } from '@/lib/security/safeToast';
 
 // Tipos de role conforme app_role enum no banco.
 export type AppRole = 'dev' | 'supervisor' | 'agente' | 'admin' | 'manager' | 'vendedor';
@@ -178,11 +179,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [session, refreshSession]);
 
-  // Sync safeToast
+  // Sync safeToast (import estático: propaga roles de forma síncrona, sem a
+  // corrida do import dinâmico onde toasts antes da resolução não teriam roles).
   useEffect(() => {
-    void import('@/lib/security/safeToast')
-      .then(({ setSafeToastRoles }) => setSafeToastRoles(userRoles))
-      .catch(() => {});
+    setSafeToastRoles(userRoles);
   }, [userRoles]);
 
   const signIn = async (email: string, password: string) => {
