@@ -55,7 +55,9 @@ describe('BridgeStatusBanner', () => {
     expect(mockCloseUnavailable).toHaveBeenCalledTimes(1);
   });
 
-  it('should show different message for non-allowed users', () => {
+  it('não renderiza nada para usuários não-dev (gate DevOnly fechado)', () => {
+    // Decisão de produto: o banner é restrito ao gate de infra dev para evitar
+    // vazar mensagens técnicas a usuários finais. Não-dev não vê banner algum.
     (useDevGate as any).mockReturnValue({ isAllowed: false });
     (useBridgeStatusBanner as any).mockReturnValue({
       unavailable: true,
@@ -64,9 +66,9 @@ describe('BridgeStatusBanner', () => {
       reload: mockReload,
     });
 
-    render(<BridgeStatusBanner />);
+    const { container } = render(<BridgeStatusBanner />);
 
-    expect(screen.getByText(/Catálogo temporariamente indisponível/i)).toBeDefined();
+    expect(container.firstChild).toBeNull();
     expect(screen.queryByText(/Catálogo externo indisponível/i)).toBeNull();
   });
 });
