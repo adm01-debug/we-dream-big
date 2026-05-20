@@ -7,7 +7,6 @@
 import { memo } from 'react';
 import { AlertTriangle, X, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DevOnly } from '@/components/dev/DevOnly';
 import { useDevGate } from '@/hooks/admin';
 import { useBridgeStatusBanner } from '@/hooks/intelligence';
 
@@ -17,6 +16,13 @@ const BridgeStatusBannerInner = memo(function BridgeStatusBannerInner() {
   const { unavailable, reason, closeUnavailable, reload } = useBridgeStatusBanner(isAllowed);
 
   if (!unavailable) return null;
+
+  // Avisos críticos de indisponibilidade total aparecem para TODOS. A cópia
+  // varia: técnica para dev (isAllowed), amigável para usuários finais.
+  const title = isAllowed ? 'Catálogo externo indisponível.' : 'Catálogo temporariamente indisponível';
+  const description = isAllowed
+    ? 'Tentativas automáticas esgotadas. Aguarde alguns segundos enquanto o serviço reinicia, ou recarregue a página.'
+    : 'Estamos enfrentando uma instabilidade momentânea. Aguarde alguns segundos e tente novamente, ou recarregue a página.';
 
   return (
     <div
@@ -29,10 +35,10 @@ const BridgeStatusBannerInner = memo(function BridgeStatusBannerInner() {
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 sm:mt-0" aria-hidden />
           <div className="min-w-0 flex-1">
             <span className="font-medium block sm:inline">
-              Catálogo externo indisponível.
+              {title}
             </span>{' '}
             <span className="opacity-90 block sm:inline leading-tight mt-1 sm:mt-0">
-              Tentativas automáticas esgotadas. Aguarde alguns segundos enquanto o serviço reinicia, ou recarregue a página.
+              {description}
             </span>
           </div>
         </div>
@@ -63,9 +69,8 @@ const BridgeStatusBannerInner = memo(function BridgeStatusBannerInner() {
 });
 
 export const BridgeStatusBanner = memo(function BridgeStatusBanner() {
-  return (
-    <DevOnly>
-      <BridgeStatusBannerInner />
-    </DevOnly>
-  );
+  // Sem gate de visibilidade no wrapper: o Inner sempre monta para registrar o
+  // listener e exibir avisos CRÍTICOS a todos. A supressão de avisos técnicos
+  // (infra/degraded) é feita dentro do hook via isAllowed.
+  return <BridgeStatusBannerInner />;
 });
