@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthProvider, useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { type ReactNode } from 'react';
+import type * as AuthServiceModule from '@/services/authService';
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
@@ -34,13 +35,21 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 // Mock services and utils
-vi.mock('@/services/authService', () => ({
-  authService: {
-    fetchAAL: vi.fn().mockResolvedValue({ currentLevel: 'aal1', nextLevel: 'aal1', hasMFA: false }),
-    fetchProfile: vi.fn().mockResolvedValue({ data: null, error: null }),
-    queryRoles: vi.fn().mockResolvedValue({ data: [], error: null }),
-  },
-}));
+vi.mock('@/services/authService', async () => {
+  const actual = await vi.importActual<typeof AuthServiceModule>('@/services/authService');
+  return {
+    authService: {
+      // signIn/signOut reais (signOut chama supabase.rpc('log_user_logout') + supabase.auth.signOut)
+      ...actual.authService,
+      // Stubs apenas para os fetchers de dados, evitando chamadas reais na init.
+      fetchAAL: vi
+        .fn()
+        .mockResolvedValue({ currentLevel: 'aal1', nextLevel: 'aal1', hasMFA: false }),
+      fetchProfile: vi.fn().mockResolvedValue({ data: null, error: null }),
+      queryRoles: vi.fn().mockResolvedValue({ data: [], error: null }),
+    },
+  };
+});
 
 const wrapper = ({ children }: { children: ReactNode }) => <AuthProvider>{children}</AuthProvider>;
 
