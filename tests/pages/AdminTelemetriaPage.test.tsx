@@ -176,10 +176,12 @@ describe('AdminTelemetriaPage - Rendering', () => {
     }, { timeout: 15000 });
   });
 
-  it('renders inside MainLayout', async () => {
+  it('renders content in standardized container', async () => {
+    // O MainLayout passou a ser aplicado no nível do router; a página renderiza
+    // seu conteúdo num container padronizado (max-w/mx-auto).
     setupSupabaseMock([]);
-    render(<AdminTelemetriaPage />);
-    expect(screen.getByTestId('main-layout')).toBeInTheDocument();
+    const { container } = render(<AdminTelemetriaPage />);
+    expect(container.querySelector('[class*="max-w-"]')).not.toBeNull();
   });
 
   it('renders all 4 stat cards', async () => {
