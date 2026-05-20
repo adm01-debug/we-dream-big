@@ -175,7 +175,7 @@ test.describe("Editor (Manager) Permissions Suite", () => {
       
       // 6. Clica no botão de login da página 401
       await page.locator('button:has-text("Ir para o Login")').click();
-      await expect(page).toHaveURL(/\/login/);
+      await expect(page).toHaveURL(/\/(auth|login)/);
       
       // 7. Faz o login e verifica se volta para targetPath (Deep Linking via unauthorized page)
       await loginAs(page, "editor");

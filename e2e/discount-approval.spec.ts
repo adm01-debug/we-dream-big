@@ -8,14 +8,14 @@ import { test, expect } from '@playwright/test';
 test.describe('Discount Approval', () => {
   test('admin discount tab requires auth', async ({ page }) => {
     await page.goto('/admin/usuarios?tab=discounts');
-    await page.waitForURL(/login/, { timeout: 10000 });
-    await expect(page).toHaveURL(/login/);
+    await page.waitForURL(/\/(auth|login)/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/(auth|login)/);
   });
 
   test('legacy /admin/aprovacoes-desconto redirects and requires auth', async ({ page }) => {
     await page.goto('/admin/aprovacoes-desconto');
-    await page.waitForURL(/login/, { timeout: 10000 });
-    await expect(page).toHaveURL(/login/);
+    await page.waitForURL(/\/(auth|login)/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/(auth|login)/);
   });
 
   test('tab=discounts query param preserved through auth redirect chain', async ({ page }) => {
@@ -23,7 +23,7 @@ test.describe('Discount Approval', () => {
     // Smoke check: a query string sobrevive ao redirect inicial (mesmo que seja para login).
     const response = await page.goto('/admin/usuarios?tab=discounts');
     expect(response?.status()).toBeLessThan(500);
-    await page.waitForURL(/login/, { timeout: 10000 });
+    await page.waitForURL(/\/(auth|login)/, { timeout: 10000 });
   });
 
   test('legacy /admin/aprovacoes-desconto preserves query semantics', async ({ page }) => {

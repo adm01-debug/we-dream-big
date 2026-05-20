@@ -34,7 +34,11 @@ export interface LoginCreds {
 
 export type Role = "user" | "admin" | "dev" | "editor";
 
-const LOGIN_URL_RE = /\/login(\?|#|$)/;
+// Ambos `/auth` (canônico — guards/OAuth callback) e `/login` (alias legado)
+// renderizam a tela de Auth. Os guards (ProtectedRoute/AdminRoute/DevRoute)
+// redirecionam para `/auth`; o alias `/login` continua válido. Aceitar os dois
+// evita falso-negativo quando um redirect de guard cai em `/auth`.
+const LOGIN_URL_RE = /\/(auth|login)(\?|#|\/|$)/;
 
 /**
  * Executa o fluxo de login via UI usando seletores SSOT.

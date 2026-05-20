@@ -33,7 +33,7 @@ test.describe("Deep Linking & Auth Flow Integrity", () => {
 
       // 4. Clica em "Ir para o Login"
       await page.locator('button:has-text("Ir para o Login")').click();
-      await expect(page).toHaveURL(/\/login/);
+      await expect(page).toHaveURL(/\/(auth|login)/);
 
       // 5. Realiza o login com o papel correspondente
       // O helper loginAs já faz o login via UI se detectar que está na tela de login

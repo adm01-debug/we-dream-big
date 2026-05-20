@@ -103,7 +103,7 @@ test.describe("RBAC & Navigation Integrity", () => {
       await page.goto(targetPath);
       
       // Deve estar na tela de login com state.from preservado (implícito no redirect do ProtectedRoute)
-      await expect(page).toHaveURL(/\/login/);
+      await expect(page).toHaveURL(/\/(auth|login)/);
       
       // Faz login manual para testar o fluxo de retorno
       const email = process.env.E2E_USER_EMAIL!;
@@ -124,7 +124,7 @@ test.describe("RBAC & Navigation Integrity", () => {
     test("tentativa de acesso direto a rota admin por usuário deslogado", async ({ page }) => {
       await logout(page);
       await page.goto("/admin/usuarios");
-      await expect(page).toHaveURL(/\/login/);
+      await expect(page).toHaveURL(/\/(auth|login)/);
     });
   });
 });

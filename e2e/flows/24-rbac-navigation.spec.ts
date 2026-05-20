@@ -27,7 +27,7 @@ test.describe("Navigation & RBAC Integrity", () => {
       const protectedRoutes = ["/dashboard", "/produtos", "/orcamentos", "/admin/usuarios"];
       for (const route of protectedRoutes) {
         await page.goto(route);
-        await expect(page).toHaveURL(/\/login/);
+        await expect(page).toHaveURL(/\/(auth|login)/);
       }
     });
 
