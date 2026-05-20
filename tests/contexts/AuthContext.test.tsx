@@ -12,7 +12,7 @@ vi.mock('@/integrations/supabase/client', () => {
     single: vi.fn().mockResolvedValue({ data: null, error: { message: 'not found' } }),
     update: vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
-        then: vi.fn((cb: any) => cb({ error: null })),
+        then: vi.fn((cb?: any) => cb?.({ error: null })),
       }),
     }),
   }));
@@ -108,7 +108,7 @@ describe('AuthContext', () => {
           }),
           update: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              then: vi.fn((cb: any) => { cb({ error: null }); return Promise.resolve(); }),
+              then: vi.fn((cb?: any) => { cb?.({ error: null }); return Promise.resolve(); }),
             }),
           }),
         } as any;
@@ -164,7 +164,7 @@ describe('AuthContext', () => {
           }),
           update: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
-              then: vi.fn((cb: any) => { cb({ error: null }); return Promise.resolve(); }),
+              then: vi.fn((cb?: any) => { cb?.({ error: null }); return Promise.resolve(); }),
             }),
           }),
         } as any;

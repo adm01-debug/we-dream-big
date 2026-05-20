@@ -164,8 +164,10 @@ describe("Index Page", () => {
   });
 
   it("renders without crashing", async () => {
+    // O MainLayout é aplicado no nível do router; a página renderiza seu
+    // conteúdo num container padronizado (max-w/mx-auto).
     const { default: Index } = await import("@/pages/Index");
-    renderWithProviders(<Index />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    const { container } = renderWithProviders(<Index />);
+    expect(container.querySelector('[class*="max-w-"]')).not.toBeNull();
   });
 });
