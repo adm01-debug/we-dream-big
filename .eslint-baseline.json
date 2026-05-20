@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-05-20T17:11:14.835Z",
-  "totalErrors": 467,
-  "totalWarnings": 529,
+  "generatedAt": "2026-05-20T20:02:08.363Z",
+  "totalErrors": 451,
+  "totalWarnings": 530,
   "counts": {
     "src/components/access/DevAccessDeniedPage.tsx": {
       "react-hooks/exhaustive-deps": 1
@@ -43,12 +43,10 @@
       "@typescript-eslint/naming-convention": 1
     },
     "src/components/admin/connections/__tests__/ConnectionUI.test.tsx": {
-      "@typescript-eslint/no-explicit-any": 3,
-      "no-duplicate-imports": 1
+      "@typescript-eslint/no-explicit-any": 3
     },
     "src/components/admin/connections/__tests__/ConnectionsOverviewTable.test.tsx": {
-      "@typescript-eslint/no-explicit-any": 7,
-      "no-duplicate-imports": 1
+      "@typescript-eslint/no-explicit-any": 7
     },
     "src/components/admin/connections/useFocusContext.ts": {
       "@typescript-eslint/naming-convention": 1
@@ -365,11 +363,7 @@
     "src/components/layout/GlobalOverlay.tsx": {
       "@typescript-eslint/no-unused-vars": 4
     },
-    "src/components/layout/Header.tsx": {
-      "@typescript-eslint/no-unused-vars": 9
-    },
     "src/components/layout/MainLayout.tsx": {
-      "@typescript-eslint/no-unused-vars": 2,
       "react-hooks/exhaustive-deps": 1
     },
     "src/components/layout/SidebarReorganized.tsx": {
@@ -729,11 +723,8 @@
     "src/components/quotes/SaveAsTemplateButton.tsx": {
       "@typescript-eslint/no-unused-vars": 1
     },
-    "src/components/quotes/__tests__/QuoteBuilderDiscount.test.ts": {
-      "<no-rule>": 1
-    },
     "src/components/quotes/__tests__/QuoteBuilderDiscount.test.tsx": {
-      "<no-rule>": 1
+      "@typescript-eslint/no-explicit-any": 1
     },
     "src/components/quotes/__tests__/QuoteBuilderDiscountAdvanced.test.tsx": {
       "@typescript-eslint/no-explicit-any": 1,
@@ -1139,9 +1130,6 @@
     },
     "src/pages/__tests__/QuoteBuilderDeliveryTooltip.test.tsx": {
       "@typescript-eslint/no-explicit-any": 1
-    },
-    "src/pages/__tests__/SSOCallbackPage.test.tsx": {
-      "@typescript-eslint/consistent-type-imports": 1
     },
     "src/pages/admin/AdminCadastrosPage.tsx": {
       "@typescript-eslint/no-non-null-assertion": 1
