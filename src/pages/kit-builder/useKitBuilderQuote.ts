@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import type { KitState } from '@/hooks/kit-builder';
+import type { KitState } from '@/lib/kit-builder/types';
 
 export function useKitBuilderQuote() {
   const { user } = useAuth();

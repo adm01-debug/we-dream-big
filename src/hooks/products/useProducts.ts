@@ -11,7 +11,7 @@ import type { Product, ProductFilters } from '@/types/product-catalog';
 import { mapPromobrindToProduct } from '@/utils/product-mapper';
 
 // Re-export types for backward compatibility
-export type { Product, ProductColor, ProductFilters } from '@/types/product-catalog';
+export type { Product, ProductColor, ProductFilters, ProductVariation } from '@/types/product-catalog';
 export { findKnownHex } from '@/utils/product-colors';
 export { mapPromobrindToProduct } from '@/utils/product-mapper';
 
