@@ -210,14 +210,16 @@ test.describe("@smoke Google OAuth — wiring até /auth/callback", () => {
       { waitUntil: "domcontentloaded" },
     );
 
-    // O callback redireciona para /login com os params — mas antes de redirecionar
-    // renderiza o estado failed. Verificamos pelo destino /login com query params.
+    // O callback redireciona para /login com os params do erro. A página de Auth
+    // CONSOME o param `error` (exibe o explainer e limpa `error` da URL via
+    // setSearchParams), então não dá para asserir sobre `?error=` — verificamos o
+    // RESULTADO renderizado: o bloco de hint do explainer ("Solução: …admin…").
     await expect
       .poll(() => new URL(page.url()).pathname, { timeout: 8_000 })
       .toBe("/login");
 
-    const params = new URL(page.url()).searchParams;
-    expect(params.get("error")).toBe("provider_not_enabled");
-    expect(params.get("hint") ?? "").toMatch(/Administrador|admin/i);
+    const hint = page.getByTestId("social-login-error-hint");
+    await expect(hint).toBeVisible({ timeout: 8_000 });
+    await expect(hint).toContainText(/administrador|admin/i);
   });
 });

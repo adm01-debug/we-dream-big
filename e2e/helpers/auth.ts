@@ -34,11 +34,13 @@ export interface LoginCreds {
 
 export type Role = "user" | "admin" | "dev" | "editor";
 
-// Ambos `/auth` (canônico — guards/OAuth callback) e `/login` (alias legado)
-// renderizam a tela de Auth. Os guards (ProtectedRoute/AdminRoute/DevRoute)
-// redirecionam para `/auth`; o alias `/login` continua válido. Aceitar os dois
-// evita falso-negativo quando um redirect de guard cai em `/auth`.
-const LOGIN_URL_RE = /\/(auth|login)(\?|#|\/|$)/;
+// Ambos `/auth` (canônico — guards) e `/login` (alias legado) renderizam a tela
+// de Auth. Os guards (ProtectedRoute/AdminRoute/DevRoute) redirecionam para
+// `/auth`; o alias `/login` continua válido. Aceitar os dois evita falso-negativo
+// quando um redirect de guard cai em `/auth`. `/auth/callback` é EXCLUÍDO: é a
+// rota de troca PKCE (SSOCallbackPage), não o formulário de login — incluí-la
+// faria os helpers classificarem o callback como "tela de login".
+const LOGIN_URL_RE = /\/(login|auth(?!\/callback))(\?|#|\/|$)/;
 
 /**
  * Executa o fluxo de login via UI usando seletores SSOT.

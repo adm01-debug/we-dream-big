@@ -318,7 +318,11 @@ test.describe("@smoke Rotas públicas (gate de CI)", () => {
     });
     await page.fill(Sel.login.email, "smoke-fake@example.com");
     await page.fill(Sel.login.password, "SenhaErrada@2025!");
-    await page.locator(Sel.login.submit).first().click();
+    // `force: true`: o branding tem animações JS (framer-motion) que o
+    // addStyleTag (CSS) não pausa, mantendo o botão "não-estável" para o
+    // actionability check do Playwright. O elemento já está visível+enabled;
+    // forçamos o click para não travar no wait de estabilidade.
+    await page.locator(Sel.login.submit).first().click({ force: true });
     await expect(page).toHaveURL(/\/login/, { timeout: 8_000 });
     await expect(page.locator(Sel.login.submit).first()).toBeEnabled({ timeout: 15_000 });
   });

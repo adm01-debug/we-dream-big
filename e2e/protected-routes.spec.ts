@@ -19,10 +19,10 @@ const protectedRoutes = [
 
 test.describe('Protected Routes — Auth Guards', () => {
   for (const route of protectedRoutes) {
-    test(`${route} should redirect to /login`, async ({ page }) => {
+    test(`${route} should redirect to /auth or /login`, async ({ page }) => {
       await page.goto(route);
       await page.waitForURL(/\/(auth|login)/, { timeout: 10000 });
-      expect(page.url()).toMatch(/login/);
+      expect(page.url()).toMatch(/\/(auth|login)/);
     });
   }
 });
