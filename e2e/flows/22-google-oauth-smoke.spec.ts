@@ -23,11 +23,17 @@ import { test, expect } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
 import { expectVisibleByTestId } from "../helpers/waits";
 
-const SUPABASE_URL = (process.env.VITE_SUPABASE_URL ?? "https://pqpdolkaeqlyzpdpbizo.supabase.co")
-  .replace(/\/+$/, "");
-const AUTHORIZE_GLOB = `${SUPABASE_URL}/auth/v1/authorize*`;
-const TOKEN_GLOB = `${SUPABASE_URL}/auth/v1/token*`;
-const USER_GLOB = `${SUPABASE_URL}/auth/v1/user*`;
+// IMPORTANTE: os interceptadores casam por PATH (host-agnóstico), de propósito.
+// O cliente Supabase do app (src/integrations/supabase/client.ts) HARDCODA a URL
+// do projeto (`pqpdolkaeqlyzpdpbizo`) e IGNORA `VITE_SUPABASE_URL`. A CI define
+// `VITE_SUPABASE_URL` para OUTRO ref (`doufsxq…`). Se ancorássemos os globs nesse
+// env, nenhuma rota casaria as requisições reais do app — exatamente a causa-raiz
+// que mantinha o teste 41 vermelho (authorize não-abortado destruía o contexto e
+// o POST /token real nunca batia no mock). Casar só pelo path resolve isso para
+// qualquer ref de projeto.
+const AUTHORIZE_RE = /\/auth\/v1\/authorize/;
+const TOKEN_RE = /\/auth\/v1\/token/;
+const USER_RE = /\/auth\/v1\/user/;
 
 /** Sessão sintética válida o suficiente para o cliente Supabase aceitar. */
 function fakeSessionPayload() {
@@ -81,7 +87,7 @@ test.describe("@smoke Google OAuth — wiring até /auth/callback", () => {
     page.on("request", (req) => {
       if (req.url().includes("/auth/v1/authorize")) authorizeUrls.push(req.url());
     });
-    await page.route(AUTHORIZE_GLOB, async (route) => {
+    await page.route(AUTHORIZE_RE, async (route) => {
       const u = route.request().url();
       if (!authorizeUrls.includes(u)) authorizeUrls.push(u);
       await route.abort();
@@ -116,7 +122,7 @@ test.describe("@smoke Google OAuth — wiring até /auth/callback", () => {
     let pkceTokenExchanged = false;
 
     // 1. Mocka a troca code → token (PKCE exchange) e marca o disparo.
-    await page.route(TOKEN_GLOB, async (route) => {
+    await page.route(TOKEN_RE, async (route) => {
       const url = new URL(route.request().url());
       if (
         url.searchParams.get("grant_type") === "pkce" ||
@@ -132,7 +138,7 @@ test.describe("@smoke Google OAuth — wiring até /auth/callback", () => {
     });
 
     // 2. Mocka /auth/v1/user (chamado pelo refreshSession do AuthContext).
-    await page.route(USER_GLOB, async (route) => {
+    await page.route(USER_RE, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -148,7 +154,7 @@ test.describe("@smoke Google OAuth — wiring até /auth/callback", () => {
     //    SSOCallbackPage troca o code pela sessão com o verifier real presente.
     //    Evita adivinhar a storageKey do verifier e o teardown de contexto que o
     //    route.abort causaria numa navegação top-level.
-    await page.route(AUTHORIZE_GLOB, async (route) => {
+    await page.route(AUTHORIZE_RE, async (route) => {
       const authUrl = new URL(route.request().url());
       const redirectTo = authUrl.searchParams.get("redirect_to");
       const dest = new URL(redirectTo ?? "/auth/callback", "http://localhost:8080");
