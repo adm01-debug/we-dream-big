@@ -32,7 +32,7 @@ vi.mock("@/hooks/usePrintAreas", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useMockupTechniques", () => ({
+vi.mock("@/hooks/mockup/useMockupTechniques", () => ({
   useProductCustomizationOptionsForMockup: vi.fn().mockReturnValue({
     techniques: [],
     loading: false,

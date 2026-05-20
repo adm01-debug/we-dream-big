@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BridgeStatusBanner } from '@/components/BridgeStatusBanner';
 import { useDevGate } from '@/hooks/useDevGate';
-import { useBridgeStatusBanner } from '@/hooks/useBridgeStatusBanner';
+import { useBridgeStatusBanner } from '@/hooks/intelligence/useBridgeStatusBanner';
 import React from 'react';
 
 // Mock hooks
@@ -10,7 +10,7 @@ vi.mock('@/hooks/useDevGate', () => ({
   useDevGate: vi.fn(),
 }));
 
-vi.mock('@/hooks/useBridgeStatusBanner', () => ({
+vi.mock('@/hooks/intelligence/useBridgeStatusBanner', () => ({
   useBridgeStatusBanner: vi.fn(),
 }));
 
