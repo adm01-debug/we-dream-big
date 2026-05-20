@@ -2,12 +2,40 @@
  * Render tests for MagicUp page (1090 lines)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
 import React from "react";
 
 vi.mock("@/components/layout/MainLayout", () => ({
   MainLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="main-layout">{children}</div>,
+}));
+
+// MagicUp consome SellerCart transitivamente; renderWithProviders não envolve
+// com SellerCartProvider. Mock direto evita o context error no smoke de render.
+vi.mock("@/contexts/SellerCartContext", () => ({
+  useSellerCartContext: () => ({
+    carts: [],
+    activeCart: null,
+    activeCartId: null,
+    isLoading: false,
+    totalItems: 0,
+    canCreateCart: true,
+    setActiveCartId: vi.fn(),
+    createCart: vi.fn(),
+    deleteCart: vi.fn(),
+    addToActiveCart: vi.fn(),
+    removeItem: vi.fn(),
+    updateItemQuantity: vi.fn(),
+    updateItemNotes: vi.fn(),
+    updateItemSortOrder: vi.fn(),
+    updateCartNotes: vi.fn(),
+    updateCartStatus: vi.fn(),
+    duplicateCart: vi.fn(),
+    moveItemToCart: vi.fn(),
+    duplicateItemToCart: vi.fn(),
+    clearCart: vi.fn(),
+    restoreItems: vi.fn(),
+  }),
+  SellerCartProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 // useMagicUpState chama useAriaLive transitivamente; renderWithProviders não
@@ -70,8 +98,9 @@ describe("MagicUp", () => {
   });
 
   it("renders without crashing", async () => {
-    const { default: MagicUp } = await import("@/pages/MagicUp");
-    renderWithProviders(<MagicUp />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    const { default: MagicUp } = await import("@/pages/tools/MagicUp");
+    const { container } = renderWithProviders(<MagicUp />);
+    // Layout aplicado no router; smoke: a página renderiza sem lançar.
+    expect(container.firstChild).not.toBeNull();
   });
 });

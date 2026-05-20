@@ -2,12 +2,40 @@
  * Render tests for FiltersPage (975 lines)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
 import React from "react";
 
 vi.mock("@/components/layout/MainLayout", () => ({
   MainLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="main-layout">{children}</div>,
+}));
+
+// FiltersPage consome SellerCart transitivamente; renderWithProviders não
+// envolve com SellerCartProvider. Mock direto evita o context error no smoke.
+vi.mock("@/contexts/SellerCartContext", () => ({
+  useSellerCartContext: () => ({
+    carts: [],
+    activeCart: null,
+    activeCartId: null,
+    isLoading: false,
+    totalItems: 0,
+    canCreateCart: true,
+    setActiveCartId: vi.fn(),
+    createCart: vi.fn(),
+    deleteCart: vi.fn(),
+    addToActiveCart: vi.fn(),
+    removeItem: vi.fn(),
+    updateItemQuantity: vi.fn(),
+    updateItemNotes: vi.fn(),
+    updateItemSortOrder: vi.fn(),
+    updateCartNotes: vi.fn(),
+    updateCartStatus: vi.fn(),
+    duplicateCart: vi.fn(),
+    moveItemToCart: vi.fn(),
+    duplicateItemToCart: vi.fn(),
+    clearCart: vi.fn(),
+    restoreItems: vi.fn(),
+  }),
+  SellerCartProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock("@/hooks/productss", () => ({
@@ -96,8 +124,9 @@ describe("FiltersPage", () => {
   });
 
   it("renders without crashing", async () => {
-    const { default: FiltersPage } = await import("@/pages/FiltersPage");
-    renderWithProviders(<FiltersPage />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    const { default: FiltersPage } = await import("@/pages/products/FiltersPage");
+    const { container } = renderWithProviders(<FiltersPage />);
+    // Layout aplicado no router; smoke: a página renderiza sem lançar.
+    expect(container.firstChild).not.toBeNull();
   }, 15000);
 });

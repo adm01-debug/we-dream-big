@@ -12,7 +12,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import SSOCallbackPage from '../SSOCallbackPage';
+import SSOCallbackPage from '../auth/SSOCallbackPage';
 
 const navigateMock = vi.fn();
 const refreshSessionMock = vi.fn().mockResolvedValue(undefined);
@@ -92,8 +92,11 @@ describe('SSOCallbackPage', () => {
     renderAt('/auth/callback?error=access_denied&error_description=User+cancelled');
     await waitFor(() => expect(navigateMock).toHaveBeenCalledTimes(1));
     const [to, opts] = navigateMock.mock.calls[0];
-    expect(to).toMatch(/^\/login\?error=/);
-    expect(decodeURIComponent(String(to).split('error=')[1])).toBe('User cancelled');
+    expect(to).toMatch(/^\/login\?/);
+    // O redirect carrega code + descrição via explainOAuthError (SSOT).
+    const params = new URLSearchParams(String(to).split('?')[1]);
+    expect(params.get('error')).toBe('access_denied');
+    expect(params.get('error_description')).toBe('User cancelled');
     expect(opts).toEqual({ replace: true });
 
     const snap = JSON.parse(sessionStorage.getItem('__sso_last_flow')!);
@@ -111,7 +114,9 @@ describe('SSOCallbackPage', () => {
     try {
       renderAt('/auth/callback');
       await waitFor(() => expect(navigateMock).toHaveBeenCalledTimes(1));
-      expect(navigateMock.mock.calls[0][0]).toMatch(/\/login\?error=Boom/);
+      const params = new URLSearchParams(String(navigateMock.mock.calls[0][0]).split('?')[1]);
+      expect(params.get('error')).toBe('server_error');
+      expect(params.get('error_description')).toBe('Boom');
     } finally {
       window.location.hash = '';
       // restaura href se mudou
@@ -149,7 +154,9 @@ describe('SSOCallbackPage', () => {
     });
     renderAt('/auth/callback?code=expired');
     await waitFor(() => expect(navigateMock).toHaveBeenCalled());
-    expect(navigateMock.mock.calls[0][0]).toMatch(/\/login\?error=invalid_grant/);
+    // A mensagem do exchange ('invalid_grant') propaga via error_description.
+    const params = new URLSearchParams(String(navigateMock.mock.calls[0][0]).split('?')[1]);
+    expect(params.get('error_description')).toBe('invalid_grant');
     expect(refreshSessionMock).not.toHaveBeenCalled();
   });
 

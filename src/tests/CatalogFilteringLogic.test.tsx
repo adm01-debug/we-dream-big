@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useCatalogFiltering } from '../hooks/useCatalogFiltering';
+import { useCatalogFiltering } from '../hooks/products/useCatalogFiltering';
 import { defaultFilters } from '../components/filters/FilterPanel';
 import type { Product } from '../hooks/useProducts';
 
