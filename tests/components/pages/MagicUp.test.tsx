@@ -72,6 +72,6 @@ describe("MagicUp", () => {
   it("renders without crashing", async () => {
     const { default: MagicUp } = await import("@/pages/tools/MagicUp");
     renderWithProviders(<MagicUp />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    expect(await screen.findByTestId("page-title-magic-up")).toBeInTheDocument();
   });
 });
