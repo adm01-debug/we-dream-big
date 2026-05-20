@@ -17,7 +17,7 @@ describe('QuoteBuilderStepper (UI Unit Tests)', () => {
       const activeContainer = stepLabel.parentElement;
       const activeCircle = activeContainer?.querySelector('.rounded-full');
       expect(activeCircle).toHaveClass('bg-primary');
-      expect(activeCircle).toHaveClass('scale-110');
+      expect(activeCircle).toHaveClass('ring-4');
     });
 
     it('deve mostrar o ícone de Check em etapas completadas que não são a ativa', () => {
@@ -51,21 +51,26 @@ describe('QuoteBuilderStepper (UI Unit Tests)', () => {
 
       rerender(<QuoteBuilderStepper completedSteps={['client']} activeStep="items" />);
       connectors = document.querySelectorAll('.h-full.rounded-full.transition-all');
+      // Ordem dos passos: client(0) → conditions(1) → items(2) → ...; em "items"
+      // (idx 2) os conectores 0 e 1 ficam ativos, e o 2 permanece neutro.
       expect(connectors[0]).toHaveClass('bg-primary');
-      expect(connectors[1]).toHaveClass('bg-border');
+      expect(connectors[1]).toHaveClass('bg-primary');
+      expect(connectors[2]).toHaveClass('bg-border');
     });
 
     it('deve retroceder o estado visual da barra ao voltar etapas', () => {
       const { rerender } = render(<QuoteBuilderStepper completedSteps={['client', 'items']} activeStep="conditions" />);
       
       let connectors = document.querySelectorAll('.h-full.rounded-full.transition-all');
+      // activeStep="conditions" (idx 1): só o conector 0 fica ativo.
       expect(connectors[0]).toHaveClass('bg-primary');
-      expect(connectors[1]).toHaveClass('bg-primary');
+      expect(connectors[1]).toHaveClass('bg-border');
 
       rerender(<QuoteBuilderStepper completedSteps={['client']} activeStep="items" />);
       connectors = document.querySelectorAll('.h-full.rounded-full.transition-all');
+      // activeStep="items" (idx 2): conectores 0 e 1 ativos.
       expect(connectors[0]).toHaveClass('bg-primary');
-      expect(connectors[1]).toHaveClass('bg-border');
+      expect(connectors[1]).toHaveClass('bg-primary');
     });
 
     it('deve manter todas as conexões anteriores como ativas se estiver na última etapa', () => {
