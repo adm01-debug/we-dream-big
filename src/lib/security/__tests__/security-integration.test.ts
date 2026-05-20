@@ -1,36 +1,38 @@
-import { describe, it, expect } from "vitest";
-import { sanitizeHtml, sanitizeString } from "../validation";
+import { describe, it, expect } from 'vitest';
+import { sanitizeHtml, sanitizeString } from '../validation';
 
-describe("XSS Prevention & Sanitization", () => {
-  describe("sanitizeHtml", () => {
-    it("should strip script tags while preserving safe formatting", () => {
-      const input = "<p>Hello <b>World</b><script>alert(1)</script></p>";
+describe('XSS Prevention & Sanitization', () => {
+  describe('sanitizeHtml', () => {
+    it('should strip script tags while preserving safe formatting', () => {
+      const input = '<p>Hello <b>World</b><script>alert(1)</script></p>';
       const output = sanitizeHtml(input);
-      expect(output).toContain("<p>Hello <b>World</b></p>");
-      expect(output).not.toContain("<script>");
+      expect(output).toContain('<p>Hello <b>World</b></p>');
+      expect(output).not.toContain('<script>');
     });
 
-    it("should remove dangerous attributes like onclick", () => {
+    it('should strip non-allowlisted tags carrying dangerous attributes (e.g. button/onclick)', () => {
+      // Allowlist estrita: <button> não é permitido → tag removida, texto preservado.
       const input = '<button onclick="alert(\'XSS\')">Click me</button>';
       const output = sanitizeHtml(input);
-      expect(output).toBe('<button >Click me</button>');
+      expect(output).toBe('Click me');
     });
 
-    it("should remove javascript: pseudo-protocols", () => {
+    it('should strip non-allowlisted anchors with javascript: pseudo-protocols', () => {
+      // <a> não está na allowlist → removido (sem href javascript: vazando).
       const input = '<a href="javascript:alert(1)">Link</a>';
       const output = sanitizeHtml(input);
-      expect(output).toBe('<a >Link</a>');
+      expect(output).toBe('Link');
     });
 
-    it("should handle nested tags and malformed HTML reasonably", () => {
-      const input = "<div><scr<script>ipt>alert(1)</script></div>";
+    it('should handle nested tags and malformed HTML reasonably', () => {
+      const input = '<div><scr<script>ipt>alert(1)</script></div>';
       const output = sanitizeHtml(input);
-      expect(output).not.toContain("<script>");
+      expect(output).not.toContain('<script>');
     });
   });
 
-  describe("sanitizeString", () => {
-    it("should fully escape all HTML special characters", () => {
+  describe('sanitizeString', () => {
+    it('should fully escape all HTML special characters', () => {
       const input = '<img src=x onerror="alert(1)"> & "Test"';
       const output = sanitizeString(input);
       expect(output).toBe('&lt;img src=x onerror=&quot;alert(1)&quot;&gt; &amp; &quot;Test&quot;');
