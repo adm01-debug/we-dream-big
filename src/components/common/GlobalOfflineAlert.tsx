@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useBridgeStatusBanner } from '@/hooks/intelligence';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 /**
  * Global component to detect and display browser-level offline status.
