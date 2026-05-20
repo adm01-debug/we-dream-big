@@ -10,8 +10,11 @@ import React from 'react';
 
 // Mock all internal hooks used by useCatalogState to avoid side effects and hangs
 
-vi.mock('@/hooks/products', () => ({
-  useProductsCatalog: vi.fn(() => ({
+// IMPORTANTE: retornar SEMPRE as MESMAS referências por chamada. Objetos/Maps
+// recriados a cada render entram em deps de useMemo/useEffect do useCatalogState
+// e disparam re-render infinito (trava o teste).
+vi.mock('@/hooks/products', () => {
+  const catalog = {
     data: { pages: [{ products: [], totalEstimate: 0 }] },
     isLoading: false,
     isFetching: false,
@@ -19,34 +22,48 @@ vi.mock('@/hooks/products', () => ({
     hasNextPage: false,
     fetchNextPage: vi.fn(),
     refetch: vi.fn(),
-  })),
-  useProductsByMaterial: vi.fn(() => ({ productIds: [], hasFilter: false, isLoading: false })),
-  useProductsByCategory: vi.fn(() => ({ productIds: [], hasFilter: false, isLoading: false })),
-  useExternalCategoriesQuery: vi.fn(() => ({ data: [] })),
-  useCatalogRealStats: vi.fn(() => ({ data: null })),
-  useSupplierSalesRanking: vi.fn(() => ({ data: new Map() })),
-  useColorEnrichment: vi.fn(() => ({ data: new Map() })),
-  useProductFuzzySearch: vi.fn(() => ({ results: [], hasSearch: false })),
-}));
+  };
+  const byMaterial = { productIds: [], hasFilter: false, isLoading: false };
+  const byCategory = { productIds: [], hasFilter: false, isLoading: false };
+  const extCats = { data: [] };
+  const realStats = { data: null };
+  const supplierRanking = { data: new Map() };
+  const colorEnrichment = { data: new Map() };
+  const fuzzy = { results: [], hasSearch: false };
+  return {
+    useProductsCatalog: vi.fn(() => catalog),
+    useProductsByMaterial: vi.fn(() => byMaterial),
+    useProductsByCategory: vi.fn(() => byCategory),
+    useExternalCategoriesQuery: vi.fn(() => extCats),
+    useCatalogRealStats: vi.fn(() => realStats),
+    useSupplierSalesRanking: vi.fn(() => supplierRanking),
+    useColorEnrichment: vi.fn(() => colorEnrichment),
+    useProductFuzzySearch: vi.fn(() => fuzzy),
+  };
+});
 
 vi.mock('@/hooks/products/useCatalogFiltering', () => ({
   useCatalogFiltering: vi.fn((args) => args.realProducts || []),
 }));
 
-vi.mock('@/hooks/common', () => ({
-  useDebounce: vi.fn((v) => v),
-  useSearch: vi.fn(() => ({
+vi.mock('@/hooks/common', () => {
+  const search = {
     suggestions: [],
     quickSuggestions: [],
     history: [],
     addToHistory: vi.fn(),
     clearHistory: vi.fn(),
-  })),
-}));
+  };
+  return {
+    useDebounce: vi.fn((v) => v),
+    useSearch: vi.fn(() => search),
+  };
+});
 
-vi.mock('@/hooks/intelligence', () => ({
-  usePromoSalesRanking: vi.fn(() => ({ data: new Map() })),
-}));
+vi.mock('@/hooks/intelligence', () => {
+  const promo = { data: new Map() };
+  return { usePromoSalesRanking: vi.fn(() => promo) };
+});
 
 vi.mock('@/hooks/favorites', () => ({
   useFavoriteQuickAdd: vi.fn(() => ({
