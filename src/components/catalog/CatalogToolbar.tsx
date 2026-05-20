@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useDeferredValue } from "react";
 import { SORT_OPTIONS } from "@/constants/filters";
 import { Filter, ArrowUpDown, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
