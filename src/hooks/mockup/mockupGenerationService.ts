@@ -3,6 +3,7 @@
  * Extracted from useMockupGenerator to reduce hook complexity.
  */
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/lib/supabase-untyped';
 import { uploadLogoToStorage, downloadImageAsPdfFromUrl } from '@/lib/mockup-storage';
 import { toast } from 'sonner';
 import type { PersonalizationArea } from '@/components/mockup/MultiAreaManager';
@@ -118,8 +119,7 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
 
     let safeTechniqueId: string | null = null;
     if (technique.id) {
-      const { data: techRow } = await supabase
-        .from('personalization_techniques')
+      const { data: techRow } = await untypedFrom('personalization_techniques')
         .select('id')
         .eq('id', technique.id)
         .maybeSingle();

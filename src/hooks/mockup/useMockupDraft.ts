@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/lib/supabase-untyped';
 import { useAuth } from '@/contexts/AuthContext';
 import { type PersonalizationArea } from '@/components/mockup/MultiAreaManager';
 
@@ -94,8 +95,7 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
         // Same check for technique_id
         let safeTechniqueId: string | null = null;
         if (data.techniqueId) {
-          const { data: techRow } = await supabase
-            .from('personalization_techniques')
+          const { data: techRow } = await untypedFrom('personalization_techniques')
             .select('id')
             .eq('id', data.techniqueId)
             .maybeSingle();
@@ -107,8 +107,7 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
         // Same check for client_id
         let safeClientId: string | null = null;
         if (data.clientId) {
-          const { data: clientRow } = await supabase
-            .from('bitrix_clients')
+          const { data: clientRow } = await untypedFrom('bitrix_clients')
             .select('id')
             .eq('id', data.clientId)
             .maybeSingle();
