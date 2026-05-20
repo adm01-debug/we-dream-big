@@ -10,7 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getCdnUrl, getSrcSet } from "@/utils/image-utils";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useProductBounds, type ExternalVariantStock, type Product } from "@/hooks/products";
+import { useProductBounds, type ExternalVariantStock, type Product, usePrefetchProduct } from "@/hooks/products";
 import { toast } from "sonner";
 import { AddToCollectionModal } from "@/components/collections/AddToCollectionModal";
 import { ProductQuickView } from "./ProductQuickView";
@@ -29,6 +29,7 @@ import { ProductCardImage } from "./ProductCardImage";
 import { ProductCardActions } from "./ProductCardActions";
 import { PriceFreshnessBadge } from "./PriceFreshnessBadge";
 import { feedback } from "@/lib/feedback";
+import { telemetryService } from "@/services/telemetryService";
 
 export interface ProductCardProps {
   product: Product;
@@ -59,6 +60,7 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
 }, ref) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { prefetchProduct } = usePrefetchProduct();
   const [isHovered, setIsHovered] = useState(false);
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);
   const [collectionVariant, setCollectionVariant] = useState<{ color_name?: string | null; color_hex?: string | null; variant_id?: string | null; thumbnail?: string | null } | undefined>(undefined);
@@ -191,11 +193,11 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
       } as React.CSSProperties : undefined}
       onMouseEnter={() => {
         setIsHovered(true);
+        // Telemetry for analytics (popular products)
+        telemetryService.logUXAction('product_hover', { productId: product.id, name: product.name });
+
         // Prefetch product details when hovering to make "click to open" instant
-        queryClient.prefetchQuery({
-           queryKey: ['promobrind-product', product.id],
-           staleTime: 15 * 60 * 1000
-        });
+        prefetchProduct(product.id);
       }}
       onMouseLeave={() => { setIsHovered(false); setActionsOpen(false); }}
       aria-label={`Ver detalhes de ${product.name}`}

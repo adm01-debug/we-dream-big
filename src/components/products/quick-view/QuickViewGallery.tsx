@@ -76,6 +76,9 @@ export function QuickViewGallery({
             alt={currentAlt}
             title={currentImage?.title_text || productName}
             className="w-full h-full object-contain p-8 animate-fade-in"
+            loading="eager"
+            fetchPriority="high"
+
             onError={(e) => {
               const img = e.currentTarget;
               if (!img.dataset.fallback && currentImage?.url_original) {

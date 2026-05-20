@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { WifiOff, X, Wifi } from 'lucide-react';
+import { WifiOff, X, Wifi, AlertCircle, RefreshCw } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { useBridgeStatusBanner } from '@/hooks/intelligence';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 /**
  * Global component to detect and display browser-level offline status.
@@ -11,6 +13,10 @@ export function GlobalOfflineAlert() {
   const [isOffline, setIsOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [dismissed, setDismissed] = useState(false);
   const wasOfflineRef = useRef(false);
+  
+  // Also track bridge status for a more comprehensive overlay
+  const { unavailable: bridgeUnavailable, reload: reloadBridge } = useBridgeStatusBanner(false);
+  const showOverlay = (isOffline || bridgeUnavailable) && !dismissed;
 
   useEffect(() => {
     const handleOnline = () => {
@@ -39,7 +45,7 @@ export function GlobalOfflineAlert() {
     };
   }, []);
 
-  if (!isOffline || dismissed) return null;
+  if (!showOverlay) return null;
 
   return (
     <AnimatePresence>
@@ -49,23 +55,45 @@ export function GlobalOfflineAlert() {
         exit={{ y: 50, opacity: 0 }}
         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-md"
       >
-        <div className="bg-destructive text-destructive-foreground p-4 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4">
+        <div className={cn(
+          "p-4 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4",
+          isOffline ? "bg-destructive text-destructive-foreground" : "bg-warning text-warning-foreground"
+        )}>
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-            <WifiOff className="h-5 w-5" />
+            {isOffline ? <WifiOff className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm">Você está offline</p>
-            <p className="text-xs opacity-90 truncate">Algumas funcionalidades podem não estar disponíveis.</p>
+            <p className="font-semibold text-sm">
+              {isOffline ? "Você está offline" : "Catálogo indisponível"}
+            </p>
+            <p className="text-xs opacity-90 truncate">
+              {isOffline 
+                ? "Algumas funcionalidades podem não estar disponíveis." 
+                : "Não conseguimos conectar ao banco de dados externo."}
+            </p>
           </div>
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            className="h-8 w-8 text-white hover:bg-white/10 rounded-full"
-            onClick={() => setDismissed(true)}
-            aria-label="Dispensar aviso de offline"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {!isOffline && bridgeUnavailable && (
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="h-8 w-8 text-white hover:bg-white/10 rounded-full"
+                onClick={() => reloadBridge()}
+                title="Tentar reconectar"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            )}
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-8 w-8 text-white hover:bg-white/10 rounded-full"
+              onClick={() => setDismissed(true)}
+              aria-label="Dispensar aviso"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </motion.div>
     </AnimatePresence>

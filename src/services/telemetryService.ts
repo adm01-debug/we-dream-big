@@ -64,6 +64,12 @@ class TelemetryService {
       duration_ms,
       metadata
     });
+  async logUXAction(name: string, metadata?: Record<string, any>) {
+    return this.log({
+      event_type: 'ux_action',
+      name,
+      metadata
+    });
   }
 }
 
