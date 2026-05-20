@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useQuoteBuilderState } from "@/hooks/quotes/useQuoteBuilderState";
+import { useQuoteBuilderState } from '@/hooks/quotes/useQuoteBuilderState';
 import { toast } from 'sonner';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -20,47 +20,29 @@ vi.mock('react-router-dom', () => ({
   useSearchParams: () => [new URLSearchParams()],
 }));
 
-// Mock dos hooks customizados
-vi.mock('@/hooks/quotes', () => ({
-  useQuotes: () => ({
+// Mock dos hooks customizados.
+// vi.mock é hoisted e o último mock por módulo VENCE — TODOS os hooks do barril
+// @/hooks/quotes precisam estar num ÚNICO factory (incl. useAutoSaveQuote, que o
+// SUT importa). Referências estáveis evitam loop de re-render.
+vi.mock('@/hooks/quotes', () => {
+  const emptyItems: unknown[] = [];
+  const expandedItems = new Set<number>();
+  const quotes = {
     createQuote: vi.fn(),
     updateQuote: vi.fn(),
     fetchQuote: vi.fn(),
     isLoading: false,
-  }),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
-  useQuoteTemplates: () => ({
-    templates: [],
-  }),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
-  useSellerDiscountLimits: () => ({
-    myLimit: 50,
-  }),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
-  useDiscountApproval: () => ({
-    requestApproval: vi.fn(),
-  }),
-}));
-
-vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => ({
-    user: { id: 'user-123' },
-  }),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
-  useQuoteItems: () => ({
-    items: [],
+  };
+  const templates = { templates: [] };
+  const discountLimits = { myLimit: 50 };
+  const discountApproval = { requestApproval: vi.fn() };
+  const autoSave = { clearAutoSave: vi.fn() };
+  const quoteItems = {
+    items: emptyItems,
     setItems: vi.fn(),
     activeItemIndex: null,
     setActiveItemIndex: vi.fn(),
-    expandedItems: new Set(),
+    expandedItems,
     setExpandedItems: vi.fn(),
     toggleExpanded: vi.fn(),
     updateItemQuantity: vi.fn(),
@@ -68,6 +50,20 @@ vi.mock('@/hooks/quotes', () => ({
     removeItem: vi.fn(),
     handlePersonalizationsChange: vi.fn(),
     confirmItemPrice: vi.fn(),
+  };
+  return {
+    useQuotes: () => quotes,
+    useQuoteTemplates: () => templates,
+    useSellerDiscountLimits: () => discountLimits,
+    useDiscountApproval: () => discountApproval,
+    useAutoSaveQuote: () => autoSave,
+    useQuoteItems: () => quoteItems,
+  };
+});
+
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({
+    user: { id: 'user-123' },
   }),
 }));
 

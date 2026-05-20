@@ -3,20 +3,29 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConnectionsOverviewTable } from '../ConnectionsOverviewTable';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
-import { useConnectionsOverview } from '@/hooks/intelligence';
-import { useConnectionTester } from '@/hooks/intelligence';
+import { useConnectionsOverview, useConnectionTester } from '@/hooks/intelligence';
 
 // Mocks
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
+// vi.mock é hoisted e o último mock por módulo VENCE — TODOS os hooks usados do
+// barril @/hooks/intelligence precisam estar num ÚNICO factory.
 vi.mock('@/hooks/intelligence', () => ({
   useConnectionsOverview: vi.fn(),
-}));
-
-vi.mock('@/hooks/intelligence', () => ({
   useConnectionTester: vi.fn(),
+  useConnectionsOverviewFilters: vi.fn(() => ({
+    filters: { types: [], status: [], window: 'all', onlyConsecutiveFailures: false },
+    activeCount: 0,
+    reset: vi.fn(),
+    toggleType: vi.fn(),
+    setStatus: vi.fn(),
+    setWindow: vi.fn(),
+    removeType: vi.fn(),
+    setOnlyConsecutiveFailures: vi.fn(),
+  })),
+  applyFilters: vi.fn((rows) => rows),
 }));
 
 vi.mock('@/hooks/common', () => ({
@@ -32,20 +41,9 @@ vi.mock('@/hooks/admin', () => ({
     list: vi.fn(),
     refreshCache: vi.fn(), // Adicionado para evitar erro 'refreshSecrets is not a function'
   })),
-}));
-
-vi.mock('@/hooks/intelligence', () => ({
-  useConnectionsOverviewFilters: vi.fn(() => ({
-    filters: { types: [], status: [], window: 'all', onlyConsecutiveFailures: false },
-    activeCount: 0,
-    reset: vi.fn(),
-    toggleType: vi.fn(),
-    setStatus: vi.fn(),
-    setWindow: vi.fn(),
-    removeType: vi.fn(),
-    setOnlyConsecutiveFailures: vi.fn(),
-  })),
-  applyFilters: vi.fn((rows) => rows),
+  // useDevGate é re-exportado pelo barril @/hooks/admin e consumido por
+  // componentes dev-only renderizados transitivamente (DevOnly/SafeMessage).
+  useDevGate: vi.fn(() => ({ isAllowed: false, isDev: false })),
 }));
 
 describe('ConnectionsOverviewTable Interações e Acessibilidade', () => {

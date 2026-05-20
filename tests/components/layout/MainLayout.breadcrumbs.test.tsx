@@ -58,6 +58,17 @@ vi.mock("@/contexts/SellerCartContext", () => ({
 
 vi.mock("@/contexts/OnboardingContext", () => ({
   OnboardingProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  // OnboardingTour (renderizado pelo MainLayout) consome useOnboardingContext.
+  // showTour:false faz o tour não renderizar — default seguro para o teste de layout.
+  useOnboardingContext: () => ({
+    showTour: false,
+    currentStep: 0,
+    currentStepData: undefined,
+    totalSteps: 0,
+    nextStep: vi.fn(),
+    prevStep: vi.fn(),
+    skipTour: vi.fn(),
+  }),
 }));
 
 describe("MainLayout — PersistentBreadcrumbs (PR)", () => {

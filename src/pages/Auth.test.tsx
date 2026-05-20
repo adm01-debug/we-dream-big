@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Auth from "@/pages/auth/Auth";
+import Auth from '@/pages/auth/Auth';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { HelmetProvider } from 'react-helmet-async';
@@ -12,6 +12,9 @@ vi.mock('@/hooks/admin', () => ({
     logLoginAttempt: vi.fn(),
     fetchCurrentIP: vi.fn().mockResolvedValue('1.2.3.4'),
   }),
+  // useDevGate é re-exportado pelo barril @/hooks/admin e consumido por
+  // componentes dev-only renderizados transitivamente (DevOnly/SafeMessage).
+  useDevGate: () => ({ isAllowed: false, isDev: false }),
 }));
 
 // Mocking useAuth - we need to wrap with AuthProvider or mock the hook
@@ -65,14 +68,15 @@ describe('Auth Page', () => {
     expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
-  it('shows forgot password form when link is clicked', () => {
+  it('shows forgot password form when link is clicked', async () => {
     renderAuth();
     const forgotLink = screen.getByTestId('login-forgot-link');
 
     fireEvent.click(forgotLink);
 
-    // Check for forgot password form elements
-    expect(screen.getByText(/Esqueceu sua senha\?/i)).toBeInTheDocument();
+    // O formulário troca dentro de <AnimatePresence mode="wait">: a saída anima
+    // antes do ForgotPasswordForm montar, então usamos findByText (assíncrono).
+    expect(await screen.findByText(/Esqueceu sua senha\?/i)).toBeInTheDocument();
 
     expect(screen.queryByTestId('login-password-input')).not.toBeInTheDocument();
   });

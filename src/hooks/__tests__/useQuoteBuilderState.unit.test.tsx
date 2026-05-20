@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQuoteBuilderState } from "@/hooks/quotes/useQuoteBuilderState";
+import { useQuoteBuilderState } from '@/hooks/quotes/useQuoteBuilderState';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import React from 'react';
@@ -24,35 +24,26 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(() => ({ user: { id: 'test-user' } })),
 }));
 
-// Mock hooks that might trigger side effects or complex logic
-vi.mock('@/hooks/quotes', () => ({
-  useSellerDiscountLimits: vi.fn(() => ({ myLimit: 10 })),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
-  useDiscountApproval: vi.fn(() => ({ requestApproval: vi.fn() })),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
-  useQuotes: vi.fn(() => ({
+// Mock hooks that might trigger side effects or complex logic.
+// vi.mock é hoisted e o último mock por módulo VENCE — por isso TODOS os hooks
+// do barril @/hooks/quotes precisam estar num ÚNICO factory. Referências estáveis
+// (singletons) evitam loop de re-render no SUT (deps de useEffect/useMemo).
+vi.mock('@/hooks/quotes', () => {
+  const emptyItems: unknown[] = [];
+  const expandedItems = new Set<number>();
+  const quotes = {
     createQuote: vi.fn(),
     updateQuote: vi.fn(),
     fetchQuote: vi.fn(),
     isLoading: false,
-  })),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
-  useQuoteTemplates: vi.fn(() => ({ templates: [] })),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
-  useQuoteItems: vi.fn(() => ({
-    items: [],
+  };
+  const templates = { templates: [] };
+  const quoteItems = {
+    items: emptyItems,
     setItems: vi.fn(),
     activeItemIndex: 0,
     setActiveItemIndex: vi.fn(),
-    expandedItems: new Set(),
+    expandedItems,
     setExpandedItems: vi.fn(),
     toggleExpanded: vi.fn(),
     addProductWithColor: vi.fn(),
@@ -61,12 +52,19 @@ vi.mock('@/hooks/quotes', () => ({
     removeItem: vi.fn(),
     handlePersonalizationsChange: vi.fn(),
     confirmItemPrice: vi.fn(),
-  })),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
-  useAutoSaveQuote: vi.fn(() => ({ clearAutoSave: vi.fn() })),
-}));
+  };
+  const discountLimits = { myLimit: 10 };
+  const discountApproval = { requestApproval: vi.fn() };
+  const autoSave = { clearAutoSave: vi.fn() };
+  return {
+    useSellerDiscountLimits: vi.fn(() => discountLimits),
+    useDiscountApproval: vi.fn(() => discountApproval),
+    useQuotes: vi.fn(() => quotes),
+    useQuoteTemplates: vi.fn(() => templates),
+    useQuoteItems: vi.fn(() => quoteItems),
+    useAutoSaveQuote: vi.fn(() => autoSave),
+  };
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,7 +92,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
 
   it('prevents nextStep if client/contact not selected', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-    
+
     act(() => {
       result.current.nextStep();
     });
@@ -105,7 +103,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
 
   it('allows nextStep if client/contact are selected', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-    
+
     act(() => {
       result.current.setClientId('company-1');
       result.current.setContactId('contact-1');
@@ -120,7 +118,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
 
   it('prevents moving to conditions if items are missing when skipping', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-    
+
     act(() => {
       result.current.setClientId('company-1');
       result.current.setContactId('contact-1');
@@ -130,14 +128,15 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
       result.current.goToStep('items');
     });
 
-    // Validates 'client' and 'conditions'. 'conditions' will fail.
-    expect(toast.error).toHaveBeenCalledWith('Preencha todas as condições comerciais');
+    // Ao pular para 'items', valida os steps intermediários; 'conditions' falha
+    // no primeiro campo ausente (forma de pagamento) e o jump é bloqueado.
+    expect(toast.error).toHaveBeenCalledWith('Selecione a forma de pagamento');
     expect(result.current.currentStep).toBe('client');
   });
 
   it('allows jumping back to a previous step without validation', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-    
+
     act(() => {
       result.current.setClientId('company-1');
       result.current.setContactId('contact-1');
@@ -148,7 +147,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
     expect(result.current.contactId).toBe('contact-1');
 
     act(() => {
-      result.current.nextStep(); 
+      result.current.nextStep();
     });
 
     expect(result.current.currentStep).toBe('conditions');
@@ -162,7 +161,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
 
   it('announces errors for screen readers', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-    
+
     act(() => {
       result.current.nextStep();
     });
