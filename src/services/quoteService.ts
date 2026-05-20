@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   type Quote,
   type QuoteItem,
+  type QuoteItemPersonalization,
   type PersonalizationTechnique,
 } from '@/hooks/quotes/quoteTypes';
 import {
@@ -39,7 +40,7 @@ export const quoteService = {
       .from('quotes')
       .select('*')
       .eq('id', quoteId)
-      .single();
+      .maybeSingle();
 
     if (qErr) throw qErr;
     if (!quoteData) return null;
@@ -53,14 +54,14 @@ export const quoteService = {
     if (iErr) throw iErr;
 
     const itemIds = (itemsData || []).map((i) => i.id);
-    let allPersonalizations: Array<{ quote_item_id: string; [key: string]: unknown }> = [];
+    let allPersonalizations: QuoteItemPersonalization[] = [];
     if (itemIds.length > 0) {
       const { data: persData, error: pErr } = await supabase
         .from('quote_item_personalizations')
         .select('*')
         .in('quote_item_id', itemIds);
       if (pErr) throw pErr;
-      allPersonalizations = persData || [];
+      allPersonalizations = (persData || []) as QuoteItemPersonalization[];
     }
 
     const items: QuoteItem[] = (itemsData || []).map((item) => ({
@@ -110,19 +111,25 @@ export const quoteService = {
     if (updErr) throw updErr;
 
     // Delete existing items and personalizations (Cascade delete should handle this, but for safety...)
-    const { data: oldItems } = await supabase
+    const { data: oldItems, error: oldItemsErr } = await supabase
       .from('quote_items')
       .select('id')
       .eq('quote_id', quoteId);
+    if (oldItemsErr) throw oldItemsErr;
     if (oldItems?.length) {
-      await supabase
+      const { error: persDelErr } = await supabase
         .from('quote_item_personalizations')
         .delete()
         .in(
           'quote_item_id',
           oldItems.map((i) => i.id),
         );
-      await supabase.from('quote_items').delete().eq('quote_id', quoteId);
+      if (persDelErr) throw persDelErr;
+      const { error: itemsDelErr } = await supabase
+        .from('quote_items')
+        .delete()
+        .eq('quote_id', quoteId);
+      if (itemsDelErr) throw itemsDelErr;
     }
 
     await this.insertItemsWithPersonalizations(items, quoteId);
@@ -195,15 +202,16 @@ export const quoteService = {
       metadata?: Record<string, unknown>;
     },
   ) {
-    await supabase.from('quote_history').insert({
+    const { error } = await supabase.from('quote_history').insert({
       quote_id: quoteId,
       user_id: userId,
       action,
       description,
-      field_changed: options?.fieldChanged || null,
-      old_value: options?.oldValue || null,
-      new_value: options?.newValue || null,
-      metadata: options?.metadata || {},
+      field_changed: options?.fieldChanged ?? null,
+      old_value: options?.oldValue ?? null,
+      new_value: options?.newValue ?? null,
+      metadata: options?.metadata ?? {},
     });
+    if (error) throw error;
   },
 };

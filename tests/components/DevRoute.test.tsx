@@ -5,7 +5,7 @@
  *  - dev: acessa telemetria, conexões e secrets (chaves) — children renderizam.
  *  - supervisor: é bloqueado, vê copy técnica + atalhos admin + CTA "Ir para Usuários".
  *  - agente (vendedor): é bloqueado, vê copy de vendedor + CTA "Voltar ao Catálogo".
- *  - anon: é redirecionado para /login.
+ *  - anon: é redirecionado para /auth.
  *  - "Tentar novamente" reabre a rota original (mesmo path) preservando estado.
  *
  * AdminRoute é coberto separadamente (tests/components/AdminRoute.test.tsx).

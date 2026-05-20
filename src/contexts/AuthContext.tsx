@@ -122,9 +122,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setTimeout(() => {
           fetchUserData(session.user.id);
           fetchAAL();
-          import('@/lib/external-db-prewarm').then((m) =>
-            m.prewarmExternalDb({ oncePerSession: true }),
-          );
+          void import('@/lib/external-db-prewarm')
+            .then((m) => m.prewarmExternalDb({ oncePerSession: true }))
+            .catch(() => {});
         }, 0);
       } else {
         clearProfileRoles();
@@ -180,9 +180,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Sync safeToast
   useEffect(() => {
-    import('@/lib/security/safeToast').then(({ setSafeToastRoles }) =>
-      setSafeToastRoles(userRoles),
-    );
+    void import('@/lib/security/safeToast')
+      .then(({ setSafeToastRoles }) => setSafeToastRoles(userRoles))
+      .catch(() => {});
   }, [userRoles]);
 
   const signIn = async (email: string, password: string) => {
