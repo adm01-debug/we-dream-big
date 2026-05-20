@@ -9,7 +9,39 @@ import { visualizer } from "rollup-plugin-visualizer";
  * 
  * @see https://vitejs.dev/config/
  */
-export default defineConfig(({ mode }: { mode: string }) => ({
+export default defineConfig(async ({ mode }: { mode: string }) => {
+  // ── GlitchTip / Sentry — upload de source maps ──────────────────────────────
+  // Carregado DINAMICAMENTE e apenas quando SENTRY_AUTH_TOKEN está presente
+  // (ativação manual). Sem o token, o @sentry/vite-plugin NÃO é importado: o build
+  // de produção fica idêntico ao atual, não vira dependência obrigatória de build
+  // e nenhum .map é gerado (zero risco de source map órfão vazar no deploy).
+  const uploadSourcemaps = mode === 'production' && !!process.env.SENTRY_AUTH_TOKEN;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sentryPlugins: any[] = [];
+  if (uploadSourcemaps) {
+    const { sentryVitePlugin } = await import('@sentry/vite-plugin');
+    sentryPlugins.push(
+      sentryVitePlugin({
+        url: process.env.SENTRY_URL || 'https://erros.atomicabr.com.br',
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        telemetry: false, // não enviar telemetria pro sentry.io (usamos GlitchTip)
+        release: {
+          name:
+            process.env.VITE_VERCEL_GIT_COMMIT_SHA ||
+            process.env.VERCEL_GIT_COMMIT_SHA ||
+            undefined,
+        },
+        sourcemaps: {
+          // sobe os .map pro GlitchTip (debug IDs) e os remove do dist em seguida
+          filesToDeleteAfterUpload: ['./dist/**/*.map'],
+        },
+      })
+    );
+  }
+
+  return {
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
@@ -19,6 +51,7 @@ export default defineConfig(({ mode }: { mode: string }) => ({
       brotliSize: true,
       template: 'treemap',
     }),
+    ...sentryPlugins,
   ].filter(Boolean),
   
   resolve: {
@@ -37,7 +70,10 @@ export default defineConfig(({ mode }: { mode: string }) => ({
   
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    // 'hidden' gera os .map sem expor o comentário sourceMappingURL ao público:
+    // o GlitchTip recebe o map (via @sentry/vite-plugin), o navegador do usuário não.
+    // Só liga quando o upload também vai rodar (token presente) — senão, 'false'.
+    sourcemap: uploadSourcemaps ? 'hidden' : false,
     minify: 'esbuild' as const,
     target: 'esnext',
     chunkSizeWarningLimit: 2000,
@@ -123,4 +159,5 @@ export default defineConfig(({ mode }: { mode: string }) => ({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'react-hook-form', '@hookform/resolvers/zod'],
   },
-}))
+  };
+})
