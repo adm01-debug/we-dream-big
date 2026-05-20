@@ -12,6 +12,28 @@ import { OnboardingProvider } from "@/contexts/OnboardingContext";
 import { SellerCartProvider } from "@/contexts/SellerCartContext";
 import { AriaLiveProvider } from "@/components/a11y";
 
+// Smoke de sintaxe/render: stubamos os filhos assíncronos do Header (fetch de
+// orgs, notificações, busca global, carrinho, alertas) — irrelevantes aqui e
+// que de outra forma deixam o processo de teste pendurado em timers/subscrições.
+vi.mock("@/components/OrganizationSwitcher", () => ({
+  OrganizationSwitcher: () => null,
+}));
+vi.mock("@/components/notifications/NotificationDrawer", () => ({
+  NotificationBell: () => null,
+}));
+vi.mock("@/components/search/GlobalSearchPalette", () => ({
+  GlobalSearchPalette: () => null,
+}));
+vi.mock("@/components/cart/CartHeaderButton", () => ({
+  CartHeaderButton: () => null,
+}));
+vi.mock("@/components/inventory/StockAlertsIndicator", () => ({
+  StockAlertsIndicator: () => null,
+}));
+vi.mock("@/components/admin/DiscountApprovalHeaderBadge", () => ({
+  DiscountApprovalHeaderBadge: () => null,
+}));
+
 
 // Mock das dependências que poderiam causar efeitos colaterais ou erros de contexto
 vi.mock("@/integrations/supabase/client", () => ({
