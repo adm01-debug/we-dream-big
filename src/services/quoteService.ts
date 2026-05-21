@@ -13,6 +13,7 @@ import { invokeExternalDb } from "@/lib/external-db";
 export const quoteService = {
   async fetchQuotes(userId: string, scope: string) {
     let query = supabase
+      // rls-allow: RLS policy "Sellers can manage own org quotes" (FOR ALL) enforces seller_id = auth.uid() server-side; admins via can_manage_quotes. Self-scope also applied below for defense-in-depth.
       .from('quotes')
       .select('*')
       .order('created_at', { ascending: false })
@@ -30,6 +31,7 @@ export const quoteService = {
 
   async fetchQuote(quoteId: string): Promise<Quote | null> {
     const { data: quoteData, error: qErr } = await supabase
+      // rls-allow: single-row fetch by id; RLS "Sellers can manage own org quotes" (FOR ALL) enforces seller ownership server-side.
       .from('quotes')
       .select('*')
       .eq('id', quoteId)
@@ -70,6 +72,7 @@ export const quoteService = {
     const insertPayload = buildInsertPayload(quote, userId, orgId, totals);
     
     const { data: inserted, error: insErr } = await supabase
+      // rls-allow: insertPayload sets seller_id via buildInsertPayload(quote, userId, ...); RLS WITH CHECK enforces seller_id = auth.uid().
       .from('quotes')
       .insert(insertPayload)
       .select('*')
@@ -88,6 +91,7 @@ export const quoteService = {
     const updatePayload = buildUpdatePayload(quote, totals);
     
     const { data: updated, error: updErr } = await supabase
+      // rls-allow: update by id; RLS "Sellers can manage own org quotes" (FOR ALL, USING + WITH CHECK) enforces seller ownership server-side.
       .from('quotes')
       .update(updatePayload)
       .eq('id', quoteId)
@@ -139,11 +143,13 @@ export const quoteService = {
   },
 
   async updateQuoteStatus(quoteId: string, status: Quote['status']) {
+    // rls-allow: update by id; RLS "Sellers can manage own org quotes" (FOR ALL) enforces seller ownership server-side.
     const { error } = await supabase.from('quotes').update({ status }).eq('id', quoteId);
     if (error) throw error;
   },
 
   async deleteQuote(quoteId: string) {
+    // rls-allow: delete by id; RLS "Sellers can manage own org quotes" (FOR ALL) enforces seller ownership server-side.
     const { error } = await supabase.from('quotes').delete().eq('id', quoteId);
     if (error) throw error;
   },
