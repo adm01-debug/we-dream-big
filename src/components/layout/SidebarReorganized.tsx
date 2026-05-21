@@ -357,7 +357,7 @@ export const SidebarReorganized = React.memo(
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 hover:bg-sidebar-accent/50 hover:text-primary ml-auto text-sidebar-foreground/30 focus-visible:ring-1 focus-visible:ring-primary"
+              className="h-8 w-8 hover:bg-sidebar-accent/50 hover:text-primary ml-auto text-sidebar-foreground/30 focus-visible:ring-1 focus-visible:ring-primary rounded-xl transition-all duration-300"
               onClick={toggleCollapse}
               aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
               title={isCollapsed ? "Expandir menu" : "Recolher menu"}
