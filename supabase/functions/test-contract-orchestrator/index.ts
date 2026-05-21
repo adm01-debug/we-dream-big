@@ -46,8 +46,11 @@ Deno.serve(async (req) => {
     const inboundStart = performance.now();
     try {
       const payload = { event: "test", data: { ping: "pong" } };
-      const secret = "sim-dispatcher-secret-2026"; // O que inserimos no DB
-      const signature = "sha256=" + await hmacSign(JSON.stringify(payload), SIM_BYPASS); // Usando bypass como secret para teste rápido ou o do DB se soubermos qual endpoint usar
+      // Usar o segredo que inserimos no DB via resolveCredential para assinar corretamente
+      const secretRes = await resolveCredential("SIMULATION_BYPASS_KEY", supabase);
+      const secret = secretRes.value || SIM_BYPASS;
+      const signature = "sha256=" + await hmacSign(JSON.stringify(payload), secret);
+
       
       // Criar endpoint de teste se não existir
       await supabase.from("inbound_webhook_endpoints").upsert({
