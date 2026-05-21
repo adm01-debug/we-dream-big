@@ -134,9 +134,9 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
       } as CSSProperties}
       className={cn(
         "fixed top-0 right-0 z-40 border-b transition-all duration-300 print:hidden theme-transitioning",
-        "bg-card/40 backdrop-blur-xl border-border/30",
+        "bg-background/40 backdrop-blur-xl border-border/30",
         "h-[var(--header-h)]",
-        isScrolled && "bg-card/60 backdrop-blur-2xl shadow-lg border-border/50",
+        isScrolled && "bg-background/60 backdrop-blur-2xl shadow-[0_4px_20px_-5px_rgba(0,0,0,0.1)] border-border/50",
       )}
     >
       <div className="flex items-center justify-between h-full px-2 sm:px-4 lg:px-6">
