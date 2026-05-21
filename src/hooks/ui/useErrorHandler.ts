@@ -83,11 +83,13 @@ export function useGlobalErrorCatcher() {
 
     const onUnhandled = (event: ErrorEvent) => {
       log.error('unhandled_error', { err: event.error });
+      telemetryService.logError('unhandled_error', event.error);
       toast.error('Erro inesperado. Tente recarregar a página.');
     };
 
     const onUnhandledRejection = (event: PromiseRejectionEvent) => {
       log.error('unhandled_rejection', { err: event.reason });
+      telemetryService.logError('unhandled_rejection', event.reason);
       toast.error('Erro inesperado. Tente recarregar a página.');
     };
 
