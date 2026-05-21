@@ -122,6 +122,7 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
   const truncatedName = (() => {
     const parts = displayName.trim().split(/\s+/);
     if (parts.length <= 1) return displayName;
+    if (displayName.length <= 12) return displayName;
     return `${parts[0]} ${parts[parts.length - 1][0]}.`;
   })();
 
