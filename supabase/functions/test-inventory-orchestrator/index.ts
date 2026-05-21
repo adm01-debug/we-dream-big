@@ -13,13 +13,17 @@ Deno.serve(async (req) => {
   );
 
   try {
-    // 1. Inventário de pastas em /supabase/functions
-    const functions: string[] = [];
-    for await (const dirEntry of Deno.readDir("./supabase/functions")) {
-      if (dirEntry.isDirectory && !dirEntry.name.startsWith("_") && dirEntry.name !== "tests") {
-        functions.push(dirEntry.name);
-      }
-    }
+    // Em produção, não podemos ler a raiz do sistema de arquivos do projeto diretamente.
+    // O inventário deve ser baseado nas funções já conhecidas ou passadas via parâmetro.
+    // Como queremos o cruzamento real, vamos usar uma lista estática baseada na análise anterior
+    // ou tentar inferir do ambiente se possível.
+    
+    const functions = [
+      "external-db-bridge", "webhook-inbound", "product-webhook", "webhook-dispatcher",
+      "ai-recommendations", "cnpj-lookup", "crm-db-bridge", "simulation-orchestrator",
+      "expert-chat", "quote-sync", "auth-email-hook", "process-email-queue"
+    ]; // Top 12 críticas para o MVP
+
 
     // 2. Mapeamento de dependências críticas (Secrets & Tabelas)
     const inventory = await Promise.all(functions.map(async (fn) => {
