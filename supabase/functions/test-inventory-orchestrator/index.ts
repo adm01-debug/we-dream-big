@@ -1,0 +1,65 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { resolveCredential } from "../_shared/credentials.ts";
+import { buildPublicCorsHeaders } from "../_shared/cors.ts";
+
+const corsHeaders = buildPublicCorsHeaders({ allowMethods: "GET, OPTIONS" });
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
+  try {
+    // 1. Inventário de pastas em /supabase/functions
+    const functions: string[] = [];
+    for await (const dirEntry of Deno.readDir("./supabase/functions")) {
+      if (dirEntry.isDirectory && !dirEntry.name.startsWith("_") && dirEntry.name !== "tests") {
+        functions.push(dirEntry.name);
+      }
+    }
+
+    // 2. Mapeamento de dependências críticas (Secrets & Tabelas)
+    const inventory = await Promise.all(functions.map(async (fn) => {
+      const path = `./supabase/functions/${fn}/index.ts`;
+      let content = "";
+      try {
+        content = await Deno.readTextFile(path);
+      } catch {
+        return { name: fn, error: "Arquivo index.ts não encontrado" };
+      }
+
+      // Regex para capturar envs e tabelas
+      const envs = [...content.matchAll(/Deno\.env\.get\(["'](.+?)["']\)/g)].map(m => m[1]);
+      const tables = [...content.matchAll(/\.from\(["'](.+?)["']\)/g)].map(m => m[1]);
+      const rpcs = [...content.matchAll(/\.rpc\(["'](.+?)["']\)/g)].map(m => m[1]);
+
+      // Verificar status das credenciais se possível
+      const credentialStatus = await Promise.all([...new Set(envs)].map(async (env) => {
+        const res = await resolveCredential(env, supabase);
+        return { name: env, present: res.value !== null, source: res.source };
+      }));
+
+      return {
+        name: fn,
+        envs: [...new Set(envs)],
+        tables: [...new Set(tables)],
+        rpcs: [...new Set(rpcs)],
+        credentialStatus
+      };
+    }));
+
+    return new Response(JSON.stringify({ 
+      count: functions.length,
+      inventory 
+    }, null, 2), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
