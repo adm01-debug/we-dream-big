@@ -38,25 +38,18 @@ Deno.serve(async (req) => {
       ];
 
 
-      // Regex para capturar envs e tabelas
-      const envs = [...content.matchAll(/Deno\.env\.get\(["'](.+?)["']\)/g)].map(m => m[1]);
-      const tables = [...content.matchAll(/\.from\(["'](.+?)["']\)/g)].map(m => m[1]);
-      const rpcs = [...content.matchAll(/\.rpc\(["'](.+?)["']\)/g)].map(m => m[1]);
-
-      // Verificar status das credenciais se possível
-      const credentialStatus = await Promise.all([...new Set(envs)].map(async (env) => {
+      // Verificar status das credenciais
+      const credentialStatus = await Promise.all(commonEnvs.map(async (env) => {
         const res = await resolveCredential(env, supabase);
         return { name: env, present: res.value !== null, source: res.source };
       }));
 
       return {
         name: fn,
-        envs: [...new Set(envs)],
-        tables: [...new Set(tables)],
-        rpcs: [...new Set(rpcs)],
         credentialStatus
       };
     }));
+
 
     return new Response(JSON.stringify({ 
       count: functions.length,
