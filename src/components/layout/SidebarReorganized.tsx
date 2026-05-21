@@ -339,7 +339,7 @@ export const SidebarReorganized = React.memo(
 
 
           {/* Collapse controls (desktop) */}
-          <div className="hidden lg:flex items-center justify-between px-2 mb-1">
+          <div className="hidden lg:flex items-center justify-between px-3 mb-2">
             {!isCollapsed && hasAnyGroupOpen && (
               <Button
                 variant="outline"
