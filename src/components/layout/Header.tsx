@@ -330,19 +330,19 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
                 aria-label={`Menu de usuário: ${displayName}`}
                 className="flex items-center gap-2 h-9 px-1.5 sm:px-2 hover:bg-primary/10 rounded-lg"
               >
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center ring-2 ring-background shadow-md">
+                <div className="relative group/avatar">
+                  <div className="w-8 h-8 rounded-full bg-muted border border-border/40 flex items-center justify-center transition-all duration-300 group-hover/avatar:border-primary/50 group-hover/avatar:shadow-[0_0_10px_rgba(var(--primary),0.3)] overflow-hidden">
                     {profile?.avatar_url ? (
                       <img
                         src={profile.avatar_url}
                         alt={displayName}
-                        className="w-8 h-8 rounded-full object-cover" loading="lazy" />
+                        className="w-full h-full object-cover" loading="lazy" />
                     ) : (
-                      <User className="h-4 w-4 text-primary-foreground" />
+                      <User className="h-4 w-4 text-muted-foreground" />
                     )}
                   </div>
                   {/* #6 — Status online dot */}
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-success rounded-full ring-2 ring-background" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-success rounded-full ring-2 ring-background shadow-sm" />
                 </div>
                 <div className="hidden lg:flex flex-col items-start">
                   <span className="text-sm font-medium text-foreground leading-tight truncate max-w-[120px]">
