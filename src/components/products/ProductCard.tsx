@@ -287,10 +287,10 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
         )}
 
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] sm:text-xs text-muted-foreground font-mono truncate">{product.sku}</span>
-          <div className="flex items-center gap-1 shrink-0">
+          <span className="text-[10px] sm:text-xs text-muted-foreground font-mono tracking-tighter opacity-60 group-hover:opacity-100 transition-opacity">{product.sku}</span>
+          <div className="flex items-center gap-1.5 shrink-0">
             <GenderBadge gender={product.gender} size="sm" />
-            <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium truncate max-w-[120px] flex items-center gap-1">
+            <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-lg bg-muted text-muted-foreground font-semibold truncate max-w-[120px] flex items-center gap-1.5 border border-border/20">
               <Building2 className={cn("h-3 w-3 shrink-0", getSupplierColors(product.supplier.name).text)} />
               {product.supplier.name}
             </span>
