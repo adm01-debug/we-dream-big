@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return jsonRes(corsHeaders, { error: errorMessage }, 500);
+    console.error('send-notification error:', error);
+    return jsonRes(corsHeaders, { error: 'internal_error' }, 500);
   }
 });

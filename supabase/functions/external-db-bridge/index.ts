@@ -536,7 +536,7 @@ Deno.serve((req) => {
     // sem que o supabase-js trate como exceção fatal e a UI quebre.
     return jsonResponse({
       error: 'SERVICE_FAILED',
-      message: errorMessage,
+      message: 'Serviço temporariamente indisponível',
       fallback: true,
       request_id: requestId,
     }, 200, corsHeaders);

@@ -667,7 +667,7 @@ async function handleInsert(crm: SupabaseClient, body: CrmQuery): Promise<Respon
       return createOptionalWriteError(table);
     }
     console.error("CRM insert error:", error);
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({ error: "internal_error" }, 500);
   }
   return jsonResponse({ data: result, count: result?.length || 0 });
 }
@@ -697,7 +697,7 @@ async function handleUpdate(crm: SupabaseClient, body: CrmQuery): Promise<Respon
       return createOptionalWriteError(table);
     }
     console.error("CRM update error:", error);
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({ error: "internal_error" }, 500);
   }
   return jsonResponse({ data: result, count: result?.length || 0 });
 }
@@ -720,7 +720,7 @@ async function handleDelete(crm: SupabaseClient, body: CrmQuery): Promise<Respon
       return createOptionalWriteError(table);
     }
     console.error("CRM delete error:", error);
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({ error: "internal_error" }, 500);
   }
   return jsonResponse({ data: null, success: true });
 }
@@ -740,7 +740,7 @@ async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Respon
       if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
         return createOptionalSelectFallback(table, true);
       }
-      return jsonResponse({ error: error.message }, error.code === "PGRST116" ? 404 : 500);
+      return jsonResponse({ error: error.code === "PGRST116" ? "not_found" : "internal_error" }, error.code === "PGRST116" ? 404 : 500);
     }
     return jsonResponse({ data, count: 1 });
   }
@@ -758,7 +758,7 @@ async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
       return createOptionalSelectFallback(table, false);
     }
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({ error: "internal_error" }, 500);
   }
   return jsonResponse({ data: data || [], count });
 }
@@ -778,7 +778,7 @@ async function handleSearch(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
       return createOptionalSelectFallback(table, false);
     }
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({ error: "internal_error" }, 500);
   }
   return jsonResponse({ data: data || [], count: data?.length || 0 });
 }

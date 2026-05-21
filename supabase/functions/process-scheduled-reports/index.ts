@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { buildPublicCorsHeaders } from "../_shared/cors.ts";
+import { safeErrorResponse } from "../_shared/error-response.ts";
 import { authorizeCron } from "../_shared/dispatcher-auth.ts";
 
 const corsHeaders = buildPublicCorsHeaders();
@@ -130,10 +131,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return safeErrorResponse(err, { corsHeaders, publicMessage: "internal_error", logLabel: "process-scheduled-reports error:" });
   }
 });
 

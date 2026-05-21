@@ -70,7 +70,8 @@ Deno.serve(async (req) => {
     while (true) {
       const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
       if (error) {
-        return jsonRes({ error: error.message }, 500);
+        console.error("[force-global-logout] listUsers error", error);
+        return jsonRes({ error: "logout_failed" }, 500);
       }
 
       const users = data?.users || [];

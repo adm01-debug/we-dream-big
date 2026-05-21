@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { safeErrorResponse } from '../_shared/error-response.ts';
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
 import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
@@ -381,11 +382,6 @@ Responda APENAS com JSON válido no formato especificado.`;
     if ((error as any)?.status === 401 || (error as any)?.status === 403) {
       return authErrorResponse(error, corsHeaders);
     }
-    console.error("[Error] semantic-search:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(error, { corsHeaders, publicMessage: "internal_error", logLabel: "[Error] semantic-search:", extra: { success: false } });
   }
 });

@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { safeErrorResponse } from "../_shared/error-response.ts";
 // RLS Audit: testa SELECT/INSERT/UPDATE/DELETE em quotes, orders e
 // discount_approval_requests usando o JWT do usuário logado (vendedor).
 // Cada cenário retorna ✅/❌ + detalhe para evidência de auditoria.
@@ -359,9 +360,6 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (e) {
-    return new Response(
-      JSON.stringify({ error: "internal", detail: String((e as Error).message) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return safeErrorResponse(e, { corsHeaders, publicMessage: "internal", logLabel: "rls-audit error:" });
   }
 });

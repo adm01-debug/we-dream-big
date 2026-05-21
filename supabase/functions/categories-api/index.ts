@@ -240,9 +240,9 @@ Deno.serve(async (req) => {
     console.error('Error in categories-api:', error);
     
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      JSON.stringify({
+        success: false,
+        error: 'internal_error'
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

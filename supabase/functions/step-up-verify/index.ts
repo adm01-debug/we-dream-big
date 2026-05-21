@@ -168,7 +168,7 @@ Deno.serve(async (req) => {
           action_label: actionLabel,
           metadata: { reason: "rpc_error", detail: error.message, step: "request" },
         });
-        return json({ error: error.message }, 429);
+        return json({ error: "step_up_request_failed" }, 429);
       }
 
       const row = Array.isArray(data) ? data[0] : data;
@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
           challenge_id: body.challenge_id,
           metadata: { reason: "otp_invalid", detail: error.message, step: "verify_otp" },
         });
-        return json({ error: error.message }, 400);
+        return json({ error: "otp_invalid" }, 400);
       }
 
       const row = Array.isArray(data) ? data[0] : data;

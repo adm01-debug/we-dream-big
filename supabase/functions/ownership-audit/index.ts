@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
     }));
     if (error) {
       console.error("[ownership-audit] rpc error", error);
-      return json({ error: error.message }, 500);
+      return json({ error: "audit_failed" }, 500);
     }
 
     const { data: report, error: fetchErr } = await admin

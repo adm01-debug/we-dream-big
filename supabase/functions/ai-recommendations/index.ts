@@ -1,5 +1,6 @@
 // build-tag: 2026-04-16-fix-nonneg
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
+import { safeErrorResponse } from '../_shared/error-response.ts';
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
 import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
 import { z } from '../_shared/zod-validate.ts';
@@ -178,10 +179,6 @@ Com base no perfil do cliente, recomende os produtos mais adequados.`;
     if ((error as any)?.status === 401 || (error as any)?.status === 403) {
       return authErrorResponse(error, corsHeaders);
     }
-    console.error("Error in ai-recommendations:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Erro ao gerar recomendações" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return safeErrorResponse(error, { corsHeaders, publicMessage: "recommendations_failed", logLabel: "Error in ai-recommendations:" });
   }
 });

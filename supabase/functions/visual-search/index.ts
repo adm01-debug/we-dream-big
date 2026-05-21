@@ -1,4 +1,5 @@
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
+import { safeErrorResponse } from '../_shared/error-response.ts';
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
 import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
 import { z } from '../_shared/zod-validate.ts';
@@ -210,11 +211,6 @@ Responda APENAS em JSON com este formato:
     if ((error as any)?.status === 401 || (error as any)?.status === 403) {
       return authErrorResponse(error, corsHeaders);
     }
-    console.error("Visual search error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Erro ao processar busca visual";
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return safeErrorResponse(error, { corsHeaders, publicMessage: "visual_search_failed", logLabel: "Visual search error:" });
   }
 });

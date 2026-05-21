@@ -1,4 +1,5 @@
 import { buildPublicCorsHeaders, getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
+import { safeErrorResponse } from '../_shared/error-response.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
 import { z } from "npm:zod@3.23.8";
@@ -1292,10 +1293,6 @@ IMPORTANTE: Você tem acesso completo aos dados do cliente em tempo real — CRM
     if ((error as any)?.status === 401 || (error as any)?.status === 403) {
       return authErrorResponse(error, corsHeaders);
     }
-    console.error("Expert chat error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Erro desconhecido" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return safeErrorResponse(error, { corsHeaders, publicMessage: "internal_error", logLabel: "Expert chat error:" });
   }
 });
