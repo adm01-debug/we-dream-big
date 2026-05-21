@@ -1,4 +1,5 @@
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
+import { safeErrorResponse } from '../_shared/error-response.ts';
 import { authorize } from '../_shared/authorize.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "npm:zod@3.23.8";
@@ -570,12 +571,11 @@ Deno.serve(async (req) => {
     if (error instanceof CircuitOpenError) {
       return circuitOpenResponse(error, corsHeaders);
     }
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Bitrix24 sync error:', errorMessage);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(error, {
+      corsHeaders,
+      publicMessage: 'bitrix_sync_failed',
+      logLabel: 'Bitrix24 sync error:',
+    });
   }
 });
 

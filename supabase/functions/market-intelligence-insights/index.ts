@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { safeErrorResponse } from "../_shared/error-response.ts";
 // supabase/functions/market-intelligence-insights/index.ts
 // Generates AI-powered insights for the Market Intelligence dashboard.
 // v2: server-side cache, structured logging, telemetry, quota check, smart empty state.
@@ -404,9 +405,6 @@ Deno.serve(async (req) => {
   } catch (e: any) {
     if (e?.status) return authErrorResponse(e, getCorsHeaders(req));
     log("error", "internal_error", { user_id: userId, message: e?.message ?? String(e) });
-    return new Response(JSON.stringify({ error: e?.message ?? "internal_error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return safeErrorResponse(e, { corsHeaders, publicMessage: "internal_error" });
   }
 });

@@ -1,5 +1,6 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { authenticateRequest, requireRole, authErrorResponse } from "../_shared/auth.ts";
+import { safeErrorResponse } from "../_shared/error-response.ts";
 /// <reference lib="deno.ns" />
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
 import { z } from "https://esm.sh/zod@3.23.8";
@@ -233,11 +234,10 @@ Deno.serve(async (req) => {
       }
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error("Quote sync error:", error);
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return safeErrorResponse(error, {
+      corsHeaders,
+      publicMessage: "quote_sync_failed",
+      logLabel: "Quote sync error:",
     });
   }
 });

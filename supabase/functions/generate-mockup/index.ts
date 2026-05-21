@@ -6,6 +6,7 @@ import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
 import { runBotProtection } from '../_shared/bot-protection.ts';
 import { safeJson } from '../_shared/json-parser.ts';
 import { assertAllowedExternalUrl, ExternalUrlError } from '../_shared/url-allowlist.ts';
+import { safeErrorResponse } from '../_shared/error-response.ts';
 
 const MockupBodySchema = z.object({
   productImageUrl: z.string().url().max(2000),
@@ -299,11 +300,10 @@ Output the final image maintaining the exact same dimensions and aspect ratio as
     if ((error as any)?.status === 401 || (error as any)?.status === 403) {
       return authErrorResponse(error, corsHeaders);
     }
-    console.error("Error generating mockup:", error);
-    const message = error instanceof Error ? error.message : "Failed to generate mockup";
-    return new Response(
-      JSON.stringify({ error: message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return safeErrorResponse(error, {
+      corsHeaders,
+      publicMessage: "mockup_generation_failed",
+      logLabel: "Error generating mockup:",
+    });
   }
 });

@@ -1,4 +1,5 @@
 import { buildPublicCorsHeaders, getCorsHeaders } from "../_shared/cors.ts";
+import { safeErrorResponse } from "../_shared/error-response.ts";
 import { authenticateRequest, requireRole, authErrorResponse } from "../_shared/auth.ts";
 // Comparison AI Advisor — Lovable AI Gateway
 // Recebe lista slim de produtos e retorna 3-5 bullets + bestFor highVolume/fastDelivery/premium.
@@ -146,10 +147,6 @@ Considere preço, estoque, quantidade mínima, variedade de cores e disponibilid
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("comparison-ai-advisor exception:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "unknown_error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return safeErrorResponse(e, { corsHeaders, publicMessage: "unknown_error", logLabel: "comparison-ai-advisor exception:" });
   }
 });

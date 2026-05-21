@@ -1,4 +1,5 @@
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { safeErrorResponse } from '../_shared/error-response.ts';
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
 import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
 import { z } from '../_shared/zod-validate.ts';
@@ -171,9 +172,6 @@ Return ONLY a JSON array, no markdown, no explanation. Example:
     if ((e as any)?.status === 401 || (e as any)?.status === 403) {
       return authErrorResponse(e, corsHeaders);
     }
-    console.error("analyze-logo-colors error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return safeErrorResponse(e, { corsHeaders, publicMessage: "internal_error", logLabel: "analyze-logo-colors error:" });
   }
 });

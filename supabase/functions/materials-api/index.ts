@@ -1,4 +1,5 @@
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { safeErrorResponse } from '../_shared/error-response.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from '../_shared/zod-validate.ts';
 
@@ -436,9 +437,11 @@ Deno.serve(async (req) => {
     const errorCode = error?.code ?? null;
     console.error('Materials API error:', errorMessage, 'code:', errorCode, 'raw:', JSON.stringify(error));
 
-    return new Response(
-      JSON.stringify({ error: errorMessage, code: errorCode }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(error, {
+      corsHeaders,
+      publicMessage: 'materials_api_error',
+      logLabel: 'Materials API error:',
+      extra: errorCode ? { code: errorCode } : {},
+    });
   }
 });

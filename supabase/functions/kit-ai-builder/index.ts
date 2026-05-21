@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { safeErrorResponse } from "../_shared/error-response.ts";
 import { authenticateRequest, requireRole, authErrorResponse } from "../_shared/auth.ts";
 // ============================================================
 // EDGE FUNCTION: kit-ai-builder
@@ -134,10 +135,6 @@ Use português do Brasil. Seja conciso e prático.`;
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (e) {
-    console.error('kit-ai-builder error:', e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : 'Erro desconhecido' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(e, { corsHeaders, publicMessage: 'internal_error', logLabel: 'kit-ai-builder error:' });
   }
 });

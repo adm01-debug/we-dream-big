@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { safeErrorResponse } from "../_shared/error-response.ts";
 import { authenticateRequest, requireRole, authErrorResponse } from "../_shared/auth.ts";
 /**
  * Edge function `bi-copilot` — responde perguntas do vendedor sobre um cliente
@@ -111,10 +112,6 @@ ${JSON.stringify(body.context, null, 2)}`;
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("bi-copilot error:", e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return safeErrorResponse(e, { corsHeaders, publicMessage: "internal_error", logLabel: "bi-copilot error:" });
   }
 });
