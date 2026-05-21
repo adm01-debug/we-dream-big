@@ -156,10 +156,15 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
 
           {/* #1 — Seção atual como âncora */}
           <div className="hidden lg:flex items-center gap-4">
-            <span className="font-display text-sm font-bold text-primary tracking-wider uppercase truncate max-w-[120px] drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]">
-              {currentSection}
-            </span>
-            <div className="h-4 w-px bg-border/40" />
+            <div className="flex flex-col">
+              <span className="font-display text-[10px] font-bold text-primary/60 tracking-[0.2em] uppercase leading-none mb-1">
+                Seção Atual
+              </span>
+              <span className="font-display text-sm font-bold text-foreground tracking-wide truncate max-w-[150px]">
+                {currentSection}
+              </span>
+            </div>
+            <div className="h-8 w-px bg-border/20 mx-1" />
             <OrganizationSwitcher />
           </div>
         </div>
