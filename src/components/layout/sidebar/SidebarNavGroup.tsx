@@ -256,9 +256,9 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
           aria-expanded={isOpen}
           aria-label={groupToggleLabel}
           className={cn(
-            "flex items-center gap-3 w-full px-3 py-2 rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-orange/15 active:scale-[0.995]",
-            "hover:bg-sidebar-accent/50 text-sidebar-foreground/70 hover:text-sidebar-foreground",
-            hasActiveItem && "text-primary bg-primary/[0.05]"
+          "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 active:scale-[0.99]",
+          "hover:bg-sidebar-accent/30 text-sidebar-foreground/50 hover:text-sidebar-foreground",
+          hasActiveItem && "text-primary/90 bg-primary/[0.03] shadow-[inset_0_0_20px_rgba(var(--primary),0.02)]"
           )}
         >
           <GroupIcon
