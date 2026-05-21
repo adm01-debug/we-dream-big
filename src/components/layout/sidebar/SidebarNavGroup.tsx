@@ -178,10 +178,10 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
         className={cn(
           "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 active:scale-[0.98]",
 
-          "hover:bg-white/[0.03] hover:translate-x-1",
+          "hover:bg-white/[0.04] hover:translate-x-1.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)]",
           isActive
-            ? "bg-primary/10 text-white font-bold shadow-[0_0_15px_rgba(var(--primary),0.05)] before:absolute before:left-0 before:top-[15%] before:bottom-[15%] before:w-[3px] before:rounded-r-full before:bg-primary"
-            : "text-sidebar-foreground/70 hover:text-sidebar-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-0 before:w-[2px] before:rounded-r-full before:bg-primary/50 before:transition-all before:duration-300 hover:before:h-4"
+            ? "bg-primary/10 text-white font-bold shadow-[0_4px_20px_rgba(var(--primary),0.1)] before:absolute before:left-0 before:top-[12%] before:bottom-[12%] before:w-[4px] before:rounded-r-full before:bg-primary"
+            : "text-sidebar-foreground/60 hover:text-sidebar-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-0 before:w-[2px] before:rounded-r-full before:bg-primary/50 before:transition-all before:duration-500 hover:before:h-5"
         )}
 
         onClick={() => isMobileSidebarOpen && onMobileClose()}
