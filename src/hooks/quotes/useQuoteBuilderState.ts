@@ -7,6 +7,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { useAutoSaveQuote, useDiscountApproval, useQuoteItems, useQuotes, useSellerDiscountLimits, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes";
 import { useQuery } from '@tanstack/react-query';
+import type { PromobrindProduct } from '@/lib/external-db';
 import Fuse from 'fuse.js';
 import { format, addDays } from 'date-fns';
 import { toast } from 'sonner';

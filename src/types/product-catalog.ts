@@ -65,6 +65,7 @@ export interface Product {
   onSale: boolean;
   isKit: boolean;
   gender?: string | null;
+  leadTimeDays?: number | null;
   category: { id: string | number; name: string };
   supplier: { id: string; name: string };
   tags: {
