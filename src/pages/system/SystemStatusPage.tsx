@@ -355,6 +355,52 @@ export default function SystemStatusPage() {
           </Card>
         </div>
 
+        {/* Provider & State Status */}
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              Estado dos Providers (Context)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-muted-foreground font-medium">Auth Provider</span>
+              <div className="flex items-center gap-2">
+                <Badge variant={user ? "success" : "secondary"}>
+                  {user ? "Autenticado" : "Público"}
+                </Badge>
+                <span className="text-[10px] font-mono opacity-60">{user?.id || 'no-session'}</span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-muted-foreground font-medium">Theme Provider</span>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="capitalize">{actualTheme}</Badge>
+                <div className={`w-3 h-3 rounded-full ${actualTheme === 'dark' ? 'bg-slate-800' : 'bg-slate-200'} border border-white/10`} />
+              </div>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-muted-foreground font-medium">Router Context</span>
+              <div className="flex items-center gap-2 overflow-hidden max-w-[200px]">
+                <Badge variant="secondary" className="font-mono text-[10px] truncate">
+                  {location.pathname}
+                </Badge>
+              </div>
+            </div>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-muted-foreground font-medium">Roles/Permissions</span>
+              <div className="flex gap-1 flex-wrap justify-end">
+                {roles && roles.length > 0 ? (
+                  roles.map(r => <Badge key={r} variant="outline" className="text-[9px] uppercase">{r}</Badge>)
+                ) : (
+                  <span className="text-xs italic text-muted-foreground">Nenhuma role</span>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Version Info */}
         <Card>
           <CardHeader>
