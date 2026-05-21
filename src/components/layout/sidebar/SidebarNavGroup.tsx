@@ -263,8 +263,8 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
         >
           <GroupIcon
             className={cn(
-              "h-4 w-4 shrink-0 transition-colors",
-              hasActiveItem ? "text-primary" : "text-sidebar-foreground/40"
+              "h-4.5 w-4.5 shrink-0 transition-all duration-300",
+              hasActiveItem ? "text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" : "text-sidebar-foreground/30 group-hover:text-sidebar-foreground/60"
             )}
           />
           <span className="flex-1 text-left text-xs font-semibold uppercase tracking-wider">
