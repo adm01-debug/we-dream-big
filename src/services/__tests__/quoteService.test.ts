@@ -14,6 +14,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       order: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
       single: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockReturnThis(),
     })),
   },
 }));
@@ -45,7 +46,7 @@ describe('quoteService', () => {
     
     // First call: quotes
     fromMock.mockReturnValueOnce({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: mockQuote, error: null }) }) })
+      select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: mockQuote, error: null }) }) }) })
     });
     // Second call: items
     fromMock.mockReturnValueOnce({
@@ -56,7 +57,7 @@ describe('quoteService', () => {
       select: () => ({ in: () => Promise.resolve({ data: mockPers, error: null }) })
     });
 
-    const quote = await quoteService.fetchQuote('q-1');
+    const quote = await quoteService.fetchQuote('q-1', 'user-123');
     
     expect(quote?.id).toBe('q-1');
     expect(quote?.items).toHaveLength(1);
