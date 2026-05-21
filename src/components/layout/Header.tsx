@@ -329,7 +329,7 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
               <Button
                 variant="ghost"
                 aria-label={`Menu de usuário: ${displayName}`}
-                className="flex items-center gap-2 h-9 px-1.5 sm:px-2 hover:bg-primary/10 rounded-lg"
+                className="flex items-center gap-3 h-10 px-2 sm:px-2.5 hover:bg-muted/40 rounded-xl transition-all duration-300"
               >
                 <div className="relative group/avatar">
                   <div className="w-8 h-8 rounded-full bg-muted border border-border/40 flex items-center justify-center transition-all duration-300 group-hover/avatar:border-primary/50 group-hover/avatar:shadow-[0_0_10px_rgba(var(--primary),0.3)] overflow-hidden">
