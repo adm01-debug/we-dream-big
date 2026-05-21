@@ -201,11 +201,13 @@ export const Header = React.memo(function Header({ onMenuToggle, searchQuery, on
           </Button>
 
           {/* ── Cluster 1: Transacional (carrinho, notificações, alertas) ── */}
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-1 rounded-2xl bg-muted/30 border border-border/20">
             <CartHeaderButton />
+            <div className="w-px h-4 bg-border/40 mx-0.5" />
             <DiscountApprovalHeaderBadge />
             <NotificationBell />
-            <div className="hidden md:block">
+            <div className="hidden md:flex items-center gap-1">
+              <div className="w-px h-4 bg-border/40 mx-0.5" />
               <StockAlertsIndicator />
             </div>
           </div>
