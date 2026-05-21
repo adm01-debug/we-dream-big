@@ -77,7 +77,7 @@ const AdminThemesStub = Stub("admin-themes");
 const AdminTelemetryStub = Stub("admin-telemetry");
 const AdminConnectionsStub = Stub("admin-connections");
 const SystemStatusStub = Stub("system-status");
-const LoginStub = Stub("login");
+const AuthStub = Stub("auth");
 
 /**
  * Harness que expõe `navigate` para fora via callback — permite que o teste
@@ -108,7 +108,7 @@ function ReducedApp({
         {onNavigateReady && <NavigationProbe onReady={onNavigateReady} />}
         <Routes>
           {/* Public */}
-          <Route path="/login" element={<LoginStub />} />
+          <Route path="/auth" element={<AuthStub />} />
 
           {/* Protected layer */}
           <Route element={<ProtectedRoute />}>
@@ -226,15 +226,15 @@ describe("Reduced App integration — navegação não emite ref warning", () =>
     guard.expectNoRefWarning("não-dev em rota dev");
   });
 
-  it("usuário sem sessão em rota protegida → redirect /login sem warning", () => {
+  it("usuário sem sessão em rota protegida → redirect /auth sem warning", () => {
     Object.assign(authState, {
       user: null, canManage: false, isDev: false,
       isSupervisorOrAbove: false, hasMFA: false, mfaRequired: false,
       currentAAL: "aal1", role: "agente",
     });
     render(<ReducedApp initial="/admin/usuarios" />);
-    screen.getByTestId("page-login");
-    guard.expectNoRefWarning("anon → /login");
+    screen.getByTestId("page-auth");
+    guard.expectNoRefWarning("anon → /auth");
   });
 
   it("loading state em todos os guards (Loader2 spinner) sem warning", () => {

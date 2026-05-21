@@ -2,7 +2,6 @@
  * Render tests for Index page (667 lines)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
 import React from "react";
 
@@ -165,7 +164,8 @@ describe("Index Page", () => {
 
   it("renders without crashing", async () => {
     const { default: Index } = await import("@/pages/Index");
-    renderWithProviders(<Index />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    // O layout subiu para o nível do router; a página não embrulha mais em MainLayout.
+    const { container } = renderWithProviders(<Index />);
+    expect(container).toBeInTheDocument();
   });
 });

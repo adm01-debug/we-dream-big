@@ -2,7 +2,6 @@
  * Render tests for MagicUp page (1090 lines)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
 import React from "react";
 
@@ -71,7 +70,8 @@ describe("MagicUp", () => {
 
   it("renders without crashing", async () => {
     const { default: MagicUp } = await import("@/pages/tools/MagicUp");
-    renderWithProviders(<MagicUp />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    // O layout subiu para o nível do router; a página não embrulha mais em MainLayout.
+    const { container } = renderWithProviders(<MagicUp />);
+    expect(container).toBeInTheDocument();
   });
 });

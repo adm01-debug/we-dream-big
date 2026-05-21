@@ -2,7 +2,6 @@
  * Tests for AdvancedPriceSearchPage (913 lines)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
 import React from "react";
 
@@ -37,7 +36,8 @@ describe("AdvancedPriceSearchPage", () => {
 
   it("renders without crashing", async () => {
     const { default: AdvancedPriceSearchPage } = await import("@/pages/tools/AdvancedPriceSearchPage");
-    renderWithProviders(<AdvancedPriceSearchPage />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    // O layout subiu para o nível do router; a página não embrulha mais em MainLayout.
+    const { container } = renderWithProviders(<AdvancedPriceSearchPage />);
+    expect(container).toBeInTheDocument();
   });
 });

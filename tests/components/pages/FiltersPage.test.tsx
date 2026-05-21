@@ -2,12 +2,40 @@
  * Render tests for FiltersPage (975 lines)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
 import React from "react";
 
 vi.mock("@/components/layout/MainLayout", () => ({
   MainLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="main-layout">{children}</div>,
+}));
+
+// FiltersPage renderiza BulkAddToCartModal, que exige SellerCartProvider.
+// Stub do contexto evita acoplar o smoke test ao provider real (supabase).
+vi.mock("@/contexts/SellerCartContext", () => ({
+  SellerCartProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSellerCartContext: () => ({
+    carts: [],
+    activeCart: null,
+    activeCartId: null,
+    isLoading: false,
+    totalItems: 0,
+    canCreateCart: true,
+    setActiveCartId: vi.fn(),
+    createCart: vi.fn(),
+    deleteCart: vi.fn(),
+    addToActiveCart: vi.fn(),
+    removeItem: vi.fn(),
+    updateItemQuantity: vi.fn(),
+    updateItemNotes: vi.fn(),
+    updateItemSortOrder: vi.fn(),
+    updateCartNotes: vi.fn(),
+    updateCartStatus: vi.fn(),
+    duplicateCart: vi.fn(),
+    moveItemToCart: vi.fn(),
+    duplicateItemToCart: vi.fn(),
+    clearCart: vi.fn(),
+    restoreItems: vi.fn(),
+  }),
 }));
 
 vi.mock("@/hooks/products/useProducts", () => ({
@@ -97,7 +125,8 @@ describe("FiltersPage", () => {
 
   it("renders without crashing", async () => {
     const { default: FiltersPage } = await import("@/pages/products/FiltersPage");
-    renderWithProviders(<FiltersPage />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    // O layout subiu para o nível do router; a página não embrulha mais em MainLayout.
+    const { container } = renderWithProviders(<FiltersPage />);
+    expect(container).toBeInTheDocument();
   }, 15000);
 });

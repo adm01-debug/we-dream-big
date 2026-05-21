@@ -10,12 +10,13 @@ describe('Simulation Orchestrator Integration', () => {
   // but here we try to validate the invocation structure.
   
   it('should trigger a resilience simulation successfully', async () => {
-    // In CI, we might not have the actual deployed function available for fetch,
-    // but we can test the invoke payload validation.
-    const invokeSpy = vi.spyOn(supabase.functions, 'invoke');
-    
+    // `supabase.functions` é um getter preguiçoso que devolve uma nova instância
+    // a cada acesso; capturamos a referência uma vez para espiar e chamar o mesmo objeto.
+    const fns = supabase.functions;
+    const invokeSpy = vi.spyOn(fns, 'invoke').mockResolvedValue({ data: { ok: true }, error: null } as any);
+
     const mode = 'resilience';
-    await supabase.functions.invoke('simulation-orchestrator', {
+    await fns.invoke('simulation-orchestrator', {
       body: { count: 10, mode }
     });
 
@@ -25,9 +26,10 @@ describe('Simulation Orchestrator Integration', () => {
   });
 
   it('should trigger a load test with high count', async () => {
-    const invokeSpy = vi.spyOn(supabase.functions, 'invoke');
-    
-    await supabase.functions.invoke('simulation-orchestrator', {
+    const fns = supabase.functions;
+    const invokeSpy = vi.spyOn(fns, 'invoke').mockResolvedValue({ data: { ok: true }, error: null } as any);
+
+    await fns.invoke('simulation-orchestrator', {
       body: { count: 500, mode: 'load' }
     });
 
@@ -37,9 +39,10 @@ describe('Simulation Orchestrator Integration', () => {
   });
 
   it('should trigger a fuzzing test', async () => {
-    const invokeSpy = vi.spyOn(supabase.functions, 'invoke');
-    
-    await supabase.functions.invoke('simulation-orchestrator', {
+    const fns = supabase.functions;
+    const invokeSpy = vi.spyOn(fns, 'invoke').mockResolvedValue({ data: { ok: true }, error: null } as any);
+
+    await fns.invoke('simulation-orchestrator', {
       body: { count: 50, mode: 'fuzzing' }
     });
 

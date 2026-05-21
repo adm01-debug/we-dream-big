@@ -80,7 +80,7 @@ const AdminThemesStub = Stub("admin-themes");
 const AdminTelemetryStub = Stub("admin-telemetry");
 const AdminConnectionsStub = Stub("admin-connections");
 const SystemStatusStub = Stub("system-status");
-const LoginStub = Stub("login");
+const AuthStub = Stub("auth");
 
 function NavigationProbe({
   onReady,
@@ -104,7 +104,7 @@ function ReducedApp({
       <Suspense fallback={<div>loading…</div>}>
         {onNavigateReady && <NavigationProbe onReady={onNavigateReady} />}
         <Routes>
-          <Route path="/login" element={<LoginStub />} />
+          <Route path="/auth" element={<AuthStub />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomeStub />} />
             <Route path="/dashboard" element={<DashboardStub />} />
@@ -314,14 +314,14 @@ describe("Rotas admin/dev/protected — nenhum elemento renderizado usa `errorEl
     expect(collectErrorElementUsages(container)).toEqual([]);
   });
 
-  it("anônimo em rota protegida → /login — árvore limpa", () => {
+  it("anônimo em rota protegida → /auth — árvore limpa", () => {
     Object.assign(authState, {
       user: null, canManage: false, isDev: false,
       isSupervisorOrAbove: false, hasMFA: false, mfaRequired: false,
       currentAAL: "aal1", role: "agente",
     });
     const { container } = render(<ReducedApp initial="/admin/usuarios" />);
-    screen.getByTestId("page-login");
+    screen.getByTestId("page-auth");
     expect(collectErrorElementUsages(container)).toEqual([]);
   });
 });
