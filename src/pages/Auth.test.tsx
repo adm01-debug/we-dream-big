@@ -70,14 +70,17 @@ describe('Auth Page', () => {
     expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
-  it('shows forgot password form when link is clicked', () => {
+  it('shows forgot password form when link is clicked', async () => {
     renderAuth();
     const forgotLink = screen.getByTestId('login-forgot-link');
 
     fireEvent.click(forgotLink);
 
-    // Check for forgot password form elements
-    expect(screen.getByText(/Esqueceu sua senha\?/i)).toBeInTheDocument();
+    // QA: a troca entre login e forgot-password é animada (AnimatePresence
+    // do framer-motion). Em jsdom, o DOM novo só aparece após o tick de
+    // animação. Usar findByText (assíncrono, com retry) em vez de
+    // getByText evita race entre click e re-render.
+    expect(await screen.findByText(/Esqueceu sua senha\?/i)).toBeInTheDocument();
 
     expect(screen.queryByTestId('login-password-input')).not.toBeInTheDocument();
   });
