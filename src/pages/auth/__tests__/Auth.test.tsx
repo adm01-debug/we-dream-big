@@ -1,17 +1,18 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Auth from "@/pages/auth/Auth";
+import Auth from '@/pages/auth/Auth';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { HelmetProvider } from 'react-helmet-async';
 
-// Mocking useIPValidation
+// Mocking @/hooks/admin (useIPValidation + useDevGate are both consumed by Auth.tsx)
 vi.mock('@/hooks/admin', () => ({
   useIPValidation: () => ({
     validateIPForAuthenticatedUser: vi.fn().mockResolvedValue({ isAllowed: true }),
     logLoginAttempt: vi.fn(),
     fetchCurrentIP: vi.fn().mockResolvedValue('1.2.3.4'),
   }),
+  useDevGate: () => ({ isAllowed: false, isDev: false }),
 }));
 
 // Mocking useAuth - we need to wrap with AuthProvider or mock the hook
@@ -65,14 +66,15 @@ describe('Auth Page', () => {
     expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
-  it('shows forgot password form when link is clicked', () => {
+  it('shows forgot password form when link is clicked', async () => {
     renderAuth();
     const forgotLink = screen.getByTestId('login-forgot-link');
 
     fireEvent.click(forgotLink);
 
-    // Check for forgot password form elements
-    expect(screen.getByText(/Esqueceu sua senha\?/i)).toBeInTheDocument();
+    // ForgotPasswordForm é trocado dentro de <AnimatePresence>. Aguardar a
+    // troca para evitar flakiness com timers do framer-motion em jsdom.
+    expect(await screen.findByText(/Esqueceu sua senha\?/i)).toBeInTheDocument();
 
     expect(screen.queryByTestId('login-password-input')).not.toBeInTheDocument();
   });
