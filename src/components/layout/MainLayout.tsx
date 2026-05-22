@@ -39,7 +39,6 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const isHome = location.pathname === '/';
 
@@ -96,12 +95,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
         <div className="isolate flex min-h-screen min-w-0 flex-1 flex-col print:min-h-0">
           <Suspense fallback={<div style={{ height: 56 }} className="print:hidden" />}>
-            <Header
-              onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              sidebarOpen={sidebarOpen}
-            />
+            <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} sidebarOpen={sidebarOpen} />
           </Suspense>
 
           <div
