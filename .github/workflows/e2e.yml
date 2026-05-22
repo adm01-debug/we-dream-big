@@ -15,6 +15,10 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # T14 UPDATE 4: precisa contents:write para o auto-debug commit do
+    # diagnóstico em docs/redeploy/T14-AUTO-DEBUG.md via gh api.
+    permissions:
+      contents: write
     env:
       CI: "true"
       # Logs limpos no GitHub Actions: sem códigos ANSI no console output
@@ -137,17 +141,127 @@ jobs:
       # T14 UPDATE 3 (2026-05-22): step de diagnóstico para depurar discrepâncias
       # entre `outcome` (raw exit code antes de continue-on-error), `conclusion`
       # (após continue-on-error) e o marker file. Não-bloqueante. Sempre roda.
+      # T14 UPDATE 4 (2026-05-22): expandido para commit automático do diagnóstico
+      # em docs/redeploy/T14-AUTO-DEBUG.md via gh api. Permite leitura programática
+      # via MCP github_get_contents sem precisar de download de artifact (que
+      # exige auth). Usa [skip ci] na commit message para não disparar loop.
+      # Só commita em push (não em PR) para evitar poluir histórico de PRs.
       - name: 🔍 Debug smoke gate state
         if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "outcome:    ${{ steps.e2e_smoke.outcome }}"
-          echo "conclusion: ${{ steps.e2e_smoke.conclusion }}"
-          if [ -f playwright-report/.smoke-passed ]; then
-            echo "marker:     ✅ present (smoke exit 0)"
-          else
-            echo "marker:     ❌ absent (smoke exit != 0)"
+          # 1) Coletar diagnóstico em /tmp/diag.md
+          DIAG_FILE=/tmp/diag.md
+          {
+            echo "# T14 Smoke Gate Auto-Debug"
+            echo ""
+            echo "**Run**: [#${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            echo "**SHA**: \`${{ github.sha }}\`"
+            echo "**Event**: \`${{ github.event_name }}\`"
+            echo "**Created at**: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo ""
+            echo "## Step state"
+            echo "- step outcome: \`${{ steps.e2e_smoke.outcome }}\`"
+            echo "- step conclusion: \`${{ steps.e2e_smoke.conclusion }}\`"
+            if [ -f playwright-report/.smoke-passed ]; then
+              echo "- marker present: ✅ YES (smoke exit 0)"
+            else
+              echo "- marker present: ❌ NO (smoke exit != 0)"
+            fi
+            echo ""
+            echo "## playwright-report/ contents (ls -la, top 30)"
+            echo '```'
+            ls -la playwright-report/ 2>/dev/null | head -30 || echo "(no dir)"
+            echo '```'
+            echo ""
+            echo "## Smoke summary (head 100 lines)"
+            echo '```'
+            head -100 playwright-report/smoke-summary.md 2>/dev/null || echo "(no smoke summary file)"
+            echo '```'
+            echo ""
+            echo "## Playwright results.json — stats + first failures"
+            echo '```json'
+            python3 << 'PYEOF' 2>/dev/null || echo "(python parse failed)"
+          import json
+          try:
+              data = json.load(open('playwright-report/results.json'))
+              out = {
+                  'stats': data.get('stats', {}),
+                  'config_version': data.get('config', {}).get('version'),
+                  'errors_count': len(data.get('errors', [])),
+                  'errors_first_3': [str(e)[:400] for e in data.get('errors', [])[:3]],
+              }
+              def walk(suites):
+                  items = []
+                  for s in suites:
+                      for spec in s.get('specs', []):
+                          for t in spec.get('tests', []):
+                              for r in t.get('results', []):
+                                  items.append({
+                                      'title': spec.get('title', '?')[:80],
+                                      'status': r.get('status'),
+                                      'duration_ms': r.get('duration'),
+                                      'error': (str(r.get('error', {}).get('message', ''))[:300]
+                                                if r.get('error') else None),
+                                  })
+                      items.extend(walk(s.get('suites', [])))
+                  return items
+              results = walk(data.get('suites', []))
+              out['results_total'] = len(results)
+              out['results_by_status'] = {}
+              for r in results:
+                  s = r['status'] or 'unknown'
+                  out['results_by_status'][s] = out['results_by_status'].get(s, 0) + 1
+              out['non_passing'] = [r for r in results
+                                    if r['status'] not in ('passed', 'skipped')][:15]
+              print(json.dumps(out, indent=2, ensure_ascii=False))
+          except Exception as e:
+              print(json.dumps({'parse_error': str(e)}, indent=2))
+          PYEOF
+            echo '```'
+          } > "$DIAG_FILE"
+
+          # 2) Log no console SEMPRE (visível na UI mesmo se commit falhar)
+          echo "================================================================"
+          echo "🔍 SMOKE GATE DIAGNOSTIC — também salvo em docs/redeploy/T14-AUTO-DEBUG.md"
+          echo "================================================================"
+          cat "$DIAG_FILE"
+          echo "================================================================"
+
+          # 3) Commit somente em push (não em PR) para evitar poluir histórico de PRs
+          if [ "${{ github.event_name }}" != "push" ]; then
+            echo "(skipping auto-commit — event is ${{ github.event_name }}, not push)"
+            exit 0
           fi
-          ls -la playwright-report/ 2>/dev/null | head -20 || echo "(no playwright-report dir)"
+
+          # 4) Encode base64 e commit via gh api (com [skip ci] na mensagem
+          #    para não disparar loop de workflows)
+          CONTENT_B64=$(base64 -w0 "$DIAG_FILE")
+          DIAG_PATH="docs/redeploy/T14-AUTO-DEBUG.md"
+          MSG="auto-diag: T14 smoke debug run #${{ github.run_number }} [skip ci]"
+
+          # Tentar buscar SHA do arquivo se existir
+          EXISTING_SHA=$(gh api "repos/${{ github.repository }}/contents/$DIAG_PATH" 2>/dev/null \
+            | python3 -c "import json,sys; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null \
+            || echo "")
+
+          if [ -n "$EXISTING_SHA" ]; then
+            echo "Updating existing file (sha=$EXISTING_SHA)..."
+            gh api -X PUT "repos/${{ github.repository }}/contents/$DIAG_PATH" \
+              -f message="$MSG" \
+              -f content="$CONTENT_B64" \
+              -f sha="$EXISTING_SHA" \
+              > /dev/null && echo "✅ Updated $DIAG_PATH" \
+              || echo "(failed to update file — likely race condition or perm issue)"
+          else
+            echo "Creating new file..."
+            gh api -X PUT "repos/${{ github.repository }}/contents/$DIAG_PATH" \
+              -f message="$MSG" \
+              -f content="$CONTENT_B64" \
+              > /dev/null && echo "✅ Created $DIAG_PATH" \
+              || echo "(failed to create file — likely perm issue)"
+          fi
 
       # T14 UPDATE 3 (2026-05-22): trocado `steps.e2e_smoke.outcome != 'success'`
       # por `hashFiles('playwright-report/.smoke-passed') == ''`. Motivo:
