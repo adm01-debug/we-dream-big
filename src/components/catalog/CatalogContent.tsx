@@ -1,9 +1,5 @@
-import { useRef, useCallback, useEffect, useState, useMemo, memo, type RefObject } from 'react';
+import { memo, type RefObject } from 'react';
 import type { ActiveColorFilter } from '@/utils/color-image-resolver';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { Loader2, ArrowUp, AlertCircle } from 'lucide-react';
-import { useProductsContextSafe } from '@/contexts/ProductsContext';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
@@ -14,7 +10,6 @@ import { ProductCardSkeleton } from '@/components/products/ProductCardSkeleton';
 import { ProductListItemSkeleton } from '@/components/products/ProductListItemSkeleton';
 import { ProductTableSkeleton } from '@/components/products/ProductTableSkeleton';
 import { EmptyState } from '@/components/common/EmptyState';
-import { SelectionCheckbox } from '@/components/common/SelectionCheckbox';
 import { CatalogBulkModals } from './CatalogBulkModals';
 import { useCatalogSelection } from './useCatalogSelection';
 import { cn } from '@/lib/utils';
