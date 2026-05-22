@@ -17,17 +17,33 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 function normalize(src: string): string {
-  return src
-    // Strip license/doc preamble comments above the first import.
-    .replace(/^[\s\S]*?(?=^import )/m, "")
-    // Normalize Zod import paths.
-    .replace(/import \{ z \} from "https:\/\/esm\.sh\/zod@3\.23\.8";/g, 'import { z } from "zod";')
-    // Normalize Deno-only type-only imports referenced in validation-errors.ts.
-    .replace(
-      /import type \{ ZodError, ZodIssue \} from "https:\/\/esm\.sh\/zod@3\.23\.8";/g,
-      'import type { ZodError, ZodIssue } from "zod";',
-    )
-    .replace(/\r\n/g, "\n");
+  return (
+    src
+      // Strip license/doc preamble comments above the first import.
+      .replace(/^[\s\S]*?(?=^import )/m, "")
+      // Normalize Zod import paths.
+      .replace(/import \{ z \} from ["']https:\/\/esm\.sh\/zod@3\.23\.8["']/g, 'import { z } from "zod"')
+      .replace(/import \{ z \} from ["']zod["']/g, 'import { z } from "zod"')
+      // Normalize Deno-only type-only imports referenced in validation-errors.ts.
+      .replace(
+        /import type \{ ZodError, ZodIssue \} from ["']https:\/\/esm\.sh\/zod@3\.23\.8["']/g,
+        'import type { ZodError, ZodIssue } from "zod"',
+      )
+      // Normalize quotes (single ↔ double) — Prettier prefers single in src/,
+      // Deno style guide prefers double.  Schema semantics are identical.
+      .replace(/'/g, '"')
+      // Strip block comments (both sides may diverge in /** */ wording).
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      // Strip single-line comments (// ...).
+      .replace(/\/\/[^\n]*/g, "")
+      // Collapse all whitespace runs to a single space.
+      .replace(/\s+/g, " ")
+      // Strip whitespace adjacent to syntactic punctuation so Prettier's
+      // multi-line method-chain reformatting (`.method()` on its own line)
+      // is canonically equivalent to the inline Deno form.
+      .replace(/\s*([.,;()[\]{}])\s*/g, "$1")
+      .trim()
+  );
 }
 
 function extractExports(src: string): string[] {
