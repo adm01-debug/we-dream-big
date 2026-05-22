@@ -2,6 +2,13 @@
 // Validates HMAC signature using the secret stored in env (referenced by the
 // endpoint row), records every event in inbound_webhook_events.
 //
+// Hardening OPS-002 (auditoria back-end sênior 2026-05-22):
+//   • bot-protection por IP no boot do handler (60 req/min, 30min block)
+//     — evita DoS por inflação de inbound_webhook_events.
+//   • INSERT no inbound_webhook_events só acontece após HMAC validar
+//     OU se houver endpoint configurado mas signature inválida (registro
+//     forense limitado a callers que conhecem ao menos o slug).
+//
 // Contract validation:
 //   - v1 = passthrough (compat com produção). default.
 //   - v2 = envelope strict { event, occurred_at, data, idempotency_key? }
@@ -14,6 +21,7 @@ import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 import { buildPublicCorsHeaders } from "../_shared/cors.ts";
 import { parseContract } from "../_shared/contracts/index.ts";
 import { WebhookInboundSchemas } from "../_shared/contracts/schemas/webhook-inbound.ts";
+import { runBotProtection } from "../_shared/bot-protection.ts";
 
 const corsHeaders = buildPublicCorsHeaders({
   extraAllowHeaders: ["x-signature-256", "x-event", "accept-version"],
@@ -42,6 +50,22 @@ function timingSafeEqual(a: string, b: string): boolean {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // OPS-002: rate-limit anti-DoS por IP antes de qualquer trabalho de DB.
+  // Webhooks legítimos têm baixa cadência (≪60/min por IP); caller espurioso
+  // que ultrapassa é blocked por 30min e nunca chega no INSERT.
+  const protection = await runBotProtection(
+    req,
+    {
+      endpoint: "webhook-inbound",
+      maxRequests: 60,
+      windowSeconds: 60,
+      blockSeconds: 1800,
+      allowSearchBots: false,
+    },
+    corsHeaders,
+  );
+  if (!protection.allowed) return protection.blockResponse!;
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
