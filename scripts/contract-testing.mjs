@@ -15,9 +15,10 @@
  *   { code, message, fields:[{path,code,message}], error: <alias> }
  *
  * Run:   npm run test:contract
- * Env:
+ * Env (required — fail-fast if missing):
  *   SUPABASE_URL                — endpoint base
- *   SUPABASE_SERVICE_ROLE_KEY   — Bearer for invocation
+ *   SUPABASE_SERVICE_ROLE_KEY   — Bearer for invocation (or SUPABASE_ANON_KEY)
+ * Env (optional):
  *   N8N_PRODUCT_WEBHOOK_SECRET  — product-webhook auth
  *   WEBHOOK_DISPATCHER_SECRET   — webhook-dispatcher auth
  *   CONTRACT_TEST_FAIL_FAST=1   — stop at first failure
@@ -30,11 +31,27 @@ import { fileURLToPath } from "node:url";
 dotenv.config();
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://doufsxqlfjyuvxuezpln.supabase.co";
+
+// Fail-fast on missing env: silently falling back to a hardcoded URL once
+// caused this script to point at an obsolete Supabase project for months.
+// The official BD is doufsxqlfjyuvxuezpln — define it in .env or export it
+// before running, otherwise the script aborts with a clear message.
+const SUPABASE_URL = process.env.SUPABASE_URL;
+if (!SUPABASE_URL) {
+  console.error("❌ SUPABASE_URL não definida.");
+  console.error("   Defina no .env (raiz do repo) ou exporte antes de rodar:");
+  console.error("   export SUPABASE_URL=https://doufsxqlfjyuvxuezpln.supabase.co");
+  process.exit(2);
+}
+
 const AUTH_TOKEN =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_ANON_KEY ||
-  "a46c3981-244a-4f81-9f57-bab5c45b5cde";
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+if (!AUTH_TOKEN) {
+  console.error("❌ SUPABASE_SERVICE_ROLE_KEY (ou SUPABASE_ANON_KEY) não definida.");
+  console.error("   Defina no .env (raiz do repo) ou exporte antes de rodar.");
+  process.exit(2);
+}
+
 const FAIL_FAST = process.env.CONTRACT_TEST_FAIL_FAST === "1";
 
 // ---------------------------------------------------------------------------
@@ -130,6 +147,7 @@ async function callEndpoint(endpoint, { headers = {}, body, raw }) {
 
 async function runContractTests() {
   console.log("🚀 Iniciando Testes de Contrato HTTP — envelope unificado + cobertura completa");
+  console.log(`🎯 Alvo: ${SUPABASE_URL}`);
   console.log(`📦 ${REGISTRY.length} endpoints no registry`);
   let passed = 0;
   let failedCount = 0;
