@@ -22,7 +22,7 @@
  * configurados no `VersionConfig`.
  */
 
-import { z } from "https://esm.sh/zod@3.23.8";
+import { z } from "./_zod.ts";
 import {
   invalidJsonResponse,
   missingBodyResponse,

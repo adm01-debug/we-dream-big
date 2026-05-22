@@ -4,8 +4,8 @@
  */
 
 // Using Zod from esm.sh for Deno compatibility
-export { z } from "https://esm.sh/zod@3.23.8";
-import { z } from "https://esm.sh/zod@3.23.8";
+export { z } from "./contracts/_zod.ts";
+import { z } from "./contracts/_zod.ts";
 
 /**
  * Parse and validate a request body against a Zod schema.
