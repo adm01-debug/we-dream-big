@@ -2,34 +2,21 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConnectionsOverviewTable } from '../ConnectionsOverviewTable';
 import { useAuth } from '@/contexts/AuthContext';
-import { useConnectionsOverview } from '@/hooks/intelligence';
-import { useConnectionTester } from '@/hooks/intelligence';
+import { useConnectionsOverview, useConnectionTester } from '@/hooks/intelligence';
 import { useConsecutiveFailures } from '@/hooks/common';
 import { useSecretsManager } from '@/hooks/admin';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-// Mocks
+// QA: vi.mock() do mesmo módulo é hoist-and-replace. Os 3 calls para
+// '@/hooks/intelligence' faziam apenas o último valer (filtros), deixando
+// useConnectionsOverview e useConnectionTester sem export. Consolidado.
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
 vi.mock('@/hooks/intelligence', () => ({
   useConnectionsOverview: vi.fn(),
-}));
-
-vi.mock('@/hooks/intelligence', () => ({
   useConnectionTester: vi.fn(),
-}));
-
-vi.mock('@/hooks/common', () => ({
-  useConsecutiveFailures: vi.fn(),
-}));
-
-vi.mock('@/hooks/admin', () => ({
-  useSecretsManager: vi.fn(),
-}));
-
-vi.mock('@/hooks/intelligence', () => ({
   useConnectionsOverviewFilters: vi.fn(() => ({
     filters: { types: [], status: [], window: 'all', onlyConsecutiveFailures: false },
     activeCount: 0,
@@ -41,6 +28,14 @@ vi.mock('@/hooks/intelligence', () => ({
     setOnlyConsecutiveFailures: vi.fn(),
   })),
   applyFilters: vi.fn((rows) => rows),
+}));
+
+vi.mock('@/hooks/common', () => ({
+  useConsecutiveFailures: vi.fn(),
+}));
+
+vi.mock('@/hooks/admin', () => ({
+  useSecretsManager: vi.fn(),
 }));
 
 describe('ConnectionsOverviewTable Regression Tests', () => {

@@ -1,12 +1,16 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useAdvancedFilters } from "@/hooks/products/useAdvancedFilters";
-import * as useExternalDatabaseModule from "@/hooks/intelligence/useExternalDatabase";
+import { useAdvancedFilters } from '@/hooks/products/useAdvancedFilters';
+import * as useExternalDatabaseModule from '@/hooks/intelligence/useExternalDatabase';
 import { defaultAdvancedFilters } from '@/constants/filters';
 
-// Mocking useExternalDatabase and specific hooks
-vi.mock('./useExternalDatabase', async () => {
-  const actual = await vi.importActual('./useExternalDatabase');
+// QA: o path do mock estava relativo (./useExternalDatabase), mas o
+// arquivo de teste vive em src/hooks/__tests__/ — esse relativo resolvia
+// para um módulo inexistente. O vi.mock silenciosamente não substituía
+// nada; vi.mocked(useExternalCategories) recebia a função real (sem
+// mockReturnValue), gerando TypeError em todas as 8 assertions.
+vi.mock('@/hooks/intelligence/useExternalDatabase', async () => {
+  const actual = await vi.importActual('@/hooks/intelligence/useExternalDatabase');
   return {
     ...actual,
     useExternalCategories: vi.fn(),
