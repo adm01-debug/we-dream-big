@@ -2,8 +2,19 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://pqpdolkaeqlyzpdpbizo.supabase.co";
-// Usando a chave de simulação estável definida para este projeto
-const SERVICE_ROLE_KEY = "a46c3981-244a-4f81-9f57-bab5c45b5cde"; 
+// SERVICE_ROLE_KEY agora vem APENAS de env. Antes estava hardcoded
+// (uma chave de simulação, mas que ainda assim fazia o gitleaks reclamar).
+// Set: export SUPABASE_TEST_BYPASS_TOKEN=<token-de-simulacao>
+const SERVICE_ROLE_KEY =
+  process.env.SUPABASE_TEST_BYPASS_TOKEN ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SERVICE_ROLE_KEY) {
+  console.error(
+    '[contract-testing] erro: defina SUPABASE_TEST_BYPASS_TOKEN ou SUPABASE_SERVICE_ROLE_KEY em .env',
+  );
+  process.exit(1);
+}
 
 const CONTRACTS = [
   {
