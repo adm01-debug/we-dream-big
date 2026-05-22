@@ -20,7 +20,7 @@ import {
   ORGANIZATION_ID,
   createEmptyContact,
   createEmptyPixKey,
-} from "./types";
+} from './types';
 
 export function useSuppliersManager() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -317,7 +317,8 @@ export function useSuppliersManager() {
       .filter((k) => k.chave.trim())
       .find((k) => validatePixKey(k.chave, k.tipo));
     if (invalidPix) {
-      toast.error(validatePixKey(invalidPix.chave, invalidPix.tipo)!);
+      const pixError = validatePixKey(invalidPix.chave, invalidPix.tipo);
+      if (pixError) toast.error(pixError);
       return;
     }
     const cnpjRaw = editingSupplier.cnpj?.replace(/\D/g, '') || '';
@@ -412,12 +413,20 @@ export function useSuppliersManager() {
         es.address?.trim() ||
         null;
 
+      // `name` foi validado no início (linha 307) — capturamos a versão trim'd
+      // localmente para o TS narrow sobreviver e evitar `!` no JSX/payload.
+      const nameTrimmed = es.name?.trim();
+      if (!nameTrimmed) {
+        toast.error('Nome é obrigatório');
+        setSaving(false);
+        return;
+      }
+
       const payload: Record<string, unknown> = {
-        name: es.name!.trim(),
+        name: nameTrimmed,
         code:
           es.code?.trim() ||
-          es
-            .name!.trim()
+          nameTrimmed
             .toUpperCase()
             .replace(/\s+/g, '_')
             .replace(/[^A-Z0-9_]/g, '')
