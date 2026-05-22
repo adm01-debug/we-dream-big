@@ -22,7 +22,6 @@ import {
   Info,
   ChevronDown,
   ChevronRight,
-  
   Sparkles,
 } from 'lucide-react';
 
@@ -47,50 +46,57 @@ interface ClassificationCardProps {
 
 function DisabledPlaceholder() {
   return (
-    <div className="flex items-center gap-2 py-2 text-xs text-muted-foreground/60 italic">
+    <div className="flex items-center gap-2 py-2 text-xs italic text-muted-foreground/60">
       <Info className="h-3.5 w-3.5 shrink-0" />
       Disponível após salvar o produto
     </div>
   );
 }
 
-function ClassificationCard({ title, subtitle, icon: Icon, iconColor, children, defaultOpen = false, disabled = false }: ClassificationCardProps) {
+function ClassificationCard({
+  title,
+  subtitle,
+  icon: Icon,
+  iconColor,
+  children,
+  defaultOpen = false,
+  disabled = false,
+}: ClassificationCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <Card className={cn(
-      "border-border/40 bg-card/60 overflow-hidden transition-all duration-200",
-      disabled ? "opacity-60" : "hover:border-border/60"
-    )}>
+    <Card
+      className={cn(
+        'overflow-hidden border-border/40 bg-card/60 transition-all duration-200',
+        disabled ? 'opacity-60' : 'hover:border-border/60',
+      )}
+    >
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 w-full px-4 py-3.5 text-left hover:bg-accent/30 transition-colors"
+        className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-accent/30"
       >
-        <div className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-lg shrink-0",
-          iconColor
-        )}>
+        <div
+          className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', iconColor)}
+        >
           <Icon className="h-4 w-4" />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-foreground">{title}</p>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
         {disabled && (
-          <Badge variant="outline" className="text-[10px] shrink-0 opacity-60">Salvar primeiro</Badge>
+          <Badge variant="outline" className="shrink-0 text-[10px] opacity-60">
+            Salvar primeiro
+          </Badge>
         )}
         {isOpen ? (
-          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
       </button>
-      {isOpen && (
-        <div className="px-4 pb-4 pt-1 border-t border-border/30">
-          {children}
-        </div>
-      )}
+      {isOpen && <div className="border-t border-border/30 px-4 pb-4 pt-1">{children}</div>}
     </Card>
   );
 }
@@ -113,13 +119,17 @@ export default function ProductClassificationSection({
           <Layers className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="font-display text-base font-bold text-foreground">Classificação & Vínculos</h3>
-          <p className="text-xs text-muted-foreground">Configure variações, materiais, tags e vínculos comerciais</p>
+          <h3 className="font-display text-base font-bold text-foreground">
+            Classificação & Vínculos
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Configure variações, materiais, tags e vínculos comerciais
+          </p>
         </div>
       </div>
 
       {/* Grid de classificações */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {/* Eixos de Variação (inclui Gênero) */}
         <ClassificationCard
           title="Eixos de Variação"
@@ -145,12 +155,15 @@ export default function ProductClassificationSection({
           disabled={!showFullContent}
         >
           {showFullContent ? (
-            <ProductVariantsSection productId={productId!} productName={productName} productSku={productSku} />
+            <ProductVariantsSection
+              productId={productId ?? ''}
+              productName={productName}
+              productSku={productSku}
+            />
           ) : (
             <DisabledPlaceholder />
           )}
         </ClassificationCard>
-
 
         {/* Materiais */}
         <ClassificationCard
@@ -161,7 +174,7 @@ export default function ProductClassificationSection({
           disabled={!showFullContent}
         >
           {showFullContent ? (
-            <ProductMaterialsSection productId={productId!} />
+            <ProductMaterialsSection productId={productId ?? ''} />
           ) : (
             <DisabledPlaceholder />
           )}
@@ -176,7 +189,7 @@ export default function ProductClassificationSection({
           disabled={!showFullContent}
         >
           {showFullContent ? (
-            <ProductTagsSection productId={productId!} />
+            <ProductTagsSection productId={productId ?? ''} />
           ) : (
             <DisabledPlaceholder />
           )}
@@ -191,7 +204,7 @@ export default function ProductClassificationSection({
           disabled={!showFullContent}
         >
           {showFullContent ? (
-            <ProductRamosSection productId={productId!} />
+            <ProductRamosSection productId={productId ?? ''} />
           ) : (
             <DisabledPlaceholder />
           )}
@@ -206,7 +219,7 @@ export default function ProductClassificationSection({
           disabled={!showFullContent}
         >
           {showFullContent ? (
-            <ProductMarketingSection productId={productId!} />
+            <ProductMarketingSection productId={productId ?? ''} />
           ) : (
             <DisabledPlaceholder />
           )}
@@ -214,7 +227,7 @@ export default function ProductClassificationSection({
       </div>
 
       {!showFullContent && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground border border-border/30">
+        <div className="flex items-center gap-2 rounded-lg border border-border/30 bg-muted/30 p-3 text-xs text-muted-foreground">
           <Info className="h-4 w-4 shrink-0 text-primary" />
           <span>Salve o produto primeiro para editar as classificações acima.</span>
         </div>
