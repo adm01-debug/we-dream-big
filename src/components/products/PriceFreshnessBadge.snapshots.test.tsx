@@ -31,16 +31,27 @@ describe("PriceFreshnessBadge Snapshots and A11y", () => {
   const variants = ["inline", "compact", "pdp", "icon-only"] as const;
 
   describe("Snapshots", () => {
-    variants.forEach((variant) => {
-      Object.entries(dates).forEach(([status, date]) => {
-        it(`matches snapshot for ${variant} variant with ${status} status`, () => {
-          const { asFragment } = render(
-            <PriceFreshnessBadge priceUpdatedAt={date} variant={variant} alwaysShow />
-          );
-          expect(asFragment()).toMatchSnapshot();
-        });
-      });
-    });
+    // T-FIX-4: refatorado de forEach aninhado para it.each com produto
+    // cartesiano (variants × statuses). Cada par é registrado como teste
+    // isolado. Usamos tuple style + %s para preservar o nome original
+    // dos testes (e os snapshots existentes não viram obsoletos).
+    const snapshotCases = variants.flatMap<[
+      (typeof variants)[number],
+      string,
+      string | null
+    ]>((variant) =>
+      Object.entries(dates).map(([status, date]) => [variant, status, date])
+    );
+
+    it.each(snapshotCases)(
+      "matches snapshot for %s variant with %s status",
+      (variant, _status, date) => {
+        const { asFragment } = render(
+          <PriceFreshnessBadge priceUpdatedAt={date} variant={variant} alwaysShow />
+        );
+        expect(asFragment()).toMatchSnapshot();
+      }
+    );
 
     it("matches snapshot for confirmed state", () => {
       const now = new Date("2026-05-03T12:00:00Z").toISOString();
