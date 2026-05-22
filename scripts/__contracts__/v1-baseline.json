@@ -1,0 +1,5 @@
+{
+  "$comment": "Baseline of V1 contract response hashes (status + body shape). Updated by `npm run test:contracts:baseline`. PRs that intentionally alter V1 responses must add the `breaking-v1` label.",
+  "generated_at": null,
+  "endpoints": {}
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "../../../scripts/__contracts__/contract.schema.json",
+  "endpoint": "webhook-inbound",
+  "verifyJwt": false,
+  "kind": "webhook",
+  "auth": {
+    "type": "hmac",
+    "headerName": "x-signature-256",
+    "secretSource": "endpoint.hmac_secret_ref → integration_credentials | env"
+  },
+  "versions": ["v1", "v2"],
+  "samples": {
+    "v1": {
+      "valid": {
+        "event_type": "order.created",
+        "payload": { "id": "ord_1", "total": 99.9 }
+      },
+      "invalid_missing_field": { "payload": {} },
+      "invalid_wrong_type": { "event_type": 123, "payload": {} },
+      "invalid_empty_value": { "event_type": "", "payload": {} }
+    },
+    "v2": {
+      "valid": {
+        "event_type": "order.created",
+        "payload": { "id": "ord_1", "total": 99.9 },
+        "request_id": "00000000-0000-4000-8000-000000000000"
+      },
+      "invalid_missing_field": {
+        "event_type": "order.created",
+        "payload": {}
+      },
+      "invalid_wrong_type": {
+        "event_type": "order.created",
+        "payload": "should-be-object",
+        "request_id": "00000000-0000-4000-8000-000000000000"
+      },
+      "invalid_empty_value": {
+        "event_type": "",
+        "payload": {},
+        "request_id": "00000000-0000-4000-8000-000000000000"
+      },
+      "invalid_uuid": {
+        "event_type": "order.created",
+        "payload": {},
+        "request_id": "not-a-uuid"
+      },
+      "invalid_unknown_key": {
+        "event_type": "order.created",
+        "payload": {},
+        "request_id": "00000000-0000-4000-8000-000000000000",
+        "rogue_field": true
+      }
+    }
+  },
+  "expectedResponses": {
+    "v1_valid": { "status": 200, "shape": { "ok": true } },
+    "v1_invalid": { "status": 400, "shape": { "error": "Validation failed" } },
+    "v2_valid": { "status": 200, "shape": { "ok": true } },
+    "v2_invalid": { "status": 422, "shape": { "code": "validation_failed" } }
+  }
+}

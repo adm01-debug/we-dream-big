@@ -1,61 +1,32 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { z } from "../_shared/zod-validate.ts";
 import { buildPublicCorsHeaders } from "../_shared/cors.ts";
+import { parseBodyVersioned } from "../_shared/zod-validate.ts";
+import {
+  VERSION_SERVED_HEADER,
+} from "../_shared/version-dispatch.ts";
+import {
+  adaptV1ToCanonical,
+  adaptV2ToCanonical,
+  type CanonicalProductWebhookPayload,
+  type ProductPayload,
+  WebhookPayloadSchemaV1,
+  WebhookPayloadSchemaV2,
+} from "./schemas.ts";
 
-const corsHeaders = buildPublicCorsHeaders({ extraAllowHeaders: ["x-webhook-secret"] });
+const corsHeaders = buildPublicCorsHeaders({
+  extraAllowHeaders: ["x-webhook-secret"],
+});
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const webhookSecret = Deno.env.get("N8N_PRODUCT_WEBHOOK_SECRET");
+// Secret is read at request time (not module load) so tests can adjust it
+// per-case via Deno.env.set/delete.
 
-const ProductPayloadSchema = z.object({
-  external_id: z.string().max(255).optional(),
-  sku: z.string().min(1).max(100),
-  name: z.string().min(1).max(500),
-  description: z.string().max(5000).optional(),
-  price: z.number().nonnegative(),
-  min_quantity: z.number().int().positive().optional(),
-  category_id: z.number().int().optional(),
-  category_name: z.string().max(255).optional(),
-  subcategory: z.string().max(255).optional(),
-  supplier_id: z.string().max(255).optional(),
-  supplier_name: z.string().max(255).optional(),
-  stock: z.number().int().nonnegative().optional(),
-  stock_status: z.string().max(50).optional(),
-  is_kit: z.boolean().optional(),
-  is_active: z.boolean().optional(),
-  featured: z.boolean().optional(),
-  new_arrival: z.boolean().optional(),
-  on_sale: z.boolean().optional(),
-  images: z.array(z.string().url().max(2000)).max(50).optional(),
-  video_url: z.string().url().max(2000).optional().nullable(),
-  colors: z.array(z.object({ name: z.string(), hex: z.string(), group: z.string().optional() })).max(100).optional(),
-  materials: z.array(z.string().max(100)).max(50).optional(),
-  tags: z.record(z.array(z.string())).optional(),
-  kit_items: z.array(z.object({
-    productId: z.string(), productName: z.string(), quantity: z.number(), sku: z.string()
-  })).max(50).optional(),
-  variations: z.array(z.any()).max(200).optional(),
-  metadata: z.record(z.any()).optional(),
-});
-
-const WebhookPayloadSchema = z.object({
-  action: z.enum(["sync", "upsert", "delete", "batch_upsert"]),
-  products: z.array(ProductPayloadSchema).max(500).optional(),
-  product: ProductPayloadSchema.optional(),
-  external_ids: z.array(z.string().max(255)).max(500).optional(),
-});
-
-type ProductPayload = z.infer<typeof ProductPayloadSchema>;
-
-interface WebhookPayload {
-  action: "sync" | "upsert" | "delete" | "batch_upsert";
-  products?: ProductPayload[];
-  product?: ProductPayload;
-  external_ids?: string[];
-}
-
-Deno.serve(async (req) => {
+/**
+ * Exported handler so it can be invoked from unit tests without spinning up
+ * the Deno HTTP server. See ./index.test.ts.
+ */
+export const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -64,39 +35,47 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    // Validate webhook secret
+    // Validate webhook secret (precedes body parsing; auth comes first)
+    const webhookSecret = Deno.env.get("N8N_PRODUCT_WEBHOOK_SECRET");
     const providedSecret = req.headers.get("x-webhook-secret");
     if (webhookSecret && providedSecret !== webhookSecret) {
       console.error("Invalid webhook secret");
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    let rawBody: unknown;
-    try { rawBody = await req.json(); } catch {
-      return new Response(JSON.stringify({ error: "Invalid webhook payload" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Versioned body parsing — v1 keeps legacy 400/details, v2 returns 422/problem+json.
+    const parsed = await parseBodyVersioned(
+      req,
+      { v1: WebhookPayloadSchemaV1, v2: WebhookPayloadSchemaV2 },
+      corsHeaders,
+    );
+    if ("error" in parsed) return parsed.error;
 
-    const parsed = WebhookPayloadSchema.safeParse(rawBody);
-    if (!parsed.success) {
-      return new Response(JSON.stringify({ error: "Validation failed", details: parsed.error.flatten().fieldErrors }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const payload: WebhookPayload = parsed.data;
-    console.log(`Product webhook action: ${payload.action}`);
+    const { version } = parsed;
+    const canonical: CanonicalProductWebhookPayload = version === "v2"
+      ? adaptV2ToCanonical(parsed.data as never)
+      : adaptV1ToCanonical(parsed.data as never);
+
+    console.log(
+      `Product webhook action: ${canonical.action} (contract=${version})`,
+    );
 
     // Create sync log
     const { data: syncLog, error: logError } = await supabase
       .from("product_sync_logs")
       .insert({
         status: "processing",
-        source: "n8n",
-        products_received: payload.products?.length || (payload.product ? 1 : 0),
+        source: typeof canonical.metadata?.source === "string"
+          ? canonical.metadata.source
+          : "n8n",
+        products_received:
+          canonical.products?.length || (canonical.product ? 1 : 0),
       })
       .select()
       .single();
@@ -112,50 +91,58 @@ Deno.serve(async (req) => {
       updated: number;
       failed: number;
       errors: string[];
-    } = { created: 0, updated: 0, failed: 0, errors: [] };
+      errors_by_sku: Record<string, { code: string; message: string }>;
+    } = { created: 0, updated: 0, failed: 0, errors: [], errors_by_sku: {} };
 
-    switch (payload.action) {
+    switch (canonical.action) {
       case "upsert": {
-        // Single product upsert
-        if (!payload.product) {
+        if (!canonical.product) {
           throw new Error("Product data is required for upsert action");
         }
-        result = await upsertProducts(supabase, [payload.product]);
+        result = await upsertProducts(supabase, [canonical.product]);
         break;
       }
 
       case "batch_upsert":
       case "sync": {
-        // Batch upsert multiple products
-        if (!payload.products || payload.products.length === 0) {
-          throw new Error("Products array is required for batch_upsert/sync action");
+        if (!canonical.products || canonical.products.length === 0) {
+          throw new Error(
+            "Products array is required for batch_upsert/sync action",
+          );
         }
-        result = await upsertProducts(supabase, payload.products);
+        result = await upsertProducts(supabase, canonical.products);
         break;
       }
 
       case "delete": {
-        // Delete products by external_id
-        if (!payload.external_ids || payload.external_ids.length === 0) {
-          throw new Error("external_ids array is required for delete action");
+        if (!canonical.external_ids || canonical.external_ids.length === 0) {
+          throw new Error(
+            "external_ids array is required for delete action",
+          );
         }
 
         const { error: deleteError, count } = await supabase
           .from("products")
           .delete()
-          .in("external_id", payload.external_ids);
+          .in("external_id", canonical.external_ids);
 
         if (deleteError) {
           throw deleteError;
         }
 
-        result = { created: 0, updated: 0, failed: 0, errors: [] };
+        result = {
+          created: 0,
+          updated: 0,
+          failed: 0,
+          errors: [],
+          errors_by_sku: {},
+        };
         console.log(`Deleted ${count} products`);
         break;
       }
 
       default:
-        throw new Error(`Unknown action: ${payload.action}`);
+        throw new Error(`Unknown action: ${canonical.action}`);
     }
 
     // Update sync log
@@ -167,41 +154,71 @@ Deno.serve(async (req) => {
           products_created: result.created,
           products_updated: result.updated,
           products_failed: result.failed,
-          error_message: result.errors.length > 0 ? result.errors.join("; ") : null,
+          error_message: result.errors.length > 0
+            ? result.errors.join("; ")
+            : null,
           completed_at: new Date().toISOString(),
         })
         .eq("id", syncLogId);
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        created: result.created,
-        updated: result.updated,
-        failed: result.failed,
-        errors: result.errors,
-        sync_log_id: syncLogId,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    // V1 response shape (back-compat). V2 adds errors_by_sku and idempotency echo.
+    const baseResponse = {
+      success: true,
+      created: result.created,
+      updated: result.updated,
+      failed: result.failed,
+      errors: result.errors,
+      sync_log_id: syncLogId,
+    };
+    const responseBody = version === "v2"
+      ? {
+        ...baseResponse,
+        errors_by_sku: result.errors_by_sku,
+        idempotency_key: canonical.idempotency_key,
+      }
+      : baseResponse;
+
+    return new Response(JSON.stringify(responseBody), {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        [VERSION_SERVED_HEADER]: version,
+      },
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Product webhook error:", error);
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
-});
+};
+
+// In production, Supabase runs this file as the entry point (import.meta.main
+// is true), so the server starts. In `deno test`, the test file is the entry
+// and this module is imported — import.meta.main is false and no port is bound.
+if (import.meta.main) Deno.serve(handler);
 
 async function upsertProducts(
   supabase: any,
-  products: ProductPayload[]
-): Promise<{ created: number; updated: number; failed: number; errors: string[] }> {
+  products: ProductPayload[],
+): Promise<{
+  created: number;
+  updated: number;
+  failed: number;
+  errors: string[];
+  errors_by_sku: Record<string, { code: string; message: string }>;
+}> {
   let created = 0;
   let updated = 0;
   let failed = 0;
   const errors: string[] = [];
+  const errors_by_sku: Record<string, { code: string; message: string }> = {};
 
   for (const product of products) {
     try {
@@ -241,7 +258,7 @@ async function upsertProducts(
 
       // Check if product exists by external_id or sku
       let existingProduct = null;
-      
+
       if (product.external_id) {
         const { data } = await supabase
           .from("products")
@@ -250,7 +267,7 @@ async function upsertProducts(
           .maybeSingle();
         existingProduct = data;
       }
-      
+
       if (!existingProduct) {
         const { data } = await supabase
           .from("products")
@@ -283,12 +300,13 @@ async function upsertProducts(
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : "Unknown error";
       errors.push(`${product.sku}: ${errMsg}`);
+      errors_by_sku[product.sku] = { code: "upsert_failed", message: errMsg };
       failed++;
       console.error(`Failed to upsert product ${product.sku}:`, err);
     }
   }
 
-  return { created, updated, failed, errors };
+  return { created, updated, failed, errors, errors_by_sku };
 }
 
 function calculateStockStatus(stock: number): string {

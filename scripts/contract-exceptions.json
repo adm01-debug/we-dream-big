@@ -1,0 +1,89 @@
+{
+  "$comment": "Functions intentionally exempt from the contract coverage gate. Each entry must include a justification.",
+  "exemptions": [
+    {
+      "endpoint": "health-check",
+      "reason": "GET-only liveness probe; no body to validate."
+    },
+    {
+      "endpoint": "cors-audit",
+      "reason": "Internal diagnostic; not externally invoked with payloads."
+    },
+    {
+      "endpoint": "rls-audit",
+      "reason": "Read-only diagnostic; no body."
+    },
+    {
+      "endpoint": "rls-matrix-export",
+      "reason": "Read-only export; no body."
+    },
+    {
+      "endpoint": "rls-integration-tests",
+      "reason": "Test harness; no external contract."
+    },
+    {
+      "endpoint": "cleanup-notifications",
+      "reason": "Cron-triggered (x-cron-secret); no body schema."
+    },
+    {
+      "endpoint": "cleanup-novelties",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "collections-watcher",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "comparison-price-watcher",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "connections-health-check",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "favorites-watcher",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "ownership-audit",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "process-queue",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "process-scheduled-reports",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "quote-followup-reminders",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "send-digest",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "send-scheduled-reports",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "sync-external-db",
+      "reason": "Cron-triggered; no body schema."
+    },
+    {
+      "endpoint": "image-proxy",
+      "reason": "GET proxy with query params, no JSON body."
+    },
+    {
+      "endpoint": "e2e-cleanup",
+      "reason": "Test-environment-only utility; not part of external API surface."
+    },
+    {
+      "endpoint": "mcp-server",
+      "reason": "MCP protocol handler with its own schema validation pipeline."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../scripts/__contracts__/contract.schema.json",
+  "endpoint": "webhook-dispatcher",
+  "verifyJwt": false,
+  "kind": "webhook",
+  "auth": {
+    "type": "header_or_jwt",
+    "headerName": "x-dispatcher-secret",
+    "env": "WEBHOOK_DISPATCHER_SECRET",
+    "alternate": "Authorization: Bearer <user JWT>"
+  },
+  "versions": ["v1", "v2"],
+  "samples": {
+    "v1": {
+      "valid": { "event": "order.created", "payload": { "id": "ord_1" } },
+      "invalid_missing_field": {},
+      "invalid_wrong_type": { "event": 123 },
+      "invalid_empty_value": { "event": "" },
+      "invalid_uuid": {
+        "event": "x",
+        "test_mode": true,
+        "test_webhook_id": "not-a-uuid"
+      }
+    },
+    "v2": {
+      "valid": {
+        "event": "order.created",
+        "payload": { "id": "ord_1" },
+        "correlation_id": "00000000-0000-4000-8000-000000000000",
+        "dispatch_options": { "parallel": true, "timeout_ms": 5000 }
+      },
+      "invalid_missing_field": { "event": "x" },
+      "invalid_wrong_type": {
+        "event": "x",
+        "correlation_id": "00000000-0000-4000-8000-000000000000",
+        "dispatch_options": { "timeout_ms": "five-seconds" }
+      },
+      "invalid_empty_value": {
+        "event": "",
+        "correlation_id": "00000000-0000-4000-8000-000000000000"
+      },
+      "invalid_uuid": {
+        "event": "x",
+        "correlation_id": "bogus"
+      },
+      "invalid_unknown_key": {
+        "event": "x",
+        "correlation_id": "00000000-0000-4000-8000-000000000000",
+        "rogue_field": true
+      }
+    }
+  },
+  "expectedResponses": {
+    "v1_valid": { "status": 200, "shape": { "ok": true } },
+    "v1_invalid": { "status": 400, "shape": { "error": "Validation failed" } },
+    "v2_valid": { "status": 200, "shape": { "ok": true } },
+    "v2_invalid": { "status": 422, "shape": { "code": "validation_failed" } }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Edge Function Contract Manifest",
+  "type": "object",
+  "required": ["endpoint", "versions", "samples"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "endpoint": {
+      "type": "string",
+      "description": "Function slug as deployed at /functions/v1/<endpoint>"
+    },
+    "verifyJwt": { "type": "boolean" },
+    "kind": {
+      "type": "string",
+      "enum": ["webhook", "public", "cron", "jwt"]
+    },
+    "auth": {
+      "type": "object",
+      "description": "Free-form auth descriptor; consumed by the runner"
+    },
+    "versions": {
+      "type": "array",
+      "items": { "enum": ["v1", "v2"] },
+      "minItems": 1
+    },
+    "samples": {
+      "type": "object",
+      "patternProperties": {
+        "^v[12]$": {
+          "type": "object",
+          "properties": {
+            "valid": {},
+            "invalid_missing_field": {},
+            "invalid_wrong_type": {},
+            "invalid_empty_value": {}
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "expectedResponses": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

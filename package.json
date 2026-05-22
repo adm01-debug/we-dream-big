@@ -75,7 +75,15 @@
     "check:toast-leaks": "node scripts/check-toast-leaks.mjs",
     "test:stress": "node scripts/massive-load-test.mjs",
     "test:fuzz:full": "node scripts/fuzz-testing.mjs",
-    "test:contract": "node scripts/contract-testing.mjs"
+    "test:contract": "node scripts/contract-testing.mjs",
+    "test:contracts": "node scripts/contract-testing.mjs",
+    "test:contracts:live": "node scripts/contract-testing.mjs --live",
+    "test:contracts:baseline": "node scripts/contract-testing.mjs --baseline",
+    "test:contracts:verbose": "node scripts/contract-testing.mjs --verbose",
+    "test:contracts:deno": "deno test --allow-env --allow-net --allow-read supabase/functions/_shared/version-dispatch.test.ts supabase/functions/_shared/error-response.test.ts supabase/functions/product-webhook/index.test.ts supabase/functions/webhook-inbound/index.test.ts supabase/functions/webhook-dispatcher/index.test.ts",
+    "check:contract-coverage": "node scripts/check-contract-coverage.mjs",
+    "check:contract-coverage:strict": "node scripts/check-contract-coverage.mjs --strict",
+    "generate:contract-stub": "node scripts/generate-contract-stub.mjs"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

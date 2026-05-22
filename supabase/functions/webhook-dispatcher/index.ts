@@ -11,21 +11,25 @@
 // Ver: supabase/functions/_shared/dispatcher-auth.ts
 import { crypto } from "https://deno.land/std@0.224.0/crypto/mod.ts";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
-import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 import { buildPublicCorsHeaders } from "../_shared/cors.ts";
 import { authorizeDispatcher } from "../_shared/dispatcher-auth.ts";
+import {
+  resolveVersion,
+  VERSION_SERVED_HEADER,
+} from "../_shared/version-dispatch.ts";
+import {
+  buildV1ValidationError,
+  buildV2ValidationError,
+} from "../_shared/error-response.ts";
+import {
+  adaptV1ToCanonical,
+  adaptV2ToCanonical,
+  type CanonicalDispatchBody,
+  DispatchBodySchemaV1,
+  DispatchBodySchemaV2,
+} from "./schemas.ts";
 
 const corsHeaders = buildPublicCorsHeaders({ allowMethods: "POST, OPTIONS" });
-
-const BodySchema = z.object({
-  event: z.string().min(1),
-  payload: z.unknown().optional(),
-  // Replay mode: re-deliver a single failed delivery by id
-  replay_delivery_id: z.string().uuid().optional(),
-  // Test mode (Onda 13 #9): dispatch to a specific webhook, no metrics, no breaker, no DB log
-  test_mode: z.boolean().optional(),
-  test_webhook_id: z.string().uuid().optional(),
-});
 
 // Circuit breaker: 5 falhas consecutivas → desativa o webhook
 const CIRCUIT_BREAKER_THRESHOLD = 5;
@@ -45,8 +49,11 @@ async function payloadHash(payload: string): Promise<string> {
   return encodeHex(new Uint8Array(hash));
 }
 
-Deno.serve(async (req) => {
+export const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const version = resolveVersion(req);
+  const corsWithVersion = { ...corsHeaders, [VERSION_SERVED_HEADER]: version };
 
   // Guard: require X-Dispatcher-Secret to prevent unauthorized invocations
   const dispatcherSecret = Deno.env.get("WEBHOOK_DISPATCHER_SECRET");
@@ -54,28 +61,33 @@ Deno.serve(async (req) => {
     const incoming = req.headers.get("x-dispatcher-secret");
     if (!incoming || incoming !== dispatcherSecret) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsWithVersion, "Content-Type": "application/json" },
       });
     }
   }
 
   try {
     // Body precisa ser parseado antes da auth pra saber se requer Modo B (test_mode/replay).
-    // Body parse falha → 400 antes da auth (não vaza info).
-    const parsed = BodySchema.safeParse(await req.json().catch(() => ({})));
-    if (!parsed.success) {
-      return new Response(JSON.stringify({ error: "Invalid body" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Body parse falha → 400 (v1) ou 422 (v2) antes da auth (não vaza info).
+    const rawJson = await req.json().catch(() => ({}));
+    const schema = version === "v2" ? DispatchBodySchemaV2 : DispatchBodySchemaV1;
+    const parsedResult = schema.safeParse(rawJson);
+    if (!parsedResult.success) {
+      return version === "v2"
+        ? buildV2ValidationError(parsedResult.error, corsWithVersion)
+        : buildV1ValidationError(parsedResult.error, corsWithVersion);
     }
-    let { event, payload } = parsed.data;
-    const { replay_delivery_id, test_mode, test_webhook_id } = parsed.data;
+    const canonical: CanonicalDispatchBody = version === "v2"
+      ? adaptV2ToCanonical(parsedResult.data as never)
+      : adaptV1ToCanonical(parsedResult.data as never);
+    let { event, payload } = canonical;
+    const { replay_delivery_id, test_mode, test_webhook_id } = canonical;
 
     // Operações que mexem com webhook específico (test/replay) só por Modo B
     const requiresUserContext = !!(test_mode || replay_delivery_id);
 
     const auth = await authorizeDispatcher(req, {
-      corsHeaders,
+      corsHeaders: corsWithVersion,
       requireUserContext: requiresUserContext,
       minRole: "supervisor",
     });
@@ -87,7 +99,7 @@ Deno.serve(async (req) => {
     if (test_mode) {
       if (!test_webhook_id) {
         return new Response(JSON.stringify({ error: "test_webhook_id obrigatório em test_mode" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...corsWithVersion, "Content-Type": "application/json" },
         });
       }
       const { data: hook, error: hookErr } = await supabase
@@ -97,7 +109,7 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (hookErr || !hook) {
         return new Response(JSON.stringify({ error: "Webhook não encontrado" }), {
-          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 404, headers: { ...corsWithVersion, "Content-Type": "application/json" },
         });
       }
       const bodyJson = JSON.stringify({
@@ -127,7 +139,8 @@ Deno.serve(async (req) => {
           latency_ms: Date.now() - start,
           response_body: respText,
           success: res.ok,
-        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          correlation_id: canonical.correlation_id,
+        }), { headers: { ...corsWithVersion, "Content-Type": "application/json" } });
       } catch (err) {
         return new Response(JSON.stringify({
           ok: true,
@@ -137,7 +150,8 @@ Deno.serve(async (req) => {
           latency_ms: Date.now() - start,
           error: err instanceof Error ? err.message : "Erro de rede",
           success: false,
-        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          correlation_id: canonical.correlation_id,
+        }), { headers: { ...corsWithVersion, "Content-Type": "application/json" } });
       }
     }
 
@@ -151,7 +165,7 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (origErr || !orig) {
         return new Response(JSON.stringify({ error: "Delivery não encontrada" }), {
-          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 404, headers: { ...corsWithVersion, "Content-Type": "application/json" },
         });
       }
       event = orig.event;
@@ -172,8 +186,12 @@ Deno.serve(async (req) => {
     if (error) throw error;
 
     if (!hooks || hooks.length === 0) {
-      return new Response(JSON.stringify({ ok: true, dispatched: 0 }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({
+        ok: true,
+        dispatched: 0,
+        correlation_id: canonical.correlation_id,
+      }), {
+        headers: { ...corsWithVersion, "Content-Type": "application/json" },
       });
     }
 
@@ -269,13 +287,20 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ ok: true, dispatched: hooks.length, results }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({
+      ok: true,
+      dispatched: hooks.length,
+      results,
+      correlation_id: canonical.correlation_id,
+    }), {
+      headers: { ...corsWithVersion, "Content-Type": "application/json" },
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erro desconhecido";
     return new Response(JSON.stringify({ error: msg }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsWithVersion, "Content-Type": "application/json" },
     });
   }
-});
+};
+
+if (import.meta.main) Deno.serve(handler);

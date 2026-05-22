@@ -1,0 +1,82 @@
+{
+  "$schema": "../../../scripts/__contracts__/contract.schema.json",
+  "endpoint": "product-webhook",
+  "verifyJwt": false,
+  "kind": "webhook",
+  "auth": {
+    "type": "header",
+    "name": "x-webhook-secret",
+    "env": "N8N_PRODUCT_WEBHOOK_SECRET"
+  },
+  "versions": ["v1", "v2"],
+  "samples": {
+    "v1": {
+      "valid": {
+        "action": "upsert",
+        "product": {
+          "sku": "CONTRACT-TEST-001",
+          "name": "Contract Test Product",
+          "price": 9.99
+        }
+      },
+      "invalid_missing_field": {
+        "action": "upsert",
+        "product": { "sku": "S", "name": "N" }
+      },
+      "invalid_wrong_type": {
+        "action": "upsert",
+        "product": { "sku": "S", "name": "N", "price": "ten" }
+      },
+      "invalid_empty_value": {
+        "action": "upsert",
+        "product": { "sku": "", "name": "N", "price": 1 }
+      },
+      "invalid_enum": {
+        "action": "bogus",
+        "product": { "sku": "S", "name": "N", "price": 1 }
+      }
+    },
+    "v2": {
+      "valid": {
+        "action": "upsert",
+        "product": {
+          "sku": "CONTRACT-TEST-001",
+          "name": "Contract Test Product",
+          "price": 9.99
+        },
+        "idempotency_key": "ct-test-abc12345",
+        "metadata": { "source": "contract-test" }
+      },
+      "invalid_missing_field": {
+        "action": "upsert",
+        "product": { "sku": "S", "name": "N", "price": 1 },
+        "metadata": { "source": "contract-test" }
+      },
+      "invalid_wrong_type": {
+        "action": "upsert",
+        "product": { "sku": "S", "name": "N", "price": 1 },
+        "idempotency_key": 12345,
+        "metadata": { "source": "contract-test" }
+      },
+      "invalid_empty_value": {
+        "action": "upsert",
+        "product": { "sku": "S", "name": "N", "price": 1 },
+        "idempotency_key": "",
+        "metadata": { "source": "contract-test" }
+      },
+      "invalid_unknown_key": {
+        "action": "upsert",
+        "product": { "sku": "S", "name": "N", "price": 1 },
+        "idempotency_key": "ct-test-abc12345",
+        "metadata": { "source": "contract-test" },
+        "rogue_field": true
+      }
+    }
+  },
+  "expectedResponses": {
+    "v1_valid": { "status": 200, "shape": { "success": true } },
+    "v1_invalid": { "status": 400, "shape": { "error": "Validation failed" } },
+    "v2_valid": { "status": 200, "shape": { "success": true } },
+    "v2_invalid": { "status": 422, "shape": { "code": "validation_failed" } }
+  }
+}
