@@ -15,7 +15,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { TechniqueOption } from "./TechniqueOption";
 import { VariationSelector } from "./VariationSelector";

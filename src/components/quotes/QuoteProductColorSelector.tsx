@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Check, Package, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Package, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useExternalVariantStock, type ExternalVariantStock } from '@/hooks/products';
 

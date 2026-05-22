@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, Minus, Package } from "lucide-react";
 import type { StockVelocity } from "@/hooks/intelligence";
-import { formatCurrency } from "@/lib/format";
 
 interface SupplierComparisonCardsProps {
   velocities: StockVelocity[];

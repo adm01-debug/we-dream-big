@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useSparklineData } from "@/hooks/intelligence";
-import { TrendingUp, TrendingDown, Minus, BarChart3, Zap, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Zap, Activity } from "lucide-react";
 
 interface ProductSparklineProps {
   productId: string;

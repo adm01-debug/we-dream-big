@@ -18,7 +18,6 @@ import {
   safeVelocityTrend,
   safeNumber,
   generateMockStockData,
-  generateMockVelocity,
   generateMockVelocities,
   generateMockIntelligence,
   generateMockSupplierNames,

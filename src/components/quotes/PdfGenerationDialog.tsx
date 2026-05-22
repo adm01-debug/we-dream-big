@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useRef } from "react";
-import { Download, FileText, Eye, Loader2, Check, Send, Copy, Link2, MessageCircle, Mail, Printer } from "lucide-react";
+import { Download, FileText, Loader2, Check, Printer } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
