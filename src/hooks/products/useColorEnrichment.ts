@@ -116,8 +116,13 @@ export function useColorEnrichment({
           : [];
       }
 
-      const groupsBySlug = new Map(cachedColorGroups!.map((g) => [g.slug, g.id]));
-      const variationsBySlug = new Map(cachedColorVariations!.map((v) => [v.slug, v]));
+      // Após o `if (!cachedColorGroups || !cachedColorVariations)` acima, ambas
+      // estão garantidas. Capturamos em consts locais para o TS narrow durar.
+      const groups = cachedColorGroups ?? [];
+      const variations = cachedColorVariations ?? [];
+
+      const groupsBySlug = new Map(groups.map((g) => [g.slug, g.id]));
+      const variationsBySlug = new Map(variations.map((v) => [v.slug, v]));
 
       // Resolve target color_ids
       const targetColorIds = new Set<string>();
@@ -130,7 +135,7 @@ export function useColorEnrichment({
       for (const slug of colorGroups) {
         const groupId = groupsBySlug.get(slug);
         if (groupId) {
-          for (const v of cachedColorVariations!) {
+          for (const v of variations) {
             if (v.group_id === groupId) targetColorIds.add(v.id);
           }
         }
@@ -212,9 +217,12 @@ export function useColorEnrichment({
       for (const img of allImages) {
         if (!img.url_cdn || img.image_type === 'box') continue;
         if ((img.is_primary || img.is_og_image) && img.url_cdn) {
-          if (!primaryImagesByProduct.has(img.product_id))
-            primaryImagesByProduct.set(img.product_id, new Set());
-          primaryImagesByProduct.get(img.product_id)!.add(img.url_cdn);
+          let primarySet = primaryImagesByProduct.get(img.product_id);
+          if (!primarySet) {
+            primarySet = new Set();
+            primaryImagesByProduct.set(img.product_id, primarySet);
+          }
+          primarySet.add(img.url_cdn);
         }
         if (img.variant_id) {
           if (!imagesByVariantId.has(img.variant_id) || img.is_og_image) {
@@ -232,8 +240,12 @@ export function useColorEnrichment({
       // Step 4: Build enrichment for new products
       const variantsByProduct = new Map<string, typeof allVariants>();
       for (const v of allVariants) {
-        if (!variantsByProduct.has(v.product_id)) variantsByProduct.set(v.product_id, []);
-        variantsByProduct.get(v.product_id)!.push(v);
+        const arr = variantsByProduct.get(v.product_id);
+        if (arr) {
+          arr.push(v);
+        } else {
+          variantsByProduct.set(v.product_id, [v]);
+        }
       }
 
       let withImage = 0;
