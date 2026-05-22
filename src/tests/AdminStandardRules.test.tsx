@@ -114,13 +114,18 @@ describe('Admin Module Programmatic Standard Rules', () => {
     });
 
     it(`${pageName} should use standard max-w classes in its layout container`, () => {
-      render(<PageComponent />, { wrapper });
-      const mainContent = screen.queryByRole('main');
+      const { container: renderRoot } = render(<PageComponent />, { wrapper });
 
-      // We look for the standardized container div
-      const container = mainContent?.querySelector('[class*="max-w-"]');
-      expect(container, `Page ${pageName} missing standardized max-w container`).not.toBeNull();
-      expect(container?.className).toContain('mx-auto');
+      // Admin pages são fragmentos de conteúdo wrapped pela MainLayout
+      // externamente (no router). Por isso buscamos o container padronizado
+      // em todo o output renderizado, não apenas dentro de <main>.
+      // O seletor composto [class*="max-w-"][class*="mx-auto"] garante que
+      // ambas as classes estão no MESMO elemento (single source of truth).
+      const container = renderRoot.querySelector('[class*="max-w-"][class*="mx-auto"]');
+      expect(
+        container,
+        `Page ${pageName} está faltando um container padronizado com 'max-w-*' e 'mx-auto' juntos no mesmo elemento.`
+      ).not.toBeNull();
     });
   });
 });
