@@ -13,7 +13,7 @@ export const SidebarBrandHeader = forwardRef<HTMLDivElement, SidebarBrandHeaderP
     let onboarding: any = null;
     try {
       onboarding = useOnboardingContext();
-    } catch (e) {}
+    } catch {}
 
     const handleLogoClick = () => {
       navigate("/");

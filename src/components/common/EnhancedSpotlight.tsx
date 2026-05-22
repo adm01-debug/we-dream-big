@@ -22,7 +22,7 @@ export function EnhancedSpotlight() {
   let onboarding: any = null;
   try {
     onboarding = useOnboardingContext();
-  } catch (e) {}
+  } catch {}
 
   const handleRestartTour = () => {
     if (onboarding) {
