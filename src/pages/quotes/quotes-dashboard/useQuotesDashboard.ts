@@ -125,13 +125,15 @@ export function useQuotesDashboard() {
     const rejectionRate = responded.length > 0 ? (rejected.length / responded.length) * 100 : 0;
 
     const withResponse = filtered.filter(
-      (q) => q.client_response_at && (q.status === 'approved' || q.status === 'rejected'),
+      (q): q is typeof q & { client_response_at: string } =>
+        typeof q.client_response_at === 'string' &&
+        (q.status === 'approved' || q.status === 'rejected'),
     );
     let averageResponseTime = 0;
     if (withResponse.length > 0) {
       averageResponseTime =
         withResponse.reduce(
-          (s, q) => s + differenceInHours(new Date(q.client_response_at!), new Date(q.created_at)),
+          (s, q) => s + differenceInHours(new Date(q.client_response_at), new Date(q.created_at)),
           0,
         ) / withResponse.length;
     }
@@ -258,10 +260,13 @@ export function useQuotesDashboard() {
     }
 
     const recentResponses = quotes
-      .filter((q) => q.client_response_at)
+      .filter(
+        (q): q is typeof q & { client_response_at: string } =>
+          typeof q.client_response_at === 'string',
+      )
       .sort(
         (a, b) =>
-          new Date(b.client_response_at!).getTime() - new Date(a.client_response_at!).getTime(),
+          new Date(b.client_response_at).getTime() - new Date(a.client_response_at).getTime(),
       )
       .slice(0, 10);
 

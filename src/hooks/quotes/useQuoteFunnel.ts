@@ -39,7 +39,7 @@ export function useQuoteFunnel(
     const viewedQualifying = quotes.filter(
       (q) =>
         ['sent', 'pending', 'approved', 'converted'].includes(q.status as string) &&
-        viewedMap[q.id!],
+        !!(q.id && viewedMap[q.id]),
     ).length;
 
     // Funil cumulativo (cada etapa inclui as posteriores)
@@ -77,13 +77,16 @@ export function useQuoteFunnel(
 
     // Ciclo médio: created_at → updated_at de quotes aprovadas/convertidas
     const closed = quotes.filter(
-      (q) => ['approved', 'converted'].includes(q.status as string) && q.created_at && q.updated_at,
+      (q): q is Quote & { created_at: string; updated_at: string } =>
+        ['approved', 'converted'].includes(q.status as string) &&
+        typeof q.created_at === 'string' &&
+        typeof q.updated_at === 'string',
     );
     const avgCycleDays =
       closed.length > 0
         ? closed.reduce((sum, q) => {
-            const start = new Date(q.created_at!).getTime();
-            const end = new Date(q.updated_at!).getTime();
+            const start = new Date(q.created_at).getTime();
+            const end = new Date(q.updated_at).getTime();
             return sum + (end - start) / (1000 * 60 * 60 * 24);
           }, 0) / closed.length
         : null;

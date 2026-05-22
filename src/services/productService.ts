@@ -11,23 +11,28 @@ export const productService = {
 
     let result = products.map(mapPromobrindToProduct);
 
-    if (filters?.category) {
-      result = result.filter(p =>
-        p.category_name?.toLowerCase().includes(filters.category!.toLowerCase()) ||
-        p.category_id === filters.category
+    // Captura locais pós-narrow para sobreviver às closures de filter abaixo.
+    const category = filters?.category;
+    const minPrice = filters?.minPrice;
+    const maxPrice = filters?.maxPrice;
+
+    if (category) {
+      const needle = category.toLowerCase();
+      result = result.filter(
+        (p) => p.category_name?.toLowerCase().includes(needle) || p.category_id === category,
       );
     }
-    
-    if (filters?.minPrice !== undefined) {
-      result = result.filter(p => p.price >= filters.minPrice!);
+
+    if (typeof minPrice === 'number') {
+      result = result.filter((p) => p.price >= minPrice);
     }
-    
-    if (filters?.maxPrice !== undefined) {
-      result = result.filter(p => p.price <= filters.maxPrice!);
+
+    if (typeof maxPrice === 'number') {
+      result = result.filter((p) => p.price <= maxPrice);
     }
-    
+
     if (filters?.inStock) {
-      result = result.filter(p => (p.stock || 0) > 0);
+      result = result.filter((p) => (p.stock || 0) > 0);
     }
 
     return result;
@@ -58,7 +63,7 @@ export const productService = {
 
     return raw
       .map(mapPromobrindToProduct)
-      .filter(p => p.id !== productId)
+      .filter((p) => p.id !== productId)
       .slice(0, limit);
-  }
+  },
 };
