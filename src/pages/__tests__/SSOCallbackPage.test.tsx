@@ -12,7 +12,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import SSOCallbackPage from '../SSOCallbackPage';
+import SSOCallbackPage from '../auth/SSOCallbackPage';
 
 const navigateMock = vi.fn();
 const refreshSessionMock = vi.fn().mockResolvedValue(undefined);
