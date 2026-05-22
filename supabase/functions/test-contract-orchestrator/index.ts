@@ -2,6 +2,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 import { buildPublicCorsHeaders } from "../_shared/cors.ts";
 import { resolveCredential } from "../_shared/credentials.ts";
+import { authorize } from "../_shared/authorize.ts";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 
 const corsHeaders = buildPublicCorsHeaders({ allowMethods: "POST, OPTIONS" });
@@ -17,6 +20,18 @@ async function hmacSign(payload: string, secret: string): Promise<string> {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "test-contract-orchestrator", requestId, req });
+
+  // Authorization: dev role required. Orchestrator exercises HMAC signing
+  // against webhook endpoints and uses service-role internally — keep it
+  // off the public surface.
+  const authResult = await authorize(req, { requireRole: "dev" });
+  if (!authResult.ok) {
+    log.warn("unauthorized");
+    return authResult.response;
+  }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

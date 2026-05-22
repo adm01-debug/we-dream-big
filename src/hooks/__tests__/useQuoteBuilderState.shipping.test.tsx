@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useQuoteBuilderState } from "@/hooks/quotes/useQuoteBuilderState";
+import { useQuoteBuilderState } from '@/hooks/quotes/useQuoteBuilderState';
 import { toast } from 'sonner';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -20,7 +20,8 @@ vi.mock('react-router-dom', () => ({
   useSearchParams: () => [new URLSearchParams()],
 }));
 
-// Mock dos hooks customizados
+// Mock dos hooks customizados — TODOS em UMA chamada vi.mock por módulo
+// (vi.mock é hoisted; chamadas múltiplas para o mesmo path sobrescrevem).
 vi.mock('@/hooks/quotes', () => ({
   useQuotes: () => ({
     createQuote: vi.fn(),
@@ -28,24 +29,31 @@ vi.mock('@/hooks/quotes', () => ({
     fetchQuote: vi.fn(),
     isLoading: false,
   }),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
   useQuoteTemplates: () => ({
     templates: [],
   }),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
   useSellerDiscountLimits: () => ({
     myLimit: 50,
   }),
-}));
-
-vi.mock('@/hooks/quotes', () => ({
   useDiscountApproval: () => ({
     requestApproval: vi.fn(),
   }),
+  useQuoteItems: () => ({
+    items: [],
+    setItems: vi.fn(),
+    activeItemIndex: 0,
+    setActiveItemIndex: vi.fn(),
+    expandedItems: new Set(),
+    setExpandedItems: vi.fn(),
+    toggleExpanded: vi.fn(),
+    addProductWithColor: vi.fn(),
+    updateItemQuantity: vi.fn(),
+    updateItemPrice: vi.fn(),
+    removeItem: vi.fn(),
+    handlePersonalizationsChange: vi.fn(),
+    confirmItemPrice: vi.fn(),
+  }),
+  useAutoSaveQuote: () => ({ clearAutoSave: vi.fn() }),
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({

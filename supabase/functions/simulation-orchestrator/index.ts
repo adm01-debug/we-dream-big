@@ -1,11 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
+import { buildPublicCorsHeaders } from "../_shared/cors.ts";
+import { authorize } from "../_shared/authorize.ts";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const corsHeaders = buildPublicCorsHeaders();
 
 async function hmacSign(payload: string, secret: string): Promise<string> {
   const enc = new TextEncoder();
@@ -42,6 +43,19 @@ function generateFuzzedPayload(type: string) {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "simulation-orchestrator", requestId, req });
+
+  // Authorization: dev role required. Function uses service-role to call
+  // other edges and write to simulation_runs. Must not be reachable by
+  // anonymous traffic. The verify_jwt flag is false to allow custom auth
+  // (orchestrator-internal calls), but inline check is mandatory.
+  const authResult = await authorize(req, { requireRole: "dev" });
+  if (!authResult.ok) {
+    log.warn("unauthorized");
+    return authResult.response;
+  }
 
   const startTime = performance.now();
 

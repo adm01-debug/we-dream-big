@@ -1,11 +1,26 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { resolveCredential } from "../_shared/credentials.ts";
 import { buildPublicCorsHeaders } from "../_shared/cors.ts";
+import { authorize } from "../_shared/authorize.ts";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 const corsHeaders = buildPublicCorsHeaders({ allowMethods: "GET, OPTIONS" });
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "test-inventory-orchestrator", requestId, req });
+
+  // Authorization: dev role required. Inventory diagnostics that probes
+  // SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY etc. via resolveCredential —
+  // keep behind dev gate even though no secret values are returned.
+  const authResult = await authorize(req, { requireRole: "dev" });
+  if (!authResult.ok) {
+    log.warn("unauthorized");
+    return authResult.response;
+  }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,

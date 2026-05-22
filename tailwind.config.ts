@@ -204,6 +204,7 @@ export default {
       },
       transitionTimingFunction: {
         "bounce-in": "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+        "fluid": "cubic-bezier(0.23, 1, 0.32, 1)",
         smooth: "var(--ease-in-out)",
         spring: "var(--ease-out)",
       },

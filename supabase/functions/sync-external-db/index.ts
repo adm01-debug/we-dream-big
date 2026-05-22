@@ -1,14 +1,27 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { buildPublicCorsHeaders } from "../_shared/cors.ts";
+import { authorize } from "../_shared/authorize.ts";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const corsHeaders = buildPublicCorsHeaders();
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "sync-external-db", requestId, req });
+
+  // Authorization: dev role required. The function uses service-role
+  // keys to read/write internal AND external databases, so it must be
+  // restricted to developers. Anonymous/anon-role JWT must NOT pass.
+  const authResult = await authorize(req, { requireRole: "dev" });
+  if (!authResult.ok) {
+    log.warn("unauthorized");
+    return authResult.response;
   }
 
   try {
@@ -39,14 +52,14 @@ serve(async (req) => {
 
     const externalSupabase = createClient(externalUrl, externalKey);
 
-    let sourceClient = direction === "to-external" ? internalSupabase : externalSupabase;
-    let targetClient = direction === "to-external" ? externalSupabase : internalSupabase;
+    const sourceClient = direction === "to-external" ? internalSupabase : externalSupabase;
+    const targetClient = direction === "to-external" ? externalSupabase : internalSupabase;
 
-    console.log(`Starting sync for table ${table} in direction ${direction}${since ? ` since ${since}` : ''}`);
+    log.info("sync_start", { table, direction, since });
 
     // 3. Buscar dados da origem
     let query = sourceClient.from(table).select("*").limit(1000);
-    
+
     // Sincronização incremental se updated_at estiver disponível e solicitado
     if (since) {
       query = query.gt('updated_at', since);
@@ -63,14 +76,16 @@ serve(async (req) => {
     }
 
     // 4. Inserir/Atualizar no destino (Upsert)
-    const { data: syncResult, error: syncError } = await targetClient
+    const { error: syncError } = await targetClient
       .from(table)
       .upsert(sourceData, { onConflict: 'id' });
 
     if (syncError) throw syncError;
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    log.info("sync_ok", { table, direction, count: sourceData.length });
+
+    return new Response(JSON.stringify({
+      success: true,
       message: `Synced ${sourceData.length} records to ${direction === "to-external" ? 'external' : 'internal'} database.`,
       count: sourceData.length,
       last_updated: sourceData.length > 0 ? sourceData.reduce((max, r) => (r.updated_at > max ? r.updated_at : max), sourceData[0].updated_at) : null
@@ -79,9 +94,8 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("Sync error:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    log.error("sync_failed", { error: error instanceof Error ? error.message : String(error) });
+    return new Response(JSON.stringify({ error: "sync_failed" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

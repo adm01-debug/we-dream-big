@@ -76,6 +76,15 @@ verify_jwt = false
 [functions.sync-external-db]
 verify_jwt = false
 
+[functions.simulation-orchestrator]
+verify_jwt = false
+
+[functions.test-contract-orchestrator]
+verify_jwt = false
+
+[functions.test-inventory-orchestrator]
+verify_jwt = false
+
 [auth]
 enable_signup = false
 enable_anonymous_sign_ins = false
