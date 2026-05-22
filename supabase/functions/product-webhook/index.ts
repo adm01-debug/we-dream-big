@@ -1,58 +1,52 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "../_shared/zod-validate.ts";
 import { buildPublicCorsHeaders } from "../_shared/cors.ts";
+import {
+  ProductWebhookSchemaByVersion,
+  ProductWebhookVersions,
+  type ProductPayload,
+  type ProductWebhookVersion,
+} from "../_shared/contracts/index.ts";
+import {
+  parseApiVersion,
+  withVersionHeaders,
+} from "../_shared/contract-versioning.ts";
+import { validationError422, invalidJsonError400 } from "../_shared/api-errors.ts";
 
-const corsHeaders = buildPublicCorsHeaders({ extraAllowHeaders: ["x-webhook-secret"] });
+const corsHeaders = buildPublicCorsHeaders({
+  extraAllowHeaders: ["x-webhook-secret", "x-api-version"],
+});
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const webhookSecret = Deno.env.get("N8N_PRODUCT_WEBHOOK_SECRET");
 
-const ProductPayloadSchema = z.object({
-  external_id: z.string().max(255).optional(),
-  sku: z.string().min(1).max(100),
-  name: z.string().min(1).max(500),
-  description: z.string().max(5000).optional(),
-  price: z.number().nonnegative(),
-  min_quantity: z.number().int().positive().optional(),
-  category_id: z.number().int().optional(),
-  category_name: z.string().max(255).optional(),
-  subcategory: z.string().max(255).optional(),
-  supplier_id: z.string().max(255).optional(),
-  supplier_name: z.string().max(255).optional(),
-  stock: z.number().int().nonnegative().optional(),
-  stock_status: z.string().max(50).optional(),
-  is_kit: z.boolean().optional(),
-  is_active: z.boolean().optional(),
-  featured: z.boolean().optional(),
-  new_arrival: z.boolean().optional(),
-  on_sale: z.boolean().optional(),
-  images: z.array(z.string().url().max(2000)).max(50).optional(),
-  video_url: z.string().url().max(2000).optional().nullable(),
-  colors: z.array(z.object({ name: z.string(), hex: z.string(), group: z.string().optional() })).max(100).optional(),
-  materials: z.array(z.string().max(100)).max(50).optional(),
-  tags: z.record(z.array(z.string())).optional(),
-  kit_items: z.array(z.object({
-    productId: z.string(), productName: z.string(), quantity: z.number(), sku: z.string()
-  })).max(50).optional(),
-  variations: z.array(z.any()).max(200).optional(),
-  metadata: z.record(z.any()).optional(),
-});
-
-const WebhookPayloadSchema = z.object({
-  action: z.enum(["sync", "upsert", "delete", "batch_upsert"]),
-  products: z.array(ProductPayloadSchema).max(500).optional(),
-  product: ProductPayloadSchema.optional(),
-  external_ids: z.array(z.string().max(255)).max(500).optional(),
-});
-
-type ProductPayload = z.infer<typeof ProductPayloadSchema>;
-
-interface WebhookPayload {
+// Tipo de união do payload (qualquer versão suportada), com normalização
+// para a forma "interna" usada pelo restante da função.
+interface NormalizedPayload {
   action: "sync" | "upsert" | "delete" | "batch_upsert";
   products?: ProductPayload[];
   product?: ProductPayload;
   external_ids?: string[];
+  /** Idempotency key (v2 obrigatório, v1 ignora). */
+  idempotency_key?: string;
+  /** Correlation id (v2 opcional). */
+  correlation_id?: string;
+}
+
+/**
+ * Converte payload V2 → forma interna (v1-like) para reaproveitar o pipeline
+ * downstream sem duplicar lógica de DB.
+ */
+function normalizeV2(data: z.infer<typeof ProductWebhookSchemaByVersion.v2>): NormalizedPayload {
+  return {
+    action: data.action,
+    product: data.product,
+    products: data.products,
+    external_ids: data.external_ids,
+    idempotency_key: data.idempotency_key,
+    correlation_id: data.correlation_id,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -63,32 +57,64 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+  // Resolver versão da API antes de qualquer trabalho.
+  const versioned = parseApiVersion<ProductWebhookVersion>(req, ProductWebhookVersions, {
+    defaultVersion: "v1",
+    deprecated: {
+      // v1 ainda não está depreciada; será depreciada quando v2 estabilizar.
+      // Exemplo (a habilitar futuramente):
+      // v1: { sunsetAt: "2026-12-31T00:00:00Z", migrationGuideUrl: "https://docs.../v2-migration" },
+    },
+    corsHeaders,
+  });
+  if ("error" in versioned) return versioned.error;
+
   try {
     // Validate webhook secret
     const providedSecret = req.headers.get("x-webhook-secret");
     if (webhookSecret && providedSecret !== webhookSecret) {
       console.error("Invalid webhook secret");
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      return withVersionHeaders(
+        new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        ),
+        versioned,
       );
     }
 
+    // Parse JSON com erro padronizado.
     let rawBody: unknown;
-    try { rawBody = await req.json(); } catch {
-      return new Response(JSON.stringify({ error: "Invalid webhook payload" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    try {
+      const text = await req.text();
+      rawBody = text ? JSON.parse(text) : null;
+    } catch {
+      return withVersionHeaders(
+        invalidJsonError400({ corsHeaders, apiVersion: versioned.version }),
+        versioned,
+      );
     }
 
-    const parsed = WebhookPayloadSchema.safeParse(rawBody);
+    // Validar contra schema da versão resolvida → 422 padronizado em falha.
+    const schema = ProductWebhookSchemaByVersion[versioned.version];
+    const parsed = schema.safeParse(rawBody);
     if (!parsed.success) {
-      return new Response(JSON.stringify({ error: "Validation failed", details: parsed.error.flatten().fieldErrors }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return withVersionHeaders(
+        validationError422(parsed.error, { corsHeaders, apiVersion: versioned.version }),
+        versioned,
+      );
     }
-    const payload: WebhookPayload = parsed.data;
-    console.log(`Product webhook action: ${payload.action}`);
+
+    const payload: NormalizedPayload =
+      versioned.version === "v2"
+        ? normalizeV2(parsed.data as z.infer<typeof ProductWebhookSchemaByVersion.v2>)
+        : (parsed.data as NormalizedPayload);
+
+    console.log(
+      `Product webhook action: ${payload.action} (api_version=${versioned.version}` +
+        `${payload.correlation_id ? `, correlation_id=${payload.correlation_id}` : ""}` +
+        `${payload.idempotency_key ? `, idempotency_key=${payload.idempotency_key}` : ""})`,
+    );
 
     // Create sync log
     const { data: syncLog, error: logError } = await supabase
@@ -173,23 +199,29 @@ Deno.serve(async (req) => {
         .eq("id", syncLogId);
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        created: result.created,
-        updated: result.updated,
-        failed: result.failed,
-        errors: result.errors,
-        sync_log_id: syncLogId,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    return withVersionHeaders(
+      new Response(
+        JSON.stringify({
+          success: true,
+          created: result.created,
+          updated: result.updated,
+          failed: result.failed,
+          errors: result.errors,
+          sync_log_id: syncLogId,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      ),
+      versioned,
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Product webhook error:", error);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    return withVersionHeaders(
+      new Response(
+        JSON.stringify({ error: errorMessage }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      ),
+      versioned,
     );
   }
 });
