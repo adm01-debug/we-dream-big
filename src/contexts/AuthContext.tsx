@@ -1,18 +1,30 @@
-import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode } from "react";
-import { type User, type Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
-import { createClientLogger } from "@/lib/telemetry/structuredLogger";
-import { checkLoginAllowed, recordFailedAttempt, clearLoginAttempts } from "@/lib/auth/rate-limit";
-import { toast } from "sonner";
-import { authDebug, authDebugError, summarizeSession, summarizeUser } from "@/lib/auth/auth-debug";
-import { getRandomGreeting, getHighestRole, isSupervisorOrAbove as checkIsSupervisorOrAbove } from "@/lib/auth/auth-utils";
-import { authService } from "@/services/authService";
-import { useProfileRoles } from "@/hooks/auth/useProfileRoles";
-import { useAuthMFA } from "@/hooks/auth/useAuthMFA";
-import { setSafeToastRoles } from "@/lib/security/safeToast";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  type ReactNode,
+} from 'react';
+import { type AuthError, type AuthResponse, type User, type Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { createClientLogger } from '@/lib/telemetry/structuredLogger';
+import { checkLoginAllowed, recordFailedAttempt, clearLoginAttempts } from '@/lib/auth/rate-limit';
+import { toast } from 'sonner';
+import {
+  getRandomGreeting,
+  getHighestRole,
+  isSupervisorOrAbove as checkIsSupervisorOrAbove,
+} from '@/lib/auth/auth-utils';
+import { authService } from '@/services/authService';
+import { useProfileRoles } from '@/hooks/auth/useProfileRoles';
+import { useAuthMFA } from '@/hooks/auth/useAuthMFA';
+import { setSafeToastRoles } from '@/lib/security/safeToast';
 
 // Tipos de role conforme app_role enum no banco.
-export type AppRole = "dev" | "supervisor" | "agente" | "admin" | "manager" | "vendedor";
+export type AppRole = 'dev' | 'supervisor' | 'agente' | 'admin' | 'manager' | 'vendedor';
 
 export interface Profile {
   id: string;
@@ -52,7 +64,13 @@ interface AuthContextType {
   mfaRequired: boolean;
   rolesLoaded: boolean;
   refreshAAL: () => Promise<void>;
-  signIn: (email: string, password: string) => Promise<{ error: any; data: any }>;
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<{
+    error: AuthError | { message: string; status: number } | null;
+    data: AuthResponse['data'] | null;
+  }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   refreshSession: () => Promise<void>;
@@ -63,7 +81,15 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const { profile, setProfile, userRoles, setUserRoles, isLoading, setIsLoading, fetchUserData, clearProfileRoles, fetchPromiseRef } = useProfileRoles();
+  const {
+    profile,
+    userRoles,
+    isLoading,
+    setIsLoading,
+    fetchUserData,
+    clearProfileRoles,
+    fetchPromiseRef,
+  } = useProfileRoles();
   const { currentAAL, nextAAL, hasMFA, fetchAAL, clearMFA } = useAuthMFA();
   const mountedRef = useRef(true);
 
@@ -71,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const log = createClientLogger('auth.refreshSession');
     log.info('start');
     try {
-      const { data, error } = await supabase.auth.refreshSession();
+      const { data } = await supabase.auth.refreshSession();
       const nextSession = data?.session ?? (await supabase.auth.getSession()).data.session;
       if (mountedRef.current) {
         setSession(nextSession);
@@ -90,7 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     mountedRef.current = true;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mountedRef.current) return;
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -100,9 +129,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           toast.success(`🤖 Flow`, { description: getRandomGreeting(name), duration: 3000 });
         }
         setTimeout(() => {
+          if (!mountedRef.current) return;
           fetchUserData(session.user.id);
           fetchAAL();
-          import('@/lib/external-db-prewarm').then(m => m.prewarmExternalDb({ oncePerSession: true }));
+          import('@/lib/external-db-prewarm')
+            .then((m) => m.prewarmExternalDb({ oncePerSession: true }))
+            .catch(() => {
+              /* prewarm é best-effort */
+            });
         }, 0);
       } else {
         clearProfileRoles();
@@ -110,16 +144,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(session.user.id);
-        fetchAAL();
-      } else {
-        setIsLoading(false);
-      }
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!mountedRef.current) return;
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchUserData(session.user.id);
+          fetchAAL();
+        } else {
+          setIsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (mountedRef.current) setIsLoading(false);
+      });
 
     return () => {
       mountedRef.current = false;
@@ -128,31 +168,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUserData, fetchAAL, clearProfileRoles, clearMFA, setIsLoading]);
 
   // Watchdog & Auto-refresh
+  // Estratégia: agenda UM refresh para 5 minutos antes da expiração e UM
+  // aviso 2 minutos antes. Se o token já está perto da expiração (≤ buffer),
+  // agenda o refresh imediatamente — mas sem dispará-lo síncrono em cima
+  // do timer abaixo, evitando o duplo-refresh do código anterior.
   useEffect(() => {
     if (!session) return;
     const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
-    const now = Date.now();
-    const timeToExpiry = expiresAt - now;
+    const timeToExpiry = expiresAt - Date.now();
+    if (timeToExpiry <= 0) return; // já expirou — o onAuthStateChange resolve
 
-    if (timeToExpiry > 0 && timeToExpiry < 10 * 60 * 1000) refreshSession();
+    const REFRESH_BUFFER_MS = 5 * 60 * 1000;
+    const WARNING_MS = 2 * 60 * 1000;
 
-    const warningTime = timeToExpiry - 2 * 60 * 1000;
+    const refreshDelay = Math.max(0, timeToExpiry - REFRESH_BUFFER_MS);
+    const refreshTimer = window.setTimeout(() => {
+      void refreshSession();
+    }, refreshDelay);
+
     let warningTimer: number | null = null;
-    if (warningTime > 0) {
+    const warningDelay = timeToExpiry - WARNING_MS;
+    if (warningDelay > 0) {
       warningTimer = window.setTimeout(() => {
-        toast.warning("Sessão prestes a expirar", {
-          description: "Sua sessão encerrará em 2 minutos.",
-          action: { label: "Renovar", onClick: () => refreshSession() },
+        toast.warning('Sessão prestes a expirar', {
+          description: 'Sua sessão encerrará em 2 minutos.',
+          action: {
+            label: 'Renovar',
+            onClick: () => {
+              void refreshSession();
+            },
+          },
         });
-      }, warningTime);
+      }, warningDelay);
     }
 
-    const buffer = 5 * 60 * 1000;
-    const refreshTimer = setTimeout(() => refreshSession(), expiresAt - now - buffer);
-
     return () => {
-      if (warningTimer) window.clearTimeout(warningTimer);
-      clearTimeout(refreshTimer);
+      if (warningTimer !== null) window.clearTimeout(warningTimer);
+      window.clearTimeout(refreshTimer);
     };
   }, [session, refreshSession]);
 
@@ -161,11 +213,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSafeToastRoles(userRoles);
   }, [userRoles]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const log = createClientLogger('auth.signIn', { base: { email_domain: email.split('@')[1] } });
     const { allowed, remainingSeconds } = checkLoginAllowed(email);
     if (!allowed) {
-      return { error: { message: `Bloqueado. Tente em ${Math.ceil(remainingSeconds / 60)} min.`, status: 429 }, data: null };
+      return {
+        error: {
+          message: `Bloqueado. Tente em ${Math.ceil(remainingSeconds / 60)} min.`,
+          status: 429,
+        },
+        data: null,
+      };
     }
 
     const { data, error } = await authService.signIn(email, password);
@@ -175,15 +233,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearLoginAttempts(email);
     }
 
-    supabase.functions.invoke('log-login-attempt', {
-      body: { email, user_id: data?.user?.id, success: !error, failure_reason: error?.message, user_agent: navigator.userAgent },
-      headers: log.headers(),
-    }).catch(() => {});
+    supabase.functions
+      .invoke('log-login-attempt', {
+        body: {
+          email,
+          user_id: data?.user?.id,
+          success: !error,
+          failure_reason: error?.message,
+          user_agent: navigator.userAgent,
+        },
+        headers: log.headers(),
+      })
+      .catch(() => {});
 
     return { error, data };
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       await authService.signOut();
     } finally {
@@ -191,37 +257,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       clearProfileRoles();
       clearMFA();
-      import('@/lib/external-db-prewarm').then(m => m.resetPrewarmSession()).catch(() => {});
+      import('@/lib/external-db-prewarm').then((m) => m.resetPrewarmSession()).catch(() => {});
     }
-  };
+  }, [clearProfileRoles, clearMFA]);
 
-  const isSupervisorOrAbove = checkIsSupervisorOrAbove(userRoles);
-  const value: AuthContextType = {
-    user, session, profile, isLoading,
-    roles: userRoles,
-    role: getHighestRole(userRoles),
-    isDev: userRoles.includes("dev"),
-    isSupervisor: userRoles.some(r => ["supervisor", "admin", "manager"].includes(r)),
-    isAgente: userRoles.some(r => ["agente", "vendedor"].includes(r)),
-    isSupervisorOrAbove,
-    isAdmin: isSupervisorOrAbove,
-    isManager: userRoles.includes("manager"),
-    isSeller: userRoles.some(r => ["agente", "vendedor"].includes(r)),
-    canManage: isSupervisorOrAbove,
-    isAuthenticated: !!user,
-    currentAAL, nextAAL, hasMFA,
-    mfaRequired: isSupervisorOrAbove && currentAAL !== 'aal2',
-    rolesLoaded: userRoles.length > 0,
-    refreshAAL: fetchAAL,
-    signIn, signOut, refreshSession,
-    refreshProfile: async () => { if (user) { fetchPromiseRef.current = null; await fetchUserData(user.id); } },
-  };
+  const refreshProfile = useCallback(async () => {
+    if (user) {
+      fetchPromiseRef.current = null;
+      await fetchUserData(user.id);
+    }
+  }, [user, fetchUserData, fetchPromiseRef]);
+
+  const value = useMemo<AuthContextType>(() => {
+    const isSupervisorOrAbove = checkIsSupervisorOrAbove(userRoles);
+    return {
+      user,
+      session,
+      profile,
+      isLoading,
+      roles: userRoles,
+      role: getHighestRole(userRoles),
+      isDev: userRoles.includes('dev'),
+      isSupervisor: userRoles.some((r) => ['supervisor', 'admin', 'manager'].includes(r)),
+      isAgente: userRoles.some((r) => ['agente', 'vendedor'].includes(r)),
+      isSupervisorOrAbove,
+      isAdmin: isSupervisorOrAbove,
+      isManager: userRoles.includes('manager'),
+      isSeller: userRoles.some((r) => ['agente', 'vendedor'].includes(r)),
+      canManage: isSupervisorOrAbove,
+      isAuthenticated: !!user,
+      currentAAL,
+      nextAAL,
+      hasMFA,
+      mfaRequired: isSupervisorOrAbove && currentAAL !== 'aal2',
+      rolesLoaded: userRoles.length > 0,
+      refreshAAL: fetchAAL,
+      signIn,
+      signOut,
+      refreshSession,
+      refreshProfile,
+    };
+  }, [
+    user,
+    session,
+    profile,
+    isLoading,
+    userRoles,
+    currentAAL,
+    nextAAL,
+    hasMFA,
+    fetchAAL,
+    refreshSession,
+    refreshProfile,
+    signIn,
+    signOut,
+  ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

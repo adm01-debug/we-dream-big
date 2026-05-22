@@ -3,8 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConnectionsOverviewTable } from '../ConnectionsOverviewTable';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
-import { useConnectionsOverview } from '@/hooks/intelligence';
-import { useConnectionTester } from '@/hooks/intelligence';
+import { useConnectionsOverview, useConnectionTester } from '@/hooks/intelligence';
 
 // Mocks
 vi.mock('@/contexts/AuthContext', () => ({
