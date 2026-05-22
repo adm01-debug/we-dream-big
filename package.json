@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:p0": "vitest run tests/p0/",
     "test:p0:no-skip": "node scripts/check-no-skip-p0.mjs",
+    "test:contracts": "vitest run tests/contracts/",
     "test:quality": "vitest run --exclude 'tests/hooks/**'",
     "test:watch": "vitest",
     "test:run": "vitest run",

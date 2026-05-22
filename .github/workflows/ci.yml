@@ -110,6 +110,12 @@ jobs:
       - name: 🛡️ P0 unit tests (segurança/integridade)
         run: npm run test:p0
 
+      # Gate de contratos das edge functions (offline, sem Deno):
+      # CORS, OPTIONS preflight, JWT guard, Zod body, sem secrets hardcoded.
+      # Exceções documentadas em tests/contracts/edge-functions-contract.test.ts.
+      - name: 📑 Edge functions contract tests (offline)
+        run: npm run test:contracts
+
       # hooks já cobertos pelo job dedicado hooks-tests (timeout-minutes: 10).
       # test:strict-ref e test:coverage omitidos aqui — rodam em ref-warning-suite
       # e integration-tests respectivamente, evitando tripla execução da suite.
