@@ -17,7 +17,10 @@ import {
 import { MOCK_BOXES, MOCK_ITEMS } from '@/lib/kit-builder/mock-data';
 
 // Import transformers from the main hook file
-import { transformToKitBox, transformToKitItem } from "@/hooks/kit-builder/useKitBuilderTransformers";
+import {
+  transformToKitBox,
+  transformToKitItem,
+} from '@/hooks/kit-builder/useKitBuilderTransformers';
 import { logger } from '@/lib/logger';
 
 function filterBoxes(
@@ -32,13 +35,14 @@ function filterBoxes(
       (b) => b.name.toLowerCase().includes(q) || b.sku.toLowerCase().includes(q),
     );
   }
-  if (dimFilters?.minWidth)
-    filtered = filtered.filter((b) => b.internalWidth >= dimFilters.minWidth!);
-  if (dimFilters?.minHeight)
-    filtered = filtered.filter((b) => b.internalHeight >= dimFilters.minHeight!);
-  if (dimFilters?.minDepth)
-    filtered = filtered.filter((b) => b.internalDepth >= dimFilters.minDepth!);
-  if (dimFilters?.material) filtered = filtered.filter((b) => b.material === dimFilters.material);
+  const minW = dimFilters?.minWidth;
+  const minH = dimFilters?.minHeight;
+  const minD = dimFilters?.minDepth;
+  const material = dimFilters?.material;
+  if (typeof minW === 'number') filtered = filtered.filter((b) => b.internalWidth >= minW);
+  if (typeof minH === 'number') filtered = filtered.filter((b) => b.internalHeight >= minH);
+  if (typeof minD === 'number') filtered = filtered.filter((b) => b.internalDepth >= minD);
+  if (material) filtered = filtered.filter((b) => b.material === material);
   return filtered;
 }
 
