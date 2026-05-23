@@ -1,15 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 export interface QuoteComment {
   id: string;
   quote_id: string;
   user_id: string;
-  parent_id: string | null;
-  content: string;
-  is_edited: boolean;
+  comment: string;
+  is_internal: boolean;
   created_at: string;
   updated_at: string;
   // Joined
@@ -28,10 +27,10 @@ export function useQuoteComments(quoteId: string | undefined) {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from("quote_comments")
-        .select("*")
-        .eq("quote_id", quoteId)
-        .order("created_at", { ascending: true });
+        .from('quote_comments')
+        .select('*')
+        .eq('quote_id', quoteId)
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
 
@@ -41,41 +40,26 @@ export function useQuoteComments(quoteId: string | undefined) {
 
       if (userIds.length > 0) {
         const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name, avatar_url")
-          .in("user_id", userIds);
+          .from('profiles')
+          .select('user_id, full_name, avatar_url')
+          .in('user_id', userIds);
 
         if (profiles) {
           profileMap = Object.fromEntries(
-            profiles.map((p) => [p.user_id, { full_name: p.full_name, avatar_url: p.avatar_url }])
+            profiles.map((p) => [p.user_id, { full_name: p.full_name, avatar_url: p.avatar_url }]),
           );
         }
       }
 
       const enriched: QuoteComment[] = (data || []).map((c) => ({
         ...c,
-        author_name: profileMap[c.user_id]?.full_name || "Usuário",
+        author_name: profileMap[c.user_id]?.full_name || 'Usuário',
         author_avatar: profileMap[c.user_id]?.avatar_url || null,
       }));
 
-      // Build thread tree
-      const topLevel = enriched.filter((c) => !c.parent_id);
-      const childMap = new Map<string, QuoteComment[]>();
-      enriched
-        .filter((c) => c.parent_id)
-        .forEach((c) => {
-          const arr = childMap.get(c.parent_id!) || [];
-          arr.push(c);
-          childMap.set(c.parent_id!, arr);
-        });
-
-      topLevel.forEach((c) => {
-        c.replies = childMap.get(c.id) || [];
-      });
-
-      setComments(topLevel);
+      setComments(enriched);
     } catch (err) {
-      console.error("Error fetching comments:", err);
+      console.error('Error fetching comments:', err);
     } finally {
       setIsLoading(false);
     }
@@ -88,11 +72,10 @@ export function useQuoteComments(quoteId: string | undefined) {
   const addComment = async (content: string, parentId?: string) => {
     if (!quoteId || !user) return;
     try {
-      const { error } = await supabase.from("quote_comments").insert({
+      const { error } = await supabase.from('quote_comments').insert({
         quote_id: quoteId,
         user_id: user.id,
-        parent_id: parentId || null,
-        content,
+        comment: content,
       });
 
       if (error) throw error;
@@ -100,74 +83,76 @@ export function useQuoteComments(quoteId: string | undefined) {
       // Create notification for other participants
       await createCommentNotification(quoteId, user.id, content, parentId);
 
-      toast.success("Comentário adicionado");
+      toast.success('Comentário adicionado');
       await fetchComments();
     } catch (err) {
-      console.error("Error adding comment:", err);
-      toast.error("Erro ao adicionar comentário");
+      console.error('Error adding comment:', err);
+      toast.error('Erro ao adicionar comentário');
     }
   };
 
   const updateComment = async (commentId: string, content: string) => {
     try {
       const { error } = await supabase
-        .from("quote_comments")
-        .update({ content, is_edited: true, updated_at: new Date().toISOString() })
-        .eq("id", commentId);
+        .from('quote_comments')
+        .update({ comment: content, updated_at: new Date().toISOString() })
+        .eq('id', commentId);
 
       if (error) throw error;
-      toast.success("Comentário atualizado");
+      toast.success('Comentário atualizado');
       await fetchComments();
     } catch (err) {
-      console.error("Error updating comment:", err);
-      toast.error("Erro ao atualizar comentário");
+      console.error('Error updating comment:', err);
+      toast.error('Erro ao atualizar comentário');
     }
   };
 
   const deleteComment = async (commentId: string) => {
     try {
-      const { error } = await supabase
-        .from("quote_comments")
-        .delete()
-        .eq("id", commentId);
+      const { error } = await supabase.from('quote_comments').delete().eq('id', commentId);
 
       if (error) throw error;
-      toast.success("Comentário removido");
+      toast.success('Comentário removido');
       await fetchComments();
     } catch (err) {
-      console.error("Error deleting comment:", err);
-      toast.error("Erro ao remover comentário");
+      console.error('Error deleting comment:', err);
+      toast.error('Erro ao remover comentário');
     }
   };
 
   return { comments, isLoading, addComment, updateComment, deleteComment, refetch: fetchComments };
 }
 
-async function createCommentNotification(quoteId: string, authorId: string, content: string, parentId?: string) {
+async function createCommentNotification(
+  quoteId: string,
+  authorId: string,
+  content: string,
+  parentId?: string,
+) {
   try {
     // Get all participants in this quote's comments (except the author)
     const { data: participants } = await supabase
-      .from("quote_comments")
-      .select("user_id")
-      .eq("quote_id", quoteId);
+      .from('quote_comments')
+      .select('user_id')
+      .eq('quote_id', quoteId);
 
     const uniqueUsers = [...new Set((participants || []).map((p) => p.user_id))].filter(
-      (uid) => uid !== authorId
+      (uid) => uid !== authorId,
     );
 
     if (uniqueUsers.length === 0) return;
 
-    const preview = content.length > 60 ? content.slice(0, 60) + "…" : content;
+    const preview = content.length > 60 ? content.slice(0, 60) + '…' : content;
     const notifications = uniqueUsers.map((uid) => ({
       user_id: uid,
-      title: parentId ? "Nova resposta em orçamento" : "Novo comentário em orçamento",
+      title: parentId ? 'Nova resposta em orçamento' : 'Novo comentário em orçamento',
       message: preview,
-      type: "quote_comment",
-      category: "quotes",
+      type: 'quote_comment',
+      category: 'quotes',
       metadata: { quote_id: quoteId },
     }));
 
-    await supabase.from("workspace_notifications").insert(notifications);
+    await supabase.from('workspace_notifications').insert(notifications);
   } catch {
     // Non-blocking
   }

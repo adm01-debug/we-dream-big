@@ -51,7 +51,7 @@ export default function MockupHistoryPage() {
       let query = supabase
         .from('generated_mockups')
         .select('*', { count: 'exact' })
-        .eq('seller_id', user!.id)
+        .eq('user_id', user!.id)
         .order('created_at', { ascending: false })
         .range((page - 1) * pageSize, page * pageSize - 1);
 
@@ -63,7 +63,7 @@ export default function MockupHistoryPage() {
 
       const { data, error, count } = await query;
       if (error) throw error;
-      return { mockups: data as GeneratedMockup[], totalCount: count || 0 };
+      return { mockups: data as unknown as GeneratedMockup[], totalCount: count || 0 };
     },
     enabled: !!user,
     staleTime: 1000 * 60 * 5, // 5 minutos
