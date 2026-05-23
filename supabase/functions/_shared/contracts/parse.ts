@@ -99,8 +99,7 @@ export async function parseContract<C extends ContractSchemas>(
   if (!vRes.ok) return { ok: false, response: vRes.response };
 
   const { version, responseHeaders } = vRes.resolved;
-  const schema =
-    (schemas.versions as Record<string, z.ZodTypeAny>)[version];
+  const schema = schemas.versions[version as keyof C["versions"]];
 
   // 2. Ler body (uma única vez)
   let rawText: string;
