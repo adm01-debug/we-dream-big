@@ -34,7 +34,7 @@
 
 ### Pendências menores (17-19)
 - [ ] **Etapa 17** — T-FIX-5b: antipadrão B residual em testes
-- [ ] **Etapa 18** — `QuoteBuilderStepper.test.tsx:68` forEach vazio
+- [x] **Etapa 18** — `QuoteBuilderStepper.test.tsx:68` forEach vazio — removido it() no-op (ícones mockados não testam classes do real)
 - [ ] **Etapa 19** — `ScenarioSimulation.test.ts` Scenario 2 CIF/FOB
 
 ### Conclusão (20)
