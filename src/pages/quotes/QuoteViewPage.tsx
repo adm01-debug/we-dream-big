@@ -208,7 +208,7 @@ export default function QuoteViewPage() {
                         await supabase
                           // rls-allow: lookup por id; RLS valida ownership
                           .from('quotes')
-                          .update({ status: 'pending' } as Record<string, unknown>)
+                          .update({ status: 'pending' })
                           .eq('id', quote.id);
                         await logQuoteHistory(
                           quote.id,
@@ -253,7 +253,7 @@ export default function QuoteViewPage() {
                       <SheetTitle>Histórico de Alterações</SheetTitle>
                     </SheetHeader>
                     <div className="mt-6">
-                      <QuoteHistoryPanel quoteId={quote.id} />
+                      <QuoteHistoryPanel quoteId={quote.id ?? ''} />
                     </div>
                   </SheetContent>
                 </Sheet>
