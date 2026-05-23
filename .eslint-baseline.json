@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-23T16:34:44.783Z",
-  "totalErrors": 405,
+  "generatedAt": "2026-05-23T20:49:22.458Z",
+  "totalErrors": 401,
   "counts": {
     "src/components/access/DevAccessDeniedPage.tsx": {
       "react-hooks/exhaustive-deps": 1
@@ -544,9 +544,6 @@
     "src/components/products/ProductQuickActions.tsx": {
       "@typescript-eslint/naming-convention": 1,
       "@typescript-eslint/no-unused-vars": 1
-    },
-    "src/components/products/ProductQuickView.tsx": {
-      "@typescript-eslint/no-unused-vars": 4
     },
     "src/components/products/ProductSparkline.tsx": {
       "@typescript-eslint/no-unused-vars": 2,
