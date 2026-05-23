@@ -340,25 +340,32 @@ export const SidebarReorganized = React.memo(
 
 
           {/* Collapse controls (desktop) */}
-          <div className="hidden lg:flex items-center justify-between px-3 mb-2">
-            {!isCollapsed && hasAnyGroupOpen && (
+          <div className="hidden lg:flex items-center justify-between px-3 mb-2 gap-2">
+            {!isCollapsed && (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="h-8 gap-2 text-[10px] border-sidebar-border/30 hover:bg-primary/10 hover:text-primary text-sidebar-foreground/40 focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-1 rounded-xl transition-all duration-300"
+                className={cn(
+                  "h-8 flex-1 gap-2 text-[10px] uppercase font-bold tracking-wider",
+                  "text-sidebar-foreground/40 hover:text-primary hover:bg-primary/10",
+                  "rounded-xl transition-all duration-300 opacity-60 hover:opacity-100",
+                  !hasAnyGroupOpen && "invisible"
+                )}
                 onClick={collapseAllGroups}
                 aria-label="Recolher todos os grupos de navegação"
-
               >
-                <X className="h-3 w-3" />
-                Fechar
+                <ChevronsDownUp className="h-3 w-3" />
+                Recolher
               </Button>
             )}
-            {!isCollapsed && !hasAnyGroupOpen && <div />}
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-sidebar-accent/50 hover:text-primary ml-auto text-sidebar-foreground/30 focus-visible:ring-1 focus-visible:ring-primary rounded-xl transition-all duration-300"
+              className={cn(
+                "h-8 w-8 shrink-0 hover:bg-sidebar-accent/50 hover:text-primary text-sidebar-foreground/30",
+                "focus-visible:ring-1 focus-visible:ring-primary rounded-xl transition-all duration-300",
+                isCollapsed && "mx-auto"
+              )}
               onClick={toggleCollapse}
               aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
               title={isCollapsed ? "Expandir menu" : "Recolher menu"}
