@@ -104,7 +104,7 @@ function ReducedApp({
       <Suspense fallback={<div>loading…</div>}>
         {onNavigateReady && <NavigationProbe onReady={onNavigateReady} />}
         <Routes>
-          <Route path="/login" element={<LoginStub />} />
+          <Route path="/auth" element={<LoginStub />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomeStub />} />
             <Route path="/dashboard" element={<DashboardStub />} />
@@ -314,7 +314,7 @@ describe("Rotas admin/dev/protected — nenhum elemento renderizado usa `errorEl
     expect(collectErrorElementUsages(container)).toEqual([]);
   });
 
-  it("anônimo em rota protegida → /login — árvore limpa", () => {
+  it("anônimo em rota protegida → /auth — árvore limpa", () => {
     Object.assign(authState, {
       user: null, canManage: false, isDev: false,
       isSupervisorOrAbove: false, hasMFA: false, mfaRequired: false,

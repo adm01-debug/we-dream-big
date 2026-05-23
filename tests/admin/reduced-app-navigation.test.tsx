@@ -108,7 +108,7 @@ function ReducedApp({
         {onNavigateReady && <NavigationProbe onReady={onNavigateReady} />}
         <Routes>
           {/* Public */}
-          <Route path="/login" element={<LoginStub />} />
+          <Route path="/auth" element={<LoginStub />} />
 
           {/* Protected layer */}
           <Route element={<ProtectedRoute />}>
@@ -226,7 +226,7 @@ describe("Reduced App integration — navegação não emite ref warning", () =>
     guard.expectNoRefWarning("não-dev em rota dev");
   });
 
-  it("usuário sem sessão em rota protegida → redirect /login sem warning", () => {
+  it("usuário sem sessão em rota protegida → redirect /auth sem warning", () => {
     Object.assign(authState, {
       user: null, canManage: false, isDev: false,
       isSupervisorOrAbove: false, hasMFA: false, mfaRequired: false,
@@ -234,7 +234,7 @@ describe("Reduced App integration — navegação não emite ref warning", () =>
     });
     render(<ReducedApp initial="/admin/usuarios" />);
     screen.getByTestId("page-login");
-    guard.expectNoRefWarning("anon → /login");
+    guard.expectNoRefWarning("anon → /auth");
   });
 
   it("loading state em todos os guards (Loader2 spinner) sem warning", () => {

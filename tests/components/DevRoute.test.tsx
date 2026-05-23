@@ -68,7 +68,7 @@ function renderProtected(initialPath: string) {
       >
         <PathProbe />
         <Routes>
-          <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/auth" element={<div>Login Page</div>} />
           <Route path="/" element={<div>Home Page</div>} />
           <Route path="/catalogo" element={<div>Catálogo</div>} />
           <Route path="/admin/usuarios" element={<div>Usuários Admin</div>} />
@@ -108,7 +108,7 @@ describe('DevRoute — loading e anônimo', () => {
     expect(document.querySelector('.animate-spin')).toBeTruthy();
   });
 
-  it('redireciona anon para /login (sem expor a página técnica)', () => {
+  it('redireciona anon para /auth (sem expor a página técnica)', () => {
     mockUseAuth.mockReturnValue({ ...baseAuthShape, user: null });
     renderProtected('/admin/conexoes');
     expect(screen.getByText('Login Page')).toBeInTheDocument();

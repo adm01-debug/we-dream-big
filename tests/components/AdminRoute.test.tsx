@@ -12,7 +12,7 @@ function renderWithRouter(ui: React.ReactElement, initialRoute = '/admin') {
   return render(
     <MemoryRouter initialEntries={[initialRoute]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
-        <Route path="/login" element={<div>Login Page</div>} />
+        <Route path="/auth" element={<div>Login Page</div>} />
         <Route path="/" element={<div>Home Page</div>} />
         <Route path="/admin" element={ui} />
       </Routes>
@@ -35,7 +35,7 @@ describe('AdminRoute', () => {
     expect(document.querySelector('.animate-spin')).toBeTruthy();
   });
 
-  it('redirects to /login when user is not authenticated', () => {
+  it('redirects to /auth when user is not authenticated', () => {
     mockUseAuth.mockReturnValue({ ...baseAuth, user: null, canManage: false, isLoading: false });
     renderWithRouter(<AdminRoute><div>Admin Panel</div></AdminRoute>);
     expect(screen.getByText('Login Page')).toBeInTheDocument();
