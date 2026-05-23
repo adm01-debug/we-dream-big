@@ -295,6 +295,18 @@ test.describe("@smoke Rotas públicas (gate de CI)", () => {
   // 93 · Negativo de login: credenciais inválidas mantêm /login interativo.
   // Garante que o caminho de auth-fail NÃO trava o gate (smoke negativo).
   test("93 · Login com credenciais inválidas permanece em /login", async ({ page }) => {
+    // T14 UPDATE 8 (2026-05-23): escala TODOS os timeouts deste teste em CI.
+    // Os 15s hardcoded em toBeVisible/toBeEnabled/click flutavam quando o
+    // Vite cold start + SPA hydration + Supabase auth real (mesmo com mock
+    // de /auth/v1/token e /functions/v1/) demoravam mais que 15s para
+    // estabilizar o estado clicável do botão de submit. Os outros testes
+    // do UPDATE 1/2 já usam o padrão `CI ? 30_000 : 15_000` — aplicado aqui.
+    // Causa-raiz original confirmada via API pública de check-runs/annotations
+    // no run #506 (sha 2c700abb): "locator.click: Timeout 15000ms exceeded
+    // waiting for [data-testid=login-submit]".
+    const TIMEOUT_BTN = process.env.CI ? 30_000 : 15_000;
+    const TIMEOUT_URL = process.env.CI ? 20_000 : 10_000;
+
     await page.route(/\/auth\/v1\/token/, (route) =>
       route.fulfill({
         status: 400,
@@ -316,11 +328,11 @@ test.describe("@smoke Rotas públicas (gate de CI)", () => {
     // SPA hydration + Supabase auth real). Garante estado-final-clicável e
     // amplia timeout de click p/ alinhar com toBeEnabled abaixo.
     const submit = page.locator(Sel.login.submit).first();
-    await expect(submit).toBeVisible({ timeout: 15_000 });
-    await expect(submit).toBeEnabled({ timeout: 15_000 });
-    await submit.click({ timeout: 15_000 });
-    await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
-    await expect(submit).toBeEnabled({ timeout: 15_000 });
+    await expect(submit).toBeVisible({ timeout: TIMEOUT_BTN });
+    await expect(submit).toBeEnabled({ timeout: TIMEOUT_BTN });
+    await submit.click({ timeout: TIMEOUT_BTN });
+    await expect(page).toHaveURL(/\/login/, { timeout: TIMEOUT_URL });
+    await expect(submit).toBeEnabled({ timeout: TIMEOUT_BTN });
   });
 
   // 95 · Negativo de recovery: /reset-password sem token NÃO habilita reset.
