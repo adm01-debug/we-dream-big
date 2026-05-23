@@ -24,7 +24,7 @@ const H = vi.hoisted(() => {
     },
     noFilter: { productIds: [] as string[], hasFilter: false, isLoading: false },
     search: { suggestions: [], quickSuggestions: [], history: [], addToHistory: noop, clearHistory: noop },
-    favQuickAdd: { handleFavoriteClick: () => ({ resolved: true as const }), defaultList: null, addToList: noop },
+    favQuickAdd: { handleFavoriteClick: () => ({ resolved: true }), defaultList: null, addToList: noop },
     favStore: { favorites: [], toggleFavorite: noop, isFavorite: () => false },
     compStore: { items: [], toggleComparison: noop, isInComparison: () => false, clearComparison: noop },
     toast: { toast: noop },
