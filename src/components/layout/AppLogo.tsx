@@ -37,7 +37,7 @@ export function AppLogo({
           variant === 'sidebar' ? "h-5 w-5" : "h-6 w-6",
           iconColor
         )} />
-        <div className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
         <Sparkles className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 text-white/50 animate-pulse" />
       </div>
       {showText && (
