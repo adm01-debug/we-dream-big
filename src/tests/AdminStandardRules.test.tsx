@@ -98,6 +98,9 @@ describe('Admin Module Programmatic Standard Rules', () => {
   // O padrão anterior funcionava (cada it era registrado individualmente),
   // mas describe.each é mais idiomático no Vitest e gera labels limpos no
   // reporter ("Page X > renders PageSEO" em vez de "X renders PageSEO").
+  // PascalCase params are intentional: these hold React components used as JSX
+  // (<PageComponent />). camelCase would be parsed as HTML elements by JSX.
+  /* eslint-disable @typescript-eslint/naming-convention */
   const adminPages = Object.entries(adminPageModules)
     .map(([path, mod]: [string, unknown]) => {
       const Component = (mod as Record<string, unknown>).default;
@@ -111,6 +114,7 @@ describe('Admin Module Programmatic Standard Rules', () => {
     }));
 
   describe.each(adminPages)('Page $pageName', ({ pageName, PageComponent }) => {
+    /* eslint-enable @typescript-eslint/naming-convention */
     it('should render with correct PageSEO config', async () => {
       render(<PageComponent />, { wrapper });
 
@@ -134,7 +138,7 @@ describe('Admin Module Programmatic Standard Rules', () => {
       const container = renderRoot.querySelector('[class*="max-w-"][class*="mx-auto"]');
       expect(
         container,
-        `Page ${pageName} está faltando um container padronizado com 'max-w-*' e 'mx-auto' juntos no mesmo elemento.`
+        `Page ${pageName} está faltando um container padronizado com 'max-w-*' e 'mx-auto' juntos no mesmo elemento.`,
       ).not.toBeNull();
     });
   });
