@@ -52,30 +52,30 @@ export interface ParseOptions {
 }
 
 /**
- * Schema da versão default do contrato `C`.
+ * Resultado de sucesso discriminado pela versão resolvida.
  *
- * Indexação direta (sem interseção) — evita o bug de variância TS+Zod onde
- * comparar `ZodObject` contra `ZodTypeAny & ZodObject<...>` faz o checker
- * recursar no retorno de `deepPartial()` e falhar com TS2345
- * (vide histórico: 15 edge functions de contratos quebravam o `deno check`).
+ * Gera uma união `{ version: "1"; data: v1 } | { version: "2"; data: v2 } | ...`
+ * a partir de `C["versions"]`, de modo que `version` e `data` permaneçam
+ * correlacionados em tempo de compilação (cada versão expõe o shape do seu
+ * próprio schema, sem colapsar tudo no shape da versão default).
+ *
+ * Importante: indexamos os schemas diretamente (sem a interseção
+ * `ContractSchemas<V> & { versions: S }` usada anteriormente). Aquela interseção
+ * forçava `versions[k]` a virar `ZodTypeAny & ZodObject<...>`, fazendo o checker
+ * recursar no retorno de `ZodObject.deepPartial()` e falhar com TS2345
+ * (15 edge functions de contratos quebravam o `deno check`).
  */
-type DefaultSchema<C extends ContractSchemas> =
-  C["versions"][C["defaultVersion"] & keyof C["versions"]];
-
-/** Tipo dos dados parseados — inferido do schema da versão default. */
-type InferContractData<C extends ContractSchemas> = DefaultSchema<C> extends
-  z.ZodTypeAny ? z.infer<DefaultSchema<C>> : unknown;
+type ParseSuccessByVersion<C extends ContractSchemas> = {
+  [K in keyof C["versions"] & string]: {
+    ok: true;
+    version: K;
+    data: z.infer<C["versions"][K]>;
+    responseHeaders: Record<string, string>;
+  };
+}[keyof C["versions"] & string];
 
 export type ParseResult<C extends ContractSchemas = ContractSchemas> =
-  | {
-    ok: true;
-    /** Versão resolvida (runtime). */
-    version: string;
-    /** Dados parseados; o tipo casa com o schema da versão default. */
-    data: InferContractData<C>;
-    /** Headers que a resposta de sucesso deve incluir (versão, deprecation). */
-    responseHeaders: Record<string, string>;
-  }
+  | ParseSuccessByVersion<C>
   | { ok: false; response: Response };
 
 /**
@@ -164,10 +164,14 @@ export async function parseContract<C extends ContractSchemas>(
     };
   }
 
+  // O TS nao consegue inferir, dentro do corpo generico, que este objeto
+  // satisfaz a uniao mapeada `ParseSuccessByVersion<C>` (a uniao colapsa para
+  // `never` sobre um `C` ainda nao resolvido). A validacao real foi feita por
+  // `resolveContractVersion` + `schema.safeParse`, entao o cast e seguro.
   return {
     ok: true,
     version,
-    data: result.data as InferContractData<C>,
+    data: result.data,
     responseHeaders,
-  };
+  } as ParseResult<C>;
 }
