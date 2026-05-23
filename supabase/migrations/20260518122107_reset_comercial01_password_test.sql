@@ -1,4 +1,3 @@
--- Reset cirurgico: comercial01 para teste
-UPDATE auth.users
-SET encrypted_password = crypt('@Promobrindes2021', gen_salt('bf')), updated_at = now()
-WHERE email = 'comercial01@promobrindes.com.br';
+-- noop placeholder migration: removed unsafe hardcoded password reset.
+-- Any manual password reset for test users must happen outside versioned migrations.
+SELECT 1;
