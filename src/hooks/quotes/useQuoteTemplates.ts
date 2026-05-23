@@ -74,7 +74,7 @@ function transformTemplates(data: QuoteTemplateRow[]): QuoteTemplate[] {
     discount_percent: item.discount_percent ?? 0,
     discount_amount: item.discount_amount ?? 0,
     validity_days: item.validity_days ?? 30,
-  }));
+  })) as unknown as QuoteTemplate[];
 }
 
 // ============================================
@@ -243,7 +243,7 @@ export function useQuoteTemplates() {
         }
 
         const updatePayload: TablesUpdate<'quote_templates'> = {
-          ...updates,
+          ...(updates as TablesUpdate<'quote_templates'>),
           updated_at: new Date().toISOString(),
         };
         if (updates.items) {
@@ -260,7 +260,7 @@ export function useQuoteTemplates() {
 
         toast({ title: 'Template atualizado', description: 'Alterações salvas com sucesso' });
         await fetchTemplates();
-        return result?.[0] || null;
+        return result?.[0] ? transformTemplates([result[0]])[0] : null;
       } catch (err) {
         console.error('Error updating template:', err);
         toast({
@@ -314,7 +314,7 @@ export function useQuoteTemplates() {
         name: `${template.name} (Cópia)`,
         description: template.description,
         is_default: false,
-        items_data: template.items_data,
+        items: template.items,
         discount_percent: template.discount_percent,
         discount_amount: template.discount_amount,
         notes: template.notes,
