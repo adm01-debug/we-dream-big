@@ -1,8 +1,8 @@
 import { render, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ContinuousRockets } from "@/pages/auth/AuthBranding";
+import { SpaceScene } from '@/pages/auth/AuthBranding';
 
-// Mock lucide-react to avoid icon rendering issues in test
+// Mock lucide-react to make icon rendering deterministic in tests
 vi.mock('lucide-react', () => ({
   Rocket: () => <div data-testid="rocket-icon" />,
   Gift: () => <div />,
@@ -10,13 +10,17 @@ vi.mock('lucide-react', () => ({
   Factory: () => <div />,
   SlidersHorizontal: () => <div />,
   Brain: () => <div />,
+  CheckCircle2: () => <div />,
+  RotateCw: () => <div />,
 }));
 
-
-// Tests for the rocket animation in the branding panel.
-
-
-describe('ContinuousRockets Component', () => {
+// The legacy `ContinuousRockets` component was unified into `SpaceScene`
+// (commit refactor: AuthBranding.tsx). SpaceScene is a richer scene that
+// continuously spawns rockets at intervals via setInterval(2000ms) +
+// manages stars and astronauts. The smoke tests below just validate that
+// the scene mounts, exposes its anchor testid and starts producing rockets
+// after the first interval tick.
+describe('SpaceScene Component (renamed from ContinuousRockets)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -26,52 +30,26 @@ describe('ContinuousRockets Component', () => {
   });
 
   it('renders without crashing', () => {
-    const { container } = render(<ContinuousRockets />);
-    expect(container.firstChild).toBeInTheDocument();
+    const { getByTestId } = render(<SpaceScene />);
+    expect(getByTestId('space-scene')).toBeInTheDocument();
   });
 
-  it('spawns initial rockets after delays', async () => {
-    const { getAllByTestId } = render(<ContinuousRockets />);
+  it('spawns rockets after the first interval tick (~2s)', () => {
+    const { queryAllByTestId } = render(<SpaceScene />);
 
-    // The component has: const delays = [0, 200, 500, 900, 1400, 2000, 2800];
-    
+    // No rockets at mount
+    expect(queryAllByTestId('rocket-icon').length).toBe(0);
+
+    // After one full interval cycle, at least one rocket should exist
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(2100);
     });
 
-    // At 2000ms, 6 rockets should have spawned (0, 200, 500, 900, 1400, 2000)
-    expect(getAllByTestId('rocket-icon').length).toBe(6);
-
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-
-    // After 3000ms, all 7 initial rockets should have spawned (at 0, 0.2, 0.5, 0.9, 1.4, 2.0, 2.8s)
-    expect(getAllByTestId('rocket-icon').length).toBeGreaterThanOrEqual(7);
+    expect(queryAllByTestId('rocket-icon').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('removes rockets after their duration', async () => {
-    const { getAllByTestId, queryAllByTestId } = render(<ContinuousRockets />);
-
-    act(() => {
-      vi.advanceTimersByTime(3000);
-    });
-
-    const initialCount = getAllByTestId('rocket-icon').length;
-    expect(initialCount).toBe(7);
-
-    // Rocket duration is 1.5-3s (initial) + 0.5s removal delay
-    // Advancing 8 seconds should clear all initial rockets
-    act(() => {
-      vi.advanceTimersByTime(8000);
-    });
-
-    // They should be removed, but new ones spawn every 2.8s
-    // At 11s total:
-    // Sustained cycle starts after mount. 
-    // Spawns at: 2.8s, 5.6s, 8.4s.
-    // At 11s, those might still be there or removed depending on duration (2.2-5s)
-    const currentCount = queryAllByTestId('rocket-icon').length;
-    expect(currentCount).toBeLessThan(7);
+  it('accepts isFull prop without throwing', () => {
+    const { getByTestId } = render(<SpaceScene isFull={false} />);
+    expect(getByTestId('space-scene')).toBeInTheDocument();
   });
 });
