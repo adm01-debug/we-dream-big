@@ -43,8 +43,7 @@
 | 11 | `QuoteBuilderStepper.test.tsx:68` forEach vazio | P3 | `STATUS.md` |
 | 12 | Flakiness teardown async Helmet/Event listener | P2 | `STATUS.md` |
 | 13 | T-FIX-5 — 3 passos manuais pendentes do sponsor | P2 | `docs/redeploy/T-FIX-5-CHECKLIST.md` |
-| 14 | Issues #1 e #3 do post-mortem 2026-05-22 nunca abertas no GitHub | P2 | `docs/issues-pendentes-2026-05-22.md` |
-| 15 | Dívida em baseline: **1.333 erros TS + 473 warnings ESLint** | P3 | `.tsc-baseline.json`, `.eslint-baseline.json` |
+| 15 | Dívida em baseline: **1.333 erros TS + 442 erros ESLint** | P3 | `.tsc-baseline.json`, `.eslint-baseline.json` |
 
 **O que mudaria o veredicto para ✅ LIMPO:**
 
