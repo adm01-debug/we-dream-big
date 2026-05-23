@@ -48,6 +48,23 @@ describe('AuthBrandingPanel Visual Classes', () => {
     
     const cards = container.querySelectorAll('.rounded-3xl');
     expect(cards.length).toBeGreaterThan(0);
+    // T-FIX-5b — decisão Opção A (eslint-disable cirúrgico):
+    //
+    // Os ~6 cards são DOM nodes do mesmo render() (não dados estáticos
+    // isoláveis em it.each). O masking aqui tem alcance pequeno:
+    // todos os cards são inspecionados antes do usuário ver a página,
+    // e quebra de uma classe Tailwind tipicamente vem da mesma causa
+    // (ex: design system regressou px-5 globalmente → todos falham juntos).
+    //
+    // Custo de refactor para it.each é alto: exigiria N renders separados
+    // ou um helper de setup compartilhado. Diferente do caso Rose Quartz
+    // (26 presets isolados com falhas independentes possíveis), aqui o
+    // risco residual é aceitável.
+    //
+    // Se algum dia este forEach mascarar bug real, refatorar nesse momento
+    // com motivo concreto. Decisão registrada em docs/redeploy/T-FIX-5-LINT-GUARDRAIL.md
+    //
+    // eslint-disable-next-line no-restricted-syntax
     cards.forEach(card => {
       expect(card.className).toContain('px-5');
       expect(card.className).toContain('h-[88px]');
