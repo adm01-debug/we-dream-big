@@ -10,7 +10,7 @@
 | Cobertura P0 desligada (`it.skip`/`test.skip`) | — | **103 tests** (48 em `tests/p0/` + 55 em `e2e/`) |
 | Dívida em baselines aceita (TSC + ESLint + toast) | — | **1.333 TS + 473 ESLint + 73 toast** |
 | Vulnerabilidades npm | 5 (auditoria 2026-05-13) | **0** |
-| Achados que viraram código-fix neste PR | — | **2** fixes (P0 + P1) |
+| Achados que viraram código-fix desde as auditorias anteriores | — | **2** fixes (P0 + P1) |
 
 ---
 
