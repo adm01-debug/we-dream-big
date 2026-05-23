@@ -99,18 +99,13 @@ Quando malformada, retorna `result = { ok: false, error: "URL_MALFORMED: …", e
 
 **Impacto:** sem `x-request-id` no CORS, qualquer log/observability que dependa do request-id no browser para cross-correlate request → log no Sentry falha em CORS preflight. Em produção isso degrada o debugging de incidentes — exatamente o problema da observability ressaltado no inventário T26 da Fase 3.
 
-**Fix proposto (NÃO aplicado nesta PR — fica como #B-2-FU):**
+**Fix aplicado neste PR:** ambas funções foram migradas de CORS inline para o helper canônico (`buildPublicCorsHeaders()`), removendo headers inline e incluindo `x-request-id` em `Access-Control-Allow-Headers` e `Access-Control-Expose-Headers`.
 
-```ts
-// supabase/functions/simulation-orchestrator/index.ts
-import { buildPublicCorsHeaders } from "../_shared/cors.ts";
-const corsHeaders = buildPublicCorsHeaders();
-```
+Exemplo (aplicado em ambas):
+- import { buildPublicCorsHeaders } from "../_shared/cors.ts";
+- const corsHeaders = buildPublicCorsHeaders();
 
-Mesma mudança em `supabase/functions/sync-external-db/index.ts`. Migra de objeto inline para o helper canônico que já adiciona `x-request-id` corretamente.
-
-**Por que não fiz neste PR:** ambas funções têm lógica de orquestração não-trivial; migrar o CORS sem ler o handler completo pode quebrar contratos de resposta. Recomendo PR dedicado ao migrante CORS.
-
+Isso satisfaz `check:edge-cors` + `check:no-inline-cors`.
 ---
 
 #### B-3 · 73 toast leaks com texto técnico vazando `error.message`
