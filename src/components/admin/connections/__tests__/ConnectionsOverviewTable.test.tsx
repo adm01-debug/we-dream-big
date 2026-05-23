@@ -37,11 +37,17 @@ vi.mock('@/hooks/intelligence', () => ({
 }));
 
 describe('ConnectionsOverviewTable Regression Tests', () => {
-  const useAuthMock = vi.mocked(useAuth);
-  const useConnectionsOverviewMock = vi.mocked(useConnectionsOverview);
-  const useConnectionTesterMock = vi.mocked(useConnectionTester);
-  const useConsecutiveFailuresMock = vi.mocked(useConsecutiveFailures);
-  const useSecretsManagerMock = vi.mocked(useSecretsManager);
+  const useAuthMock = vi.mocked(useAuth) as unknown as ReturnType<typeof vi.fn>;
+  const useConnectionsOverviewMock = vi.mocked(useConnectionsOverview) as unknown as ReturnType<
+    typeof vi.fn
+  >;
+  const useConnectionTesterMock = vi.mocked(useConnectionTester) as unknown as ReturnType<
+    typeof vi.fn
+  >;
+  const useConsecutiveFailuresMock = vi.mocked(useConsecutiveFailures) as unknown as ReturnType<
+    typeof vi.fn
+  >;
+  const useSecretsManagerMock = vi.mocked(useSecretsManager) as unknown as ReturnType<typeof vi.fn>;
 
   const mockRows = [
     {
@@ -84,7 +90,7 @@ describe('ConnectionsOverviewTable Regression Tests', () => {
     });
     useConnectionTesterMock.mockReturnValue({
       test: vi.fn(),
-      testing: false,
+      isTesting: false,
     });
     useConsecutiveFailuresMock.mockReturnValue({
       map: new Map(),

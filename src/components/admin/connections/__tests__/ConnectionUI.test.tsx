@@ -42,9 +42,13 @@ vi.mock('@/hooks/intelligence', () => ({
 }));
 
 describe('ConnectionsOverviewTable Interações e Acessibilidade', () => {
-  const useAuthMock = vi.mocked(useAuth);
-  const useConnectionsOverviewMock = vi.mocked(useConnectionsOverview);
-  const useConnectionTesterMock = vi.mocked(useConnectionTester);
+  const useAuthMock = vi.mocked(useAuth) as unknown as ReturnType<typeof vi.fn>;
+  const useConnectionsOverviewMock = vi.mocked(useConnectionsOverview) as unknown as ReturnType<
+    typeof vi.fn
+  >;
+  const useConnectionTesterMock = vi.mocked(useConnectionTester) as unknown as ReturnType<
+    typeof vi.fn
+  >;
 
   const mockRows = [
     {
@@ -66,7 +70,7 @@ describe('ConnectionsOverviewTable Interações e Acessibilidade', () => {
       loading: false,
       refresh: vi.fn(),
     });
-    useConnectionTesterMock.mockReturnValue({ test: vi.fn(), testing: false });
+    useConnectionTesterMock.mockReturnValue({ test: vi.fn(), isTesting: false });
   });
 
   it('deve permitir focar e navegar nos botões de ação via teclado', () => {
