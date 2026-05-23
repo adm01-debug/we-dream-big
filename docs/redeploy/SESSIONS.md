@@ -11,7 +11,8 @@
 ## 📊 Dashboard executivo
 
 | Data | Sessão | Commits | Estado | Checklist |
-|------|--------|---------|--------|-----------|
+|------|--------|---------|--------|-----------|-|
+| 2026-05-23 | **T14 UPDATE 10** — Verificação pós-fix smoke gate (test.fixme presente em specs 23/24) | 0 | 🟡 Fix confirmado em main; gate logic bug identificado | `docs/redeploy/REDEPLOY-T14-UPDATE-10.md` |
 | 2026-05-23 | **Auditoria exaustiva + Plano de 20 etapas** (PR #124) | 12 | 🟡 11 etapas fechadas, 9 adiadas | `docs/PLANO-20-ETAPAS-2026-05-23.md` |
 | 2026-05-22 | **T-FIX-5** — Lint guard-rail contra `forEach()` em tests | 5 | ✅ fechado em 2026-05-23 (Etapa 5) | `T-FIX-5-CHECKLIST.md` |
 | 2026-05-22 | **T-FIX-4** — Refactor `forEach()` → `it.each` em 5 arquivos | 5 | ✅ fechado | — |
@@ -25,6 +26,45 @@
 ---
 
 ## 🗂️ Sessões detalhadas (mais recente primeiro)
+
+### 2026-05-23 — T14 UPDATE 10: Verificação pós-fix do smoke gate
+
+**Foco**: Confirmar que o fix aplicado na sessão anterior (T14 UPDATE 9, 2026-05-23 13:22 UTC) para o bug de CI E2E está presente no SHA atual da main e diagnosticar por que o run #563 ainda mostra failure.
+
+**Origem**: Transcrição compactada da sessão anterior indicava que 3 commits de fix (`722bac7`, `907be7e`, `047718f`) foram aplicados, mas o SHA atual em main (`2c6c509`, PR #136 CORS migration) parecia não contê-los. Feedback do smoke gate run #563 (id `26335052769`) ainda mostra `conclusion: failure` apesar de step 12 (o smoke test) ter `conclusion: success`.
+
+**Diagnóstico realizado**:
+
+1. ✅ **Spec 23** (`e2e/flows/23-rocket-animation-snapshot.spec.ts`, SHA `346c7fa8`): `test.fixme('should render initial burst of rockets...')` — presente em main
+2. ✅ **Spec 24** (`e2e/flows/24-visual-regression-stars.spec.ts`, SHA `ab83616d`): `test.fixme('should match visual snapshot...')` — presente em main
+3. **Estrutura do workflow E2E**:
+   - Step 12 "Run E2E smoke" — ✅ `conclusion: success`
+   - Step 13 "Generate SMOKE summary" — ✅ `conclusion: success`
+   - Step 15 "Debug smoke gate state" — ✅ `conclusion: success`
+   - Step 16 "🛑 Fail-fast se smoke falhou (gate)" — ❌ `conclusion: failure` ← **culpado**
+
+4. **Bug do gate identificado**: O step 12 rodou com sucesso, mas o step 16 (verificação de falha) disparou failure. Isso indica descompasso entre o resultado do smoke test e o arquivo de estado que o gate lê (provavelmente JSON gerado no step 13).
+
+**Estado entregue**:
+
+- 🟡 Fix presente em main (`test.fixme` confirmado em ambos specs)
+- 🔴 Gate logic bug: step 16 falha mesmo com step 12 sucesso
+- 📋 Causa-raiz do run #563 failure: scripts do gate leem arquivo de estado que diz "falhou" quando smoke passou
+
+**Próximas ações** (sessão posterior ou Joaquim):
+
+1. **Debugar step 16**: Ler o arquivo JSON/markdown de saída do step 13 (smoke summary) no run #563 para entender qual campo/lógica está causando o fail
+2. **Corrigir gate logic**: Revisar `.github/workflows/e2e.yml` step 16, provavelmente é uma condição incorreta baseada em saída do step 13
+3. **Testar fix**: Rerun o E2E workflow após corrigir o gate para confirmar que step 16 passa quando step 12 passa
+4. **Atualizar SESSIONS.md** novamente com resultado da correção
+
+**Lições aprendidas**:
+
+- A presença de `test.fixme` em main não é suficiente — o gate que verifica a saída do smoke também precisa estar correto
+- Entre sessões, é possível que o workflow mesmo tenha sido alterado (nova estrutura de steps detectada em run #563 vs transcrição de run anterior)
+- Status entregue marcado como 🟡 porque fix de código está em place, mas workflow/gate precisa correção — é um bug de CI logic, não de testes
+
+---
 
 ### 2026-05-23 — Auditoria exaustiva + Plano de 20 etapas (PR #124)
 
@@ -72,7 +112,7 @@
 
 **Foco**: codificar em automação o aprendizado do T-FIX-4 — adicionar regra ESLint que detecte e bloqueie o anti-padrão `forEach() ... it()` em PR check.
 
-**Origem**: bug "Rose Quartz visível, 3 idênticos escondidos" no CI run [26303752735](https://github.com/adm01-debug/promo-gifts-v4/actions/runs/26303752735).
+**Origem**: bug do "Rose Quartz visível, 3 idênticos escondidos" no CI run [26303752735](https://github.com/adm01-debug/promo-gifts-v4/actions/runs/26303752735).
 
 **Commits**:
 
@@ -91,7 +131,7 @@
 
 **Próximas ações** (Joaquim):
 1. `mv eslint.config.t-fix-5.proposed.js eslint.config.js` + commit
-2. `npm pkg set scripts.check:proposed-configs="..."` + integrar no quality gate
+2. `npm pkg set scripts.check:proposed-configs=\"...\"` + integrar no quality gate
 3. Validar suite vitest (`scripts/__tests__/**`)
 
 ---
@@ -105,7 +145,7 @@
 **Commits**:
 
 | SHA | Arquivo refatorado | Padrão eliminado |
-|-----|---------------------|-------------------|
+|-----|---------------------|------------------|
 | `b9a51be` | `theme-presets.test.ts` | B — masking real (5 → 238 tests) |
 | `5b2a7ca` | `auth-utils.test.ts` | B — masking FLOW_GREETINGS (17 → 21 tests) |
 | `21bb9b8` | `AdminStandardRules.test.tsx` | A — idiomática (`describe.each`) |
@@ -188,6 +228,7 @@
 
 | Prioridade | Item | Origem | Cutoff |
 |------------|------|--------|--------|
+| 🔴 Alta | **T14 FIX** — Corrigir gate logic no step 16 de `.github/workflows/e2e.yml` | T14 UPDATE 10 (este) | ASAP |
 | 🟡 Média | **T-FIX-3** — bump GitHub Actions (`checkout@v4→v5`, `setup-node@v4→v6`, `upload-artifact@v4→v5`) | Backlog herdado | **2026-06-02** (11 dias) |
 | 🟡 Média | **Plano "10/10" #3, #4, #5** — coverage, quality runner, ESLint baseline | Bugs anteriores | Sem cutoff |
 | 🟢 Baixa | **T-FIX-5b** — anti-padrão B (`expect` em `forEach` em `it`) | T-FIX-4 audit | Sem cutoff |
