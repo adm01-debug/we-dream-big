@@ -8,23 +8,37 @@
 
 ## 🎯 Onde estamos hoje
 
-**Última sessão**: 2026-05-23 — **Auditoria exaustiva + Plano de 20 etapas** (11 etapas fechadas, 8 adiadas para sessões dedicadas).
+**Última sessão**: 2026-05-23 — **Etapa 17 (T-FIX-5b)** fechada — anti-padrão B do guard-rail ESLint resolvido via Opção A (eslint-disable cirúrgico).
+
+**Sessões recentes**:
+- 2026-05-23 (mais recente) — **Etapa 17 / T-FIX-5b** ✅
+- 2026-05-23 — Auditoria exaustiva + Plano de 20 etapas (PR #124) — 11 etapas fechadas, 8 adiadas
 
 | Métrica | Valor |
 |---------|-------|
-| Sessões de hardening concluídas | T-FIX-3, T-FIX-4, T-FIX-5, Bugs #1/#2, Redeploy de schemas, Auditoria 2026-05-23 |
+| Sessões de hardening concluídas | T-FIX-3, T-FIX-4, T-FIX-5, T-FIX-5b, Bugs #1/#2, Redeploy de schemas, Auditoria 2026-05-23 |
 | Erros TS em `.tsc-baseline.json` | 1.333 (320 arquivos) — sem regressão |
 | Erros ESLint em `.eslint-baseline.json` | 442 (404 arquivos) — drift positivo de 31 capitalizado em 2026-05-23 |
 | Próximo cutoff iminente | ✅ T-FIX-3 fechado em 2026-05-23 (era 2026-06-02) — sem outro cutoff em <30 dias |
 
 ---
 
-## ✅ Fechado nesta sessão (2026-05-23 — Auditoria + Plano 20 etapas)
+## ✅ Fechado nesta sessão (2026-05-23 — Etapa 17 / T-FIX-5b)
 
-PR #124 — branch `claude/code-bug-analysis-VLG0u`.
+**3 commits sequenciais** resolvendo o anti-padrão B do guard-rail ESLint:
+
+- ✅ [`9bf51be`](https://github.com/adm01-debug/promo-gifts-v4/commit/9bf51beafeeb503794c9825f4cfbdd399c8ef351) — `src/pages/auth/AuthBranding.visual.test.tsx`: eslint-disable + comentário inline justificando (Opção A do T-FIX-5b)
+- ✅ [`5318da2`](https://github.com/adm01-debug/promo-gifts-v4/commit/5318da2609064130db8898063bcb7c2e3f140fdc) — `src/components/quotes/__tests__/QuoteBuilderStepper.test.tsx`: mesma decisão para os 5 labels do stepper
+- ✅ [`2543585`](https://github.com/adm01-debug/promo-gifts-v4/commit/2543585d28fcaa424741d3956be60f0be4d0ecda) — `docs/redeploy/T-FIX-5-LINT-GUARDRAIL.md`: doc atualizada registrando Fase 2 + 3 critérios para futuras decisões A vs B
+
+**Decisão arquitetural**: Opção A (eslint-disable cirúrgico) venceu Opção B (refactor) e Opção C (warn). Custo real: ~10 min (vs ~3h estimados originalmente). Severity `error` continua protegendo o repo inteiro; apenas 2 exceções autorizadas com comentário inline auditável.
+
+---
+
+## ✅ Fechado em 2026-05-23 (Auditoria + Plano 20 etapas — PR #124)
 
 ### Quick wins / desbloqueio CI (Etapas 1-5)
-- ✅ **Etapa 1** — P5 do plano "10/10": rename 3 params PascalCase em `AdminStandardRules.test.tsx`
+- ✅ **Etapa 1** — P5 do plano "10/10": rename 3 params PascalCase em `AdminStandardRules.test.tsx:107-113`
 - ✅ **Etapa 2** — refactor `useOptionalOnboardingContext`: elimina 3 empty catches + 3 violações `rules-of-hooks` + 3 `any`
 - ✅ **Etapa 3** — regenera baseline ESLint capturando 31 erros eliminados (473→442)
 - ✅ **Etapa 4** — T-FIX-3: bump 60 usos de GH Actions em 12 workflows (checkout/setup-node/upload-artifact)
@@ -36,7 +50,7 @@ PR #124 — branch `claude/code-bug-analysis-VLG0u`.
 - ✅ **Etapa 8** — Issue 2: 15 testes Deno para `validateUrlFormat`
 
 ### Pendências menores (Etapas 18-19)
-- ✅ **Etapa 18** — `QuoteBuilderStepper.test.tsx`: remove forEach no-op
+- ✅ **Etapa 18** — `QuoteBuilderStepper.test.tsx:68`: remove forEach no-op
 - ✅ **Etapa 19** — `ScenarioSimulation.test.ts`: corrige Scenario 2 CIF/FOB vs schema real (3 cenários)
 
 ### Outras correções (não numeradas)
@@ -55,7 +69,7 @@ PR #124 — branch `claude/code-bug-analysis-VLG0u`.
 
 ## ⏳ Pendências adiadas (sessões dedicadas)
 
-8 etapas do plano de 20 ficaram para sessões dedicadas porque exigem refactor arquitetural não-trivial:
+**8 etapas** do plano de 20 ficaram para sessões dedicadas porque exigem refactor arquitetural não-trivial:
 
 | # | Etapa | Razão do adiamento | Esforço estimado |
 |---|---|---|---|
@@ -67,9 +81,8 @@ PR #124 — branch `claude/code-bug-analysis-VLG0u`.
 | 14 | Reduzir `SupabaseConnectionsTab.tsx` (17 ESLint warnings) | Auditoria caso-a-caso | ~1h |
 | 15 | Reduzir `CatalogContent.tsx` + `ProductQuickView.tsx` (32 warnings) | Idem | ~2h |
 | 16 | Reduzir `useSimulatorWizard.ts` + `useGlobalSearch.ts` (27 warnings) | Idem | ~2h |
-| 17 | T-FIX-5b — antipadrão B (`expect` em `forEach` em `it`) | Evolução do guard-rail ESLint | ~3h |
 
-**Total estimado**: ~23h de trabalho cuidadoso.
+**Total estimado**: ~20h de trabalho cuidadoso.
 
 > 💡 Sugestão: rodar essas etapas **uma por sessão dedicada**, sem misturar com novas features. A refatoração de um arquivo do top-5 do TSC baseline gera ~20+ pares de edits e é frágil — vale ter 100% do CI rodando antes/depois de cada.
 
@@ -82,9 +95,10 @@ PR #124 — branch `claude/code-bug-analysis-VLG0u`.
 | 🟡 Alta | Refatorar top-5 arquivos do TSC baseline (etapas 9-13 do plano) | Auditoria 2026-05-23 | Sem cutoff |
 | 🟡 Média | Reduzir top arquivos do ESLint baseline (etapas 14-16) | Idem | Sem cutoff |
 | 🟡 Média | Plano "10/10" #3, #4 (coverage, quality runner) | Bugs anteriores | Sem cutoff |
-| 🟢 Baixa | T-FIX-5b — antipadrão B | T-FIX-4 audit | Sem cutoff |
 | 🟢 Baixa | Issue 3 do post-mortem CRM — migrar `EXTERNAL_CRM_*` para `integration_credentials` | Post-mortem | Sponsor precisa fornecer chaves |
 | 🟢 Baixa | Flakiness teardown async Helmet/Event listener | Sessão anterior | Sem cutoff |
+
+> ✅ **Removido do backlog em 2026-05-23**: T-FIX-5b (Etapa 17) — anti-padrão B do guard-rail ESLint resolvido via Opção A. Ver `docs/redeploy/T-FIX-5-LINT-GUARDRAIL.md` → seção "Fase 2 — T-FIX-5b RESOLVIDO".
 
 ---
 
