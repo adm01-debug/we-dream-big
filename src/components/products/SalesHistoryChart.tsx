@@ -41,8 +41,7 @@ interface SalesHistoryChartProps {
 
 // ---------- Main Component ----------
 
-export function SalesHistoryChart({ productId, productSku }: SalesHistoryChartProps) {
-  const [period, setPeriod] = useState<string>('30');
+export function SalesHistoryChart({ productId, productSku }: SalesHistoryChartProps) {  const [period, setPeriod] = useState<string>('30');
   const days = Number(period);
 
   const { data, isLoading, error, refetch } = useSalesHistory(productId, days);
@@ -60,8 +59,7 @@ export function SalesHistoryChart({ productId, productSku }: SalesHistoryChartPr
         return acc;
       },
       [],
-    );
-  }, [data, hasData]);
+    );  }, [data, hasData]);
 
   const kpis = useMemo(() => {
     if (!hasData)
@@ -369,14 +367,23 @@ function SellerRow({ seller, rank }: { seller: SellerRanking; rank: number }) {
   );
 }
 
+interface ChartDayPayload {
+  quotedQty: number;
+  orderedQty: number;
+  quoteCount: number;
+  orderCount: number;
+  quotedValue: number;
+  orderedValue: number;
+  fullDate?: string;
+}
+
 // #2 fix: SalesTooltip shows fallback when all values are zero
 function SalesTooltip({
   active,
   payload,
 }: {
   active?: boolean;
-  payload?: { payload: Record<string, unknown> }[];
-}) {
+  payload?: { payload: Record<string, unknown> }[];}) {
   if (!active || !payload?.length) return null;
   const data = payload[0]?.payload;
   if (!data) return null;
