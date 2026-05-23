@@ -21,7 +21,28 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 const prefetchMock = vi.fn(() => Promise.resolve());
 
 let mockUnreadCount = 0;
-vi.mock("@/hooks/useNotifications", () => ({
+
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({
+    user: { id: "test-user" },
+    session: null,
+    profile: null,
+    isLoading: false,
+    roles: [] as const,
+    role: null,
+    isDev: false,
+    isSupervisor: false,
+    isAgente: false,
+    isSupervisorOrAbove: false,
+    isAdmin: false,
+    isManager: false,
+    isSeller: false,
+    canManage: false,
+  }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock("@/hooks/ui", () => ({
   useNotifications: () => ({
     notifications: [],
     unreadCount: mockUnreadCount,
