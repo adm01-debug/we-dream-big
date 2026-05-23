@@ -2,10 +2,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QuoteBuilderStepper } from '../QuoteBuilderStepper';
 import React from 'react';
+import type * as LucideReact from 'lucide-react';
 
 // Mocking icons to simplify snapshot/queries
 vi.mock('lucide-react', async () => {
-  const actual = await vi.importActual<typeof import('lucide-react')>('lucide-react');
+  const actual = await vi.importActual<typeof LucideReact>('lucide-react');
   return {
     ...actual,
     Building2: () => <div data-testid="icon-client" />,
@@ -52,7 +53,7 @@ describe('QuoteBuilderStepper UI (5 etapas)', () => {
     // Verificando classes de margem responsiva
     expect(connectors[0].className).toContain('mx-1');
     expect(connectors[0].className).toContain('sm:mx-4');
-    
+
     const innerLines = container.querySelectorAll('[aria-hidden="true"] > div');
     expect(innerLines[0].className).toContain('bg-primary'); // 0→1
     expect(innerLines[1].className).toContain('bg-primary'); // 1→2
@@ -60,17 +61,11 @@ describe('QuoteBuilderStepper UI (5 etapas)', () => {
     expect(innerLines[3].className).toContain('bg-border'); // 3→4
   });
 
-  it('has consistent icon sizes and stroke widths', () => {
-    const { container } = render(<QuoteBuilderStepper completedSteps={[]} activeStep="client" />);
-    // Buscamos os ícones mockados ou reais. Como estão mockados no arquivo, verificamos os componentes mockados.
-    // Se fossem reais, verificaríamos as classes lucide-react.
-    const icons = container.querySelectorAll('.rounded-full svg, .rounded-full [data-testid^="icon-"]');
-    icons.forEach(icon => {
-       // No nosso mock eles não tem essas classes, mas no componente real sim.
-       // Verificando no código fonte do componente via line_replace anterior:
-       // Icon className="h-[18px] w-[18px]" strokeWidth={2}
-    });
-  });
+  // Removido: 'has consistent icon sizes and stroke widths' (forEach vazio
+  // no-op — ícones estão mockados neste arquivo, o teste real precisa
+  // rodar contra os componentes lucide-react sem mock para verificar
+  // h-[18px] w-[18px] + strokeWidth=2. Movido para test list pra ser
+  // reintroduzido em suite separada de visual regression.
 
   it('marks all as muted/border when nothing is active or completed', () => {
     render(<QuoteBuilderStepper completedSteps={[]} />);
@@ -80,13 +75,15 @@ describe('QuoteBuilderStepper UI (5 etapas)', () => {
 
   it('calls onStepClick when a step is clicked', () => {
     const onStepClick = vi.fn();
-    render(<QuoteBuilderStepper completedSteps={[]} activeStep="client" onStepClick={onStepClick} />);
-    
+    render(
+      <QuoteBuilderStepper completedSteps={[]} activeStep="client" onStepClick={onStepClick} />,
+    );
+
     const conditionsStep = screen.getByText('Condições').closest('button');
     if (conditionsStep) {
       fireEvent.click(conditionsStep);
     }
-    
+
     expect(onStepClick).toHaveBeenCalledWith('conditions');
   });
 });
