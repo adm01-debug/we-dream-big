@@ -13,7 +13,14 @@ export default defineConfig({
     env: { TZ: 'America/Sao_Paulo' },
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts', './tests/setup-ref-warning-capture.ts'],
-    include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}', 'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}', 'e2e/scripts/__tests__/*.test.ts'],
+    include: [
+      'tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      'e2e/scripts/__tests__/*.test.ts',
+      // T-FIX-5: descobre a suite vitest do script anti-órfão.
+      // Ver docs/redeploy/T-FIX-5-CHECKLIST.md (Passo 3).
+      'scripts/__tests__/**/*.{test,spec}.{ts,mts,cts}',
+    ],
     typecheck: {
       enabled: false,
     },

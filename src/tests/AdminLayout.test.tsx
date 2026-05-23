@@ -57,7 +57,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       not: vi.fn().mockReturnThis(),
       maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       single: vi.fn().mockResolvedValue({ data: null, error: null }),
-      then: vi.fn((cb?: (value: { data: never[]; error: null }) => void) => {
+      then: vi.fn((cb?: (value: { data: unknown[]; error: null }) => void) => {
         cb?.({ data: [], error: null });
         return Promise.resolve({ data: [], error: null });
       }),
