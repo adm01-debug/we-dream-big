@@ -44,16 +44,15 @@ describe("P0 — RLS e integridade", () => {
 
   // ─── user_roles (privilege escalation) ────────────────────────────────
   it("user_roles: existe policy que restringe insert/manage a admins (anti privilege-escalation)", () => {
-    // Aceita variações de nome usadas ao longo das migrations
-    // (consolidação em 20260512000002_t26_consolidate_permissive_policies.sql).
-    const candidates = [
-      /CREATE POLICY[^;]*"Only admins can insert roles"[^;]*ON public\.user_roles/i,
-      /CREATE POLICY[^;]*"Admins can manage roles"[^;]*ON public\.user_roles/i,
-      /CREATE POLICY[^;]*"Admins manage user_roles"[^;]*ON public\.user_roles/i,
-      /ALTER POLICY[^;]*ON public\.user_roles[\s\S]{0,500}has_role\([^)]*'admin'\)/i,
-    ];
-    const matched = candidates.some((re) => re.test(migrationCorpus));
-    expect(matched, "Nenhuma policy admin-only encontrada em public.user_roles").toBe(true);
+    // Regressão-alvo: policy pode manter nome "Admins can manage roles",
+    // mas ser afrouxada para USING (true). Por isso não basta casar por título.
+    const adminManagePolicyWithPredicate =
+      /(?:CREATE|ALTER) POLICY[^;]*(?:"Only admins can insert roles"|"Admins can manage roles"|"Admins manage user_roles")[^;]*ON public\.user_roles[\s\S]{0,1200}(?:USING|WITH\s+CHECK)[\s\S]{0,400}(?:has_role\([^)]*'admin'\)|auth\.uid\(\))/i;
+
+    expect(
+      adminManagePolicyWithPredicate.test(migrationCorpus),
+      "Policy admin-only em public.user_roles sem predicado efetivo (has_role/admin ou auth.uid)"
+    ).toBe(true);
   });
 
   it("user_roles: existe policy que limita SELECT ao próprio usuário", () => {
