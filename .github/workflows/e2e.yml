@@ -151,125 +151,85 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 1) Coletar diagnóstico em /tmp/diag.md
-          DIAG_FILE=/tmp/diag.md
-          {
-            echo "# T14 Smoke Gate Auto-Debug"
-            echo ""
-            echo "**Run**: [#${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-            echo "**SHA**: \`${{ github.sha }}\`"
-            echo "**Event**: \`${{ github.event_name }}\`"
-            echo "**Created at**: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-            echo ""
-            echo "## Step state"
-            echo "- step outcome: \`${{ steps.e2e_smoke.outcome }}\`"
-            echo "- step conclusion: \`${{ steps.e2e_smoke.conclusion }}\`"
-            if [ -f playwright-report/.smoke-passed ]; then
-              echo "- marker present: ✅ YES (smoke exit 0)"
-            else
-              echo "- marker present: ❌ NO (smoke exit != 0)"
-            fi
-            echo ""
-            echo "## playwright-report/ contents (ls -la, top 30)"
-            echo '```'
-            ls -la playwright-report/ 2>/dev/null | head -30 || echo "(no dir)"
-            echo '```'
-            echo ""
-            echo "## Smoke summary (head 100 lines)"
-            echo '```'
-            head -100 playwright-report/smoke-summary.md 2>/dev/null || echo "(no smoke summary file)"
-            echo '```'
-            echo ""
-            echo "## Playwright results.json — stats + first failures"
-            echo '```json'
-            python3 << 'PYEOF' 2>/dev/null || echo "(python parse failed)"
-          import json
-          try:
-              data = json.load(open('playwright-report/results.json'))
-              out = {
-                  'stats': data.get('stats', {}),
-                  'config_version': data.get('config', {}).get('version'),
-                  'errors_count': len(data.get('errors', [])),
-                  'errors_first_3': [str(e)[:400] for e in data.get('errors', [])[:3]],
-              }
-              def walk(suites):
-                  items = []
-                  for s in suites:
-                      for spec in s.get('specs', []):
-                          for t in spec.get('tests', []):
-                              for r in t.get('results', []):
-                                  items.append({
-                                      'title': spec.get('title', '?')[:80],
-                                      'status': r.get('status'),
-                                      'duration_ms': r.get('duration'),
-                                      'error': (str(r.get('error', {}).get('message', ''))[:300]
-                                                if r.get('error') else None),
-                                  })
-                      items.extend(walk(s.get('suites', [])))
-                  return items
-              results = walk(data.get('suites', []))
-              out['results_total'] = len(results)
-              out['results_by_status'] = {}
-              for r in results:
-                  s = r['status'] or 'unknown'
-                  out['results_by_status'][s] = out['results_by_status'].get(s, 0) + 1
-              out['non_passing'] = [r for r in results
-                                    if r['status'] not in ('passed', 'skipped')][:15]
-              print(json.dumps(out, indent=2, ensure_ascii=False))
-          except Exception as e:
-              print(json.dumps({'parse_error': str(e)}, indent=2))
-          PYEOF
-            echo '```'
-          } > "$DIAG_FILE"
+          # T14 UPDATE 5: simplificado para evitar heredoc bash dentro de YAML
+          # (UPDATE 4 anterior tinha bug — PYEOF indentado fazia heredoc nunca
+          # terminar, step rodava em ~1s sem fazer nada).
+          # Estratégia: log no console + commit dos arquivos brutos
+          # (results.json e smoke-summary.md) em docs/redeploy/auto-debug/
+          # via gh api. Parse acontece offline pelo agente Claude.
+          set +e
 
-          # 2) Log no console SEMPRE (visível na UI mesmo se commit falhar)
           echo "================================================================"
-          echo "🔍 SMOKE GATE DIAGNOSTIC — também salvo em docs/redeploy/T14-AUTO-DEBUG.md"
+          echo "🔍 SMOKE GATE DIAGNOSTIC"
           echo "================================================================"
-          cat "$DIAG_FILE"
+          echo "Run:        #${{ github.run_number }} (id ${{ github.run_id }})"
+          echo "SHA:        ${{ github.sha }}"
+          echo "Event:      ${{ github.event_name }}"
+          echo "Outcome:    ${{ steps.e2e_smoke.outcome }}"
+          echo "Conclusion: ${{ steps.e2e_smoke.conclusion }}"
+          if [ -f playwright-report/.smoke-passed ]; then
+            echo "Marker:     present (smoke exit 0)"
+          else
+            echo "Marker:     absent (smoke exit != 0)"
+          fi
+          echo ""
+          echo "--- ls -la playwright-report/ ---"
+          ls -la playwright-report/ 2>/dev/null | head -30
+          echo ""
+          echo "--- head -100 smoke-summary.md ---"
+          head -100 playwright-report/smoke-summary.md 2>/dev/null
           echo "================================================================"
 
-          # 3) Commit somente em push (não em PR) para evitar poluir histórico de PRs
+          # Auto-commit somente em push event para não poluir histórico de PRs
           if [ "${{ github.event_name }}" != "push" ]; then
             echo "(skipping auto-commit — event is ${{ github.event_name }}, not push)"
             exit 0
           fi
 
-          # 4) Encode base64 e commit via gh api (com [skip ci] na mensagem
-          #    para não disparar loop de workflows)
-          CONTENT_B64=$(base64 -w0 "$DIAG_FILE")
-          DIAG_PATH="docs/redeploy/T14-AUTO-DEBUG.md"
-          MSG="auto-diag: T14 smoke debug run #${{ github.run_number }} [skip ci]"
+          REPO="${{ github.repository }}"
+          RUN_NUM="${{ github.run_number }}"
+          MSG="auto-diag: run #$RUN_NUM [skip ci]"
 
-          # Tentar buscar SHA do arquivo se existir
-          EXISTING_SHA=$(gh api "repos/${{ github.repository }}/contents/$DIAG_PATH" 2>/dev/null \
-            | python3 -c "import json,sys; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null \
-            || echo "")
+          # Função para commitar UM arquivo via gh api, fazendo update se já existir.
+          # Todos os comandos longos em LINHA ÚNICA para evitar problemas de
+          # line-continuation dentro de YAML run: |.
+          commit_file() {
+            local local_path="$1"
+            local repo_path="$2"
 
-          if [ -n "$EXISTING_SHA" ]; then
-            echo "Updating existing file (sha=$EXISTING_SHA)..."
-            gh api -X PUT "repos/${{ github.repository }}/contents/$DIAG_PATH" \
-              -f message="$MSG" \
-              -f content="$CONTENT_B64" \
-              -f sha="$EXISTING_SHA" \
-              > /dev/null && echo "✅ Updated $DIAG_PATH" \
-              || echo "(failed to update file — likely race condition or perm issue)"
-          else
-            echo "Creating new file..."
-            gh api -X PUT "repos/${{ github.repository }}/contents/$DIAG_PATH" \
-              -f message="$MSG" \
-              -f content="$CONTENT_B64" \
-              > /dev/null && echo "✅ Created $DIAG_PATH" \
-              || echo "(failed to create file — likely perm issue)"
-          fi
+            if [ ! -f "$local_path" ]; then
+              echo "  ($local_path não existe, skipped)"
+              return 0
+            fi
 
-      # T14 UPDATE 3 (2026-05-22): trocado `steps.e2e_smoke.outcome != 'success'`
-      # por `hashFiles('playwright-report/.smoke-passed') == ''`. Motivo:
-      # GitHub Actions `outcome` é o exit code RAW (antes de continue-on-error),
-      # e o Playwright pode retornar exit != 0 mesmo com todos os testes
-      # passando (warnings, retry counters ou quirks de reporters), causando
-      # false-positive do gate. O marker file só é criado quando o comando
-      # `npx playwright test` retorna exit 0 explícito (`&& touch ...`).
+            local content_b64
+            content_b64=$(base64 -w0 "$local_path")
+
+            # Buscar SHA existente (pode falhar com 404 se for primeiro commit)
+            local existing_sha
+            existing_sha=$(gh api "repos/$REPO/contents/$repo_path" 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('sha','') if isinstance(d, dict) else '')" 2>/dev/null || echo "")
+
+            if [ -n "$existing_sha" ]; then
+              if gh api -X PUT "repos/$REPO/contents/$repo_path" -f "message=$MSG" -f "content=$content_b64" -f "sha=$existing_sha" > /dev/null 2>&1; then
+                echo "  Updated $repo_path"
+              else
+                echo "  Failed to update $repo_path"
+              fi
+            else
+              if gh api -X PUT "repos/$REPO/contents/$repo_path" -f "message=$MSG" -f "content=$content_b64" > /dev/null 2>&1; then
+                echo "  Created $repo_path"
+              else
+                echo "  Failed to create $repo_path"
+              fi
+            fi
+          }
+
+          echo "Committing diagnostic files to docs/redeploy/auto-debug/ ..."
+          commit_file playwright-report/results.json        "docs/redeploy/auto-debug/T14-results-latest.json"
+          commit_file playwright-report/smoke-summary.md    "docs/redeploy/auto-debug/T14-smoke-summary-latest.md"
+          commit_file playwright-report/smoke-summary.json  "docs/redeploy/auto-debug/T14-smoke-summary-latest.json"
+          echo "Done."
+
       - name: 🛑 Fail-fast se smoke falhou (gate)
         if: hashFiles('playwright-report/.smoke-passed') == ''
         run: |
