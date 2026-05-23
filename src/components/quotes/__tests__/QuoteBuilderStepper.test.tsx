@@ -42,6 +42,23 @@ describe('QuoteBuilderStepper UI (5 etapas)', () => {
   it('renders all 5 labels in the new order', () => {
     render(<QuoteBuilderStepper completedSteps={[]} activeStep="client" />);
     const labels = ['Cliente', 'Condições', 'Itens', 'Personalização', 'Revisão'];
+    // T-FIX-5b — decisão Opção A (eslint-disable cirúrgico):
+    //
+    // 5 labels estáticos do mesmo render(), todos renderizados juntos
+    // no DOM. Masking aqui tem alcance mínimo: se 'Cliente' faltar
+    // (label hardcoded no componente), os outros 4 provavelmente
+    // também faltariam — o usuário veria stepper inteiro quebrado
+    // imediatamente.
+    //
+    // Refactor para it.each exigiria 5 renders separados ou setup
+    // helper compartilhado. Custo-benefício não compensa para 5
+    // labels estáticos.
+    //
+    // Severity 'error' continua protegendo todo o repo — apenas esta
+    // exceção é autorizada. Decisão registrada em
+    // docs/redeploy/T-FIX-5-LINT-GUARDRAIL.md
+    //
+    // eslint-disable-next-line no-restricted-syntax
     labels.forEach((l) => expect(screen.getByText(l)).toBeDefined());
   });
 
