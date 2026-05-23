@@ -18,7 +18,7 @@
 ### Post-mortem CRM bridge (6-8)
 - [x] **Etapa 6** — Issue 1: criar `docs/operations/cadastro-secrets-supabase.md` (POP)
 - [x] **Etapa 7** — Issue 2: adicionar `validateUrlFormat` em `supabase/functions/_shared/connection-test-runner.ts`
-- [ ] **Etapa 8** — Issue 2: testes de `validateUrlFormat` (URL válida, dashboard, trailing slash, path, vazia, sem https)
+- [x] **Etapa 8** — Issue 2: testes de `validateUrlFormat` (15 testes cobrindo os 6 cenários da spec + bitrix24/n8n/webhook_outbound/mcp)
 
 ### Redução tsc-baseline — top 5 arquivos (9-13)
 - [ ] **Etapa 9** — Refatorar `src/lib/personalization/adapters/price-response.adapter.ts` (61 erros)
