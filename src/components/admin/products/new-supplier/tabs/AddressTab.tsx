@@ -1,4 +1,6 @@
 import type { ChangeEvent } from 'react';
+import type { useNewSupplierForm } from '@/components/admin/products/new-supplier/useNewSupplierForm';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -9,7 +11,7 @@ import { maskCep, ESTADOS_BR } from '@/utils/masks';
 const fieldClass = 'mt-1.5 h-9';
 
 interface AddressTabProps {
-  form: Record<string, unknown>;
+  form: ReturnType<typeof useNewSupplierForm>;
 }
 
 export function AddressTab({ form }: AddressTabProps) {
