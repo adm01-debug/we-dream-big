@@ -22,6 +22,7 @@
 --
 -- Dependências resolvidas (DROP + ALTER + RECREATE no mesmo migration):
 --   - VIEW v_audit_paradoxos_gravacao (referencia markup_percent)
+--   - TRIGGER trg_validate_quote_real_discount (UPDATE OF discount_percent)
 --   - TRIGGER trg_quotes_calc_real_values (UPDATE OF negotiation_markup_percent)
 --   - TRIGGER trg_kit_print_area_normalizar_eixos (UPDATE OF max_width, max_height)
 --
@@ -40,6 +41,7 @@
 
 -- 0. DROP dependências bloqueadoras
 DROP VIEW IF EXISTS public.v_audit_paradoxos_gravacao;
+DROP TRIGGER IF EXISTS trg_validate_quote_real_discount ON public.quotes;
 DROP TRIGGER IF EXISTS trg_quotes_calc_real_values ON public.quotes;
 DO $g$ BEGIN
   DROP TRIGGER IF EXISTS trg_kit_print_area_normalizar_eixos ON public.kit_component_print_areas;
@@ -105,6 +107,12 @@ DO $g$ BEGIN
 EXCEPTION WHEN undefined_table THEN NULL; END $g$;
 
 -- 4. RECREATE triggers (definições idênticas às originais)
+CREATE TRIGGER trg_validate_quote_real_discount
+  BEFORE INSERT OR UPDATE OF subtotal, discount_percent, negotiation_markup_percent, status
+  ON public.quotes
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_quote_real_discount();
+
 CREATE TRIGGER trg_quotes_calc_real_values
   BEFORE INSERT OR UPDATE OF subtotal, discount_amount, negotiation_markup_percent
   ON public.quotes
