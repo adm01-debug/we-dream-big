@@ -1,3 +1,2 @@
--- noop placeholder migration: removed unsafe hardcoded password reset.
--- Any manual password reset for test users must happen outside versioned migrations.
-SELECT 1;
+-- Historical one-off password reset removed to keep migration replay safe.
+-- No-op migration intentionally left in place for history consistency.
