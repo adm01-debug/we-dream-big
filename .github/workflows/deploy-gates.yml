@@ -36,8 +36,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       - run: npm ci
-      - run: npm run lint || echo "::warning::lint script not defined, skipping"
-      - run: npx tsc --noEmit
+      - run: npm run typecheck
+      - run: npm run lint:baseline
 
   unit-tests:
     name: Gate 2 - Unit Tests
@@ -68,7 +68,7 @@ jobs:
       - name: Run Playwright smoke tests
         run: |
           if [ -d "e2e" ] || [ -d "tests/e2e" ] || [ -d "playwright" ]; then
-            npx playwright test --grep "@smoke" --project=chromium || npx playwright test --project=chromium
+            npm run test:e2e:smoke
           else
             echo "::warning::No e2e folder found, skipping (will be added in future PR)"
           fi
