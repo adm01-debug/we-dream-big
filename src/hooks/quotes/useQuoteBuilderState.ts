@@ -5,26 +5,20 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
-import {
-  useAutoSaveQuote,
-  useDiscountApproval,
-  useQuoteItems,
-  useQuotes,
-  useSellerDiscountLimits,
-  useQuoteTemplates,
-  type QuoteItem,
-  type QuoteItemPersonalization,
-  type QuoteTemplate,
-  type QuoteTemplateItem,
-} from '@/hooks/quotes';
+import { useAutoSaveQuote, useDiscountApproval, useQuoteItems, useQuotes, useSellerDiscountLimits, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes";
 import { useQuery } from '@tanstack/react-query';
 import Fuse from 'fuse.js';
 import { format, addDays } from 'date-fns';
 import { toast } from 'sonner';
 import { formatCurrency as fmtCurrency } from '@/lib/format';
 import { validateQuoteForm, QUOTE_FIELD_LABELS } from '@/lib/validations';
+import {
+  useQuoteTemplates,
+  type QuoteTemplate,
+  type QuoteTemplateItem,
+} from '@/hooks/quotes';
 import { useAuth } from '@/contexts/AuthContext';
-import { findKnownHex, type ExternalVariantStock } from '@/hooks/products';
+import { findKnownHex, type ExternalVariantStock } from "@/hooks/products";
 import { useDebounce } from '@/hooks/common';
 import type {
   SelectedCompanyInfo,
@@ -176,29 +170,22 @@ export function useQuoteBuilderState() {
     }
   }, []);
 
-  const handleShippingTypeChange = useCallback(
-    (value: string) => {
-      setShippingType(value);
-      if (value !== 'fob_pre' && shippingCost !== 0) {
-        setShippingCost(0);
-      }
-      setTimeout(() => {
-        // Pequeno delay para garantir que o estado foi processado antes de avisar
-        toast.success(
-          `Frete alterado para: ${
-            value === 'cif' ? 'CIF' : value === 'fob' ? 'FOB' : 'FOB Pré-negociado'
-          }`,
-          {
-            description:
-              value === 'fob_pre'
-                ? 'Lembre-se de informar o valor acordado.'
-                : 'O custo será zerado no orçamento.',
-          },
-        );
-      }, 50);
-    },
-    [shippingCost],
-  );
+  const handleShippingTypeChange = useCallback((value: string) => {
+    setShippingType(value);
+    if (value !== 'fob_pre' && shippingCost !== 0) {
+      setShippingCost(0);
+    }
+    setTimeout(() => {
+      // Pequeno delay para garantir que o estado foi processado antes de avisar
+      toast.success(`Frete alterado para: ${
+        value === 'cif' ? 'CIF' : 
+        value === 'fob' ? 'FOB' : 
+        'FOB Pré-negociado'
+      }`, {
+        description: value === 'fob_pre' ? 'Lembre-se de informar o valor acordado.' : 'O custo será zerado no orçamento.',
+      });
+    }, 50);
+  }, [shippingCost]);
 
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [productSearch, setProductSearch] = useState('');
@@ -218,7 +205,7 @@ export function useQuoteBuilderState() {
     const steps: QuoteBuilderStep[] = [];
     if (clientId && contactId) steps.push('client');
     if (paymentMethod && paymentTerms && deliveryTime && shippingType) {
-      if (shippingType !== 'fob_pre' || shippingCost > 0) {
+      if (shippingType !== 'fob_pre' || (shippingCost > 0)) {
         steps.push('conditions');
       }
     }
@@ -227,16 +214,7 @@ export function useQuoteBuilderState() {
     const hasAnyPersonalization = items.some((it) => (it.personalizations?.length ?? 0) > 0);
     if (items.length > 0 && hasAnyPersonalization) steps.push('personalization');
     return steps;
-  }, [
-    clientId,
-    contactId,
-    items,
-    paymentMethod,
-    paymentTerms,
-    deliveryTime,
-    shippingType,
-    shippingCost,
-  ]);
+  }, [clientId, contactId, items, paymentMethod, paymentTerms, deliveryTime, shippingType, shippingCost]);
 
   const announce = useCallback((message: string) => {
     const announcer = document.getElementById('quote-builder-announcer');
@@ -245,94 +223,75 @@ export function useQuoteBuilderState() {
     }
   }, []);
 
-  const validateStep = useCallback(
-    (step: QuoteBuilderStep): boolean => {
-      switch (step) {
-        case 'client':
-          if (!clientId) {
-            toast.error('Selecione um cliente');
-            announce('Erro: Selecione um cliente');
-            return false;
-          }
-          if (!contactId) {
-            toast.error('Selecione um contato');
-            announce('Erro: Selecione um contato');
-            return false;
-          }
-          return true;
-        case 'conditions': {
-          const errors = validateQuoteForm({
-            clientId,
-            contactId,
-            paymentMethod,
-            paymentTerms,
-            deliveryTime,
-            shippingType,
-            shippingCost,
-            itemsCount: items.length,
-          });
-
-          if (errors.includes('forma_pagamento')) {
-            toast.error('Selecione a forma de pagamento');
-            return false;
-          }
-          if (errors.includes('prazo_pagamento')) {
-            toast.error('Selecione o prazo de pagamento');
-            return false;
-          }
-          if (errors.includes('prazo_entrega')) {
-            toast.error('Defina o prazo de entrega');
-            return false;
-          }
-          if (errors.includes('frete')) {
-            toast.error('Selecione a modalidade de frete');
-            announce('Erro: Selecione a modalidade de frete');
-            return false;
-          }
-          if (errors.includes('valor_frete')) {
-            toast.error('Informe o valor do frete pré-negociado');
-            return false;
-          }
-          return true;
+  const validateStep = useCallback((step: QuoteBuilderStep): boolean => {
+    switch (step) {
+      case 'client':
+        if (!clientId) {
+          toast.error('Selecione um cliente');
+          announce('Erro: Selecione um cliente');
+          return false;
         }
-        case 'items':
-          if (items.length === 0) {
-            toast.error('Adicione pelo menos um item');
-            announce('Erro: Adicione pelo menos um item');
-            return false;
-          }
-          return true;
-        case 'personalization':
-          return true;
-        case 'review':
-          return true;
-        default:
-          return true;
+        if (!contactId) {
+          toast.error('Selecione um contato');
+          announce('Erro: Selecione um contato');
+          return false;
+        }
+        return true;
+      case 'conditions': {
+        const errors = validateQuoteForm({
+          clientId,
+          contactId,
+          paymentMethod,
+          paymentTerms,
+          deliveryTime,
+          shippingType,
+          shippingCost,
+          itemsCount: items.length,
+        });
+
+        if (errors.includes('forma_pagamento')) {
+          toast.error('Selecione a forma de pagamento');
+          return false;
+        }
+        if (errors.includes('prazo_pagamento')) {
+          toast.error('Selecione o prazo de pagamento');
+          return false;
+        }
+        if (errors.includes('prazo_entrega')) {
+          toast.error('Defina o prazo de entrega');
+          return false;
+        }
+        if (errors.includes('frete')) {
+          toast.error('Selecione a modalidade de frete');
+          announce('Erro: Selecione a modalidade de frete');
+          return false;
+        }
+        if (errors.includes('valor_frete')) {
+          toast.error('Informe o valor do frete pré-negociado');
+          return false;
+        }
+        return true;
       }
-    },
-    [
-      clientId,
-      contactId,
-      paymentMethod,
-      paymentTerms,
-      deliveryTime,
-      shippingType,
-      shippingCost,
-      items,
-      announce,
-    ],
-  );
+      case 'items':
+        if (items.length === 0) {
+          toast.error('Adicione pelo menos um item');
+          announce('Erro: Adicione pelo menos um item');
+          return false;
+        }
+        return true;
+      case 'personalization':
+        return true;
+      case 'review':
+        return true;
+      default:
+        return true;
+    }
+  }, [clientId, contactId, paymentMethod, paymentTerms, deliveryTime, shippingType, shippingCost, items, announce]);
 
   const nextStep = useCallback(() => {
-    const steps: QuoteBuilderStep[] = [
-      'client',
-      'conditions',
-      'items',
-      'personalization',
-      'review',
-    ];
+    const steps: QuoteBuilderStep[] = ['client', 'conditions', 'items', 'personalization', 'review'];
     const currentIndex = steps.indexOf(currentStep);
-
+    
     if (validateStep(currentStep)) {
       if (currentIndex < steps.length - 1) {
         setCurrentStep(steps[currentIndex + 1]);
@@ -342,48 +301,33 @@ export function useQuoteBuilderState() {
   }, [currentStep, validateStep]);
 
   const prevStep = useCallback(() => {
-    const steps: QuoteBuilderStep[] = [
-      'client',
-      'conditions',
-      'items',
-      'personalization',
-      'review',
-    ];
+    const steps: QuoteBuilderStep[] = ['client', 'conditions', 'items', 'personalization', 'review'];
     const currentIndex = steps.indexOf(currentStep);
-
+    
     if (currentIndex > 0) {
       setCurrentStep(steps[currentIndex - 1]);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [currentStep]);
+  
+  const goToStep = useCallback((step: QuoteBuilderStep) => {
+    const steps: QuoteBuilderStep[] = ['client', 'conditions', 'items', 'personalization', 'review'];
+    const targetIndex = steps.indexOf(step);
+    const currentIndex = steps.indexOf(currentStep);
 
-  const goToStep = useCallback(
-    (step: QuoteBuilderStep) => {
-      const steps: QuoteBuilderStep[] = [
-        'client',
-        'conditions',
-        'items',
-        'personalization',
-        'review',
-      ];
-      const targetIndex = steps.indexOf(step);
-      const currentIndex = steps.indexOf(currentStep);
+    if (targetIndex === currentIndex) return;
 
-      if (targetIndex === currentIndex) return;
-
-      // Se estiver tentando ir para uma etapa posterior, validar as anteriores
-      if (targetIndex > currentIndex) {
-        // Validar cada etapa entre a atual e a alvo (não inclusiva da alvo, pois a alvo é onde queremos chegar)
-        for (let i = currentIndex; i < targetIndex; i++) {
-          if (!validateStep(steps[i])) return;
-        }
+    // Se estiver tentando ir para uma etapa posterior, validar as anteriores
+    if (targetIndex > currentIndex) {
+      // Validar cada etapa entre a atual e a alvo (não inclusiva da alvo, pois a alvo é onde queremos chegar)
+      for (let i = currentIndex; i < targetIndex; i++) {
+        if (!validateStep(steps[i])) return;
       }
+    }
 
-      setCurrentStep(step);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    },
-    [currentStep, validateStep],
-  );
+    setCurrentStep(step);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep, validateStep]);
   // ── AutoSave ──
   const { clearAutoSave } = useAutoSaveQuote({
     enabled: (!!clientId || items.length > 0) && !isEditMode,
@@ -848,16 +792,7 @@ export function useQuoteBuilderState() {
         shippingCost,
         itemsCount: items.length,
       }),
-    [
-      clientId,
-      contactId,
-      paymentMethod,
-      paymentTerms,
-      deliveryTime,
-      shippingType,
-      shippingCost,
-      items,
-    ],
+    [clientId, contactId, paymentMethod, paymentTerms, deliveryTime, shippingType, shippingCost, items],
   );
 
   const isFormValid = validationErrors.length === 0;
@@ -932,7 +867,8 @@ export function useQuoteBuilderState() {
         payment_terms: paymentTerms || undefined,
         delivery_time: deliveryTime || undefined,
         shipping_type: shippingType || undefined,
-        shipping_cost: shippingType === 'fob_pre' ? shippingCost || 0 : 0,
+        shipping_cost:
+          shippingType === 'fob_pre' ? (shippingCost || 0) : 0,
       };
       let result;
       if (isEditMode && quoteId) {

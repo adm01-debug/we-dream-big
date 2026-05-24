@@ -16,19 +16,20 @@ interface PersonalizationTabsProps {
 }
 
 export function PersonalizationTabs({ wizard, onAddNew }: PersonalizationTabsProps) {
-  const {
-    personalizations,
-    currentPersonalizationIndex,
+  const { 
+    personalizations, 
+    currentPersonalizationIndex, 
     isEditingPersonalization,
     selectedLocation,
     currentStep,
     hasAvailableLocations,
   } = wizard;
 
-  const isCreatingNew =
-    !isEditingPersonalization &&
-    hasAvailableLocations &&
-    (currentStep === 'location' || currentStep === 'specs' || currentStep === 'comparison');
+  const isCreatingNew = !isEditingPersonalization && hasAvailableLocations && (
+    currentStep === 'location' || 
+    currentStep === 'specs' || 
+    currentStep === 'comparison'
+  );
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -40,18 +41,16 @@ export function PersonalizationTabs({ wizard, onAddNew }: PersonalizationTabsPro
           className="relative"
         >
           <Button
-            variant={
-              isEditingPersonalization && currentPersonalizationIndex === idx
-                ? 'default'
-                : 'outline'
-            }
+            variant={isEditingPersonalization && currentPersonalizationIndex === idx ? 'default' : 'outline'}
             size="sm"
             className="gap-2 pr-8"
             onClick={() => wizard.editPersonalization(idx)}
           >
             <span className="font-bold">{idx + 1}.</span>
-            <span className="max-w-[80px] truncate">{pers.location.locationName}</span>
-            <Badge variant="secondary" className="h-4 gap-0.5 px-1 text-[9px]">
+            <span className="truncate max-w-[80px]">
+              {pers.location.locationName}
+            </span>
+            <Badge variant="secondary" className="text-[9px] h-4 px-1 gap-0.5">
               {pers.technique.name.split(' ')[0]} • {formatCurrency(pers.pricing.totalPrice)}
             </Badge>
           </Button>
@@ -62,9 +61,8 @@ export function PersonalizationTabs({ wizard, onAddNew }: PersonalizationTabsPro
             trigger={
               <Button
                 variant="ghost"
-                size="icon"
-                aria-label="Fechar"
-                className="absolute right-0.5 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-destructive"
+                size="icon" aria-label="Fechar"
+                className="absolute right-0.5 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground hover:text-destructive"
                 onClick={(e) => e.stopPropagation()}
               >
                 <X className="h-3 w-3" />
@@ -75,7 +73,11 @@ export function PersonalizationTabs({ wizard, onAddNew }: PersonalizationTabsPro
       ))}
 
       {isCreatingNew && (
-        <Button variant="default" size="sm" className="gap-1 text-xs font-semibold uppercase">
+        <Button
+          variant="default"
+          size="sm"
+          className="gap-1 uppercase text-xs font-semibold"
+        >
           {personalizations.length > 0 && <Plus className="h-4 w-4" />}
           {selectedLocation ? selectedLocation.locationName : 'Personalização'}
         </Button>
@@ -85,7 +87,7 @@ export function PersonalizationTabs({ wizard, onAddNew }: PersonalizationTabsPro
         <Button
           variant="ghost"
           size="sm"
-          className="shrink-0 gap-1 text-xs font-semibold uppercase text-muted-foreground hover:text-primary"
+          className="gap-1 text-muted-foreground hover:text-primary shrink-0 uppercase text-xs font-semibold"
           onClick={onAddNew}
         >
           <Plus className="h-4 w-4" />

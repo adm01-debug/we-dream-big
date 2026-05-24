@@ -22,11 +22,13 @@ export function EngravingList({
 }: EngravingListProps) {
   if (engravings.length === 0) {
     return (
-      <div className="rounded-lg border-2 border-dashed py-6 text-center">
-        <Paintbrush className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
-        <p className="mb-4 text-sm text-muted-foreground">Nenhuma gravação adicionada</p>
+      <div className="text-center py-6 border-2 border-dashed rounded-lg">
+        <Paintbrush className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
+        <p className="text-sm text-muted-foreground mb-4">
+          Nenhuma gravação adicionada
+        </p>
         <Button onClick={onAddNew} variant="outline" size="sm">
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="w-4 h-4 mr-2" />
           Adicionar Gravação
         </Button>
       </div>
@@ -41,7 +43,7 @@ export function EngravingList({
         </h4>
         {canAddMore && (
           <Button onClick={onAddNew} variant="outline" size="sm">
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="w-4 h-4 mr-2" />
             Adicionar
           </Button>
         )}
@@ -49,54 +51,56 @@ export function EngravingList({
 
       <div className="space-y-2">
         {engravings.map((engraving, index) => (
-          <Card
-            key={engraving.id}
-            className={cn('transition-all', index === 0 && 'border-primary/30 bg-primary/5')}
+          <Card 
+            key={engraving.id} 
+            className={cn(
+              "transition-all",
+              index === 0 && "border-primary/30 bg-primary/5"
+            )}
           >
             <CardContent className="p-3">
               <div className="flex items-start gap-3">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <GripVertical className="h-4 w-4" />
-                  <span className="w-5 text-xs font-medium">{index + 1}.</span>
+                  <GripVertical className="w-4 h-4" />
+                  <span className="text-xs font-medium w-5">{index + 1}.</span>
                 </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex items-center gap-2">
-                    <Paintbrush className="h-4 w-4 text-primary" />
-                    <span className="truncate text-sm font-medium">
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Paintbrush className="w-4 h-4 text-primary" />
+                    <span className="font-medium text-sm truncate">
                       {engraving.technique.techniqueName}
                     </span>
                   </div>
-
+                  
                   <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       📍 {engraving.technique.componentName} - {engraving.technique.locationName}
                     </span>
-
+                    
                     {engraving.colors > 0 && (
                       <Badge variant="secondary" className="text-xs">
-                        <Palette className="mr-1 h-3 w-3" />
+                        <Palette className="w-3 h-3 mr-1" />
                         {engraving.colors} {engraving.colors === 1 ? 'cor' : 'cores'}
                       </Badge>
                     )}
-
+                    
                     {engraving.sizeOption && (
                       <Badge variant="secondary" className="text-xs">
-                        <Ruler className="mr-1 h-3 w-3" />
+                        <Ruler className="w-3 h-3 mr-1" />
                         {engraving.sizeOption.replace('x', ' × ')} cm
                       </Badge>
                     )}
                   </div>
                 </div>
-
+                
                 <Button
                   variant="ghost"
-                  size="icon"
-                  aria-label="Excluir"
-                  className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  size="icon" aria-label="Excluir"
+                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                   onClick={() => onRemove(engraving.id)}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             </CardContent>
@@ -105,7 +109,7 @@ export function EngravingList({
       </div>
 
       {!canAddMore && (
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground text-center">
           Máximo de {maxEngravings} gravações atingido
         </p>
       )}

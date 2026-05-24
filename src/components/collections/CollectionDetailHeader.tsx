@@ -2,12 +2,15 @@
  * CollectionDetailHeader — Header section for collection detail page.
  * Contains back button, collection info, CRM badge, share, export and action buttons.
  */
-import { motion } from 'framer-motion';
-import { Monitor, Package, FileText, Clock, Users, Share2, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ExportCollectionButton } from './ExportCollectionButton';
-import type { Product } from '@/hooks/products';
+import { motion } from "framer-motion";
+import {
+  ArrowLeft, Monitor, Package, FileText, Clock, Users, Share2,
+  ArrowRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ExportCollectionButton } from "./ExportCollectionButton";
+import type { Product } from "@/hooks/products";
 
 interface CollectionInfo {
   name: string;
@@ -23,10 +26,7 @@ interface CollectionDetailHeaderProps {
   isLoading?: boolean;
   updatedAgo: string | null;
   products: Product[];
-  variantMap?: Map<
-    string,
-    { color_name?: string | null; color_hex?: string | null; thumbnail?: string | null }
-  >;
+  variantMap?: Map<string, { color_name?: string | null; color_hex?: string | null; thumbnail?: string | null }>;
   notesMap?: Map<string, string | undefined>;
   onBack: () => void;
   onCreateQuote: () => void;
@@ -43,7 +43,7 @@ export function CollectionDetailHeader({
   products,
   variantMap,
   notesMap,
-  onBack: _onBack,
+  onBack,
   onCreateQuote,
   onPresent,
   onShare,
@@ -55,43 +55,43 @@ export function CollectionDetailHeader({
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-[1.5px] border-primary/20 text-2xl sm:h-16 sm:w-16"
+          transition={{ type: "spring", stiffness: 400, damping: 20 }}
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center text-2xl shrink-0 border-[1.5px] border-primary/20"
           style={{ backgroundColor: `${collection.color}20` }}
         >
           {collection.icon}
         </motion.div>
         <div className="flex-1">
-          <h1 className="font-display text-2xl font-bold text-foreground lg:text-3xl">
+          <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">
             {collection.name}
           </h1>
           {collection.description && (
-            <p className="mt-1 text-muted-foreground">{collection.description}</p>
+            <p className="text-muted-foreground mt-1">{collection.description}</p>
           )}
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <Badge variant="secondary" className="border-primary/20 bg-primary/10 text-primary">
-              <Package className="mr-1 h-3 w-3" />
-              {isLoading ? 'Carregando...' : `${productCount} produtos`}
+          <div className="flex items-center gap-3 mt-2 flex-wrap">
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+              <Package className="h-3 w-3 mr-1" />
+              {isLoading ? "Carregando..." : `${productCount} produtos`}
             </Badge>
             {collection.clientName && (
               <Badge variant="outline" className="border-primary/30 text-foreground">
-                <Users className="mr-1 h-3 w-3 text-primary" />
+                <Users className="h-3 w-3 mr-1 text-primary" />
                 {collection.clientName}
               </Badge>
             )}
             {updatedAgo && (
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 Atualizado {updatedAgo}
               </span>
             )}
           </div>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
           {productCount > 0 && (
             <>
               <Button
-                className="gap-2 font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+                className="gap-2 font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
                 onClick={onCreateQuote}
               >
                 <FileText className="h-4 w-4" />
@@ -107,12 +107,12 @@ export function CollectionDetailHeader({
               {showShare && onShare && (
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={onShare}>
                   <Share2 className="h-3.5 w-3.5" />
-                  <span className="hidden text-xs sm:inline">Compartilhar</span>
+                  <span className="hidden sm:inline text-xs">Compartilhar</span>
                 </Button>
               )}
               <Button variant="outline" size="sm" className="gap-1.5" onClick={onPresent}>
                 <Monitor className="h-3.5 w-3.5" />
-                <span className="hidden text-xs sm:inline">Apresentar</span>
+                <span className="hidden sm:inline text-xs">Apresentar</span>
               </Button>
             </>
           )}

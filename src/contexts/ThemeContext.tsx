@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { performanceTracker } from '@/utils/performance';
 
+
 type Theme = 'light' | 'dark' | 'auto';
 
 interface ThemeContextType {
@@ -100,13 +101,12 @@ export function ThemeProvider({
     };
 
     if (typeof document !== 'undefined' && 'startViewTransition' in document) {
-      (
-        document as unknown as { startViewTransition: (cb: () => void) => void }
-      ).startViewTransition(apply);
+      (document as any).startViewTransition(apply);
     } else {
       apply();
     }
   };
+
 
   const toggleTheme = () => {
     const nextTheme = actualTheme === 'light' ? 'dark' : 'light';
@@ -128,9 +128,7 @@ export function useTheme() {
 
   if (context === undefined) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn(
-        'useTheme must be used within a ThemeProvider. Returning a fallback theme to avoid crash.',
-      );
+      console.warn('useTheme must be used within a ThemeProvider. Returning a fallback theme to avoid crash.');
     }
     // Return a safe fallback instead of throwing
     return {

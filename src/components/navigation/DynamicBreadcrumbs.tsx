@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useMemo, Fragment } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { Home, ChevronRight } from "lucide-react";

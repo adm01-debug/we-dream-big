@@ -21,14 +21,9 @@ interface QuoteVersionHistoryProps {
   onCreateVersion?: () => void;
 }
 
-export function QuoteVersionHistory({
-  quoteId,
-  currentQuoteId,
-  onCreateVersion,
-}: QuoteVersionHistoryProps) {
+export function QuoteVersionHistory({ quoteId, currentQuoteId, onCreateVersion }: QuoteVersionHistoryProps) {
   const navigate = useNavigate();
-  const { versions, isLoading, fetchVersions, createNewVersion, hasMultipleVersions } =
-    useQuoteVersions(quoteId);
+  const { versions, isLoading, fetchVersions, createNewVersion, hasMultipleVersions } = useQuoteVersions(quoteId);
   const [isCreating, setIsCreating] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
 
@@ -46,13 +41,14 @@ export function QuoteVersionHistory({
     }
   };
 
+
   if (isLoading && versions.length === 0) {
     return (
       <Card>
         <CardContent className="p-4">
           <div className="animate-pulse space-y-2">
-            <div className="h-4 w-1/3 rounded bg-muted" />
-            <div className="h-8 rounded bg-muted" />
+            <div className="h-4 bg-muted rounded w-1/3" />
+            <div className="h-8 bg-muted rounded" />
           </div>
         </CardContent>
       </Card>
@@ -63,7 +59,7 @@ export function QuoteVersionHistory({
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
             <GitBranch className="h-4 w-4 text-primary" />
             Versões do Orçamento
             {hasMultipleVersions && (
@@ -80,7 +76,7 @@ export function QuoteVersionHistory({
                     size="sm"
                     variant="outline"
                     onClick={() => setShowCompare(true)}
-                    className="h-7 gap-1 text-xs"
+                    className="h-7 text-xs gap-1"
                   >
                     <GitCompare className="h-3 w-3" />
                     Comparar
@@ -96,7 +92,7 @@ export function QuoteVersionHistory({
                   variant="outline"
                   onClick={handleCreateVersion}
                   disabled={isCreating}
-                  className="h-7 gap-1 text-xs"
+                  className="h-7 text-xs gap-1"
                 >
                   <Plus className="h-3 w-3" />
                   Nova Versão
@@ -117,8 +113,7 @@ export function QuoteVersionHistory({
             <div className="space-y-2">
               {versions.map((version, idx) => {
                 const isCurrent = version.id === currentQuoteId;
-                const statusCfg =
-                  QUOTE_STATUS_CONFIG[version.status as keyof typeof QUOTE_STATUS_CONFIG];
+                const statusCfg = QUOTE_STATUS_CONFIG[version.status as keyof typeof QUOTE_STATUS_CONFIG];
 
                 return (
                   <div key={version.id}>
@@ -126,47 +121,43 @@ export function QuoteVersionHistory({
                     <button
                       onClick={() => !isCurrent && navigate(`/orcamentos/${version.id}`)}
                       disabled={isCurrent}
-                      className={`w-full rounded-md p-2 text-left transition-colors ${
+                      className={`w-full text-left p-2 rounded-md transition-colors ${
                         isCurrent
-                          ? 'border border-primary/20 bg-primary/10'
-                          : 'cursor-pointer hover:bg-muted/50'
+                          ? "bg-primary/10 border border-primary/20"
+                          : "hover:bg-muted/50 cursor-pointer"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-primary">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-xs font-mono font-bold text-primary">
                             v{version.version}
                           </span>
-                          <span className="truncate text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground truncate">
                             {version.quote_number}
                           </span>
                           {version.is_latest_version && (
-                            <Badge variant="default" className="h-4 px-1 text-[10px]">
+                            <Badge variant="default" className="text-[10px] h-4 px-1">
                               Atual
                             </Badge>
                           )}
-                          {isCurrent && <Eye className="h-3 w-3 flex-shrink-0 text-primary" />}
+                          {isCurrent && (
+                            <Eye className="h-3 w-3 text-primary flex-shrink-0" />
+                          )}
                         </div>
                         <Badge
-                          variant={
-                            (statusCfg?.badgeVariant as
-                              | 'secondary'
-                              | 'default'
-                              | 'destructive'
-                              | 'outline') || 'secondary'
-                          }
-                          className="h-4 flex-shrink-0 px-1 text-[10px]"
+                          variant={(statusCfg?.badgeVariant as "secondary" | "default" | "destructive" | "outline") || "secondary"}
+                          className="text-[10px] h-4 px-1 flex-shrink-0"
                         >
                           {statusCfg?.label || version.status}
                         </Badge>
                       </div>
-                      <div className="mt-1 flex items-center justify-between">
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                           <Clock className="h-2.5 w-2.5" />
-                          {format(new Date(version.created_at), 'dd/MM/yy HH:mm', { locale: ptBR })}
+                          {format(new Date(version.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                             <FileText className="h-2.5 w-2.5" />
                             {version.items_count || 0} itens
                           </span>

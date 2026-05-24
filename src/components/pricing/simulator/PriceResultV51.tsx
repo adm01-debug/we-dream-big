@@ -1,6 +1,6 @@
 /**
  * PriceResultV51 - Exibe resultado de cálculo de preço v5.1
- *
+ * 
  * LÓGICA v5.1:
  * - Setup = PISO MÍNIMO (não é somado!)
  * - Se subtotal < faturamento_minimo → Total = faturamento_minimo
@@ -19,7 +19,7 @@ import {
   Paintbrush,
   Copy,
   CheckCircle2,
-  Info,
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -61,23 +61,23 @@ export function PriceResultV51({
     <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Calculator className="h-5 w-5 text-primary" />
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Calculator className="w-5 h-5 text-primary" />
             Resumo do Orçamento
           </CardTitle>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <Button 
+                  variant="outline" 
+                  size="sm" 
                   onClick={handleCopyCode}
-                  className="gap-2 font-mono"
+                  className="font-mono gap-2"
                 >
-                  {copied ? (
-                    <CheckCircle2 className="h-4 w-4 text-primary dark:text-primary" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
+            {copied ? (
+              <CheckCircle2 className="w-4 h-4 text-primary dark:text-primary" />
+            ) : (
+                    <Copy className="w-4 h-4" />
                   )}
                   {priceData.codigo_orcamento}
                 </Button>
@@ -94,13 +94,15 @@ export function PriceResultV51({
         {/* Produto */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium">
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <Package className="w-4 h-4 text-muted-foreground" />
             Produto
           </div>
-          <div className="flex justify-between pl-6 text-sm">
-            <span className="max-w-[200px] truncate text-muted-foreground">{productName}</span>
+          <div className="flex justify-between text-sm pl-6">
+            <span className="text-muted-foreground truncate max-w-[200px]">
+              {productName}
+            </span>
           </div>
-          <div className="flex justify-between pl-6 text-sm">
+          <div className="flex justify-between text-sm pl-6">
             <span className="text-muted-foreground">
               {formatNumber(quantity)} × {formatCurrency(productPrice)}
             </span>
@@ -113,14 +115,14 @@ export function PriceResultV51({
         {/* Personalização */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium">
-            <Paintbrush className="h-4 w-4 text-muted-foreground" />
+            <Paintbrush className="w-4 h-4 text-muted-foreground" />
             Personalização
             <Badge variant="secondary" className="ml-auto font-mono text-xs">
               {priceData.tabela_codigo_curto}
             </Badge>
           </div>
-
-          <div className="space-y-2 pl-6">
+          
+          <div className="pl-6 space-y-2">
             {/* Técnica e área */}
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{priceData.technique}</span>
@@ -130,7 +132,7 @@ export function PriceResultV51({
                 Área: {priceData.area_name} ({priceData.area_code})
               </span>
             </div>
-
+            
             {priceData.num_cores > 1 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Cores: {priceData.num_cores}</span>
@@ -140,16 +142,17 @@ export function PriceResultV51({
             {showDetails && (
               <>
                 {/* Faixa de quantidade */}
-                <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+                <div className="flex justify-between text-xs text-muted-foreground mt-2">
                   <span>
-                    Faixa {priceData.tier_used}: {formatNumber(priceData.tier_min_qty)} -{' '}
-                    {formatNumber(priceData.tier_max_qty)} un
+                    Faixa {priceData.tier_used}: {formatNumber(priceData.tier_min_qty)} - {formatNumber(priceData.tier_max_qty)} un
                   </span>
                 </div>
 
                 {/* Preço unitário */}
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Preço unitário</span>
+                  <span className="text-muted-foreground">
+                    Preço unitário
+                  </span>
                   <span>{formatCurrency(priceData.unit_price)}</span>
                 </div>
               </>
@@ -165,22 +168,22 @@ export function PriceResultV51({
 
             {/* Faturamento mínimo (se aplicado) */}
             {priceData.minimum_applied && (
-              <div className="flex items-center justify-between rounded bg-warning/10 p-2 text-sm text-warning dark:bg-warning/10 dark:text-warning">
+              <div className="flex items-center justify-between text-sm p-2 rounded bg-warning/10 dark:bg-warning/10 text-warning dark:text-warning">
                 <div className="flex items-center gap-1">
-                  <Info className="h-4 w-4" />
+            <Info className="w-4 h-4" />
                   <span>Faturamento mínimo aplicado</span>
                 </div>
-                <span className="font-semibold">
-                  {formatCurrency(priceData.faturamento_minimo_gravacao)}
-                </span>
+                <span className="font-semibold">{formatCurrency(priceData.faturamento_minimo_gravacao)}</span>
               </div>
             )}
           </div>
 
           {/* Total gravação */}
-          <div className="flex justify-between border-t border-dashed pl-6 pt-2 text-sm font-medium">
+          <div className="flex justify-between text-sm pt-2 pl-6 border-t border-dashed font-medium">
             <span>Total gravação</span>
-            <span className={cn(priceData.minimum_applied && 'text-warning dark:text-warning')}>
+            <span className={cn(
+              priceData.minimum_applied && "text-warning dark:text-warning"
+            )}>
               {formatCurrency(priceData.total_price)}
             </span>
           </div>
@@ -189,34 +192,34 @@ export function PriceResultV51({
         <Separator />
 
         {/* Total geral */}
-        <div className="flex justify-between pt-2 text-lg font-bold">
+        <div className="pt-2 flex justify-between font-bold text-lg">
           <span>Total Geral</span>
           <span className="text-primary">{formatCurrency(grandTotal)}</span>
         </div>
 
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-sm text-center text-muted-foreground">
           = {formatCurrency(unitTotal)} por unidade completa
         </div>
 
         {/* Margem (se disponível) */}
         {showDetails && priceData.margin_percent > 0 && (
           <div className="flex items-center justify-center gap-2 text-sm text-primary dark:text-primary">
-            <TrendingDown className="h-4 w-4" />
+            <TrendingDown className="w-4 h-4" />
             <span>Margem: {priceData.margin_percent.toFixed(1)}%</span>
           </div>
         )}
 
         {/* Prazo */}
         {priceData.production_days && priceData.production_days > 0 && (
-          <div className="flex items-center justify-center gap-2 pt-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-2">
+            <Clock className="w-4 h-4" />
             <span>Prazo estimado: {priceData.production_days} dias úteis</span>
           </div>
         )}
 
         {/* Markup info (apenas em modo detalhes) */}
         {showDetails && (
-          <div className="mt-2 text-center text-xs text-muted-foreground">
+          <div className="text-xs text-center text-muted-foreground mt-2">
             <span>Markup: {priceData.markup_percent}% | </span>
             <span>Preço mínimo unitário: {formatCurrency(priceData.preco_minimo_unitario)}</span>
           </div>
@@ -229,11 +232,11 @@ export function PriceResultV51({
 /**
  * Componente para exibir código de orçamento inline
  */
-export function QuoteCodeBadge({
-  code,
-  variant = 'default',
-}: {
-  code: string;
+export function QuoteCodeBadge({ 
+  code, 
+  variant = 'default' 
+}: { 
+  code: string; 
   variant?: 'default' | 'secondary' | 'outline';
 }) {
   const [copied, setCopied] = useState(false);
@@ -249,15 +252,15 @@ export function QuoteCodeBadge({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge
-            variant={variant}
-            className="cursor-pointer gap-1 font-mono transition-opacity hover:opacity-80"
+          <Badge 
+            variant={variant} 
+            className="font-mono cursor-pointer gap-1 hover:opacity-80 transition-opacity"
             onClick={handleCopy}
           >
             {copied ? (
-              <CheckCircle2 className="h-3 w-3 text-primary dark:text-primary" />
+              <CheckCircle2 className="w-3 h-3 text-primary dark:text-primary" />
             ) : (
-              <Copy className="h-3 w-3" />
+              <Copy className="w-3 h-3" />
             )}
             {code}
           </Badge>

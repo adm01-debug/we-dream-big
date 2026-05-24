@@ -1,9 +1,9 @@
 // src/components/simulator/MockupPreview.tsx
 // Melhoria #4: Preview de mockup na simulação
 
-import { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,11 @@ interface MockupPreviewProps {
   clientLogoUrl?: string | null;
 }
 
-export function MockupPreview({ option, product, clientLogoUrl }: MockupPreviewProps) {
+export function MockupPreview({
+  option,
+  product,
+  clientLogoUrl,
+}: MockupPreviewProps) {
   const [open, setOpen] = useState(false);
   const [logoScale, setLogoScale] = useState([100]);
   const [logoPosition, setLogoPosition] = useState({ x: 50, y: 50 });
@@ -49,7 +53,7 @@ export function MockupPreview({ option, product, clientLogoUrl }: MockupPreviewP
   // Técnica visual mock
   const techniqueOverlay = useMemo(() => {
     const code = option.techniqueCode.toUpperCase();
-
+    
     if (code.includes('BORD') || code.includes('EMBROID')) {
       return { filter: 'contrast(1.1)', mixBlendMode: 'multiply' as const };
     }
@@ -93,21 +97,19 @@ export function MockupPreview({ option, product, clientLogoUrl }: MockupPreviewP
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Mockup Area */}
-          <div className="relative aspect-square overflow-hidden rounded-xl border bg-muted/30">
+          <div className="relative aspect-square rounded-xl bg-muted/30 border overflow-hidden">
             {/* Product Image */}
             <img
               src={product.image_url}
               alt={product.name}
-              className="h-full w-full object-contain"
-              loading="lazy"
-            />
-
+              className="w-full h-full object-contain" loading="lazy" />
+            
             {/* Logo Overlay */}
             {clientLogoUrl ? (
               <div
-                className="pointer-events-none absolute transition-all duration-200"
+                className="absolute pointer-events-none transition-all duration-200"
                 style={{
                   left: `${logoPosition.x}%`,
                   top: `${logoPosition.y}%`,
@@ -120,13 +122,11 @@ export function MockupPreview({ option, product, clientLogoUrl }: MockupPreviewP
                 <img
                   src={clientLogoUrl}
                   alt="Logo"
-                  className="h-full w-full object-contain"
-                  loading="lazy"
-                />
+                  className="w-full h-full object-contain" loading="lazy" />
               </div>
             ) : (
               <div
-                className="absolute flex items-center justify-center rounded-lg border-2 border-dashed border-primary/50 bg-primary/10"
+                className="absolute border-2 border-dashed border-primary/50 rounded-lg bg-primary/10 flex items-center justify-center"
                 style={{
                   left: `${logoPosition.x}%`,
                   top: `${logoPosition.y}%`,
@@ -135,17 +135,20 @@ export function MockupPreview({ option, product, clientLogoUrl }: MockupPreviewP
                   height: `${logoDimensions.height}px`,
                 }}
               >
-                <div className="p-2 text-center">
-                  <Palette className="mx-auto mb-1 h-5 w-5 text-primary" />
-                  <p className="text-[10px] font-medium text-primary">
+                <div className="text-center p-2">
+                  <Palette className="h-5 w-5 text-primary mx-auto mb-1" />
+                  <p className="text-[10px] text-primary font-medium">
                     {option.width}×{option.height}cm
                   </p>
                 </div>
               </div>
             )}
-
+            
             {/* Technique Badge */}
-            <Badge className="absolute left-2 top-2 text-xs" variant="secondary">
+            <Badge 
+              className="absolute top-2 left-2 text-xs"
+              variant="secondary"
+            >
               {option.techniqueName}
             </Badge>
           </div>
@@ -153,29 +156,27 @@ export function MockupPreview({ option, product, clientLogoUrl }: MockupPreviewP
           {/* Controls */}
           <div className="space-y-4">
             <Card>
-              <CardContent className="space-y-4 p-4">
+              <CardContent className="p-4 space-y-4">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Package className="h-4 w-4 text-primary" />
                   {product.name}
                 </div>
-
+                
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-lg bg-muted/50 p-2">
-                    <p className="text-xs text-muted-foreground">Área</p>
-                    <p className="font-semibold">
-                      {option.width}×{option.height}cm
-                    </p>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <p className="text-muted-foreground text-xs">Área</p>
+                    <p className="font-semibold">{option.width}×{option.height}cm</p>
                   </div>
-                  <div className="rounded-lg bg-muted/50 p-2">
-                    <p className="text-xs text-muted-foreground">Cores</p>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <p className="text-muted-foreground text-xs">Cores</p>
                     <p className="font-semibold">{option.colors} cor(es)</p>
                   </div>
-                  <div className="rounded-lg bg-muted/50 p-2">
-                    <p className="text-xs text-muted-foreground">Posições</p>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <p className="text-muted-foreground text-xs">Posições</p>
                     <p className="font-semibold">{option.positions}</p>
                   </div>
-                  <div className="rounded-lg bg-muted/50 p-2">
-                    <p className="text-xs text-muted-foreground">Prazo</p>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <p className="text-muted-foreground text-xs">Prazo</p>
                     <p className="font-semibold">~{option.estimatedDays} dias</p>
                   </div>
                 </div>
@@ -183,10 +184,10 @@ export function MockupPreview({ option, product, clientLogoUrl }: MockupPreviewP
             </Card>
 
             <Card>
-              <CardContent className="space-y-4 p-4">
+              <CardContent className="p-4 space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-1.5 text-sm font-medium">
+                    <label className="text-sm font-medium flex items-center gap-1.5">
                       <ZoomIn className="h-4 w-4" />
                       Escala do Logo
                     </label>
@@ -201,29 +202,29 @@ export function MockupPreview({ option, product, clientLogoUrl }: MockupPreviewP
                     className="w-full"
                   />
                 </div>
-
+                
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1.5">
-                    <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <label className="text-xs text-muted-foreground flex items-center gap-1">
                       <Move className="h-3 w-3" />
                       Posição X
                     </label>
                     <Slider
                       value={[logoPosition.x]}
-                      onValueChange={([x]) => setLogoPosition((p) => ({ ...p, x }))}
+                      onValueChange={([x]) => setLogoPosition(p => ({ ...p, x }))}
                       min={10}
                       max={90}
                       step={5}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <label className="text-xs text-muted-foreground flex items-center gap-1">
                       <Move className="h-3 w-3" />
                       Posição Y
                     </label>
                     <Slider
                       value={[logoPosition.y]}
-                      onValueChange={([y]) => setLogoPosition((p) => ({ ...p, y }))}
+                      onValueChange={([y]) => setLogoPosition(p => ({ ...p, y }))}
                       min={10}
                       max={90}
                       step={5}
@@ -233,7 +234,7 @@ export function MockupPreview({ option, product, clientLogoUrl }: MockupPreviewP
               </CardContent>
             </Card>
 
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground text-center">
               * Preview ilustrativo. O resultado final pode variar.
             </p>
           </div>

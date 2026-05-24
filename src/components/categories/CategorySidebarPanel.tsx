@@ -39,13 +39,15 @@ function TreeNode({
   const isExpanded = expandedIds.has(node.id);
   const isSelected = selectedId === node.id;
 
+  
+
   // Handler de clique com propagação correta
   const handleClick = (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-
+    
     // Sempre seleciona
     onSelect(node);
-
+    
     // Se tem filhos, expande/colapsa
     if (hasChildren) {
       onToggle(node.id);
@@ -60,9 +62,9 @@ function TreeNode({
     >
       <div
         className={cn(
-          'flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 transition-all duration-200',
-          'hover:bg-accent/60',
-          isSelected && 'border-l-2 border-primary bg-primary/15 font-semibold text-primary',
+          "flex items-center gap-2 py-2.5 px-3 rounded-lg cursor-pointer transition-all duration-200",
+          "hover:bg-accent/60",
+          isSelected && "bg-primary/15 text-primary font-semibold border-l-2 border-primary"
         )}
         style={{ paddingLeft: `${level * 16 + 12}px` }}
         onClick={handleClick}
@@ -74,15 +76,17 @@ function TreeNode({
             transition={{ duration: 0.2 }}
             className="text-muted-foreground"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="w-4 h-4" />
           </motion.div>
         ) : (
           /* Bullet colorido para subcategorias (itens folha) */
-          <div className="flex h-4 w-4 items-center justify-center">
-            <motion.div
+          <div className="w-4 h-4 flex items-center justify-center">
+            <motion.div 
               className={cn(
-                'h-2 w-2 rounded-full transition-all duration-200',
-                isSelected ? 'scale-110 bg-primary' : 'bg-primary/50 hover:bg-primary/70',
+                "w-2 h-2 rounded-full transition-all duration-200",
+                isSelected 
+                  ? "bg-primary scale-110" 
+                  : "bg-primary/50 hover:bg-primary/70"
               )}
               animate={{ scale: isSelected ? 1.2 : 1 }}
               transition={{ duration: 0.2 }}
@@ -91,16 +95,20 @@ function TreeNode({
         )}
 
         {/* Emoji da categoria (apenas para raiz com emoji) */}
-        {node.icon && <span className="text-base">{node.icon}</span>}
+        {node.icon && (
+          <span className="text-base">{node.icon}</span>
+        )}
 
         {/* Nome da categoria em Title Case */}
-        <span className="flex-1 truncate text-sm">{toTitleCase(node.name)}</span>
+        <span className="truncate text-sm flex-1">
+          {toTitleCase(node.name)}
+        </span>
 
         {/* Badge com contagem de filhos */}
         {hasChildren && (
-          <Badge
-            variant={isSelected ? 'default' : 'outline'}
-            className="ml-auto h-5 px-1.5 py-0 text-[10px] opacity-60"
+          <Badge 
+            variant={isSelected ? "default" : "outline"} 
+            className="ml-auto text-[10px] px-1.5 py-0 h-5 opacity-60"
           >
             {node.children.length}
           </Badge>
@@ -112,12 +120,12 @@ function TreeNode({
         {hasChildren && isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
+            animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            {node.children.map((child) => (
+            {node.children.map(child => (
               <TreeNode
                 key={child.id}
                 node={child}
@@ -152,7 +160,7 @@ export function CategorySidebarPanel({
 
   // Toggle expandir/colapsar
   const handleToggle = useCallback((id: string) => {
-    setExpandedIds((prev) => {
+    setExpandedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -164,24 +172,21 @@ export function CategorySidebarPanel({
   }, []);
 
   // Selecionar categoria
-  const handleSelect = useCallback(
-    (category: CategoryNode | CategoryTreeItem) => {
-      onSelectCategory?.(category.id, category.name);
+  const handleSelect = useCallback((category: CategoryNode | CategoryTreeItem) => {
+    onSelectCategory?.(category.id, category.name);
 
-      // Auto-expandir apenas os PAIS (não o nó selecionado)
-      // Motivo: quando o usuário clica no próprio nó, o TreeNode também chama toggle;
-      // se adicionarmos o nó aqui, o toggle seguinte acaba "desfazendo" a expansão.
-      if ('parent_id' in category && category.parent_id) {
-        const path = getPath(category.id);
-        setExpandedIds((prev) => {
-          const next = new Set(prev);
-          path.slice(0, -1).forEach((p) => next.add(p.id));
-          return next;
-        });
-      }
-    },
-    [onSelectCategory, getPath],
-  );
+    // Auto-expandir apenas os PAIS (não o nó selecionado)
+    // Motivo: quando o usuário clica no próprio nó, o TreeNode também chama toggle;
+    // se adicionarmos o nó aqui, o toggle seguinte acaba "desfazendo" a expansão.
+    if ('parent_id' in category && category.parent_id) {
+      const path = getPath(category.id);
+      setExpandedIds(prev => {
+        const next = new Set(prev);
+        path.slice(0, -1).forEach(p => next.add(p.id));
+        return next;
+      });
+    }
+  }, [onSelectCategory, getPath]);
 
   // Limpar seleção
   const handleClearSelection = useCallback(() => {
@@ -191,23 +196,20 @@ export function CategorySidebarPanel({
   }, [onSelectCategory]);
 
   // Buscar
-  const handleSearch = useCallback(
-    (query: string) => {
-      setSearchQuery(query);
-      if (query.trim()) {
-        setSearchResults(searchCategories(query));
-      } else {
-        setSearchResults([]);
-      }
-    },
-    [searchCategories],
-  );
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    if (query.trim()) {
+      setSearchResults(searchCategories(query));
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchCategories]);
 
   // Expandir todos
   const expandAll = useCallback(() => {
     const allIds = new Set<string>();
     const addIds = (nodes: CategoryNode[]) => {
-      nodes.forEach((node) => {
+      nodes.forEach(node => {
         if (node.children.length > 0) {
           allIds.add(node.id);
           addIds(node.children);
@@ -226,18 +228,19 @@ export function CategorySidebarPanel({
   // Versão colapsada
   if (isCollapsed) {
     return (
-      <div className={cn('flex w-12 flex-col items-center gap-2 border-r bg-card py-4', className)}>
+      <div className={cn(
+        "w-12 border-r bg-card flex flex-col items-center py-4 gap-2",
+        className
+      )}>
         <Button
           variant="ghost"
           size="icon"
           onClick={onToggleCollapse}
           className="h-8 w-8"
-          aria-label="Avançar"
-        >
-          <ChevronRight className="h-4 w-4" />
+         aria-label="Avançar"><ChevronRight className="h-4 w-4" />
         </Button>
         <Separator className="w-8" />
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col gap-1 items-center">
           <Layers className="h-5 w-5 text-muted-foreground" />
           <span className="text-[10px] text-muted-foreground">{stats.total}</span>
         </div>
@@ -248,15 +251,15 @@ export function CategorySidebarPanel({
   // Loading state
   if (isLoading) {
     return (
-      <div className={cn('w-64 space-y-3 border-r bg-card p-4', className)}>
+      <div className={cn("w-64 border-r bg-card p-4 space-y-3", className)}>
         <Skeleton className="h-8 w-full" />
         <Separator />
         <div className="space-y-2">
           <Skeleton className="h-6 w-full" />
-          <Skeleton className="ml-4 h-6 w-3/4" />
-          <Skeleton className="ml-4 h-6 w-3/4" />
+          <Skeleton className="h-6 w-3/4 ml-4" />
+          <Skeleton className="h-6 w-3/4 ml-4" />
           <Skeleton className="h-6 w-full" />
-          <Skeleton className="ml-4 h-6 w-3/4" />
+          <Skeleton className="h-6 w-3/4 ml-4" />
         </div>
       </div>
     );
@@ -265,9 +268,9 @@ export function CategorySidebarPanel({
   // Error state
   if (error) {
     return (
-      <div className={cn('w-64 border-r bg-card p-4', className)}>
+      <div className={cn("w-64 border-r bg-card p-4", className)}>
         <div className="text-center text-destructive">
-          <Folder className="mx-auto mb-2 h-8 w-8 opacity-50" />
+          <Folder className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm font-medium">Erro ao carregar</p>
           <p className="text-xs text-muted-foreground">{error}</p>
         </div>
@@ -276,19 +279,22 @@ export function CategorySidebarPanel({
   }
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ width: 0, opacity: 0 }}
       animate={{ width: 280, opacity: 1 }}
       exit={{ width: 0, opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className={cn('flex h-full flex-col border-r bg-card', className)}
+      className={cn(
+        "border-r bg-card flex flex-col h-full",
+        className
+      )}
     >
       {/* Header */}
-      <div className="space-y-3 border-b p-3">
+      <div className="p-3 border-b space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Layers className="h-5 w-5 text-primary" />
-            <h3 className="font-display text-sm font-semibold">Categorias</h3>
+            <h3 className="font-display font-semibold text-sm">Categorias</h3>
           </div>
           <div className="flex items-center gap-1">
             <Badge variant="outline" className="text-[10px]">
@@ -300,9 +306,7 @@ export function CategorySidebarPanel({
                 size="icon"
                 onClick={onToggleCollapse}
                 className="h-7 w-7"
-                aria-label="Voltar"
-              >
-                <ChevronLeft className="h-4 w-4" />
+               aria-label="Voltar"><ChevronLeft className="h-4 w-4" />
               </Button>
             )}
           </div>
@@ -319,26 +323,31 @@ export function CategorySidebarPanel({
         {/* Quick actions */}
         <div className="flex items-center justify-between">
           <div className="flex gap-1">
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={expandAll}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 text-[10px] px-2" 
+              onClick={expandAll}
+            >
               Expandir
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-[10px]"
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 text-[10px] px-2" 
               onClick={collapseAll}
             >
               Colapsar
             </Button>
           </div>
           {selectedCategoryId && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-[10px] text-destructive hover:text-destructive"
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 text-[10px] px-2 text-destructive hover:text-destructive" 
               onClick={handleClearSelection}
             >
-              <X className="mr-1 h-3 w-3" />
+              <X className="h-3 w-3 mr-1" />
               Limpar
             </Button>
           )}
@@ -347,21 +356,19 @@ export function CategorySidebarPanel({
 
       {/* Breadcrumb da seleção */}
       {selectedBreadcrumb.length > 0 && (
-        <div className="border-b bg-primary/5 px-3 py-2">
-          <p className="mb-1 text-[10px] text-muted-foreground">Selecionado:</p>
-          <div className="flex flex-wrap items-center gap-1">
+        <div className="px-3 py-2 bg-primary/5 border-b">
+          <p className="text-[10px] text-muted-foreground mb-1">Selecionado:</p>
+          <div className="flex items-center gap-1 flex-wrap">
             {selectedBreadcrumb.map((cat, i) => (
               <span key={cat.id} className="flex items-center text-xs">
-                <span
-                  className={cn(
-                    'max-w-[80px] truncate',
-                    i === selectedBreadcrumb.length - 1 && 'font-semibold text-primary',
-                  )}
-                >
+                <span className={cn(
+                  "truncate max-w-[80px]",
+                  i === selectedBreadcrumb.length - 1 && "font-semibold text-primary"
+                )}>
                   {cat.name}
                 </span>
                 {i < selectedBreadcrumb.length - 1 && (
-                  <ChevronRight className="mx-0.5 h-3 w-3 text-muted-foreground" />
+                  <ChevronRight className="h-3 w-3 mx-0.5 text-muted-foreground" />
                 )}
               </span>
             ))}
@@ -375,24 +382,24 @@ export function CategorySidebarPanel({
           {/* Resultados de busca */}
           {searchQuery && searchResults.length > 0 ? (
             <div className="px-2">
-              <p className="mb-2 px-2 text-[10px] text-muted-foreground">
+              <p className="text-[10px] text-muted-foreground px-2 mb-2">
                 {searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''}
               </p>
-              {searchResults.map((cat) => (
+              {searchResults.map(cat => (
                 <div
                   key={cat.id}
                   className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2',
-                    'transition-colors hover:bg-accent/60',
-                    selectedCategoryId === cat.id && 'bg-primary/15 text-primary',
+                    "flex items-center gap-2 py-2 px-3 rounded-lg cursor-pointer",
+                    "hover:bg-accent/60 transition-colors",
+                    selectedCategoryId === cat.id && "bg-primary/15 text-primary"
                   )}
                   onClick={() => handleSelect(cat)}
                 >
-                  <Folder className="h-4 w-4 flex-shrink-0 text-warning" />
+                  <Folder className="w-4 h-4 text-warning flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{cat.name}</p>
+                    <p className="text-sm font-medium truncate">{cat.name}</p>
                     {cat.tree_structure && (
-                      <p className="truncate text-[10px] text-muted-foreground">
+                      <p className="text-[10px] text-muted-foreground truncate">
                         {cat.tree_structure}
                       </p>
                     )}
@@ -401,19 +408,19 @@ export function CategorySidebarPanel({
               ))}
             </div>
           ) : searchQuery && searchResults.length === 0 ? (
-            <div className="px-4 py-8 text-center text-muted-foreground">
-              <Folder className="mx-auto mb-2 h-8 w-8 opacity-30" />
+            <div className="text-center py-8 text-muted-foreground px-4">
+              <Folder className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p className="text-sm">Nenhuma categoria</p>
               <p className="text-[10px]">Tente outra busca</p>
             </div>
           ) : tree.length === 0 ? (
-            <div className="px-4 py-8 text-center text-muted-foreground">
-              <Folder className="mx-auto mb-2 h-10 w-10 opacity-30" />
+            <div className="text-center py-8 text-muted-foreground px-4">
+              <Folder className="w-10 h-10 mx-auto mb-2 opacity-30" />
               <p className="text-sm">Nenhuma categoria</p>
             </div>
           ) : (
             /* Árvore de categorias */
-            tree.map((node) => (
+            tree.map(node => (
               <TreeNode
                 key={node.id}
                 node={node}
@@ -429,7 +436,7 @@ export function CategorySidebarPanel({
       </ScrollArea>
 
       {/* Footer stats */}
-      <div className="border-t bg-muted/30 p-2">
+      <div className="p-2 border-t bg-muted/30">
         <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground">
           <span>{stats.levels} níveis</span>
           <span>•</span>

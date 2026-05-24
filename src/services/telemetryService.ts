@@ -1,5 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
-import type { Json } from '@/integrations/supabase/types';
+import { supabase } from "@/integrations/supabase/client";
 
 export type TelemetryEventType = 'error' | 'performance' | 'ux_action' | 'api_fail';
 
@@ -7,7 +6,7 @@ export interface TelemetryPayload {
   event_type: TelemetryEventType;
   name: string;
   duration_ms?: number;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, any>;
 }
 
 class TelemetryService {
@@ -29,10 +28,10 @@ class TelemetryService {
         event_type: payload.event_type,
         name: payload.name,
         duration_ms: payload.duration_ms,
-        metadata: (payload.metadata || {}) as unknown as Json,
+        metadata: payload.metadata || {},
         url: window.location.href,
         user_agent: navigator.userAgent,
-        session_id: this.sessionId,
+        session_id: this.sessionId
       });
 
       if (error) {
@@ -43,41 +42,40 @@ class TelemetryService {
     }
   }
 
-  async logError(name: string, error: unknown, metadata?: Record<string, unknown>) {
+  async logError(name: string, error: any, metadata?: Record<string, any>) {
     // Captura stack trace detalhado para facilitar depuração de crashes
-    const errObj = error instanceof Error ? error : null;
-    const stack = errObj?.stack || new Error().stack;
-
+    const stack = error?.stack || new Error().stack;
+    
     return this.log({
       event_type: 'error',
       name,
       metadata: {
-        message: errObj?.message || String(error),
+        message: error?.message || String(error),
         stack,
         context_data: metadata,
         pathname: window.location.pathname,
-        timestamp: new Date().toISOString(),
-      },
+        timestamp: new Date().toISOString()
+      }
     });
   }
 
-  async logPerformance(name: string, duration_ms: number, metadata?: Record<string, unknown>) {
+  async logPerformance(name: string, duration_ms: number, metadata?: Record<string, any>) {
     // Only log outliers (e.g. > 1s for routes, > 500ms for themes)
-    if (duration_ms < 100) return;
+    if (duration_ms < 100) return; 
 
     return this.log({
       event_type: 'performance',
       name,
       duration_ms,
-      metadata,
+      metadata
     });
   }
 
-  async logUXAction(name: string, metadata?: Record<string, unknown>) {
+  async logUXAction(name: string, metadata?: Record<string, any>) {
     return this.log({
       event_type: 'ux_action',
       name,
-      metadata,
+      metadata
     });
   }
 }

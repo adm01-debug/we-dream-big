@@ -1,29 +1,23 @@
-import React from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { SORT_OPTIONS } from '@/hooks/products';
-import { InlineColorGroupFilter } from './InlineColorGroupFilter';
-import { ExternalCategoryFilter } from './ExternalCategoryFilter';
-import { DebouncedPriceInput } from './DebouncedPriceInput';
-import { CommemorativeDateFilter } from './CommemorativeDateFilter';
-import type { ColorFilterSelection } from './ColorGroupFilter';
+import React from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SORT_OPTIONS } from "@/hooks/products";
+import { InlineColorGroupFilter } from "./InlineColorGroupFilter";
+import { ExternalCategoryFilter } from "./ExternalCategoryFilter";
+import { DebouncedPriceInput } from "./DebouncedPriceInput";
+import { CommemorativeDateFilter } from "./CommemorativeDateFilter";
+import type { ColorFilterSelection } from "./ColorGroupFilter";
 
 // Re-export types for backward compatibility
-export type { FilterState, FilterPanelProps } from './filter-panel/types';
-export { defaultFilters, SECTION_CONFIG, SECTION_GROUPS } from './filter-panel/types';
+export type { FilterState, FilterPanelProps } from "./filter-panel/types";
+export { defaultFilters, SECTION_CONFIG, SECTION_GROUPS } from "./filter-panel/types";
 
-import { type FilterPanelProps, SECTION_CONFIG, SECTION_GROUPS } from './filter-panel/types';
-import { useFilterPanelState } from './filter-panel/useFilterPanelState';
-import { FilterSection, GroupSeparator } from './filter-panel/FilterSection';
-import { FilterPanelHeader } from './filter-panel/FilterPanelHeader';
-import { SuppliersFilter } from './filter-panel/sections/SuppliersFilter';
-import { MaterialsFilter } from './filter-panel/sections/MaterialsFilter';
-import { RamosFilter } from './filter-panel/sections/RamosFilter';
+import { type FilterPanelProps, SECTION_CONFIG, SECTION_GROUPS } from "./filter-panel/types";
+import { useFilterPanelState } from "./filter-panel/useFilterPanelState";
+import { FilterSection, GroupSeparator } from "./filter-panel/FilterSection";
+import { FilterPanelHeader } from "./filter-panel/FilterPanelHeader";
+import { SuppliersFilter } from "./filter-panel/sections/SuppliersFilter";
+import { MaterialsFilter } from "./filter-panel/sections/MaterialsFilter";
+import { RamosFilter } from "./filter-panel/sections/RamosFilter";
 import {
   PublicoFilter,
   EndomarketingFilter,
@@ -34,16 +28,8 @@ import {
 import { SizeFilter } from "./filter-panel/sections/SizeFilter";
 
 export function FilterPanel({
-  filters,
-  onFilterChange,
-  onReset,
-  activeFiltersCount,
-  products = [],
-  viewMode: _viewMode,
-  onViewModeChange: _onViewModeChange,
-  gridColumns: _gridColumns,
-  onGridColumnsChange: _onGridColumnsChange,
-  filteredResultsCount: _filteredResultsCount,
+  filters, onFilterChange, onReset, activeFiltersCount,
+  products = [], viewMode, onViewModeChange, gridColumns, onGridColumnsChange, filteredResultsCount,
 }: FilterPanelProps) {
   const state = useFilterPanelState(filters, onFilterChange, products);
 
@@ -70,21 +56,11 @@ export function FilterPanel({
   const sectionRenderers: Record<string, () => React.ReactNode> = {
     cores: () => (
       <InlineColorGroupFilter
-        selection={{
-          groups: filters.colorGroups,
-          variations: filters.colorVariations,
-          nuances: filters.colorNuances,
-        }}
+        selection={{ groups: filters.colorGroups, variations: filters.colorVariations, nuances: filters.colorNuances }}
         onChange={(selection: ColorFilterSelection) => {
-          onFilterChange({
-            ...filters,
-            colorGroups: selection.groups,
-            colorVariations: selection.variations,
-            colorNuances: selection.nuances,
-          });
+          onFilterChange({ ...filters, colorGroups: selection.groups, colorVariations: selection.variations, colorNuances: selection.nuances });
         }}
-        showNuances
-        showVariations
+        showNuances showVariations
       />
     ),
     categorias: () => (
@@ -97,47 +73,23 @@ export function FilterPanel({
     estoque: () => (
       <div className="px-1">
         <div className="flex items-center gap-2 text-sm">
-          <span className="whitespace-nowrap text-xs text-muted-foreground">Mínimo por cor</span>
-          <DebouncedPriceInput
-            value={filters.minStock || ''}
-            onChange={(v) => onFilterChange({ ...filters, minStock: v })}
-            fallback={0}
-            placeholder="Ex: 500"
-            min={0}
-            className={filters.minStock > 0 ? 'border-orange/60' : ''}
-          />
-          <span className="text-xs text-muted-foreground">un.</span>
+          <span className="text-muted-foreground text-xs whitespace-nowrap">Mínimo por cor</span>
+          <DebouncedPriceInput value={filters.minStock || ''} onChange={(v) => onFilterChange({ ...filters, minStock: v })} fallback={0} placeholder="Ex: 500" min={0} className={filters.minStock > 0 ? 'border-orange/60' : ''} />
+          <span className="text-muted-foreground text-xs">un.</span>
         </div>
       </div>
     ),
     preco: () => (
       <div className="px-1">
         <div className="flex items-center gap-2 text-sm">
-          <div className="flex flex-1 items-center gap-1">
-            <span className="text-xs text-muted-foreground">R$</span>
-            <DebouncedPriceInput
-              value={filters.priceRange[0]}
-              onChange={(v) =>
-                onFilterChange({ ...filters, priceRange: [v, filters.priceRange[1]] })
-              }
-              fallback={0}
-              min={0}
-              className={filters.priceRange[0] > 0 ? 'border-orange/60' : ''}
-            />
+          <div className="flex items-center gap-1 flex-1">
+            <span className="text-muted-foreground text-xs">R$</span>
+            <DebouncedPriceInput value={filters.priceRange[0]} onChange={(v) => onFilterChange({ ...filters, priceRange: [v, filters.priceRange[1]] })} fallback={0} min={0} className={filters.priceRange[0] > 0 ? 'border-orange/60' : ''} />
           </div>
-          <span className="text-xs text-muted-foreground">até</span>
-          <div className="flex flex-1 items-center gap-1">
-            <span className="text-xs text-muted-foreground">R$</span>
-            <DebouncedPriceInput
-              value={filters.priceRange[1] >= 9999 ? '' : filters.priceRange[1]}
-              onChange={(v) =>
-                onFilterChange({ ...filters, priceRange: [filters.priceRange[0], v || 9999] })
-              }
-              fallback={9999}
-              placeholder="Sem limite"
-              min={0}
-              className={filters.priceRange[1] < 9999 ? 'border-orange/60' : ''}
-            />
+          <span className="text-muted-foreground text-xs">até</span>
+          <div className="flex items-center gap-1 flex-1">
+            <span className="text-muted-foreground text-xs">R$</span>
+            <DebouncedPriceInput value={filters.priceRange[1] >= 9999 ? '' : filters.priceRange[1]} onChange={(v) => onFilterChange({ ...filters, priceRange: [filters.priceRange[0], v || 9999] })} fallback={9999} placeholder="Sem limite" min={0} className={filters.priceRange[1] < 9999 ? 'border-orange/60' : ''} />
           </div>
         </div>
       </div>
@@ -161,7 +113,7 @@ export function FilterPanel({
         toggleArrayFilter={state.toggleArrayFilter}
       />
     ),
-    'datas-comemorativas': () => (
+    "datas-comemorativas": () => (
       <CommemorativeDateFilter
         selectedDates={filters.datasComemorativas}
         onToggleDate={(slug) => state.toggleArrayFilter('datasComemorativas', slug)}
@@ -194,7 +146,7 @@ export function FilterPanel({
         toggleSection={state.toggleSection}
       />
     ),
-    'ramos-atividade': () => (
+    "ramos-atividade": () => (
       <RamosFilter
         filters={filters}
         onFilterChange={onFilterChange}
@@ -227,28 +179,21 @@ export function FilterPanel({
         toggleArrayFilter={state.toggleArrayFilter}
       />
     ),
-    'opcoes-rapidas': () => (
+    "opcoes-rapidas": () => (
       <QuickOptionsFilter filters={filters} toggleBooleanFilter={state.toggleBooleanFilter} />
     ),
     ordenacao: () => (
-      <Select
-        value={filters.sortBy || 'name'}
-        onValueChange={(value) => onFilterChange({ ...filters, sortBy: value })}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue />
-        </SelectTrigger>
+      <Select value={filters.sortBy || 'name'} onValueChange={(value) => onFilterChange({ ...filters, sortBy: value })}>
+        <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
         <SelectContent>
-          {SORT_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
+          {SORT_OPTIONS.map(option => (
+            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
           ))}
         </SelectContent>
       </Select>
     ),
     genero: () => {
-      const GENDER_OPTIONS = ['Unissex', 'Masculino', 'Feminino', 'Infantil'];
+      const GENDER_OPTIONS = ["Unissex", "Masculino", "Feminino", "Infantil"];
       return (
         <div className="flex flex-wrap gap-1.5 px-1">
           {GENDER_OPTIONS.map((g) => {
@@ -256,11 +201,11 @@ export function FilterPanel({
             return (
               <button
                 key={g}
-                onClick={() => state.toggleArrayFilter('gender', g)}
-                className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-all ${
+                onClick={() => state.toggleArrayFilter("gender", g)}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
                   isSelected
-                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                    : 'border-border bg-card text-foreground hover:border-primary/40 hover:bg-accent'
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-card border-border text-foreground hover:border-primary/40 hover:bg-accent"
                 }`}
               >
                 {g}
@@ -273,7 +218,7 @@ export function FilterPanel({
     tamanhos: () => (
       <SizeFilter
         selectedSizes={filters.sizes || []}
-        onToggleSize={(size) => state.toggleArrayFilter('sizes', size)}
+        onToggleSize={(size) => state.toggleArrayFilter("sizes", size)}
         products={products as Array<{ variations?: Array<{ size_code?: string | null }> }>}
       />
     ),
@@ -289,9 +234,10 @@ export function FilterPanel({
         setFilterSearch={state.setFilterSearch}
       />
 
+
       <div className="space-y-0">
         {SECTION_GROUPS.map((group) => {
-          const visibleSections = group.sections.filter((sId) => {
+          const visibleSections = group.sections.filter(sId => {
             const config = SECTION_CONFIG[sId];
             if (!config) return false;
             if (!state.sectionMatchesSearch(sId, config.title)) return false;
@@ -304,7 +250,7 @@ export function FilterPanel({
             <div key={group.label}>
               <GroupSeparator label={group.label} icon={group.icon} />
               <div className="space-y-0">
-                {visibleSections.map((sId) => renderSection(sId, sectionRenderers[sId]))}
+                {visibleSections.map(sId => renderSection(sId, sectionRenderers[sId]))}
               </div>
             </div>
           );

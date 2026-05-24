@@ -29,6 +29,7 @@ export function useSupplierComparison(product: Product | null | undefined) {
     categoryName ? { category: categoryName } : undefined,
     { enabled: !!product && !!categoryName, staleTime: 10 * 60 * 1000 },
   );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const categoryProducts = categoryProductsRaw ?? [];
 
   const result = useMemo((): SupplierComparisonResult | null => {
