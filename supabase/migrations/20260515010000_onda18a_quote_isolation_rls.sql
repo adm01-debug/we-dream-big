@@ -15,6 +15,14 @@
 -- INSERT de quotes mantem user_is_org_member (qualquer membro pode criar)
 -- =================================================================
 
+-- Replay guard: algumas bases historicas criaram public.quotes antes da coluna
+-- assigned_to, mas esta migration e hardenings posteriores ja tratam ela como
+-- parte do modelo oficial.
+ALTER TABLE public.quotes
+  ADD COLUMN IF NOT EXISTS assigned_to uuid REFERENCES auth.users(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_quotes_assigned_to ON public.quotes (assigned_to);
+
 -- 1. NOVA FUNCAO: can_access_quote(quote_id)
 --    Encapsula logica em SSOT, SECURITY DEFINER pra evitar recursao RLS
 CREATE OR REPLACE FUNCTION public.can_access_quote(_quote_id uuid)
