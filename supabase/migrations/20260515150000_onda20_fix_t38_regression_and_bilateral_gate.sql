@@ -155,7 +155,11 @@ DECLARE
   ];
 BEGIN
   FOR r IN
-    SELECT n.nspname, p.proname, pg_get_function_identity_arguments(p.oid) AS args
+    SELECT
+      n.nspname,
+      p.proname,
+      pg_get_function_identity_arguments(p.oid) AS args,
+      (pg_get_function_result(p.oid) = 'trigger') AS is_trigger
     FROM pg_proc p
     JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'public'
@@ -171,6 +175,10 @@ BEGIN
     IF r.proname = ANY(backend_only_names) THEN
       EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM authenticated', fn_signature);
       EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO service_role, postgres', fn_signature);
+    END IF;
+
+    IF r.is_trigger THEN
+      EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM authenticated', fn_signature);
     END IF;
   END LOOP;
 
