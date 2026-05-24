@@ -102,8 +102,7 @@ export function useGlobalSearch() {
   const { suggestions: contextualSuggestions, routeContext } = useContextualSuggestions({
     searchQuery: query,
   });
-  const onClosePalette = useCallback(() => setOpen(false), [setOpen]);
-  const { commands } = useSlashCommands(onClosePalette);
+  const { commands } = useSlashCommands(() => setOpen(false));
 
   // ── Voice Agent (ElevenLabs + AI) ──
   const handleVoiceAction = useCallback(
@@ -178,7 +177,7 @@ export function useGlobalSearch() {
           break;
       }
     },
-    [navigate, addVoiceCommand, setVoiceOverlayOpen, setOpen, setQuery, setResults],
+    [addVoiceCommand, navigate, setOpen, setVoiceOverlayOpen],
   );
 
   const handleOpenVoiceOverlay = useCallback(() => {
@@ -805,7 +804,7 @@ export function useGlobalSearch() {
       if (/^https?:\/\//.test(href)) window.open(href, '_blank', 'noopener,noreferrer');
       else navigate(href);
     },
-    [query, addGlobalHistoryItem, navigate, commands, setOpen],
+    [commands, query, addGlobalHistoryItem, navigate, setOpen],
   );
 
   const handleSuggestionClick = useCallback((suggestion: string) => {

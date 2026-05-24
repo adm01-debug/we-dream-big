@@ -74,50 +74,50 @@ export interface PromobrindProduct {
   price_updated_at?: string | null;
   price_freshness_threshold_days?: number | null;
   kit_components?: Array<{
-    id: string;
-    component_name: string | null;
-    component_code: string | null;
-    component_product_id: string | null;
-    component_sku: string | null;
-    quantity: number | null;
-    display_order: number | null;
-    is_optional: boolean | null;
-    is_packaging: boolean | null;
-    is_replaceable: boolean | null;
-    allows_personalization: boolean | null;
-    material: string | null;
-    primary_image_url: string | null;
-    height_mm: number | null;
-    width_mm: number | null;
-    length_mm: number | null;
-    weight_g: number | null;
-    notes: string | null;
+    id: string; component_name: string | null; component_code: string | null;
+    component_product_id: string | null; component_sku: string | null;
+    quantity: number | null; display_order: number | null;
+    is_optional: boolean | null; is_packaging: boolean | null;
+    is_replaceable: boolean | null; allows_personalization: boolean | null;
+    material: string | null; primary_image_url: string | null;
+    height_mm: number | null; width_mm: number | null; length_mm: number | null;
+    weight_g: number | null; notes: string | null;
   }> | null;
 
-  // Extended fields used by AdminProductFormPage
+  // ------------------------------------------------------------------
+  // Campos adicionais mapeados pelo formulário admin (AdminProductFormPage).
+  // Colunas reais (ou potenciais) da base externa; todas opcionais/nullable
+  // porque nem todo SELECT as traz — os consumidores aplicam `?? default`.
+  // ------------------------------------------------------------------
+  // Pricing / estoque
   cost_price?: number | null;
   suggested_price?: number | null;
   stock_unit?: string | null;
   product_type?: string | null;
   min_order_quantity?: number | null;
+  // Dimensões internas
   internal_height_cm?: number | null;
   internal_width_cm?: number | null;
   internal_length_cm?: number | null;
   internal_diameter_cm?: number | null;
+  // Embalagem
   packaging_material?: string | null;
   packaging_color?: string | null;
   packaging_finish?: string | null;
+  // Flags de destaque + expiração
   is_featured_expires_at?: string | null;
   is_bestseller_expires_at?: string | null;
   is_new_expires_at?: string | null;
-  is_on_sale_expires_at?: string | null;
   novelty_expires_at?: string | null;
+  is_on_sale_expires_at?: string | null;
+  // Flags de característica
   is_imported?: boolean | null;
   is_textil?: boolean | null;
   is_thermal?: boolean | null;
   allows_personalization?: boolean | null;
   has_gift_box?: boolean | null;
   has_optional_packaging?: boolean | null;
+  // Fiscal
   ncm_code?: string | null;
   ean?: string | null;
   gtin?: string | null;
@@ -131,6 +131,7 @@ export interface PromobrindProduct {
   cofins_rate?: number | null;
   tax_regime?: string | null;
   cest?: string | null;
+  // Logística / frete
   freight_class?: string | null;
   default_carrier?: string | null;
   shipping_weight_kg?: number | null;
@@ -143,6 +144,7 @@ export interface PromobrindProduct {
   lead_time_days?: number | null;
   supply_mode?: string | null;
   warranty_months?: number | null;
+  // SEO / mídia
   meta_title?: string | null;
   meta_keywords?: string[] | null;
   slug?: string | null;
@@ -151,8 +153,9 @@ export interface PromobrindProduct {
   video_url?: string | null;
   key_benefits?: string | null;
   use_cases?: string | null;
-  category?: { id?: string | null; name?: string | null; icon?: string | null } | null;
-  supplier?: { id?: string | null; name?: string | null } | null;
+  // Nomes denormalizados (fallback de exibição)
+  category?: string | null;
+  supplier?: string | null;
 }
 
 export function getProductImageUrl(product: PromobrindProduct): string | null {
@@ -205,7 +208,5 @@ export const PRODUCT_SELECT_FIELDS_DETAIL =
 // #2: also trigger fallback when orderBy hits a missing column
 export function shouldFallbackSelect(err: unknown) {
   const msg = err instanceof Error ? err.message : String(err);
-  return /(sale_price|base_price|image_url|supplier_name|category_name|product_videos|selected_images|gender|price_updated_at|price_freshness_threshold_days|does not exist|não existe|undefined column|column .+ does not exist|could not identify an ordering operator|order by)/i.test(
-    msg,
-  );
+  return /(sale_price|base_price|image_url|supplier_name|category_name|product_videos|selected_images|gender|price_updated_at|price_freshness_threshold_days|does not exist|não existe|undefined column|column .+ does not exist|could not identify an ordering operator|order by)/i.test(msg);
 }

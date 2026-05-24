@@ -54,6 +54,13 @@ const ENVS = [
   },
 ] as const;
 
+type SupabaseEnv = (typeof ENVS)[number];
+type ManagedSupabaseEnv = Extract<SupabaseEnv, { readOnly: false }>;
+
+function isManagedSupabaseEnv(env: SupabaseEnv): env is ManagedSupabaseEnv {
+  return !env.readOnly;
+}
+
 export function SupabaseConnectionsTab() {
   const { secrets, list, listError } = useSecretsManager();
   const { test, isTesting, fetchLastTest } = useConnectionTester();
@@ -71,9 +78,8 @@ export function SupabaseConnectionsTab() {
 
   const hydrate = useCallback(async () => {
     const entries = await Promise.all(
-      ENVS.filter((e) => e.envKey !== null).map(async (e) => {
-        const envK = e.envKey as NonNullable<typeof e.envKey>;
-        const last = await fetchLastTest('supabase', { env_key: envK });
+      ENVS.filter(isManagedSupabaseEnv).map(async (e) => {
+        const last = await fetchLastTest('supabase', { env_key: e.envKey });
         return [
           e.key,
           last
@@ -119,32 +125,30 @@ export function SupabaseConnectionsTab() {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       {ENVS.map((env) => {
-        const urlSecretName = env.urlSecret ?? '';
-        const anonSecretName = env.anonSecret ?? '';
-        const serviceSecretName = env.serviceSecret ?? '';
-        const envKeyName = (env.envKey ?? 'promobrind') as 'promobrind' | 'crm';
-        const url = urlSecretName ? get(urlSecretName) : undefined;
-        const anon = anonSecretName ? get(anonSecretName) : undefined;
-        const svc = serviceSecretName ? get(serviceSecretName) : undefined;
-        const last = env.readOnly ? null : (lastByEnv[env.key] ?? null);
+        const isManaged = isManagedSupabaseEnv(env);
+        const url = isManaged ? get(env.urlSecret) : undefined;
+        const anon = isManaged ? get(env.anonSecret) : undefined;
+        const svc = isManaged ? get(env.serviceSecret) : undefined;
+        const last = isManaged ? (lastByEnv[env.key] ?? null) : null;
+        const pendingStartedAt = pendingByEnv[env.key];
         const credsConfigured = !!url?.has_value && !!svc?.has_value;
-        const suspicious = !env.readOnly
-          ? hasSuspiciousLength(secrets, [urlSecretName, anonSecretName, serviceSecretName])
+        const suspicious = isManaged
+          ? hasSuspiciousLength(secrets, [env.urlSecret, env.anonSecret, env.serviceSecret])
           : false;
         const credsLooksValid = credsConfigured && !suspicious;
-        const preflightIssues = !env.readOnly
+        const preflightIssues = isManaged
           ? getPreflightIssues(secrets, [
-              { name: urlSecretName, label: 'URL do projeto' },
-              { name: serviceSecretName, label: 'Service Role Key' },
+              { name: env.urlSecret, label: 'URL do projeto' },
+              { name: env.serviceSecret, label: 'Service Role Key' },
             ])
           : [];
         const status = resolveSupabaseConnectionStatus({
-          readOnly: !!env.readOnly,
+          readOnly: !isManaged,
           url,
           service: svc,
           last,
         });
-        const canTest = !env.readOnly && credsLooksValid && preflightIssues.length === 0;
+        const canTest = isManaged && credsLooksValid && preflightIssues.length === 0;
         return (
           <Card
             key={env.key}
@@ -163,7 +167,7 @@ export function SupabaseConnectionsTab() {
               <CardDescription>{env.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {env.readOnly ? (
+              {!isManaged ? (
                 <p className="text-sm text-muted-foreground">
                   Credenciais gerenciadas automaticamente. Não requer configuração manual.
                 </p>
@@ -179,21 +183,21 @@ export function SupabaseConnectionsTab() {
                   />
                   <SecretField
                     label="URL do projeto"
-                    secretName={urlSecretName}
+                    secretName={env.urlSecret}
                     status={url}
                     onSaved={list}
                     connectionId={env.key}
                   />
                   <SecretField
                     label="Anon Key"
-                    secretName={anonSecretName}
+                    secretName={env.anonSecret}
                     status={anon}
                     onSaved={list}
                     connectionId={env.key}
                   />
                   <SecretField
                     label="Service Role Key"
-                    secretName={serviceSecretName}
+                    secretName={env.serviceSecret}
                     status={svc}
                     onSaved={list}
                     connectionId={env.key}
@@ -214,7 +218,7 @@ export function SupabaseConnectionsTab() {
                               ? 'Credenciais com formato suspeito (comprimento curto) — re-salve antes de testar'
                               : 'Testar conexão real'
                       }
-                      onClick={() => handleTest(envKeyName, env.key)}
+                      onClick={() => handleTest(env.envKey, env.key)}
                     >
                       {isTesting ? 'Testando…' : 'Testar conexão'}
                     </Button>
@@ -263,9 +267,9 @@ export function SupabaseConnectionsTab() {
                     }
                     action={
                       <RetestButton
-                        onRetest={() => handleTest(envKeyName, env.key)}
+                        onRetest={() => handleTest(env.envKey, env.key)}
                         disabled={!canTest}
-                        cooldownKey={`supabase:${envKeyName}`}
+                        cooldownKey={`supabase:${env.envKey}`}
                         disabledReason={
                           preflightIssues.length > 0
                             ? 'Corrija os campos sinalizados acima antes de testar'
@@ -278,19 +282,17 @@ export function SupabaseConnectionsTab() {
                   />
                   <ConnectionTestHistoryPanel
                     type="supabase"
-                    envKey={envKeyName}
+                    envKey={env.envKey}
                     label={env.name}
                     refreshKey={historyKeyByEnv[env.key] ?? 0}
-                    pendingTest={
-                      pendingByEnv[env.key] ? { startedAt: pendingByEnv[env.key] ?? '' } : null
-                    }
+                    pendingTest={pendingStartedAt ? { startedAt: pendingStartedAt } : null}
                   />
                   <ConnectionTestDetailsDialog
                     open={!!detailsDialogByEnv[env.key]}
                     onOpenChange={(v) => setDetailsDialogByEnv((cur) => ({ ...cur, [env.key]: v }))}
                     connectionType="supabase"
                     connectionLabel={env.name}
-                    envKey={envKeyName}
+                    envKey={env.envKey}
                     onViewFullHistory={() =>
                       setTimelineOpenByEnv((cur) => ({ ...cur, [env.key]: true }))
                     }
@@ -303,11 +305,11 @@ export function SupabaseConnectionsTab() {
                     status={status}
                     last={last}
                     fields={[
-                      { label: 'URL do projeto', secretName: urlSecretName, status: url },
-                      { label: 'Anon Key', secretName: anonSecretName, status: anon },
+                      { label: 'URL do projeto', secretName: env.urlSecret, status: url },
+                      { label: 'Anon Key', secretName: env.anonSecret, status: anon },
                       {
                         label: 'Service Role Key',
-                        secretName: serviceSecretName,
+                        secretName: env.serviceSecret,
                         status: svc,
                         sensitive: true,
                       },

@@ -67,10 +67,10 @@ export default function AdminProductFormPage() {
     if (!isEdit) return;
 
     const loadProduct = async () => {
+      if (!id) return;
       setIsLoading(true);
       try {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const fullProduct = await fetchPromobrindProductById(id!);
+        const fullProduct = await fetchPromobrindProductById(id);
         if (fullProduct) {
           setProduct(fullProduct);
         } else {
@@ -189,7 +189,9 @@ export default function AdminProductFormPage() {
       if (!isEdit || skuChanged) {
         const { fetchPromobrindProducts } = await import('@/lib/external-db');
         const existing = await fetchPromobrindProducts({ search: data.sku, limit: 5 });
-        const products: PromobrindProduct[] = Array.isArray(existing) ? existing : [];
+        const products: PromobrindProduct[] = Array.isArray(existing)
+          ? existing
+          : ((existing as { products?: PromobrindProduct[] }).products ?? []);
         const duplicate = products.find(
           (p: PromobrindProduct) => p.sku?.toLowerCase() === data.sku.toLowerCase(),
         );
