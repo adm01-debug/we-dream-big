@@ -40,6 +40,8 @@ import {
   aggregateDailySummaryByDate,
   getActiveFlags,
   type IntelligenceFlag,
+  type StockVelocity,
+  type ProductIntelligenceData,
 } from '@/hooks/intelligence';
 import {
   safeVelocityTrend,
@@ -75,15 +77,17 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
     refetch: refetchSummary,
   } = useStockDailySummary(productId, days);
   const {
-    data: velocity,
+    data: _velocity,
     error: velocityError,
     refetch: refetchVelocity,
   } = useStockVelocity(productId);
+  const velocity = _velocity as StockVelocity[] | undefined;
   const {
-    data: intelligence,
+    data: _intelligence,
     error: intelligenceError,
     refetch: refetchIntelligence,
   } = useProductIntelligenceData(productId);
+  const intelligence = _intelligence as ProductIntelligenceData | null | undefined;
 
   const hasData = !!summaries?.length;
   const hasError = !!(summaryError || velocityError || intelligenceError);
@@ -184,9 +188,11 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
   }
 
   const daysToStockout = bestVelocity?.days_to_stockout;
-  const isUrgent = daysToStockout !== null && Number.isFinite(daysToStockout) && daysToStockout < 7;
+  // eslint-disable-next-line eqeqeq
+  const isUrgent = daysToStockout != null && Number.isFinite(daysToStockout) && daysToStockout < 7;
   const isWarning =
-    daysToStockout !== null && Number.isFinite(daysToStockout) && daysToStockout < 15;
+    // eslint-disable-next-line eqeqeq
+    daysToStockout != null && Number.isFinite(daysToStockout) && daysToStockout < 15;
   const trend = safeVelocityTrend(bestVelocity?.velocity_trend);
   const trendDisplay = formatVelocityTrendOperational(trend);
 
@@ -278,7 +284,8 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
           icon={Clock}
           label="Dias até acabar"
           value={
-            daysToStockout !== null && Number.isFinite(daysToStockout)
+            // eslint-disable-next-line eqeqeq
+            daysToStockout != null && Number.isFinite(daysToStockout)
               ? String(Math.round(daysToStockout))
               : '∞'
           }

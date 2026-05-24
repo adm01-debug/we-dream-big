@@ -41,7 +41,8 @@ interface SalesHistoryChartProps {
 
 // ---------- Main Component ----------
 
-export function SalesHistoryChart({ productId, productSku }: SalesHistoryChartProps) {  const [period, setPeriod] = useState<string>('30');
+export function SalesHistoryChart({ productId, productSku }: SalesHistoryChartProps) {
+  const [period, setPeriod] = useState<string>('30');
   const days = Number(period);
 
   const { data, isLoading, error, refetch } = useSalesHistory(productId, days);
@@ -59,7 +60,8 @@ export function SalesHistoryChart({ productId, productSku }: SalesHistoryChartPr
         return acc;
       },
       [],
-    );  }, [data, hasData]);
+    );
+  }, [data, hasData]);
 
   const kpis = useMemo(() => {
     if (!hasData)
@@ -383,7 +385,8 @@ function SalesTooltip({
   payload,
 }: {
   active?: boolean;
-  payload?: { payload: Record<string, unknown> }[];}) {
+  payload?: { payload: ChartDayPayload }[];
+}) {
   if (!active || !payload?.length) return null;
   const data = payload[0]?.payload;
   if (!data) return null;

@@ -361,14 +361,16 @@ export function useGlobalSearch() {
               if (intent.filters.priceRange === 'low')
                 filteredProducts = filteredProducts.filter(
                   (p) =>
-                    ((p as ExternalProduct).sale_price || (p as ExternalProduct).base_price || 0) <
-                    50,
+                    ((p as unknown as ExternalProduct).sale_price ||
+                      (p as unknown as ExternalProduct).base_price ||
+                      0) < 50,
                 );
               else if (intent.filters.priceRange === 'high')
                 filteredProducts = filteredProducts.filter(
                   (p) =>
-                    ((p as ExternalProduct).sale_price || (p as ExternalProduct).base_price || 0) >
-                    200,
+                    ((p as unknown as ExternalProduct).sale_price ||
+                      (p as unknown as ExternalProduct).base_price ||
+                      0) > 200,
                 );
             }
             if (intent.filters.color) {
@@ -376,8 +378,8 @@ export function useGlobalSearch() {
               const colorFiltered = filteredProducts.filter((p) => {
                 if (!p.colors) return false;
                 const colors = Array.isArray(p.colors) ? p.colors : [];
-                return colors.some(
-                  (c: Record<string, string>) =>
+                return (colors as Record<string, string>[]).some(
+                  (c) =>
                     c.name?.toLowerCase().includes(colorLower) ||
                     c.label?.toLowerCase().includes(colorLower),
                 );
@@ -385,12 +387,13 @@ export function useGlobalSearch() {
               if (colorFiltered.length > 0) filteredProducts = colorFiltered;
             }
 
-            const fuse = new Fuse(filteredProducts, createProductFuseOptions<ExternalProduct>());
-            rankProductSearchResults(filteredProducts, productQuery, fuse).forEach((p) => {
+            const extProducts = filteredProducts as unknown as ExternalProduct[];
+            const fuse = new Fuse(extProducts, createProductFuseOptions<ExternalProduct>());
+            rankProductSearchResults(extProducts, productQuery, fuse).forEach((p) => {
               allResults.push({
                 id: p.id,
                 title: p.name,
-                subtitle: `SKU: ${p.sku} • ${p.category_name || 'Sem categoria'} • ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((p as ExternalProduct).sale_price || (p as ExternalProduct).base_price || 0)}`,
+                subtitle: `SKU: ${p.sku} • ${p.category_name || 'Sem categoria'} • ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.sale_price || p.base_price || 0)}`,
                 type: 'product',
                 href: `/produto/${p.id}`,
               });
@@ -509,7 +512,7 @@ export function useGlobalSearch() {
         // Mockups
         if (wants('mockup')) {
           try {
-            const { data } = await supabase
+            const { data: rawMockups } = await supabase
               .from('generated_mockups')
               .select('id, product_name, client_name, technique_name, created_at')
               .or(
@@ -517,6 +520,12 @@ export function useGlobalSearch() {
               )
               .order('created_at', { ascending: false })
               .limit(5);
+            const data = rawMockups as unknown as Array<{
+              id: string;
+              product_name: string | null;
+              client_name: string | null;
+              technique_name: string | null;
+            }> | null;
             (data || []).forEach((m) =>
               allResults.push({
                 id: m.id,
@@ -748,7 +757,7 @@ export function useGlobalSearch() {
                 search_term: searchQuery.toLowerCase().trim().slice(0, 200),
                 results_count: finalResults.length,
                 filters_used: { latency_ms: latencyMs, intent_type: intent.type },
-              })
+              } as never)
               .then(
                 () => undefined,
                 () => undefined,

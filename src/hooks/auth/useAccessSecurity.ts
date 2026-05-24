@@ -65,7 +65,8 @@ export function useAccessSecurity() {
           .limit(50),
       ]);
 
-      if (settingsRes.data) setSettings(settingsRes.data as AccessSecuritySettings);
+      const settingsData = (settingsRes as unknown as { data: AccessSecuritySettings | null }).data;
+      if (settingsData) setSettings(settingsData);
       if (ipsRes.data) setIps(ipsRes.data as IpWhitelistEntry[]);
       if (citiesRes.data) setCities(citiesRes.data as CityWhitelistEntry[]);
       if (logsRes.data) setBlockedLogs(logsRes.data as AccessBlockedLog[]);
@@ -97,7 +98,7 @@ export function useAccessSecurity() {
   const addIp = async (ip_address: string, label?: string) => {
     const { data, error } = await db
       .from('ip_whitelist')
-      .insert({ ip_address, label: label || null })
+      .insert({ ip_address, label: label || null } as never)
       .select()
       .single();
     if (error) {
@@ -132,7 +133,7 @@ export function useAccessSecurity() {
   const addCity = async (city_name: string, state?: string, country_code = 'BR') => {
     const { data, error } = await db
       .from('city_whitelist')
-      .insert({ city_name, state: state || null, country_code })
+      .insert({ city_name, state: state || null, country_code } as never)
       .select()
       .single();
     if (error) {

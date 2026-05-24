@@ -5,7 +5,12 @@
  * Also incorporates catalog flags (featured, newArrival, onSale) from product data.
  */
 import { useMemo } from 'react';
-import { useProductIntelligenceData, useStockVelocity } from '@/hooks/intelligence';
+import {
+  useProductIntelligenceData,
+  useStockVelocity,
+  type StockVelocity,
+  type ProductIntelligenceData,
+} from '@/hooks/intelligence';
 import { generateMockIntelligence, generateMockVelocities } from '@/lib/stock-chart-utils';
 
 export type IntelligenceBadgeType =
@@ -46,8 +51,10 @@ export function useProductIntelligenceBadges(
   productId?: string,
   catalogFlags?: CatalogFlags,
 ): ProductIntelligenceBadgesResult {
-  const { data: intelligence, isLoading: loadingIntel } = useProductIntelligenceData(productId);
-  const { data: velocity, isLoading: loadingVel } = useStockVelocity(productId);
+  const { data: _intelligence, isLoading: loadingIntel } = useProductIntelligenceData(productId);
+  const intelligence = _intelligence as ProductIntelligenceData | null | undefined;
+  const { data: _velocity, isLoading: loadingVel } = useStockVelocity(productId);
+  const velocity = _velocity as StockVelocity[] | undefined;
 
   return useMemo(() => {
     const isDemo = !intelligence;
@@ -128,7 +135,8 @@ export function useProductIntelligenceBadges(
         )
       : null;
     const trend = bestVel?.velocity_trend;
-    if (trend !== null && trend > 1.3) {
+    // eslint-disable-next-line eqeqeq
+    if (trend != null && trend > 1.3) {
       badges.push({
         type: 'emergente',
         label: 'Emergente',

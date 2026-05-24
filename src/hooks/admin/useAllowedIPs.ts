@@ -74,7 +74,7 @@ export function useAllowedIPs(targetUserId?: string) {
           ip_address: ipAddress,
           label: label || null,
           created_by: user.id,
-        });
+        } as never);
 
         if (error) {
           const e = error as { code?: string };

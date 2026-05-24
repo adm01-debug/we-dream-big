@@ -75,7 +75,7 @@ export function useAuditLog() {
         new_values: newValues,
         ip_address: null, // Pode ser capturado via API externa se necessário
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
-      });
+      } as never);
 
       if (error) {
         console.error('Erro ao registrar audit log:', error);
@@ -209,7 +209,7 @@ export async function fetchAuditHistory(
   entityType: AuditEntityType,
   entityId: string,
 ): Promise<AuditLogEntry[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('audit_log')
     .select(
       `
@@ -245,7 +245,7 @@ export async function fetchAllAuditLogs(
   },
   limit = 100,
 ): Promise<AuditLogEntry[]> {
-  let query = supabase
+  let query = db
     .from('audit_log')
     .select(
       `
