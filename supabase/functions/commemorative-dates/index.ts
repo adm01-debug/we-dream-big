@@ -1,4 +1,5 @@
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { safeErrorResponse } from '../_shared/error-response.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { parseBodyWithSchema } from "../_shared/zod-validate.ts";
@@ -68,8 +69,7 @@ Deno.serve(async (req) => {
       case 'get_active_dates': {
         const { data, error } = await externalSupabase.rpc('get_active_commemorative_dates');
         if (error) {
-          return new Response(JSON.stringify({ error: error.message }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          return safeErrorResponse(error, { corsHeaders, publicMessage: 'query_failed', status: 400, logLabel: 'commemorative-dates query error:' });
         }
         result = data;
         break;
@@ -81,8 +81,7 @@ Deno.serve(async (req) => {
           p_days_ahead: daysAhead
         });
         if (error) {
-          return new Response(JSON.stringify({ error: error.message }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          return safeErrorResponse(error, { corsHeaders, publicMessage: 'query_failed', status: 400, logLabel: 'commemorative-dates query error:' });
         }
         result = data;
         break;
@@ -103,8 +102,7 @@ Deno.serve(async (req) => {
           p_include_all_colors: includeAllColors
         });
         if (error) {
-          return new Response(JSON.stringify({ error: error.message }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          return safeErrorResponse(error, { corsHeaders, publicMessage: 'query_failed', status: 400, logLabel: 'commemorative-dates query error:' });
         }
         result = data;
         break;
@@ -118,8 +116,7 @@ Deno.serve(async (req) => {
           .order('date_month')
           .order('date_day');
         if (error) {
-          return new Response(JSON.stringify({ error: error.message }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          return safeErrorResponse(error, { corsHeaders, publicMessage: 'query_failed', status: 400, logLabel: 'commemorative-dates query error:' });
         }
         result = data;
         break;
@@ -132,11 +129,6 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Unexpected error:', errorMessage);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(error, { corsHeaders, publicMessage: 'internal_error', logLabel: 'commemorative-dates unexpected error:' });
   }
 });

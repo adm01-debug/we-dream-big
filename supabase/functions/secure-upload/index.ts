@@ -2,6 +2,7 @@ import { authenticateRequest, authErrorResponse } from "../_shared/auth.ts";
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
 import { buildPublicCorsHeaders } from "../_shared/cors.ts";
+import { safeErrorResponse } from "../_shared/error-response.ts";
 
 const corsHeaders = buildPublicCorsHeaders();
 
@@ -186,10 +187,7 @@ Deno.serve(async (req) => {
       });
     }
     return log.respond(
-      new Response(
-        JSON.stringify({ error: errorObj.message ?? "Erro desconhecido", request_id: requestId }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
-      ),
+      safeErrorResponse(error, { corsHeaders, publicMessage: "upload_failed", requestId, logLabel: "secure-upload error:" }),
     );
   }
 });

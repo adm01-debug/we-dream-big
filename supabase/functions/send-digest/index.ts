@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { buildPublicCorsHeaders } from "../_shared/cors.ts";
 import { authorizeCron } from "../_shared/dispatcher-auth.ts";
+import { safeErrorResponse } from "../_shared/error-response.ts";
 
 const corsHeaders = buildPublicCorsHeaders();
 
@@ -59,11 +60,10 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Digest error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(error, {
+      corsHeaders,
+      publicMessage: 'digest_failed',
+      logLabel: 'Digest error:',
+    });
   }
 });
