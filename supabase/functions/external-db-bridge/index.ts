@@ -33,6 +33,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
 import { resolveCredential } from "../_shared/credentials.ts";
 import { constantTimeEqual } from "../_shared/dispatcher-auth.ts";
+import { assertSwitchEnabled } from "../_shared/kill_switch.ts";
 
 const breaker = getBreaker("external-db");
 
@@ -446,6 +447,18 @@ Deno.serve((req) => {
     } catch (e) {
       console.error(`[external-db-bridge] CORS init failed: ${(e as Error).message}`);
     }
+
+    // ============================================
+    // KILL-SWITCH (causa raiz do colapso 2026-05-24)
+    // external-db-bridge foi aposentada no "Caminho B" (PostgREST nativo).
+    // Clientes legados ainda batem aqui em loop (30–50 req/s), e cada chamada
+    // dispara 5–7 sub-queries → satura o pool de conexões. Quando o switch
+    // `edge_external_db_bridge` está OFF, respondemos 410 Gone ANTES de criar
+    // qualquer client / ler credenciais / tocar no banco. Fail-open por design.
+    // Ver docs/RELATORIO_COLAPSO_2026-05-24.md.
+    // ============================================
+    const goneResponse = await assertSwitchEnabled("edge_external_db_bridge", req, corsHeaders);
+    if (goneResponse) return goneResponse;
 
     const requestStartTime = performance.now();
     console.log(`[external-db-bridge] [req_id=${requestId}] request_start method=${req.method}`);

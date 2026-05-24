@@ -15,10 +15,46 @@ A edge function `external-db-bridge` (aposentada no Caminho B) ainda recebia **3
 | Kill-switch para `external-db-bridge` | ✅ Tabela criada, switch OFF |
 | Rotação de `cron.job_run_details` | ✅ Job semanal criado |
 | Índice em `collection_products.product_id` | ✅ Criado |
-| Edge function `external-db-bridge` retornar 410 | ⏳ **PENDENTE** — precisa deploy do código atualizado |
+| **Código** da `external-db-bridge` honrando o kill-switch (410) | ✅ **FEITO** (2ª sessão) — `assertSwitchEnabled` no topo do handler |
+| **Deploy** da `external-db-bridge` com o código novo | ⏳ **PENDENTE** — via pipeline Supabase (PR merge) |
 | `idle_session_timeout` / `idle_in_transaction` | ⏳ **PENDENTE** — Dashboard |
 | `log_min_duration_statement = 2000ms` | ⏳ **PENDENTE** — Dashboard |
 | Auth Connection Strategy → Percentage | ⏳ **PENDENTE** — Dashboard |
+
+## Atualização 2026-05-24 (2ª sessão — `claude/confident-heisenberg-M03BW`)
+
+Continuação da contenção. O achado central: **o kill-switch nunca tinha sido ligado no
+código** da `external-db-bridge` (o helper `_shared/kill_switch.ts` existia, o switch no
+banco estava OFF, mas o `index.ts` não importava nem chamava `assertSwitchEnabled`). Sem
+isso, a função continuava executando 100% do trabalho a cada request — o gatilho do colapso.
+
+Feito nesta sessão:
+- **Código (repo)**: `assertSwitchEnabled("edge_external_db_bridge", req, corsHeaders)` como
+  primeira ação do handler (antes de body/auth/credenciais/DB). + teste em
+  `supabase/functions/_shared/kill_switch.test.ts`.
+- **DB (aplicado via MCP em produção, idempotente)**:
+  - `harden_anon_graphql_exposure` — REVOKE SELECT de `anon` em 27 tabelas internas de
+    log/auditoria/telemetria/webhook (mantém `system_kill_switches`, catálogo e tokens
+    de fluxo anônimo).
+  - `drop_unused_indexes_logs_safe_batch` — DROP de 67 índices ociosos em tabelas
+    append-only de log/staging (rollback no corpo da migration).
+  - `kill_switches_fk_index_and_policy_consolidation` — índice de FK em `updated_by` +
+    split da policy `FOR ALL` (admin) em INSERT/UPDATE/DELETE `TO authenticated`,
+    deixando 1 só policy de SELECT pública (resolve `multiple_permissive` e protege a
+    leitura anônima do kill-switch).
+  - `capture_fn_handle_new_user_vendedor` (repo) — captura a definição corrigida de
+    `fn_handle_new_user` ('seller'→'vendedor'), que só existia em produção.
+  - `optimize_fn_run_schema_drift_check_hold` — reduz a retenção de conexão de 30s→15s.
+- **Verificação**: `fn_run_smoke_tests()` 14/14 ✅; `purge-expired-security` último run
+  `succeeded`; leitura anônima do `system_kill_switches` retornando `enabled=false` OK.
+
+### ⚠️ Deploy da edge — por que via pipeline e não via MCP
+A `external-db-bridge` importa 12 módulos de `_shared` (cada um com suas dependências).
+Montar esse bundle à mão num deploy MCP arrisca subir uma versão com arquivo faltando →
+503 em produção. Como **não há storm ativo agora** (conexões idle ~12s) e o fix de código
+já está commitado, o deploy correto e seguro é pela pipeline Supabase ao mergear o PR
+(ela empacota `_shared` corretamente). Se precisar de proteção imediata antes do merge,
+o switch já está OFF — basta a pipeline subir o código novo para o 410 passar a valer.
 
 ## Como verificar se voltou ao normal
 
