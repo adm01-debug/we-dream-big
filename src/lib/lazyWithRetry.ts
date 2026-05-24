@@ -7,7 +7,8 @@ import { getFallback } from '@/components/layout/SkeletonLoaders';
  * Wrapper around React.lazy that retries on chunk loading failures.
  * Handles stale cache issues after deployments and Vite 502 spikes.
  */
-export function lazyWithRetry<T extends ComponentType<unknown>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ForwardRef/Memo components nao satisfazem ComponentType<unknown>; any e necessario p/ inferir T nos call-sites
+export function lazyWithRetry<T extends ComponentType<any>>(
   componentImport: () => Promise<{ default: T }>,
   retries = 3,
   interval = 1000,
