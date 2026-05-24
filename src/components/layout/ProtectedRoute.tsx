@@ -6,6 +6,7 @@ import { EnhancedErrorBoundary } from '@/components/errors/EnhancedErrorBoundary
 import { EmptyState } from '@/components/common/EmptyState';
 import { checkAccess, type AccessPolicy } from '@/lib/access/access-policy';
 import { savePostLoginRedirect } from '@/lib/auth/post-login-redirect';
+import { createClientLogger } from '@/lib/telemetry/structuredLogger';
 
 interface ProtectedRouteProps extends AccessPolicy {
   children?: ReactNode;
@@ -39,6 +40,10 @@ export function ProtectedRoute({
   if (!user) {
     // Salva destino pós-login (sobrevive ao round-trip OAuth)
     savePostLoginRedirect(`${location.pathname}${location.search}${location.hash}`);
+    // Etapa 8: instrumentação para auditar se Navigate está mudando URL em produção
+    createClientLogger('auth.protected_route').info('redirect_to_auth', {
+      from: location.pathname,
+    });
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
