@@ -36,6 +36,11 @@ export function useScrollLockFix() {
     //         on the root elements.
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
+        if (mutation.type === 'childList') {
+          scheduleCleanup();
+          return;
+        }
+
         const attr = mutation.attributeName;
         if (attr === 'data-state') {
           const target = mutation.target as HTMLElement;
@@ -54,6 +59,7 @@ export function useScrollLockFix() {
 
     observer.observe(document.body, {
       subtree: true,
+      childList: true,
       attributes: true,
       attributeFilter: ['data-state'],
     });

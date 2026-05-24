@@ -3,7 +3,7 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { releaseScrollLock } from '@/lib/dom/scroll-lock';
+import { releaseScrollLockIfIdle } from '@/lib/dom/scroll-lock';
 
 const Select = SelectPrimitive.Root;
 
@@ -67,7 +67,7 @@ SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayNam
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = 'popper', ...props }, ref) => (
+>(({ className, children, position = 'popper', onCloseAutoFocus, ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
@@ -81,8 +81,9 @@ const SelectContent = React.forwardRef<
       // Prevent Select from locking page scroll, and release any stuck body
       // lock (incl. pointer-events: none) on close.
       onCloseAutoFocus={(e) => {
+        onCloseAutoFocus?.(e);
         e.preventDefault();
-        requestAnimationFrame(releaseScrollLock);
+        requestAnimationFrame(releaseScrollLockIfIdle);
       }}
       {...props}
     >
