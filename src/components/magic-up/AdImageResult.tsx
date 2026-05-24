@@ -307,7 +307,7 @@ export function AdImageResult({
       <CardContent className="p-0">
         <div className="group relative">
           <img
-            src={imageUrl}
+            src={imageUrl ?? undefined}
             alt={productName ? `Imagem publicitária - ${productName}` : 'Imagem publicitária'}
             className="aspect-square w-full object-cover"
             loading="lazy"

@@ -66,7 +66,7 @@ export function useOrgCreate(tableName: string) {
         .insert({
           ...payload,
           organization_id: currentOrg.id,
-        })
+        } as never)
         .select()
         .single();
 
@@ -95,7 +95,7 @@ export function useOrgUpdate(tableName: string) {
     mutationFn: async ({ id, ...payload }: { id: string; [key: string]: unknown }) => {
       const { data, error } = await supabase
         .from(tableName as never)
-        .update(payload)
+        .update(payload as never)
         .eq('id', id)
         .select()
         .single();

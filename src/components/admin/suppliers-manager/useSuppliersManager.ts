@@ -413,10 +413,10 @@ export function useSuppliersManager() {
         null;
 
       const payload: Record<string, unknown> = {
-        name: es.name.trim(),
+        name: (es.name ?? '').trim(),
         code:
           es.code?.trim() ||
-          es.name
+          (es.name ?? '')
             .trim()
             .toUpperCase()
             .replace(/\s+/g, '_')
