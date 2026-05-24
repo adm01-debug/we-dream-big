@@ -129,7 +129,7 @@ export function getTechniqueColor(code: string): string {
     BD: 'from-yellow-500/20 to-yellow-600/10 border-warning/30',
     SUBLIMACAO: 'from-pink-500/20 to-primary/10 border-pink-500/30',
     SUB: 'from-pink-500/20 to-primary/10 border-pink-500/30',
-    HOT_STAMPING: 'from-orange/20 to-orange/10 border-orange/30',
+    HOT_STAMPING: 'from-brand-primary/20 to-brand-primary/10 border-brand-primary/30',
     TRANSFER: 'from-cyan-500/20 to-cyan-600/10 border-cyan-500/30',
     ADESIVO: 'from-indigo-500/20 to-indigo-600/10 border-indigo-500/30',
   };

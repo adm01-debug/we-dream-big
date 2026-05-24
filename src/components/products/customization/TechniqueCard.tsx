@@ -20,7 +20,7 @@ const GROUP_COLORS: Record<string, string> = {
   LASER: "bg-info/10 text-info border-info/20",
   SERIGRAFIA: "bg-success/10 text-success border-success/20",
   UV_DIGITAL: "bg-primary/10 text-primary border-primary/20",
-  SUBLIMACAO: "bg-orange/10 text-orange border-orange/20",
+  SUBLIMACAO: "bg-brand-primary/10 text-brand-primary border-brand-primary/20",
   BORDADO: "bg-destructive/10 text-destructive border-destructive/20",
   TAMPOGRAFIA: "bg-success/10 text-success border-success/20",
   TRANSFER: "bg-warning/10 text-warning border-warning/20",

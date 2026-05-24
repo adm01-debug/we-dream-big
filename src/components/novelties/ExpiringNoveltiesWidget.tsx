@@ -23,7 +23,7 @@ function getRecencyVariant(createdAt: string): "hot" | "warm" | "normal" {
 }
 
 const recencyStyles = {
-  hot: "text-orange",
+  hot: "text-brand-primary",
   warm: "text-warning",
   normal: "text-muted-foreground",
 };

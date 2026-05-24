@@ -153,14 +153,14 @@ export function useSecurityData(
 export function getScoreColor(score: number) {
   if (score >= 80) return 'text-success';
   if (score >= 60) return 'text-warning';
-  if (score >= 40) return 'text-orange';
+  if (score >= 40) return 'text-brand-primary';
   return 'text-destructive';
 }
 
 export function getScoreProgressColor(score: number) {
   if (score >= 80) return 'bg-success';
   if (score >= 60) return 'bg-warning';
-  if (score >= 40) return 'bg-orange';
+  if (score >= 40) return 'bg-brand-primary';
   return 'bg-destructive';
 }
 

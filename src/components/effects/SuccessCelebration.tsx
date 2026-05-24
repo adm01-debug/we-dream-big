@@ -26,8 +26,8 @@ const celebrationConfig: Record<CelebrationType, {
   },
   achievement: {
     icon: Sparkles,
-    gradient: "from-orange to-orange/80",
-    iconColor: "text-orange-foreground",
+    gradient: "from-brand-primary to-brand-primary/80",
+    iconColor: "text-brand-primary-foreground",
   },
   "level-up": {
     icon: Sparkles,
@@ -36,7 +36,7 @@ const celebrationConfig: Record<CelebrationType, {
   },
   milestone: {
     icon: PartyPopper,
-    gradient: "from-primary to-orange",
+    gradient: "from-primary to-brand-primary",
     iconColor: "text-primary-foreground",
   },
 };
@@ -217,7 +217,7 @@ export function SuccessCelebration({
                     ease: "easeOut",
                   }}
                 >
-                  <Sparkles className="h-4 w-4 text-orange" />
+                  <Sparkles className="h-4 w-4 text-brand-primary" />
                 </motion.div>
               ))}
             </motion.div>

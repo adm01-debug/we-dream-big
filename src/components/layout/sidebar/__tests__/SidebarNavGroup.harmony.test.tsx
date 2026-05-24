@@ -3,7 +3,7 @@
 // em 2026-05-12, Fase 3 T24 — falhou no CI, revertido)
 // https://github.com/adm01-debug/Promo_Gifts/issues/151
 //
-// CAUSA: substituí `bg-orange/15` → `bg-orange/[0.03]` (token atual) e
+// CAUSA: substituí `bg-brand-primary/15` → `bg-brand-primary/[0.03]` (token atual) e
 // removi describe.skip. CI do PR #168 falhou no job 'Lint, Typecheck &
 // Test' (sem acesso aos logs no momento da reversão).
 //
@@ -99,10 +99,10 @@ const BASE_CLASSES = [
 /** Classes que NÃO devem aparecer em nenhum item (resíduo do antigo CTA). */
 const FORBIDDEN_CTA_CLASSES = [
   "bg-gradient-to-r",
-  "from-orange/15",
-  "from-orange/5",
-  "border-orange/30",
-  "hover:shadow-orange/10",
+  "from-brand-primary/15",
+  "from-brand-primary/5",
+  "border-brand-primary/30",
+  "hover:shadow-brand-primary/10",
 ];
 
 function getLink(label: string): HTMLAnchorElement {
@@ -151,7 +151,7 @@ describe.skip("SidebarNavGroup — harmonia visual de Novo Orçamento / Orçamen
 
 describe.skip("SidebarNavGroup — comportamento de destaque ativo", () => {
   /** Classes aplicadas quando o item está ativo. */
-  const ACTIVE_MARKERS = ["bg-orange/[0.03]", "text-orange", "font-bold"];
+  const ACTIVE_MARKERS = ["bg-brand-primary/[0.03]", "text-brand-primary", "font-bold"];
   /** Classes aplicadas quando o item está idle (não ativo). */
   const IDLE_MARKERS = ["text-sidebar-foreground/75"];
 
@@ -175,14 +175,14 @@ describe.skip("SidebarNavGroup — comportamento de destaque ativo", () => {
       for (const cls of IDLE_MARKERS) {
         expect(link.className).toContain(cls);
       }
-      expect(link.className).not.toContain("bg-orange/[0.03]");
+      expect(link.className).not.toContain("bg-brand-primary/[0.03]");
     }
   });
 
   it("em /orcamentos-publicos o item /orcamentos NÃO fica ativo (sem falso prefixo)", () => {
     renderAt("/orcamentos-publicos");
     const link = getLink("Orçamentos");
-    expect(link.className).not.toContain("bg-orange/[0.03]");
+    expect(link.className).not.toContain("bg-brand-primary/[0.03]");
   });
 });
 
@@ -193,7 +193,7 @@ describe.skip("SidebarNavGroup — paridade ao alternar rotas (back/forward, dee
   }
 
   function isLinkActive(label: string): boolean {
-    return getLink(label).className.includes("bg-orange/[0.03]");
+    return getLink(label).className.includes("bg-brand-primary/[0.03]");
   }
 
   it("ao trocar /carrinhos -> /orcamentos/novo -> /orcamentos, o destaque migra corretamente entre os 3 itens", () => {

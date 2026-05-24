@@ -176,7 +176,7 @@ export default function FiltersPage() {
                   )}
               </AnimatePresence>
               <div
-                className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${state.activeFiltersCount > 0 ? 'bg-gradient-to-r from-orange to-orange-hover text-orange-foreground shadow-md shadow-orange/20' : 'bg-muted/60 text-muted-foreground'}`}
+                className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${state.activeFiltersCount > 0 ? 'bg-gradient-to-r from-brand-primary to-brand-primary-hover text-brand-primary-foreground shadow-md shadow-brand-primary/20' : 'bg-muted/60 text-muted-foreground'}`}
               >
                 <Filter className="h-4 w-4" />
                 <span className="tabular-nums">

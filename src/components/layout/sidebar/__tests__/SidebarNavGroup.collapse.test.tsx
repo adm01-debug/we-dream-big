@@ -3,8 +3,8 @@
 // https://github.com/adm01-debug/Promo_Gifts/issues/151
 //
 // CAUSA REAL (não é apenas token):
-//   1) Tokens visuais defasados: `bg-orange/15` → `bg-orange/[0.03]`,
-//      `bg-orange/8` → `bg-orange/[0.02]`, `bg-orange/10` → `bg-orange/[0.03]`.
+//   1) Tokens visuais defasados: `bg-brand-primary/15` → `bg-brand-primary/[0.03]`,
+//      `bg-brand-primary/8` → `bg-brand-primary/[0.02]`, `bg-brand-primary/10` → `bg-brand-primary/[0.03]`.
 //   2) Wrapper `ControlledSidebarGroup` duplicou lógica de SidebarReorganized
 //      que pode ter divergido. Comportamento de auto-expand+colapso manual
 //      precisa ser re-validado contra a implementação atual antes de re-habilitar.
@@ -25,7 +25,7 @@
  *     COLAPSAR manualmente o grupo "Orçamentos" (clique no header).
  *  2) Enquanto a rota não muda, o grupo permanece colapsado conforme escolha
  *     do usuário (não há re-abertura espúria por re-render).
- *  3) O destaque visual do header do grupo (`text-orange`) permanece
+ *  3) O destaque visual do header do grupo (`text-brand-primary`) permanece
  *     consistente (refletindo `hasActiveItem`) tanto aberto quanto colapsado.
  *  4) Ao alternar para uma rota relevante diferente (back/forward / push),
  *     o comportamento real do `SidebarReorganized` re-aplica `computeAutoOpen`
@@ -208,8 +208,8 @@ describe.skip("SidebarNavGroup — colapso manual com auto-expansão ativa", () 
 describe.skip("SidebarNavGroup — destaque visual do header consistente em ambos os estados", () => {
   function headerHasActiveStyle(): boolean {
     const cls = getGroupHeader().className;
-    // hasActiveItem aplica `text-orange bg-orange/8 border border-orange/15` no header.
-    return cls.includes("text-orange") && cls.includes("bg-orange/8");
+    // hasActiveItem aplica `text-brand-primary bg-brand-primary/8 border border-brand-primary/15` no header.
+    return cls.includes("text-brand-primary") && cls.includes("bg-brand-primary/8");
   }
 
   it.each([
@@ -291,9 +291,9 @@ describe.skip("SidebarNavGroup — alternância entre rotas relevantes re-aplica
     expect(isCollapsed()).toBe(false);
 
     const carrinhos = getChildLink("Carrinhos")!;
-    expect(carrinhos.className).toContain("bg-orange/10"); // ativo
+    expect(carrinhos.className).toContain("bg-brand-primary/10"); // ativo
     expect(within(carrinhos).queryByText(/orçamentos/i)).toBeNull(); // não vazou
     const novo = getChildLink("Novo Orçamento")!;
-    expect(novo.className).not.toContain("bg-orange/10");
+    expect(novo.className).not.toContain("bg-brand-primary/10");
   });
 });

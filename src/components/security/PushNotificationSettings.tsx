@@ -78,7 +78,7 @@ export function PushNotificationSettings() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-            <AlertTriangle className="h-5 w-5 text-orange" />
+            <AlertTriangle className="h-5 w-5 text-brand-primary" />
             <div>
               <p className="text-sm font-medium">Navegador não compatível</p>
               <p className="text-xs text-muted-foreground">
@@ -182,8 +182,8 @@ export function PushNotificationSettings() {
 
                 <div className="flex items-center justify-between p-3 rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded bg-orange/10">
-                      <Smartphone className="h-4 w-4 text-orange" />
+                    <div className="p-1.5 rounded bg-brand-primary/10">
+                      <Smartphone className="h-4 w-4 text-brand-primary" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">Novos dispositivos</p>

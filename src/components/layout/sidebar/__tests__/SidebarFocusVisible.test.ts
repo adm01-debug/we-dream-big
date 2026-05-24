@@ -4,7 +4,7 @@
 // https://github.com/adm01-debug/Promo_Gifts/issues/151
 //
 // CAUSA: tentei re-habilitar em 2026-05-12 reescrevendo as assertions para
-// refletir tokens atuais (ring-1 + ring-orange/N em vez de ring-2 +
+// refletir tokens atuais (ring-1 + ring-brand-primary/N em vez de ring-2 +
 // ring-primary + ring-offset). Localmente passava (grep confirma 3
 // ocorrências de cada padrão no componente), mas o CI do PR #168 falhou
 // no job 'Lint, Typecheck & Test'.
@@ -42,7 +42,7 @@ describe.skip("Sidebar — focus-visible por teclado em todos os interativos", (
   const content = readFileSync(resolve(process.cwd(), FILE), "utf8");
 
   const ringMatches = content.match(/focus-visible:ring-1\b/g) ?? [];
-  const orangeMatches = content.match(/focus-visible:ring-orange\/\d+/g) ?? [];
+  const orangeMatches = content.match(/focus-visible:ring-brand-primary\/\d+/g) ?? [];
 
   it("tem pelo menos 3 elementos interativos com ring de foco", () => {
     expect(ringMatches.length).toBeGreaterThanOrEqual(3);

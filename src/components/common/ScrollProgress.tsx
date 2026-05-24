@@ -29,7 +29,7 @@ export function ScrollProgressIndicator({
 
   const colorClasses = {
     primary: "bg-primary",
-    orange: "bg-orange",
+    orange: "bg-brand-primary",
     success: "bg-success",
   };
 

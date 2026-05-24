@@ -93,7 +93,7 @@ export const StarBackground = React.memo(function StarBackground() {
               {/* Flame tail */}
               <motion.div 
                 className={cn(
-                  "absolute top-1/2 -translate-y-1/2 w-20 h-2 bg-gradient-to-r from-transparent via-orange-500 to-yellow-400 blur-md",
+                  "absolute top-1/2 -translate-y-1/2 w-20 h-2 bg-gradient-to-r from-transparent via-brand-primary-500 to-yellow-400 blur-md",
                   rocket.path === 'ltr' ? "right-full mr-2" : "left-full ml-2 rotate-180"
                 )}
                 animate={{ scaleY: [1, 1.5, 1], opacity: [0.7, 1, 0.7] }}

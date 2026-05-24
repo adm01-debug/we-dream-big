@@ -215,8 +215,8 @@ export function TechniqueSelector({
                   className="group rounded-lg border bg-card p-4 text-left transition-all hover:border-primary/50 hover:bg-accent"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange/10 transition-colors group-hover:bg-orange/20">
-                      <Ruler className="h-5 w-5 text-orange" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-primary/10 transition-colors group-hover:bg-brand-primary/20">
+                      <Ruler className="h-5 w-5 text-brand-primary" />
                     </div>
                     <div>
                       <p className="font-medium">{loc.name}</p>

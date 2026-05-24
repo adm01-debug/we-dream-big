@@ -39,7 +39,7 @@ export function NoveltyBadge({
       return "bg-warning/80 text-warning-foreground";
     }
     // Aging — orange
-    return "bg-orange/80 text-orange-foreground";
+    return "bg-brand-primary/80 text-brand-primary-foreground";
   };
 
   const getSizeClasses = () => {

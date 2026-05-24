@@ -55,7 +55,7 @@ import {
 function getScoreIcon(score: number) {
   if (score >= 80) return <ShieldCheck className="h-8 w-8 text-success" />;
   if (score >= 60) return <Shield className="h-8 w-8 text-warning" />;
-  if (score >= 40) return <ShieldAlert className="h-8 w-8 text-orange" />;
+  if (score >= 40) return <ShieldAlert className="h-8 w-8 text-brand-primary" />;
   return <ShieldX className="h-8 w-8 text-destructive" />;
 }
 
@@ -296,7 +296,7 @@ export function SecurityDashboard() {
               {recommendations.map((rec, idx) => (
                 <div key={idx} className="flex items-start gap-3 rounded-lg bg-background p-3">
                   <div
-                    className={`rounded-full p-2 ${rec.priority === 'high' ? 'bg-destructive/10 text-destructive' : 'bg-orange/10 text-orange'}`}
+                    className={`rounded-full p-2 ${rec.priority === 'high' ? 'bg-destructive/10 text-destructive' : 'bg-brand-primary/10 text-brand-primary'}`}
                   >
                     {rec.icon}
                   </div>
@@ -411,7 +411,7 @@ export function SecurityDashboard() {
                         className={`rounded-lg border p-3 ${!notif.is_read ? 'border-primary/20 bg-primary/5' : ''}`}
                       >
                         <div className="flex items-start gap-3">
-                          <AlertTriangle className="mt-0.5 h-4 w-4 text-orange" />
+                          <AlertTriangle className="mt-0.5 h-4 w-4 text-brand-primary" />
                           <div className="flex-1">
                             <p className="text-sm font-medium">{notif.title}</p>
                             <p className="mt-1 text-xs text-muted-foreground">{notif.message}</p>

@@ -71,7 +71,7 @@ function SectionHeader({
 function RankBadge({ index }: { index: number }) {
   if (index === 0)
     return (
-      <div className="flex h-10 w-10 animate-[brain-glow_3s_ease-in-out_infinite] items-center justify-center rounded-xl bg-gradient-to-br from-orange via-orange/80 to-orange/60 shadow-lg shadow-orange/25 ring-2 ring-orange/20">
+      <div className="flex h-10 w-10 animate-[brain-glow_3s_ease-in-out_infinite] items-center justify-center rounded-xl bg-gradient-to-br from-brand-primary via-brand-primary/80 to-brand-primary/60 shadow-lg shadow-brand-primary/25 ring-2 ring-brand-primary/20">
         <Trophy className="h-4.5 w-4.5 text-primary-foreground drop-shadow-sm" />
       </div>
     );
@@ -243,7 +243,7 @@ export function GlobalSearchIdleState({
             icon={<Flame />}
             label="Mais Populares"
             count={popularProducts.length}
-            gradient="bg-gradient-to-br from-orange/15 to-orange/5"
+            gradient="bg-gradient-to-br from-brand-primary/15 to-brand-primary/5"
           />
           <div className="space-y-1 px-2">
             {popularProducts.map((product, idx) => (
@@ -255,7 +255,7 @@ export function GlobalSearchIdleState({
                   'flex items-center gap-3.5 rounded-xl px-3 py-3 duration-200 animate-in fade-in-0 slide-in-from-bottom-1',
                   paletteItemStateClass,
                   idx === 0 &&
-                    'border border-orange/10 bg-gradient-to-r from-orange/[0.06] to-transparent',
+                    'border border-brand-primary/10 bg-gradient-to-r from-brand-primary/[0.06] to-transparent',
                 )}
                 style={staggerStyle(idx, 100)}
               >
@@ -277,7 +277,7 @@ export function GlobalSearchIdleState({
                   </div>
                 </div>
                 {idx === 0 ? (
-                  <Badge className="h-6 shrink-0 rounded-lg border-orange/20 bg-gradient-to-r from-orange/20 to-orange/10 text-[10px] font-semibold text-orange shadow-sm shadow-orange/10 hover:bg-orange/25">
+                  <Badge className="h-6 shrink-0 rounded-lg border-brand-primary/20 bg-gradient-to-r from-brand-primary/20 to-brand-primary/10 text-[10px] font-semibold text-brand-primary shadow-sm shadow-brand-primary/10 hover:bg-brand-primary/25">
                     🔥 Top 1
                   </Badge>
                 ) : (
@@ -325,7 +325,7 @@ export function GlobalSearchIdleState({
                   sug.type === 'navigation' &&
                     'border text-foreground [background-color:hsl(var(--command-surface-raised))] [border-color:hsl(var(--command-border))] hover:[background-color:hsl(var(--command-surface-soft))] hover:[border-color:hsl(var(--command-border-strong))]',
                   sug.type === 'action' &&
-                    'from-orange/8 to-orange/4 hover:to-orange/8 border border-orange/15 bg-gradient-to-r text-orange/80 hover:border-orange/30 hover:from-orange/15 hover:text-orange',
+                    'from-brand-primary/8 to-brand-primary/4 hover:to-brand-primary/8 border border-brand-primary/15 bg-gradient-to-r text-brand-primary/80 hover:border-brand-primary/30 hover:from-brand-primary/15 hover:text-brand-primary',
                   sug.type === 'search' &&
                     'border [background-color:hsl(var(--command-surface-raised))] [border-color:hsl(var(--command-border))] [color:hsl(var(--command-text-muted))] hover:text-foreground hover:[background-color:hsl(var(--command-surface-soft))] hover:[border-color:hsl(var(--command-border-strong))]',
                 )}
@@ -343,7 +343,7 @@ export function GlobalSearchIdleState({
         <SectionHeader
           icon={<Zap />}
           label="Atalhos"
-          gradient="bg-gradient-to-br from-orange/12 to-orange/4"
+          gradient="bg-gradient-to-br from-brand-primary/12 to-brand-primary/4"
         />
         <div className="flex flex-wrap gap-2 px-4 pb-2" role="group" aria-label="Atalhos rápidos">
           {quickSuggestions.map((qs, i) => (

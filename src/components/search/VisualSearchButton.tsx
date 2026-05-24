@@ -140,16 +140,16 @@ export function VisualSearchButton({ onResultsFound }: VisualSearchProps) {
         <Button 
           variant="outline" 
           size="icon"
-          className="relative group border-orange/30 hover:border-orange hover:bg-orange/10"
-         aria-label="Câmera"><Camera className="h-4 w-4 text-orange" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange rounded-full animate-pulse" />
+          className="relative group border-brand-primary/30 hover:border-brand-primary hover:bg-brand-primary/10"
+         aria-label="Câmera"><Camera className="h-4 w-4 text-brand-primary" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-brand-primary rounded-full animate-pulse" />
         </Button>
       </DialogTrigger>
       
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-orange" />
+            <Sparkles className="h-5 w-5 text-brand-primary" />
             Busca Visual com IA
           </DialogTitle>
         </DialogHeader>
@@ -175,7 +175,7 @@ export function VisualSearchButton({ onResultsFound }: VisualSearchProps) {
                 
                 {isLoading ? (
                   <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-3">
-                    <Loader2 className="h-8 w-8 animate-spin text-orange" />
+                    <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
                     <p className="text-sm font-medium">Analisando imagem com IA...</p>
                   </div>
                 ) : (
@@ -202,8 +202,8 @@ export function VisualSearchButton({ onResultsFound }: VisualSearchProps) {
                     border-2 border-dashed rounded-xl cursor-pointer 
                     transition-all duration-200
                     ${dragActive 
-                      ? "border-orange bg-orange/10" 
-                      : "border-border hover:border-orange/50 hover:bg-muted/50"
+                      ? "border-brand-primary bg-brand-primary/10" 
+                      : "border-border hover:border-brand-primary/50 hover:bg-muted/50"
                     }
                   `}
                   onDragEnter={handleDrag}
@@ -212,8 +212,8 @@ export function VisualSearchButton({ onResultsFound }: VisualSearchProps) {
                   onDrop={handleDrop}
                 >
                   <div className="flex flex-col items-center gap-3 p-4">
-                    <div className="p-3 rounded-full bg-orange/10">
-                      <Upload className="h-6 w-6 text-orange" />
+                    <div className="p-3 rounded-full bg-brand-primary/10">
+                      <Upload className="h-6 w-6 text-brand-primary" />
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-medium">
@@ -240,7 +240,7 @@ export function VisualSearchButton({ onResultsFound }: VisualSearchProps) {
           {!isLoading && previewImage && (
             <Button 
               onClick={() => performVisualSearch(previewImage)}
-              className="w-full bg-orange hover:bg-orange-hover"
+              className="w-full bg-brand-primary hover:bg-brand-primary-hover"
             >
               <Search className="h-4 w-4 mr-2" />
               Buscar Produtos Similares

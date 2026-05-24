@@ -15,7 +15,7 @@ export function ReplenishmentBadge({ daysSince, showDays = true, size = "md", cl
     if (daysSince <= 2) return "bg-info text-info-foreground shadow-[0_0_0_1px_hsl(var(--info)/0.3),0_2px_8px_hsl(var(--info)/0.25)] hover:shadow-[0_0_0_1px_hsl(var(--info)/0.4),0_4px_12px_hsl(var(--info)/0.35)]";
     if (daysSince <= 7) return "bg-info/80 text-info-foreground";
     if (daysSince <= 20) return "bg-warning/80 text-warning-foreground";
-    return "bg-orange/80 text-orange-foreground";
+    return "bg-brand-primary/80 text-brand-primary-foreground";
   };
 
   const getSizeClasses = () => {

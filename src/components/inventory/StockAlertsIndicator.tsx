@@ -173,7 +173,7 @@ export function StockAlertsIndicator({
     const dominantColor = hasCritical
       ? "bg-destructive"
       : counts.stock > 0
-        ? "bg-orange"
+        ? "bg-brand-primary"
         : counts.new > 0
           ? "bg-primary"
           : "bg-primary";
@@ -186,7 +186,7 @@ export function StockAlertsIndicator({
         case "out":
           return <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Esgotado</Badge>;
         case "critical":
-          return <Badge className="bg-orange text-primary-foreground text-[10px] px-1.5 py-0">Crítico</Badge>;
+          return <Badge className="bg-brand-primary text-primary-foreground text-[10px] px-1.5 py-0">Crítico</Badge>;
         default:
           return <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Baixo</Badge>;
       }
@@ -197,7 +197,7 @@ export function StockAlertsIndicator({
         case "out":
           return <Package className="h-3.5 w-3.5 text-destructive" />;
         case "critical":
-          return <AlertTriangle className="h-3.5 w-3.5 text-orange" />;
+          return <AlertTriangle className="h-3.5 w-3.5 text-brand-primary" />;
         default:
           return <TrendingDown className="h-3.5 w-3.5 text-warning" />;
       }

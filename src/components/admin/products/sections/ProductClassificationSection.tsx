@@ -187,7 +187,7 @@ export default function ProductClassificationSection({
           title="Tags"
           subtitle="Etiquetas de busca e filtro"
           icon={Tag}
-          iconColor="bg-orange/10 text-orange"
+          iconColor="bg-brand-primary/10 text-brand-primary"
           disabled={!showFullContent}
         >
           {savedProductId ? (

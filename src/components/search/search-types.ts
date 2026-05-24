@@ -30,7 +30,7 @@ export interface QuickAction {
 export const typeConfig: Record<string, { label: string; color: string; icon: LucideIcon }> = {
   product: { label: "Produto", color: "bg-primary", icon: Package },
   client: { label: "Cliente", color: "bg-success", icon: Users },
-  quote: { label: "Orçamento", color: "bg-orange", icon: FileText },
+  quote: { label: "Orçamento", color: "bg-brand-primary", icon: FileText },
   order: { label: "Pedido", color: "bg-info", icon: ShoppingCart },
   collection: { label: "Coleção", color: "bg-pink-500", icon: FolderHeart },
   kit: { label: "Kit", color: "bg-violet-500", icon: Boxes },

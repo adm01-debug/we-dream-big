@@ -150,7 +150,7 @@ export const FloatingCompareBar = React.forwardRef<HTMLDivElement>(
               disabled={compareCount < 2}
             >
               Comparar
-              <span className="rounded-md bg-orange-foreground/20 px-1.5 py-0.5 text-xs">
+              <span className="rounded-md bg-brand-primary-foreground/20 px-1.5 py-0.5 text-xs">
                 {compareCount}
               </span>
               <ChevronRight className="h-4 w-4" />

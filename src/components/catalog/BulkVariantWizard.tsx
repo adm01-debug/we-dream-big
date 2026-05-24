@@ -330,8 +330,8 @@ export function BulkVariantWizard({
     pdf: {
       icon: FileDown,
       title: 'Gerar Catálogo PDF',
-      colorClass: 'text-orange-500',
-      bgClass: 'bg-orange-500/15',
+      colorClass: 'text-brand-primary-500',
+      bgClass: 'bg-brand-primary-500/15',
     },
   };
   const { icon: Icon, title, colorClass } = modeConfig[mode];

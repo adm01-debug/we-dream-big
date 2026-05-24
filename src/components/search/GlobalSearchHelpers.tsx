@@ -15,7 +15,7 @@ export const paletteItemStateClass =
 /* ── Rank badge with gradient ── */
 export function RankBadge({ index }: { index: number }) {
   if (index === 0) return (
-    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange via-orange/80 to-orange/60 flex items-center justify-center shadow-lg shadow-orange/25 animate-[brain-glow_3s_ease-in-out_infinite] ring-2 ring-orange/20">
+    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-primary via-brand-primary/80 to-brand-primary/60 flex items-center justify-center shadow-lg shadow-brand-primary/25 animate-[brain-glow_3s_ease-in-out_infinite] ring-2 ring-brand-primary/20">
       <Trophy className="h-4.5 w-4.5 text-primary-foreground drop-shadow-sm" />
     </div>
   );
