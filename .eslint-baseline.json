@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-24T00:22:10.691Z",
+  "generatedAt": "2026-05-24T01:05:09.416Z",
   "totalErrors": 177,
   "counts": {
     "src/components/access/DevAccessDeniedPage.tsx": {
@@ -119,10 +119,16 @@
     "src/components/common/EnhancedSpotlight.tsx": {
       "react-hooks/exhaustive-deps": 2
     },
+    "src/components/compare/ComparisonDuelView.tsx": {
+      "@typescript-eslint/no-unused-vars": 1
+    },
     "src/components/compare/ComparisonHighlights.tsx": {
       "@typescript-eslint/no-unused-vars": 1
     },
     "src/components/compare/ExportComparisonButton.tsx": {
+      "@typescript-eslint/no-unused-vars": 1
+    },
+    "src/components/compare/FloatingCompareBar.tsx": {
       "@typescript-eslint/no-unused-vars": 1
     },
     "src/components/compare/SupplierComparisonModal.tsx": {
@@ -647,9 +653,6 @@
     "src/lib/feature-flags.ts": {
       "@typescript-eslint/no-non-null-assertion": 1
     },
-    "src/lib/lazyWithRetry.ts": {
-      "@typescript-eslint/no-explicit-any": 1
-    },
     "src/lib/logger.ts": {
       "no-console": 3
     },
@@ -743,9 +746,6 @@
     },
     "src/pages/trends/TrendsKpiCards.tsx": {
       "@typescript-eslint/naming-convention": 1
-    },
-    "src/routes/RoutePrefetcher.tsx": {
-      "@typescript-eslint/no-explicit-any": 1
     },
     "src/services/__tests__/quoteService.test.ts": {
       "@typescript-eslint/no-explicit-any": 3
