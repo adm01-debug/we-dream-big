@@ -41,7 +41,6 @@ import {
   getActiveFlags,
   type IntelligenceFlag,
   type StockVelocity,
-  type ProductIntelligenceData,
 } from '@/hooks/intelligence';
 import {
   safeVelocityTrend,
@@ -77,17 +76,15 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
     refetch: refetchSummary,
   } = useStockDailySummary(productId, days);
   const {
-    data: _velocity,
+    data: velocity,
     error: velocityError,
     refetch: refetchVelocity,
   } = useStockVelocity(productId);
-  const velocity = _velocity as StockVelocity[] | undefined;
   const {
-    data: _intelligence,
+    data: intelligence,
     error: intelligenceError,
     refetch: refetchIntelligence,
   } = useProductIntelligenceData(productId);
-  const intelligence = _intelligence as ProductIntelligenceData | null | undefined;
 
   const hasData = !!summaries?.length;
   const hasError = !!(summaryError || velocityError || intelligenceError);
@@ -134,7 +131,7 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
 
   const bestVelocity = velocity?.length
     ? velocity.reduce(
-        (best, v) => (v.avg_daily_depletion_7d > (best?.avg_daily_depletion_7d ?? 0) ? v : best),
+        (best: StockVelocity, v: StockVelocity) => (v.avg_daily_depletion_7d > (best?.avg_daily_depletion_7d ?? 0) ? v : best),
         velocity[0],
       )
     : isDemo
@@ -188,11 +185,9 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
   }
 
   const daysToStockout = bestVelocity?.days_to_stockout;
-  // eslint-disable-next-line eqeqeq
-  const isUrgent = daysToStockout != null && Number.isFinite(daysToStockout) && daysToStockout < 7;
+  const isUrgent = daysToStockout !== null && Number.isFinite(daysToStockout) && daysToStockout < 7;
   const isWarning =
-    // eslint-disable-next-line eqeqeq
-    daysToStockout != null && Number.isFinite(daysToStockout) && daysToStockout < 15;
+    daysToStockout !== null && Number.isFinite(daysToStockout) && daysToStockout < 15;
   const trend = safeVelocityTrend(bestVelocity?.velocity_trend);
   const trendDisplay = formatVelocityTrendOperational(trend);
 
@@ -284,8 +279,7 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
           icon={Clock}
           label="Dias até acabar"
           value={
-            // eslint-disable-next-line eqeqeq
-            daysToStockout != null && Number.isFinite(daysToStockout)
+            daysToStockout !== null && Number.isFinite(daysToStockout)
               ? String(Math.round(daysToStockout))
               : '∞'
           }

@@ -6,7 +6,7 @@ interface UseSpeechRecognitionOptions {
   language?: string;
 }
 
-interface UseSpeechRecognitionReturn {
+interface SpeechRecognitionResult {
   isListening: boolean;
   isSupported: boolean;
   transcript: string;
@@ -15,39 +15,15 @@ interface UseSpeechRecognitionReturn {
   error: string | null;
 }
 
-// TypeScript declarations for Web Speech API (not in all DOM lib versions)
-interface LocalSpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
-
-interface LocalSpeechRecognitionErrorEvent extends Event {
-  error: string;
-  message: string;
-}
-
-interface LocalSpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start(): void;
-  stop(): void;
-  abort(): void;
-  onresult: ((event: LocalSpeechRecognitionEvent) => void) | null;
-  onerror: ((event: LocalSpeechRecognitionErrorEvent) => void) | null;
-  onend: (() => void) | null;
-  onstart: (() => void) | null;
-}
-
 export function useSpeechRecognition({
   onResult,
   onError,
   language = "pt-BR",
-}: UseSpeechRecognitionOptions = {}): UseSpeechRecognitionReturn {
+}: UseSpeechRecognitionOptions = {}): SpeechRecognitionResult {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [recognition, setRecognition] = useState<LocalSpeechRecognition | null>(null);
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
 
   const isSupported = typeof window !== "undefined" && 
     ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
@@ -56,7 +32,7 @@ export function useSpeechRecognition({
     if (!isSupported) return;
 
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognitionInstance = new SpeechRecognitionAPI() as LocalSpeechRecognition;
+    const recognitionInstance = new SpeechRecognitionAPI();
     
     recognitionInstance.continuous = false;
     recognitionInstance.interimResults = true;
@@ -67,7 +43,7 @@ export function useSpeechRecognition({
       setError(null);
     };
 
-    recognitionInstance.onresult = (event: LocalSpeechRecognitionEvent) => {
+    recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
       let finalTranscript = "";
       let interimTranscript = "";
 
@@ -88,7 +64,7 @@ export function useSpeechRecognition({
       }
     };
 
-    recognitionInstance.onerror = (event: LocalSpeechRecognitionErrorEvent) => {
+    recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
       const errorMessages: Record<string, string> = {
         "not-allowed": "Permissão de microfone negada",
         "no-speech": "Nenhuma fala detectada",

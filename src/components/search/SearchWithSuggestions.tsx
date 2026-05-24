@@ -90,9 +90,8 @@ export function SearchWithSuggestions({
     recognition.onend = () => setIsListening(false);
     recognition.onerror = () => setIsListening(false);
     
-    recognition.onresult = (event: Event) => {
-      const speechEvent = event as unknown as { results: ArrayLike<ArrayLike<{ transcript: string }>> };
-      const transcript = speechEvent.results[0][0].transcript;
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0][0].transcript;
       setQuery(transcript);
       onSearch(transcript);
     };
@@ -198,4 +197,3 @@ export function SearchWithSuggestions({
     </div>
   );
 }
-

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, X, Maximize, Crown, Presentation } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useComparisonScore } from "@/hooks/comparison";
+import { useComparisonScore, type ProductScore } from "@/hooks/comparison";
 
 interface Props {
   products: Product[];
@@ -21,9 +21,9 @@ export function ComparisonPresentationLauncher({ products, formatCurrency, trigg
   const [open, setOpen] = useState(false);
   const [slide, setSlide] = useState(0);
   const totalSlides = products.length + 1; // +1 para slide final tabela
-  const scoreItems = useComparisonScore(products) ?? [];
-  const winnerIdx = scoreItems.length > 0
-    ? scoreItems.reduce((best: number, cur, idx, arr) => cur.total > arr[best].total ? idx : best, 0)
+  const { items: scoreItems = [] } = useComparisonScore(products) || { items: [] };
+  const winnerIdx = (scoreItems && scoreItems.length > 0)
+    ? scoreItems.reduce((best: number, cur: ProductScore, idx: number, arr: ProductScore[]) => cur.total > arr[best].total ? idx : best, 0)
     : -1;
 
   const next = useCallback(() => setSlide(s => Math.min(s + 1, totalSlides - 1)), [totalSlides]);
