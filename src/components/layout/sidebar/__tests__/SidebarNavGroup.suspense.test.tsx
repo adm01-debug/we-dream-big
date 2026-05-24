@@ -126,8 +126,6 @@ function getNavLink(label: string): HTMLAnchorElement {
   return screen.getByRole('link', { name: new RegExp(label, 'i') }) as HTMLAnchorElement;
 }
 function isLinkActive(label: string): boolean {
-  // QA: o componente foi refatorado para usar `bg-primary/10` como sinal
-  // visual de item ativo (antes era `bg-orange/[0.03]`).
   return getNavLink(label).className.includes('bg-primary/10');
 }
 function getHeader(): HTMLButtonElement {

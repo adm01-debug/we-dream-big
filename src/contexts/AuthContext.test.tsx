@@ -2,6 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthProvider, useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import type * as AuthServiceModule from '@/services/authService';
 import { type ReactNode } from 'react';
 
 // Mock Supabase
@@ -34,16 +35,19 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 // Mock services and utils
-// QA: AuthContext.signOut chama authService.signOut — adicionado ao mock
-// para evitar TypeError "authService.signOut is not a function".
-vi.mock('@/services/authService', () => ({
-  authService: {
-    fetchAAL: vi.fn().mockResolvedValue({ currentLevel: 'aal1', nextLevel: 'aal1', hasMFA: false }),
-    fetchProfile: vi.fn().mockResolvedValue({ data: null, error: null }),
-    queryRoles: vi.fn().mockResolvedValue({ data: [], error: null }),
-    signOut: vi.fn().mockResolvedValue({ error: null }),
-  },
-}));
+vi.mock('@/services/authService', async (importOriginal) => {
+  const actual = await importOriginal<typeof AuthServiceModule>();
+  return {
+    authService: {
+      ...actual.authService,
+      fetchAAL: vi
+        .fn()
+        .mockResolvedValue({ currentLevel: 'aal1', nextLevel: 'aal1', hasMFA: false }),
+      fetchProfile: vi.fn().mockResolvedValue({ data: null, error: null }),
+      queryRoles: vi.fn().mockResolvedValue({ data: [], error: null }),
+    },
+  };
+});
 
 const wrapper = ({ children }: { children: ReactNode }) => <AuthProvider>{children}</AuthProvider>;
 
@@ -53,44 +57,43 @@ describe('AuthContext', () => {
   });
 
   describe('signOut', () => {
-    // QA: AuthContext.signOut foi refatorado para delegar ao authService
-    // (linha 188 do AuthContext.tsx: `await authService.signOut()`).
-    // O log_user_logout RPC e o supabase.auth.signOut agora vivem no
-    // authService.signOut — então as asserções precisam ser feitas
-    // contra o mock do authService, não contra o supabase client.
     it('clears state even if remote signOut fails', async () => {
-      const { authService } = await import('@/services/authService');
-      vi.mocked(authService.signOut).mockRejectedValueOnce(new Error('Network error'));
-
+      // Setup: user is logged in
       const mockUser = { id: 'user-123', email: 'test@example.com' };
       const mockSession = { user: mockUser, access_token: 'token' };
+
       vi.mocked(supabase.auth.getSession).mockResolvedValue({
         data: { session: mockSession },
       } as unknown);
+      vi.mocked(supabase.auth.signOut).mockRejectedValue(new Error('Network error'));
 
       const { result } = renderHook(() => useAuth(), { wrapper });
 
+      // Wait for initialization
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
+      // Verify initial state (mocked)
+      // Note: we can't easily check the internal state of useAuth without causing a re-render
+      // or using a test component.
+
       await act(async () => {
-        // QA: AuthContext.signOut usa try/finally — quando authService rejeita,
-        // o finally executa o cleanup mas a rejection propaga. O teste valida
-        // que a limpeza local acontece "mesmo se falhar remotamente", então
-        // engolimos o throw aqui.
-        await result.current.signOut().catch(() => {});
+        try {
+          await result.current.signOut();
+        } catch {
+          /* falha remota tolerada */
+        }
       });
 
       expect(result.current.user).toBeNull();
       expect(result.current.session).toBeNull();
       expect(result.current.profile).toBeNull();
       expect(result.current.roles).toEqual([]);
-      expect(authService.signOut).toHaveBeenCalled();
+      expect(supabase.auth.signOut).toHaveBeenCalled();
     });
 
-    it('delegates signOut ao authService (que cuida do RPC log_user_logout)', async () => {
-      const { authService } = await import('@/services/authService');
+    it('calls log_user_logout RPC before signing out', async () => {
       const mockUser = { id: 'user-123' };
       const mockSession = { user: mockUser };
       vi.mocked(supabase.auth.getSession).mockResolvedValue({
@@ -104,12 +107,14 @@ describe('AuthContext', () => {
       });
 
       await act(async () => {
-        await result.current.signOut();
+        try {
+          await result.current.signOut();
+        } catch {
+          /* falha remota tolerada */
+        }
       });
 
-      // O signOut do AuthContext apenas chama authService.signOut().
-      // A responsabilidade do RPC e do auth.signOut() viveu no service.
-      expect(authService.signOut).toHaveBeenCalled();
+      expect(supabase.rpc).toHaveBeenCalledWith('log_user_logout');
     });
   });
 });

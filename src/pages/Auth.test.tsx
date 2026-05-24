@@ -1,23 +1,19 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Auth from '@/pages/auth/Auth';
+import Auth from "@/pages/auth/Auth";
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { HelmetProvider } from 'react-helmet-async';
 
-// QA: usar importOriginal para preservar exports que Auth depende além
-// dos mockados (e.g. useDevGate consumido por componentes descendentes).
-vi.mock('@/hooks/admin', async (importOriginal) => {
-  const actual = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...actual,
-    useIPValidation: () => ({
-      validateIPForAuthenticatedUser: vi.fn().mockResolvedValue({ isAllowed: true }),
-      logLoginAttempt: vi.fn(),
-      fetchCurrentIP: vi.fn().mockResolvedValue('1.2.3.4'),
-    }),
-  };
-});
+// Mocking useIPValidation
+vi.mock('@/hooks/admin', () => ({
+  useIPValidation: () => ({
+    validateIPForAuthenticatedUser: vi.fn().mockResolvedValue({ isAllowed: true }),
+    logLoginAttempt: vi.fn(),
+    fetchCurrentIP: vi.fn().mockResolvedValue('1.2.3.4'),
+  }),
+  useDevGate: () => ({ isAllowed: false, isDev: false }),
+}));
 
 // Mocking useAuth - we need to wrap with AuthProvider or mock the hook
 vi.mock('@/contexts/AuthContext', async (importOriginal) => {
@@ -76,10 +72,7 @@ describe('Auth Page', () => {
 
     fireEvent.click(forgotLink);
 
-    // QA: a troca entre login e forgot-password é animada (AnimatePresence
-    // do framer-motion). Em jsdom, o DOM novo só aparece após o tick de
-    // animação. Usar findByText (assíncrono, com retry) em vez de
-    // getByText evita race entre click e re-render.
+    // ForgotPasswordForm monta via AnimatePresence (assíncrono) — aguardar.
     expect(await screen.findByText(/Esqueceu sua senha\?/i)).toBeInTheDocument();
 
     expect(screen.queryByTestId('login-password-input')).not.toBeInTheDocument();

@@ -40,15 +40,12 @@ describe('BridgeMetricsOverlay', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // QA: BridgeMetricsOverlay foi refatorado para gatear por `isDev`
-    // (linha 50 do componente), não por `isAllowed`. O mock precisa
-    // expor isDev=true para o componente renderizar nada além de null.
     (useDevGate as any).mockReturnValue({ isAllowed: true, isDev: true });
     (useBridgeMetrics as any).mockReturnValue(defaultMockValues);
   });
 
-  it('não deve renderizar nada se isDev for false', () => {
-    (useDevGate as any).mockReturnValue({ isAllowed: false, isDev: false });
+  it('não deve renderizar nada se isAllowed for false', () => {
+    (useDevGate as any).mockReturnValue({ isAllowed: false, isDev: true });
     const { container } = render(<BridgeMetricsOverlay />);
     expect(container.firstChild).toBeNull();
   });

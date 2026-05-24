@@ -68,10 +68,6 @@ function renderProtected(initialPath: string) {
       >
         <PathProbe />
         <Routes>
-          <Route path="/login" element={<div>Login Page</div>} />
-          {/* QA: DevRoute redireciona para /auth (não /login). Mantemos
-             ambas as rotas mockadas para compatibilidade caso o destino
-             do redirect mude novamente. */}
           <Route path="/auth" element={<div>Login Page</div>} />
           <Route path="/" element={<div>Home Page</div>} />
           <Route path="/catalogo" element={<div>Catálogo</div>} />

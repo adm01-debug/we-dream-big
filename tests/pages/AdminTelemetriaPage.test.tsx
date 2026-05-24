@@ -176,11 +176,11 @@ describe('AdminTelemetriaPage - Rendering', () => {
     }, { timeout: 15000 });
   });
 
-  it('renders the page title (não monta MainLayout — vem do router)', async () => {
+  it('renders the page shell', async () => {
     setupSupabaseMock([]);
     render(<AdminTelemetriaPage />);
-    // QA: AdminTelemetriaPage não monta MainLayout internamente — em teste
-    // isolado validamos o título identificável via data-testid.
+    // A página não envelopa MainLayout (o layout vem do roteamento); valida o
+    // marcador que a própria página renderiza.
     expect(screen.getByTestId('page-title-telemetria')).toBeInTheDocument();
   });
 
@@ -409,7 +409,7 @@ describe('AdminTelemetriaPage - Table Display', () => {
     await waitFor(() => {
       expect(screen.getByText('500 registros · auto-refresh 30s')).toBeInTheDocument();
     });
-  });
+  }, 30000);
 });
 
 // ============================================

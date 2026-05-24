@@ -41,43 +41,22 @@ import { DiscountApprovalHeaderBadge } from '@/components/admin/DiscountApproval
 import { GlobalSearchPalette } from '@/components/search/GlobalSearchPalette';
 import { CartHeaderButton } from '@/components/cart/CartHeaderButton';
 import { cn } from '@/lib/utils';
-import { getRoleLabel } from '@/lib/roles';
 import { RoleBadge } from '@/components/RoleBadge';
 
 interface HeaderProps {
   onMenuToggle: () => void;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  /**
-   * QA: sidebarOpen é necessário pelos aria-label / aria-expanded do
-   * botão de menu (mobile). Antes era referenciado sem ser declarado,
-   * causando ReferenceError em render. Opcional para não quebrar
-   * call sites que ainda não passam (default = false).
-   */
-  sidebarOpen?: boolean;
+  sidebarOpen: boolean;
 }
 
-export const Header = React.memo(function Header({
-  onMenuToggle,
-  searchQuery: _searchQuery,
-  onSearchChange: _onSearchChange,
-  sidebarOpen = false,
-}: HeaderProps) {
+export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: HeaderProps) {
   const { theme, actualTheme, setTheme, toggleTheme, isFallback } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
   const favoriteCount = useFavoritesStore((s) => s.favoriteCount);
   const compareCount = useComparisonStore((s) => s.compareCount);
-  // QA: variables prefixadas com _ são lidas pelo contexto mas não usadas
-  // diretamente aqui (lint --fix bloqueia commits no Header sem isso).
-  const { user, profile, role, isAdmin: _isAdmin, signOut, rolesLoaded } = useAuth();
+  const { user, profile, role, signOut, rolesLoaded } = useAuth();
   const currentSection = useCurrentSection();
-  const {
-    restartTour,
-    hasCompletedTour: _hasCompletedTour,
-    isLoading: _onboardingLoading,
-    startTour: _startTour,
-  } = useOnboardingContext();
+  const { restartTour } = useOnboardingContext();
   const setOpenSearch = useSearchStore((s) => s.setOpen);
 
   const isScrolled = useIsScrolled(20);
@@ -146,9 +125,6 @@ export const Header = React.memo(function Header({
   };
 
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário';
-  // QA: roleLabel deixou de ser exibido inline mas o cálculo foi mantido
-  // como referência (lint --fix exige prefix _).
-  const _roleLabel = getRoleLabel(role);
 
   // #10 — Truncate inteligente: "Joaquim Ataides" → "Joaquim A."
   const truncatedName = (() => {
@@ -169,10 +145,10 @@ export const Header = React.memo(function Header({
       }
       className={cn(
         'theme-transitioning fixed right-0 top-0 z-40 border-b transition-all duration-300 print:hidden',
-        'border-border/30 bg-background/40 backdrop-blur-xl',
+        'border-border/10 bg-sidebar/60 backdrop-blur-xl',
         'h-[var(--header-h)]',
         isScrolled &&
-          'border-border/50 bg-background/60 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.1)] backdrop-blur-2xl',
+          'border-border/30 bg-sidebar/80 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.1)] backdrop-blur-2xl',
       )}
     >
       <div className="flex h-full items-center justify-between px-2 sm:px-4 lg:px-6">
@@ -472,8 +448,8 @@ export const Header = React.memo(function Header({
         </div>
       </div>
 
-      {/* #9 — Barra colorida de seção no bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary/80 via-primary to-primary/40 opacity-60" />
+      {/* #9 — Barra sutil no bottom */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-white/5 opacity-50" />
     </header>
   );
 });

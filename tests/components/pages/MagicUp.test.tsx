@@ -72,9 +72,9 @@ describe("MagicUp", () => {
   it("renders without crashing", async () => {
     const { default: MagicUp } = await import("@/pages/tools/MagicUp");
     renderWithProviders(<MagicUp />);
-    // QA: MagicUp não monta MainLayout internamente — vem do router em
-    // produção. Validamos o título identificável da página em vez do
-    // testid do mock de layout, que nunca renderiza em teste isolado.
-    expect(screen.getByTestId("page-title-magic-up")).toBeInTheDocument();
+    // MagicUp é uma página de conteúdo: o MainLayout é aplicado pelo roteador,
+    // não pela própria página. Validamos o marcador real que o componente
+    // expõe (o título da página) para garantir que renderizou sem crashar.
+    expect(await screen.findByTestId("page-title-magic-up")).toBeInTheDocument();
   });
 });

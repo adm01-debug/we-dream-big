@@ -104,9 +104,6 @@ function ReducedApp({
       <Suspense fallback={<div>loading…</div>}>
         {onNavigateReady && <NavigationProbe onReady={onNavigateReady} />}
         <Routes>
-          {/* ProtectedRoute redireciona para /auth — mantemos as duas
-             rotas com o mesmo stub para compatibilidade do teste. */}
-          <Route path="/login" element={<LoginStub />} />
           <Route path="/auth" element={<LoginStub />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomeStub />} />

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQuoteBuilderState } from '@/hooks/quotes/useQuoteBuilderState';
+import { useQuoteBuilderState } from "@/hooks/quotes/useQuoteBuilderState";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import React from 'react';
@@ -24,10 +24,7 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(() => ({ user: { id: 'test-user' } })),
 }));
 
-// QA: vi.mock() do mesmo módulo é hoist-and-replace. Os 6 calls separados
-// faziam só o último valer (useAutoSaveQuote), deixando os demais sem
-// export. Consolidado em um único mock que expõe todos os hooks que o
-// useQuoteBuilderState consome.
+// Mock hooks de @/hooks/quotes (factory unico — multiplos vi.mock no mesmo path se sobrescrevem; so o ultimo vence)
 vi.mock('@/hooks/quotes', () => ({
   useSellerDiscountLimits: vi.fn(() => ({ myLimit: 10 })),
   useDiscountApproval: vi.fn(() => ({ requestApproval: vi.fn() })),
@@ -82,7 +79,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
 
   it('prevents nextStep if client/contact not selected', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-
+    
     act(() => {
       result.current.nextStep();
     });
@@ -93,7 +90,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
 
   it('allows nextStep if client/contact are selected', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-
+    
     act(() => {
       result.current.setClientId('company-1');
       result.current.setContactId('contact-1');
@@ -108,7 +105,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
 
   it('prevents moving to conditions if items are missing when skipping', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-
+    
     act(() => {
       result.current.setClientId('company-1');
       result.current.setContactId('contact-1');
@@ -119,19 +116,13 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
     });
 
     // Validates 'client' and 'conditions'. 'conditions' will fail.
-    // QA: o hook foi refatorado para fail-fast na PRIMEIRA condição comercial
-    // ausente (UX melhor — usuário vê exatamente o que precisa preencher) em
-    // vez de uma mensagem genérica. Aceita qualquer um dos erros de campo
-    // obrigatório como sinal de que a validação bloqueou a transição.
-    expect(toast.error).toHaveBeenCalledWith(
-      expect.stringMatching(/forma de pagamento|prazo|condições comerciais/i),
-    );
+    expect(toast.error).toHaveBeenCalledWith('Selecione a forma de pagamento');
     expect(result.current.currentStep).toBe('client');
   });
 
   it('allows jumping back to a previous step without validation', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-
+    
     act(() => {
       result.current.setClientId('company-1');
       result.current.setContactId('contact-1');
@@ -142,7 +133,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
     expect(result.current.contactId).toBe('contact-1');
 
     act(() => {
-      result.current.nextStep();
+      result.current.nextStep(); 
     });
 
     expect(result.current.currentStep).toBe('conditions');
@@ -156,7 +147,7 @@ describe('useQuoteBuilderState Navigation and Validation', () => {
 
   it('announces errors for screen readers', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-
+    
     act(() => {
       result.current.nextStep();
     });

@@ -3,12 +3,26 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConnectionsOverviewTable } from '../ConnectionsOverviewTable';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
-import { useConnectionsOverview, useConnectionTester } from '@/hooks/intelligence';
+import { useConnectionTester, useConnectionsOverview } from '@/hooks/intelligence';
 
-// QA: vi.mock() do mesmo módulo é hoist-and-replace. Os 3 calls para
-// '@/hooks/intelligence' faziam apenas o último valer.
+// Mocks
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
+}));
+
+vi.mock('@/hooks/common', () => ({
+  useConsecutiveFailures: vi.fn(() => ({
+    map: new Map(),
+    loading: false,
+  })),
+}));
+
+vi.mock('@/hooks/admin', () => ({
+  useSecretsManager: vi.fn(() => ({
+    secrets: [],
+    list: vi.fn(),
+    refreshCache: vi.fn(), // Adicionado para evitar erro 'refreshSecrets is not a function'
+  })),
 }));
 
 vi.mock('@/hooks/intelligence', () => ({
@@ -27,22 +41,11 @@ vi.mock('@/hooks/intelligence', () => ({
   applyFilters: vi.fn((rows) => rows),
 }));
 
-vi.mock('@/hooks/common', () => ({
-  useConsecutiveFailures: vi.fn(() => ({
-    map: new Map(),
-    loading: false,
-  })),
-}));
-
-vi.mock('@/hooks/admin', () => ({
-  useSecretsManager: vi.fn(() => ({
-    secrets: [],
-    list: vi.fn(),
-    refreshCache: vi.fn(),
-  })),
-}));
-
 describe('ConnectionsOverviewTable Interações e Acessibilidade', () => {
+  const useAuthMock = vi.mocked(useAuth);
+  const useConnectionsOverviewMock = vi.mocked(useConnectionsOverview);
+  const useConnectionTesterMock = vi.mocked(useConnectionTester);
+
   const mockRows = [
     {
       id: '1',
@@ -57,13 +60,13 @@ describe('ConnectionsOverviewTable Interações e Acessibilidade', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useAuth as any).mockReturnValue({ isAdmin: true });
-    (useConnectionsOverview as any).mockReturnValue({
+    useAuthMock.mockReturnValue({ isAdmin: true } as unknown as ReturnType<typeof useAuth>);
+    useConnectionsOverviewMock.mockReturnValue({
       rows: mockRows,
       loading: false,
       refresh: vi.fn(),
-    });
-    (useConnectionTester as any).mockReturnValue({ test: vi.fn(), testing: false });
+    } as unknown as ReturnType<typeof useConnectionsOverview>);
+    useConnectionTesterMock.mockReturnValue({ test: vi.fn(), isTesting: false } as unknown as ReturnType<typeof useConnectionTester>);
   });
 
   it('deve permitir focar e navegar nos botões de ação via teclado', () => {

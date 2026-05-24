@@ -2,16 +2,22 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConnectionsOverviewTable } from '../ConnectionsOverviewTable';
 import { useAuth } from '@/contexts/AuthContext';
-import { useConnectionsOverview, useConnectionTester } from '@/hooks/intelligence';
+import { useConnectionTester, useConnectionsOverview } from '@/hooks/intelligence';
 import { useConsecutiveFailures } from '@/hooks/common';
 import { useSecretsManager } from '@/hooks/admin';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-// QA: vi.mock() do mesmo módulo é hoist-and-replace. Os 3 calls para
-// '@/hooks/intelligence' faziam apenas o último valer (filtros), deixando
-// useConnectionsOverview e useConnectionTester sem export. Consolidado.
+// Mocks
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
+}));
+
+vi.mock('@/hooks/common', () => ({
+  useConsecutiveFailures: vi.fn(),
+}));
+
+vi.mock('@/hooks/admin', () => ({
+  useSecretsManager: vi.fn(),
 }));
 
 vi.mock('@/hooks/intelligence', () => ({
@@ -30,15 +36,13 @@ vi.mock('@/hooks/intelligence', () => ({
   applyFilters: vi.fn((rows) => rows),
 }));
 
-vi.mock('@/hooks/common', () => ({
-  useConsecutiveFailures: vi.fn(),
-}));
-
-vi.mock('@/hooks/admin', () => ({
-  useSecretsManager: vi.fn(),
-}));
-
 describe('ConnectionsOverviewTable Regression Tests', () => {
+  const useAuthMock = vi.mocked(useAuth);
+  const useConnectionsOverviewMock = vi.mocked(useConnectionsOverview);
+  const useConnectionTesterMock = vi.mocked(useConnectionTester);
+  const useConsecutiveFailuresMock = vi.mocked(useConsecutiveFailures);
+  const useSecretsManagerMock = vi.mocked(useSecretsManager);
+
   const mockRows = [
     {
       key: 'conn-1',
@@ -70,26 +74,26 @@ describe('ConnectionsOverviewTable Regression Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useAuth as any).mockReturnValue({ isAdmin: true });
-    (useConnectionsOverview as any).mockReturnValue({
+    useAuthMock.mockReturnValue({ isAdmin: true } as unknown as ReturnType<typeof useAuth>);
+    useConnectionsOverviewMock.mockReturnValue({
       rows: mockRows,
       loading: false,
       refreshing: false,
       refresh: vi.fn(),
       patchRow: vi.fn(),
-    });
-    (useConnectionTester as any).mockReturnValue({
+    } as unknown as ReturnType<typeof useConnectionsOverview>);
+    useConnectionTesterMock.mockReturnValue({
       test: vi.fn(),
       testing: false,
-    });
-    (useConsecutiveFailures as any).mockReturnValue({
+    } as unknown as ReturnType<typeof useConnectionTester>);
+    useConsecutiveFailuresMock.mockReturnValue({
       map: new Map(),
       loading: false,
-    });
-    (useSecretsManager as any).mockReturnValue({
+    } as unknown as ReturnType<typeof useConsecutiveFailures>);
+    useSecretsManagerMock.mockReturnValue({
       secrets: [],
       list: vi.fn(),
-    });
+    } as unknown as ReturnType<typeof useSecretsManager>);
   });
 
   it('should render the table with correct data', async () => {
@@ -119,13 +123,13 @@ describe('ConnectionsOverviewTable Regression Tests', () => {
 
   it('should trigger refresh when button is clicked', async () => {
     const refreshMock = vi.fn();
-    (useConnectionsOverview as any).mockReturnValue({
+    useConnectionsOverviewMock.mockReturnValue({
       rows: mockRows,
       loading: false,
       refreshing: false,
       refresh: refreshMock,
       patchRow: vi.fn(),
-    });
+    } as unknown as ReturnType<typeof useConnectionsOverview>);
 
     render(
       <TooltipProvider>
@@ -140,13 +144,13 @@ describe('ConnectionsOverviewTable Regression Tests', () => {
   });
 
   it('should handle empty state', async () => {
-    (useConnectionsOverview as any).mockReturnValue({
+    useConnectionsOverviewMock.mockReturnValue({
       rows: [],
       loading: false,
       refreshing: false,
       refresh: vi.fn(),
       patchRow: vi.fn(),
-    });
+    } as unknown as ReturnType<typeof useConnectionsOverview>);
 
     render(
       <TooltipProvider>

@@ -58,17 +58,8 @@ vi.mock("@/contexts/SellerCartContext", () => ({
 
 vi.mock("@/contexts/OnboardingContext", () => ({
   OnboardingProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  // QA: MainLayout consome useOnboardingContext em descendentes — sem este
-  // export o mock só expõe Provider e o hook quebra com "No export defined".
-  useOnboardingContext: () => ({
-    isActive: false,
-    currentStep: null,
-    completedSteps: [],
-    start: () => {},
-    next: () => {},
-    skip: () => {},
-    finish: () => {},
-  }),
+  useOnboardingContext: () => ({ isTourOpen: false, startTour: vi.fn(), completeTour: vi.fn() }),
+  useOptionalOnboardingContext: () => null,
 }));
 
 describe("MainLayout — PersistentBreadcrumbs (PR)", () => {

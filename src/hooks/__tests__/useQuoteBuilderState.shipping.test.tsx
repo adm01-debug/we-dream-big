@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useQuoteBuilderState } from '@/hooks/quotes/useQuoteBuilderState';
+import { useQuoteBuilderState } from "@/hooks/quotes/useQuoteBuilderState";
 import { toast } from 'sonner';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -20,11 +20,8 @@ vi.mock('react-router-dom', () => ({
   useSearchParams: () => [new URLSearchParams()],
 }));
 
-// QA: vi.mock() do mesmo módulo é hoist-and-replace — múltiplos calls
-// para '@/hooks/quotes' faziam só o último valer, deixando useQuotes,
-// useQuoteTemplates, useSellerDiscountLimits e useDiscountApproval
-// sem export (erro "No 'useQuotes' export..."). Consolidado em um único
-// vi.mock que expõe todos os hooks que o useQuoteBuilderState consome.
+// Mock dos hooks customizados
+// Mock dos hooks @/hooks/quotes (factory unico — multiplos vi.mock no mesmo path se sobrescrevem)
 vi.mock('@/hooks/quotes', () => ({
   useQuotes: () => ({
     createQuote: vi.fn(),
@@ -32,15 +29,9 @@ vi.mock('@/hooks/quotes', () => ({
     fetchQuote: vi.fn(),
     isLoading: false,
   }),
-  useQuoteTemplates: () => ({
-    templates: [],
-  }),
-  useSellerDiscountLimits: () => ({
-    myLimit: 50,
-  }),
-  useDiscountApproval: () => ({
-    requestApproval: vi.fn(),
-  }),
+  useQuoteTemplates: () => ({ templates: [] }),
+  useSellerDiscountLimits: () => ({ myLimit: 50 }),
+  useDiscountApproval: () => ({ requestApproval: vi.fn() }),
   useQuoteItems: () => ({
     items: [],
     setItems: vi.fn(),
@@ -58,11 +49,15 @@ vi.mock('@/hooks/quotes', () => ({
   useAutoSaveQuote: () => ({ clearAutoSave: vi.fn() }),
 }));
 
+
+
+
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({
     user: { id: 'user-123' },
   }),
 }));
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
