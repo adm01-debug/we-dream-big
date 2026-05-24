@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { resolveRedirectTarget } from '@/lib/auth/resolve-redirect-target';
@@ -40,11 +40,7 @@ import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons';
 import { supabase } from '@/integrations/supabase/client';
 import { AppLogo } from '@/components/layout/AppLogo';
 import { loginSchema, type LoginFormData } from '@/lib/validations';
-<<<<<<< HEAD
-import { authDebug, authDebugError } from '@/lib/auth/auth-debug';
-=======
 import { logger } from '@/lib/logger';
->>>>>>> origin/main
 
 type LoginForm = LoginFormData;
 
@@ -60,12 +56,12 @@ export default function Auth() {
   const { isAllowed: isDevAllowed } = useDevGate();
 
   /**
-   * Destino pós-login. Precedência:
+   * Destino pÃ³s-login. PrecedÃªncia:
    *  1. `location.state.from` (vindo do ProtectedRoute na mesma aba)
    *  2. `?redirect=/path` na URL (deep-link manual)
    *  3. `sessionStorage` (sobrevive ao round-trip OAuth)
    *  4. fallback `/`
-   * Consumido aqui para que login por e-mail/senha também respeite o destino.
+   * Consumido aqui para que login por e-mail/senha tambÃ©m respeite o destino.
    */
   const resolveRedirectTargetCb = useCallback((): string => {
     const fromState = (
@@ -84,7 +80,7 @@ export default function Auth() {
   const [blockedIP, setBlockedIP] = useState<string | null>(null);
   const [currentIP, setCurrentIP] = useState<string | null>(null);
   const [geoLocation, setGeoLocation] = useState<string | null>(null);
-  // Fallback social → email/senha: mensagem amigável quando OAuth falha.
+  // Fallback social â†’ email/senha: mensagem amigÃ¡vel quando OAuth falha.
   const [socialError, setSocialError] = useState<OAuthErrorCopy | null>(null);
 
   // External Database Check State
@@ -98,7 +94,7 @@ export default function Auth() {
     crm: { ok: false, loading: true },
   });
   const emailInputRef = useRef<HTMLInputElement | null>(null);
-  // Função `retry` publicada pelo SocialLoginButtons para reexecutar o Google login.
+  // FunÃ§Ã£o `retry` publicada pelo SocialLoginButtons para reexecutar o Google login.
   const googleRetryRef = useRef<(() => void) | null>(null);
   const handleRetryGoogle = useCallback(() => {
     setSocialError(null);
@@ -126,11 +122,11 @@ export default function Auth() {
     (message: string, opts?: { autoFallback?: boolean }) => {
       const copy = resolveOAuthError(message);
       setSocialError(copy);
-      // Fallback automático em falhas recuperáveis (timeout/silencioso):
-      // o usuário não precisa clicar — o foco vai direto pro e-mail.
+      // Fallback automÃ¡tico em falhas recuperÃ¡veis (timeout/silencioso):
+      // o usuÃ¡rio nÃ£o precisa clicar â€” o foco vai direto pro e-mail.
       if (opts?.autoFallback && !copy.isConfig) {
         toast({
-          title: 'Login com Google indisponível',
+          title: 'Login com Google indisponÃ­vel',
           description: 'Mudamos para entrada com e-mail e senha automaticamente.',
         });
         setTimeout(() => focusEmailFallback(), 50);
@@ -143,7 +139,7 @@ export default function Auth() {
 
   // Fetch IP, geolocation and backend status
   useEffect(() => {
-    // Guarda de cancelamento: evita setState após o unmount do componente.
+    // Guarda de cancelamento: evita setState apÃ³s o unmount do componente.
     // Sem isso, os awaits de loadInfo podem resolver depois do teardown e
     // disparar setDbStatus/setCurrentIP fora do ciclo de vida do React
     // (em testes, isso vaza como "ReferenceError: window is not defined").
@@ -178,7 +174,7 @@ export default function Auth() {
         },
       }));
 
-      // 3. External (Gestão de Produtos) via bridge ping op
+      // 3. External (GestÃ£o de Produtos) via bridge ping op
       try {
         const { data, error } = await supabase.functions.invoke('external-db-bridge', {
           body: { operation: 'ping' },
@@ -198,17 +194,11 @@ export default function Auth() {
           }));
         } else {
           setDbStatus((prev) => ({ ...prev, external: { ok: false, loading: false } }));
-<<<<<<< HEAD
-        }
-      } catch {
-        setDbStatus((prev) => ({ ...prev, external: { ok: false, loading: false } }));
-=======
         }
       } catch {
         if (!cancelled) {
           setDbStatus((prev) => ({ ...prev, external: { ok: false, loading: false } }));
         }
->>>>>>> origin/main
       }
     };
 
@@ -248,7 +238,7 @@ export default function Auth() {
           variant: 'destructive',
           title: 'Acesso Bloqueado',
           description:
-            ipValidation.error || `Seu IP (${ipValidation.currentIP}) não está autorizado.`,
+            ipValidation.error || `Seu IP (${ipValidation.currentIP}) nÃ£o estÃ¡ autorizado.`,
           duration: 10000,
         });
         return false;
@@ -279,46 +269,38 @@ export default function Auth() {
     setIpBlocked(false);
 
     try {
-<<<<<<< HEAD
-      authDebug('login:start', 'Tentativa de login', { email: data.email });
-      const { error } = await signIn(data.email, data.password);
-
-      if (error) {
-        authDebugError('login:failed', 'Erro de autenticação', error);
-=======
       const { error } = await signIn(data.email, data.password);
 
       if (error) {
         logger.warn('[AUTH_FAILED] Authentication failed', { status: error.status ?? 'unknown' });
->>>>>>> origin/main
         await logLoginAttempt(data.email, null, false, error.message);
 
         let description = error.message;
         let diagnosis = 'Verifique as credenciais';
         let title = 'Erro ao entrar';
 
-        // Heurística de erro baseada no código e mensagem
+        // HeurÃ­stica de erro baseada no cÃ³digo e mensagem
         if (error.message.includes('Invalid login credentials') || error.status === 400) {
           description = 'Email ou senha incorretos. Por favor, tente novamente.';
-          diagnosis = 'AUTH_FAILED: Credenciais inválidas (400).';
+          diagnosis = 'AUTH_FAILED: Credenciais invÃ¡lidas (400).';
         } else if (error.message.includes('Email not confirmed')) {
-          description = 'E-mail pendente de confirmação. Por favor, valide sua conta.';
-          diagnosis = 'AUTH_CONFIRM: Usuário existe mas e-mail não foi confirmado.';
+          description = 'E-mail pendente de confirmaÃ§Ã£o. Por favor, valide sua conta.';
+          diagnosis = 'AUTH_CONFIRM: UsuÃ¡rio existe mas e-mail nÃ£o foi confirmado.';
         } else if (error.message.includes('rate limit') || error.status === 429) {
           title = 'Conta Temporariamente Bloqueada';
-          description = 'Muitas tentativas falhas. Por segurança, aguarde alguns minutos.';
-          diagnosis = 'RATE_LIMIT: Bloqueio temporário ativado (429).';
+          description = 'Muitas tentativas falhas. Por seguranÃ§a, aguarde alguns minutos.';
+          diagnosis = 'RATE_LIMIT: Bloqueio temporÃ¡rio ativado (429).';
         } else if (
           error.status === 0 ||
           error.message.includes('network') ||
           error.message.includes('Fetch')
         ) {
-          title = 'Erro de Conexão';
-          description = 'Não foi possível alcançar o servidor. Verifique sua internet.';
-          diagnosis = 'NETWORK_ERROR: Falha física ou DNS (0).';
+          title = 'Erro de ConexÃ£o';
+          description = 'NÃ£o foi possÃ­vel alcanÃ§ar o servidor. Verifique sua internet.';
+          diagnosis = 'NETWORK_ERROR: Falha fÃ­sica ou DNS (0).';
         } else if (error.message.includes('Database error') || error.status >= 500) {
           title = 'Erro no Servidor';
-          description = 'O sistema está instável no momento. Nossa equipe já foi notificada.';
+          description = 'O sistema estÃ¡ instÃ¡vel no momento. Nossa equipe jÃ¡ foi notificada.';
           diagnosis = `SERVER_ERROR: Erro interno do Supabase (${error.status || 500}).`;
         }
 
@@ -329,7 +311,7 @@ export default function Auth() {
             <div className="space-y-3">
               <p className="font-medium">{description}</p>
               <div className="rounded-lg border border-white/5 bg-black/40 p-2 font-mono text-[10px] text-white/50">
-                DIAGNÓSTICO: {diagnosis}
+                DIAGNÃ“STICO: {diagnosis}
               </div>
               <Button
                 variant="link"
@@ -337,7 +319,7 @@ export default function Auth() {
                 className="h-auto p-0 text-xs text-white/60 hover:text-white"
                 onClick={() => navigate('/admin/status')}
               >
-                Verificar status do sistema →
+                Verificar status do sistema â†’
               </Button>
             </div>
           ),
@@ -345,11 +327,6 @@ export default function Auth() {
         return;
       }
 
-<<<<<<< HEAD
-      authDebug('login:ok', 'Login bem-sucedido, validando sessão', { email: data.email });
-
-=======
->>>>>>> origin/main
       // Credential Management API — pede ao navegador para salvar email/senha
       // após login bem-sucedido (Chrome/Edge/Brave). Silencioso se não suportado.
       try {
@@ -366,13 +343,8 @@ export default function Auth() {
           const cred = new CredCtor({ id: data.email, password: data.password, name: data.email });
           await navigator.credentials.store(cred);
         }
-<<<<<<< HEAD
-      } catch (credErr) {
-        authDebugError('login:cred-store', 'Não foi possível salvar credenciais', credErr);
-=======
       } catch {
         logger.warn('[AUTH_CRED_STORE] Credential store failed');
->>>>>>> origin/main
       }
 
       const { data: sessionData } = await supabase.auth.getSession();
@@ -382,17 +354,13 @@ export default function Auth() {
       if (!userId) {
         toast({
           variant: 'destructive',
-          title: 'Erro de sessão',
-          description: 'Login realizado mas a sessão não pôde ser iniciada.',
+          title: 'Erro de sessÃ£o',
+          description: 'Login realizado mas a sessÃ£o nÃ£o pÃ´de ser iniciada.',
         });
         return;
       }
 
       // 1. Verificação detalhada de Perfil (is_active)
-<<<<<<< HEAD
-      authDebug('login:session', 'Sessão iniciada, carregando perfil', { userId });
-=======
->>>>>>> origin/main
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('is_active, role')
@@ -400,24 +368,16 @@ export default function Auth() {
         .single();
 
       if (profileError) {
-<<<<<<< HEAD
-        authDebugError(
-          'login:profile-failed',
-          `Erro ao buscar perfil para ${userId}`,
-          profileError,
-        );
-=======
         logger.error('[AUTH_PROFILE_FAILED] Failed to load authenticated profile', {
           code: profileError.code ?? 'unknown',
         });
->>>>>>> origin/main
         const isRLSError = profileError.code === 'PGRST301' || profileError.code === '42501';
         toast({
           variant: 'destructive',
-          title: 'Erro de Sessão',
+          title: 'Erro de SessÃ£o',
           description: (
             <div className="space-y-2">
-              <p>Autenticado, mas não conseguimos carregar suas permissões.</p>
+              <p>Autenticado, mas nÃ£o conseguimos carregar suas permissÃµes.</p>
               <div className="rounded border border-white/5 bg-black/40 p-2 font-mono text-[9px] text-white/50">
                 {isRLSError ? 'RLS_BLOCK' : 'PROFILE_MISSING'}: {profileError.code} -{' '}
                 {profileError.message}
@@ -431,46 +391,32 @@ export default function Auth() {
         toast({
           variant: 'destructive',
           title: 'Acesso Bloqueado',
-          description: 'Sua conta está inativa. Entre em contato com o administrador.',
+          description: 'Sua conta estÃ¡ inativa. Entre em contato com o administrador.',
         });
         await signOut();
         return;
       }
 
-      // 2. Verificação de Roles (user_roles)
+      // 2. VerificaÃ§Ã£o de Roles (user_roles)
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId);
 
       if (rolesError || !rolesData || rolesData.length === 0) {
-<<<<<<< HEAD
-        authDebug('login:rbac-warn', 'Usuário sem papéis (roles) atribuídos', {
-          userId,
-          rolesError,
-        });
-      } else {
-        authDebug('login:rbac-ok', `Usuário possui ${rolesData.length} roles`, { userId });
-=======
         logger.warn('[AUTH_RBAC_WARN] Authenticated user has no assigned roles', {
           code: rolesError?.code ?? 'none',
         });
->>>>>>> origin/main
       }
 
-      // 3. Validação final de IP e Redirecionamento
+      // 3. ValidaÃ§Ã£o final de IP e Redirecionamento
       await validateAndRedirect(userId, data.email);
-<<<<<<< HEAD
-    } catch (err) {
-      console.error('Login exception:', err);
-=======
     } catch {
       logger.error('[AUTH_LOGIN_EXCEPTION] Unexpected login exception');
->>>>>>> origin/main
       toast({
         variant: 'destructive',
         title: 'Erro inesperado',
-        description: 'Não foi possível conectar ao servidor. Verifique sua internet.',
+        description: 'NÃ£o foi possÃ­vel conectar ao servidor. Verifique sua internet.',
       });
     } finally {
       setIsSubmitting(false);
@@ -482,7 +428,7 @@ export default function Auth() {
       <main
         className="flex min-h-screen items-center justify-center bg-background"
         role="main"
-        aria-label="Carregando autenticação"
+        aria-label="Carregando autenticaÃ§Ã£o"
       >
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </main>
@@ -505,8 +451,8 @@ export default function Auth() {
             </div>
           </div>
           <div className="space-y-2 text-center">
-            <h2 className="font-display text-2xl font-bold">Você já está conectado</h2>
-            <p className="text-sm text-white/60">Redirecionando para sua área segura...</p>
+            <h2 className="font-display text-2xl font-bold">VocÃª jÃ¡ estÃ¡ conectado</h2>
+            <p className="text-sm text-white/60">Redirecionando para sua Ã¡rea segura...</p>
           </div>
         </div>
       </main>
@@ -517,14 +463,14 @@ export default function Auth() {
     <main
       className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#030508] lg:flex-row"
       role="main"
-      aria-label="Autenticação"
+      aria-label="AutenticaÃ§Ã£o"
     >
       {/* Fundo unificado azul-noite saturado com cena espacial coordenada */}
       <SpaceScene />
 
       <PageSEO
         title="Login | Promo Gifts"
-        description="Acesse a plataforma Promo Gifts. Entre com suas credenciais para gerenciar seus produtos e orçamentos com a melhor IA das Galáxias!"
+        description="Acesse a plataforma Promo Gifts. Entre com suas credenciais para gerenciar seus produtos e orÃ§amentos com a melhor IA das GalÃ¡xias!"
         path="/login"
       />
       {/* Left side - Branding */}
@@ -551,9 +497,9 @@ export default function Auth() {
                       Acesso Bloqueado
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      Seu endereço IP (
+                      Seu endereÃ§o IP (
                       <span className="font-mono font-semibold text-foreground">{blockedIP}</span>)
-                      não está autorizado a acessar esta conta.
+                      nÃ£o estÃ¡ autorizado a acessar esta conta.
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Entre em contato com o administrador do sistema para liberar seu acesso.
@@ -647,7 +593,7 @@ export default function Auth() {
                         className="font-display text-[1.036rem] font-normal tracking-tight text-white"
                         id="auth-title"
                       >
-                        Entre com suas credenciais para Brilhar, você nasce para isso!
+                        Entre com suas credenciais para Brilhar, vocÃª nasce para isso!
                       </div>
                       <p className="text-[13px] text-white/50">
                         Inicie sua jornada rumo ao sucesso
@@ -691,7 +637,7 @@ export default function Auth() {
                               >
                                 <p className="text-[11px] leading-snug text-white/60">
                                   <span className="mr-2 text-[9px] font-bold uppercase tracking-wider text-amber-500">
-                                    Solução:
+                                    SoluÃ§Ã£o:
                                   </span>
                                   {socialError.hint}
                                 </p>
@@ -737,9 +683,8 @@ export default function Auth() {
                       onSubmit={loginForm.handleSubmit(handleLogin)}
                       className="space-y-4"
                       data-testid="login-form"
-                      method="post"
-                      action="/auth"
                       name="login"
+                      noValidate
                     >
                       <div className="space-y-2">
                         <Label htmlFor="login-email" className="text-foreground">
@@ -790,7 +735,7 @@ export default function Auth() {
                             id="login-password"
                             data-testid="login-password-input"
                             type={showPassword ? 'text' : 'password'}
-                            placeholder="••••••••"
+                            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                             autoComplete="current-password"
                             className="border-white/10 bg-white/5 pl-10 pr-10 transition-all duration-300 placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20"
                             {...loginForm.register('password')}
@@ -801,6 +746,7 @@ export default function Auth() {
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3 top-1/2 -mr-2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-blue-500"
                             aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                            aria-pressed={showPassword}
                           >
                             {showPassword ? (
                               <EyeOff className="h-4 w-4" />
@@ -891,7 +837,7 @@ export default function Auth() {
             </div>
           )}
 
-          {/* Backend Status Widget — apenas visível para devs (gate via useDevGate) */}
+          {/* Backend Status Widget â€” apenas visÃ­vel para devs (gate via useDevGate) */}
           {isDevAllowed && (
             <div
               className="mx-auto flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 opacity-0 shadow-xl backdrop-blur-md"
@@ -925,7 +871,7 @@ export default function Auth() {
                   )}
                 </div>
 
-                {/* External DB (Gestão de Produtos) */}
+                {/* External DB (GestÃ£o de Produtos) */}
                 <div className="flex items-center justify-between gap-4 rounded-lg border border-white/5 bg-white/5 px-3 py-2">
                   <div className="flex items-center gap-2">
                     <Activity className="h-3.5 w-3.5 text-white/40" />
@@ -952,7 +898,7 @@ export default function Auth() {
               </div>
 
               <p className="px-2 text-center text-[10px] italic text-white/30">
-                Verificação em tempo real das instâncias Supabase configuradas via secrets.
+                VerificaÃ§Ã£o em tempo real das instÃ¢ncias Supabase configuradas via secrets.
               </p>
             </div>
           )}
