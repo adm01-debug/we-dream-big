@@ -14,10 +14,13 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { useMultipleTechniquePricing } from "@/hooks/simulation/useTechniquePricingOptions";
-import { useSimulatorPreferences } from "@/hooks/simulation/useSimulatorPreferences";
-import { fetchAllOptions } from "@/hooks/simulation/simulationPriceFetcher";
-import { copyOptionToClipboard, copyAllOptionsToClipboard } from "@/hooks/simulation/simulationClipboard";
+import { useMultipleTechniquePricing } from '@/hooks/simulation/useTechniquePricingOptions';
+import { useSimulatorPreferences } from '@/hooks/simulation/useSimulatorPreferences';
+import { fetchAllOptions } from '@/hooks/simulation/simulationPriceFetcher';
+import {
+  copyOptionToClipboard,
+  copyAllOptionsToClipboard,
+} from '@/hooks/simulation/simulationClipboard';
 import type {
   Product,
   Client,
@@ -173,8 +176,8 @@ export function useSimulation() {
       });
       return result.records.map((t) => ({
         ...t,
-        setup_cost: (t as ExternalTechnique).setup_price ?? t.setup_cost,
-        unit_cost: (t as ExternalTechnique).handling_price ?? t.unit_cost,
+        setup_cost: (t as unknown as ExternalTechnique).setup_price ?? t.setup_cost,
+        unit_cost: (t as unknown as ExternalTechnique).handling_price ?? t.unit_cost,
       }));
     },
   });
@@ -188,7 +191,8 @@ export function useSimulation() {
   const { data: savedSimulations, isLoading: savedSimulationsLoading } = useQuery({
     queryKey: ['saved-simulations'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from('personalization_simulations')
         .select(`*, bitrix_clients (id, name, ramo)`)
         .order('created_at', { ascending: false })
@@ -457,7 +461,8 @@ export function useSimulation() {
     mutationFn: async () => {
       if (!user || !selectedProduct || simulationOptions.length === 0)
         throw new Error('Dados incompletos');
-      const { error } = await supabase.from('personalization_simulations').insert([
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any).from('personalization_simulations').insert([
         {
           seller_id: user.id,
           client_id: selectedClientId,
@@ -486,7 +491,11 @@ export function useSimulation() {
 
   const deleteSimulationMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('personalization_simulations').delete().eq('id', id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from('personalization_simulations')
+        .delete()
+        .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -597,4 +606,4 @@ export function useSimulation() {
 // Re-export for backward compatibility with legacy simulator imports.
 // Keep the source of truth in the shared formatter module to avoid runtime
 // module-export errors during Vite ESM loading.
-export { formatCurrency } from "@/lib/format";
+export { formatCurrency } from '@/lib/format';

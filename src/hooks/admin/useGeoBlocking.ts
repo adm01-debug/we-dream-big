@@ -6,8 +6,8 @@ interface AllowedCountry {
   id: string;
   country_code: string;
   country_name: string;
-  is_active: boolean;
-  created_at: string;
+  is_active: boolean | null;
+  created_at: string | null;
 }
 
 interface GeoBlockingSettings {
@@ -18,7 +18,10 @@ interface GeoBlockingSettings {
 export function useGeoBlocking() {
   const { user } = useAuth();
   const [countries, setCountries] = useState<AllowedCountry[]>([]);
-  const [settings, setSettings] = useState<GeoBlockingSettings>({ enabled: false, mode: 'whitelist' });
+  const [settings, setSettings] = useState<GeoBlockingSettings>({
+    enabled: false,
+    mode: 'whitelist',
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [currentCountry, setCurrentCountry] = useState<{ code: string; name: string } | null>(null);
 
@@ -38,15 +41,8 @@ export function useGeoBlocking() {
   const fetchData = useCallback(async () => {
     try {
       const [countriesRes, settingsRes] = await Promise.all([
-        supabase
-          .from('geo_allowed_countries')
-          .select('*')
-          .order('country_name'),
-        supabase
-          .from('security_settings')
-          .select('*')
-          .eq('setting_key', 'geo_blocking')
-          .single(),
+        supabase.from('geo_allowed_countries').select('*').order('country_name'),
+        supabase.from('security_settings').select('*').eq('setting_key', 'geo_blocking').single(),
       ]);
 
       if (countriesRes.error) throw countriesRes.error;
@@ -68,98 +64,119 @@ export function useGeoBlocking() {
     fetchData();
   }, [fetchCurrentCountry, fetchData]);
 
-  const toggleEnabled = useCallback(async (enabled: boolean): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const newSettings = { ...settings, enabled };
-      const { error } = await supabase
-        .from('security_settings')
-        .update({ 
-          setting_value: newSettings,
-          updated_at: new Date().toISOString(),
-          updated_by: user?.id 
-        })
-        .eq('setting_key', 'geo_blocking');
+  const toggleEnabled = useCallback(
+    async (enabled: boolean): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const newSettings = { ...settings, enabled };
+        const { error } = await supabase
+          .from('security_settings')
+          .update({
+            setting_value: newSettings,
+            updated_at: new Date().toISOString(),
+            updated_by: user?.id,
+          })
+          .eq('setting_key', 'geo_blocking');
 
-      if (error) throw error;
-      setSettings(newSettings);
-      return { success: true };
-    } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
-    }
-  }, [settings, user]);
+        if (error) throw error;
+        setSettings(newSettings);
+        return { success: true };
+      } catch (error: unknown) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Erro desconhecido',
+        };
+      }
+    },
+    [settings, user],
+  );
 
-  const addCountry = useCallback(async (
-    countryCode: string,
-    countryName: string
-  ): Promise<{ success: boolean; error?: string }> => {
-    if (!user) {
-      return { success: false, error: 'Usuário não autenticado' };
-    }
+  const addCountry = useCallback(
+    async (
+      countryCode: string,
+      countryName: string,
+    ): Promise<{ success: boolean; error?: string }> => {
+      if (!user) {
+        return { success: false, error: 'Usuário não autenticado' };
+      }
 
-    try {
-      const { error } = await supabase
-        .from('geo_allowed_countries')
-        .insert({
+      try {
+        const { error } = await supabase.from('geo_allowed_countries').insert({
           country_code: countryCode.toUpperCase(),
           country_name: countryName,
           created_by: user.id,
         });
 
-      if (error) {
-        if (error.code === '23505') {
-          return { success: false, error: 'Este país já está cadastrado' };
+        if (error) {
+          if (error.code === '23505') {
+            return { success: false, error: 'Este país já está cadastrado' };
+          }
+          throw error;
         }
-        throw error;
+
+        await fetchData();
+        return { success: true };
+      } catch (error: unknown) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Erro desconhecido',
+        };
       }
+    },
+    [user, fetchData],
+  );
 
-      await fetchData();
-      return { success: true };
-    } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
-    }
-  }, [user, fetchData]);
+  const removeCountry = useCallback(
+    async (id: string): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const { error } = await supabase.from('geo_allowed_countries').delete().eq('id', id);
 
-  const removeCountry = useCallback(async (id: string): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const { error } = await supabase
-        .from('geo_allowed_countries')
-        .delete()
-        .eq('id', id);
+        if (error) throw error;
+        await fetchData();
+        return { success: true };
+      } catch (error: unknown) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Erro desconhecido',
+        };
+      }
+    },
+    [fetchData],
+  );
 
-      if (error) throw error;
-      await fetchData();
-      return { success: true };
-    } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
-    }
-  }, [fetchData]);
+  const toggleCountry = useCallback(
+    async (id: string, isActive: boolean): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const { error } = await supabase
+          .from('geo_allowed_countries')
+          .update({ is_active: isActive })
+          .eq('id', id);
 
-  const toggleCountry = useCallback(async (
-    id: string,
-    isActive: boolean
-  ): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const { error } = await supabase
-        .from('geo_allowed_countries')
-        .update({ is_active: isActive })
-        .eq('id', id);
+        if (error) throw error;
+        await fetchData();
+        return { success: true };
+      } catch (error: unknown) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Erro desconhecido',
+        };
+      }
+    },
+    [fetchData],
+  );
 
-      if (error) throw error;
-      await fetchData();
-      return { success: true };
-    } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
-    }
-  }, [fetchData]);
+  const isCountryAllowed = useCallback(
+    (countryCode: string): boolean => {
+      if (!settings.enabled) return true;
 
-  const isCountryAllowed = useCallback((countryCode: string): boolean => {
-    if (!settings.enabled) return true;
-    
-    const activeCountries = countries.filter(c => c.is_active);
-    if (activeCountries.length === 0) return true;
-    
-    return activeCountries.some(c => c.country_code.toUpperCase() === countryCode.toUpperCase());
-  }, [settings.enabled, countries]);
+      const activeCountries = countries.filter((c) => c.is_active === true);
+      if (activeCountries.length === 0) return true;
+
+      return activeCountries.some(
+        (c) => c.country_code.toUpperCase() === countryCode.toUpperCase(),
+      );
+    },
+    [settings.enabled, countries],
+  );
 
   return {
     countries,

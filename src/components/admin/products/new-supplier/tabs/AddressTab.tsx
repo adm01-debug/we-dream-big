@@ -251,8 +251,10 @@ export function AddressTab({ form }: AddressTabProps) {
                     className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-accent/50"
                     onMouseDown={(e) => {
                       e.preventDefault();
-                      form.setTransportadoraPadrao(c.nome_fantasia || c.razao_social);
-                      form.setTransportadoraId(c.id);
+                      form.setTransportadoraPadrao(
+                        ((c.nome_fantasia || c.razao_social) as string) ?? '',
+                      );
+                      form.setTransportadoraId((c.id as string) ?? '');
                       form.setCarrierSearch('');
                       form.setShowCarrierDropdown(false);
                     }}

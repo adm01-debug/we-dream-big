@@ -2,7 +2,17 @@
  * useCatalogState — all catalog page state & logic extracted from Index.tsx
  */
 import React, { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue } from 'react';
-import { useCatalogRealStats, useColorEnrichment, useExternalCategoriesQuery, useProductFuzzySearch, useProductsByCategory, useProductsByMaterial, useProductsCatalog, useSupplierSalesRanking, type Product } from "@/hooks/products";
+import {
+  useCatalogRealStats,
+  useColorEnrichment,
+  useExternalCategoriesQuery,
+  useProductFuzzySearch,
+  useProductsByCategory,
+  useProductsByMaterial,
+  useProductsCatalog,
+  useSupplierSalesRanking,
+  type Product,
+} from '@/hooks/products';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Package, Heart, Users, Palette, FolderTree } from 'lucide-react';
 
@@ -13,13 +23,13 @@ import {
   type ColumnCount,
 } from '@/components/products/ColumnSelector';
 import { useProductsContext } from '@/contexts/ProductsContext';
-import { useDebounce, useSearch } from "@/hooks/common";
+import { useDebounce, useSearch } from '@/hooks/common';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useFavoriteQuickAdd } from '@/hooks/favorites';
 import { useComparisonStore } from '@/stores/useComparisonStore';
 import { useToast } from '@/hooks/ui';
 import { usePromoSalesRanking } from '@/hooks/intelligence';
-import { useCatalogFiltering } from "@/hooks/products/useCatalogFiltering";
+import { useCatalogFiltering } from '@/hooks/products/useCatalogFiltering';
 
 export type ViewMode = 'grid' | 'list' | 'table';
 export type SortOption =
@@ -636,5 +646,10 @@ export function useCatalogState() {
     quickSuggestions,
     searchHistory: history,
     clearHistory,
+    navigate,
+    isTransitioning: deferredIsTransitioning,
+    hasMoreProducts,
+    ITEMS_PER_PAGE,
+    loadMore,
   };
 }
