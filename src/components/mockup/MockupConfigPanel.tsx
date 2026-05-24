@@ -10,8 +10,7 @@ import {
   Paintbrush,
   RefreshCw,
   Info,
-  ChevronDown,
-  Wand2,
+  ChevronDown, Wand2
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

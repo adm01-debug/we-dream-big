@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useNotifications, useToast } from "@/hooks/ui";
-import { 
-  Bell, 
-  BellOff, 
+import {
+  Bell,
+  BellOff,
   BellRing,
   CheckCircle2,
   XCircle,

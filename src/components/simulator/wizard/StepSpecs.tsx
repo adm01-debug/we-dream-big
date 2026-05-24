@@ -13,9 +13,9 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { 
-  SlidersHorizontal, 
-  Palette, 
+import {
+  SlidersHorizontal,
+  Palette,
   Ruler,
   DollarSign,
   ChevronLeft,

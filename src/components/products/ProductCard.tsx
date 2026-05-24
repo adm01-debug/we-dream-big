@@ -58,7 +58,7 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
   priority = false,
 }, ref) {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
   const { prefetchProduct } = usePrefetchProduct();
   const [isHovered, setIsHovered] = useState(false);
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);

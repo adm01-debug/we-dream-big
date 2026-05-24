@@ -2,10 +2,10 @@
  * GlobalSearchPalette — High-contrast black redesign
  * Helper components extracted to GlobalSearchHelpers.tsx
  */
-import React, { lazy, Suspense, useEffect, useCallback } from "react";
+import { lazy, Suspense, useEffect, useCallback } from "react";
 import {
   CommandDialog, CommandGroup, CommandInput,
-  CommandItem, CommandList,
+  CommandItem, CommandList
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

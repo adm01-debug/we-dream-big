@@ -9,10 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Package, 
-  Search, 
-  X, 
+import {
+  Package,
+  Search,
+  X,
   ChevronRight,
   Sparkles,
   Clock,

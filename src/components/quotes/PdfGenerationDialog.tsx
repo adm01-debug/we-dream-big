@@ -104,7 +104,7 @@ export function PdfGenerationDialog({
     setPdfVersion((v) => v + 1);
   };
 
-  const handleEmail = () => {
+  const _handleEmail = () => {
     const subject = encodeURIComponent(`Proposta Comercial ${quoteNumber || ""}`);
     const body = encodeURIComponent(
       `Olá,\n\nSegue a proposta comercial ${quoteNumber || ""}.\n\nQualquer dúvida, estou à disposição!\n\nAtt.`

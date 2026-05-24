@@ -250,7 +250,7 @@ export const SpaceScene = React.memo(({ isFull = true }: { isFull?: boolean }) =
       ))}
 
       {/* Floating Astronauts — Sincronizados, Menores e com Parallax Mouse + Scroll */}
-      {!config.reducedMotion && astronauts.map((a, idx) => {
+      {!config.reducedMotion && astronauts.map((a, _idx) => {
         // Tamanhos reduzidos e escala baseada na profundidade, perfil global e ajuste individual
         const baseSize = 35; 
         const size = baseSize * a.depth * config.depthProfile * (a.individualScale ?? 1.0);

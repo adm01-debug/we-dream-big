@@ -3,12 +3,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import {
   FilePlus,
-  Clock,
-  TrendingUp,
-  FileText,
-  DollarSign,
+  Clock, TrendingUp,
+  FileText, DollarSign,
   Target,
-  BarChart3,
+  BarChart3
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

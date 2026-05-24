@@ -163,7 +163,7 @@ export function QuoteAutoSave({
     }
   }, [storageKey, quoteId]);
 
-  const handleDiscard = () => {
+  const _handleDiscard = () => {
     localStorage.removeItem(storageKey);
     
     const keysToRemove: string[] = [];

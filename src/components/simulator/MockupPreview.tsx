@@ -16,13 +16,13 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-import { 
-  Eye, 
-  Image as ImageIcon, 
+import {
+  Eye,
+  Image as ImageIcon,
   Package,
   Palette,
   Move,
-  ZoomIn,
+  ZoomIn
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import type { SimulationOption, Product } from "@/types/simulation";

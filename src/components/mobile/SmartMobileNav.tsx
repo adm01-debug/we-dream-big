@@ -1,18 +1,16 @@
-import React, { useState, useEffect, forwardRef } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { getPrefetchHandlers } from "@/lib/routePrefetch";
-import { 
-  Home, 
-  Package, 
-  FileText, 
-   
+import {
+  Home,
+  Package,
+  FileText,
+
   Plus,
   Heart,
-  Wand2,
-  ShoppingCart,
-  Calculator,
+  Wand2, ShoppingCart, Calculator,
   FolderOpen,
-  X,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -165,7 +163,7 @@ export const SmartMobileNav = forwardRef<HTMLDivElement>(function SmartMobileNav
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0.5rem)' }}
       >
         <div className="flex items-center justify-around h-14 sm:h-16 px-1 sm:px-2 relative">
-          {mainNavItems.map((item, index) => {
+          {mainNavItems.map((item, _index) => {
             const Icon = item.icon;
             const active = isActive(item.href);
             const isFab = item.href === "#fab";
