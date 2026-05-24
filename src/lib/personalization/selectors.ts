@@ -1,7 +1,7 @@
-/**
- * Domain Selectors: Personalização
+﻿/**
+ * Domain Selectors: PersonalizaÃ§Ã£o
  *
- * Funções puras para seleção e filtragem de dados.
+ * FunÃ§Ãµes puras para seleÃ§Ã£o e filtragem de dados.
  */
 
 import type {
@@ -18,8 +18,8 @@ import type {
 // ============================================
 
 /**
- * Seleciona a melhor tabela de preço para os critérios dados
- * Prioridade: cores -> dimensões -> primeira disponível
+ * Seleciona a melhor tabela de preÃ§o para os critÃ©rios dados
+ * Prioridade: cores -> dimensÃµes -> primeira disponÃ­vel
  */
 export function selectBestTable(
   tables: PriceTableInput[],
@@ -32,16 +32,14 @@ export function selectBestTable(
 
   if (candidates.length === 0) return null;
 
-  // Filtrar por nome da técnica
+  // Filtrar por nome da tÃ©cnica
   if (criteria.techniqueName) {
     const techniqueName = criteria.techniqueName.toLowerCase();
-    const byName = candidates.filter((t) =>
-      t.techniqueName.toLowerCase().includes(techniqueName),
-    );
+    const byName = candidates.filter((t) => t.techniqueName.toLowerCase().includes(techniqueName));
     if (byName.length > 0) candidates = byName;
   }
 
-  // Filtrar por código da técnica
+  // Filtrar por cÃ³digo da tÃ©cnica
   if (criteria.techniqueCode) {
     const techniqueCode = criteria.techniqueCode.toLowerCase();
     const byCode = candidates.filter(
@@ -52,7 +50,7 @@ export function selectBestTable(
     if (byCode.length > 0) candidates = byCode;
   }
 
-  // Ordenar por número de cores (preferir a que atende exatamente)
+  // Ordenar por nÃºmero de cores (preferir a que atende exatamente)
   if (criteria.colors) {
     const colors = criteria.colors;
     candidates.sort((a, b) => {
@@ -72,7 +70,7 @@ export function selectBestTable(
     });
   }
 
-  // Filtrar por dimensões
+  // Filtrar por dimensÃµes
   if (criteria.widthCm && criteria.heightCm) {
     const widthCm = criteria.widthCm;
     const heightCm = criteria.heightCm;
@@ -88,7 +86,7 @@ export function selectBestTable(
 }
 
 /**
- * Filtra tabelas por técnica
+ * Filtra tabelas por tÃ©cnica
  */
 export function filterTablesByTechnique(
   tables: PriceTableInput[],
@@ -104,7 +102,7 @@ export function filterTablesByTechnique(
 }
 
 /**
- * Agrupa tabelas por nome de técnica
+ * Agrupa tabelas por nome de tÃ©cnica
  */
 export function groupTablesByTechnique(tables: PriceTableInput[]): Map<string, PriceTableInput[]> {
   const grouped = new Map<string, PriceTableInput[]>();
@@ -125,7 +123,7 @@ export function groupTablesByTechnique(tables: PriceTableInput[]): Map<string, P
 // ============================================
 
 /**
- * Filtra técnicas por categoria
+ * Filtra tÃ©cnicas por categoria
  */
 export function filterTechniquesByCategory(
   techniques: TechniqueInput[],
@@ -137,7 +135,7 @@ export function filterTechniquesByCategory(
 }
 
 /**
- * Retorna técnicas únicas (por código)
+ * Retorna tÃ©cnicas Ãºnicas (por cÃ³digo)
  */
 export function getUniqueTechniques(techniques: TechniqueInput[]): TechniqueInput[] {
   const seen = new Set<string>();
@@ -149,7 +147,7 @@ export function getUniqueTechniques(techniques: TechniqueInput[]): TechniqueInpu
 }
 
 /**
- * Retorna categorias únicas das técnicas
+ * Retorna categorias Ãºnicas das tÃ©cnicas
  */
 export function getUniqueCategories(techniques: TechniqueInput[]): string[] {
   const categories = [...new Set(techniques.map((t) => t.category))];
@@ -161,7 +159,7 @@ export function getUniqueCategories(techniques: TechniqueInput[]): string[] {
 // ============================================
 
 /**
- * Extrai opções de cores disponíveis das tabelas
+ * Extrai opÃ§Ãµes de cores disponÃ­veis das tabelas
  */
 export function extractColorOptions(
   tables: PriceTableInput[],
@@ -169,12 +167,12 @@ export function extractColorOptions(
 ): ColorOption[] {
   if (!hasPriceByColor || tables.length === 0) return [];
 
-  // Coletar todos os maxColors únicos
+  // Coletar todos os maxColors Ãºnicos
   const uniqueColors = [
     ...new Set(tables.map((t) => t.maxColors).filter((c): c is number => c !== null && c > 0)),
   ].sort((a, b) => a - b);
 
-  // Se só há um valor, criar opções de 1 até o máximo
+  // Se sÃ³ hÃ¡ um valor, criar opÃ§Ãµes de 1 atÃ© o mÃ¡ximo
   if (uniqueColors.length <= 1) {
     const maxColors = uniqueColors[0] || 4;
     return Array.from({ length: maxColors }, (_, i) => ({
@@ -183,7 +181,7 @@ export function extractColorOptions(
     }));
   }
 
-  // Se há variação, usar os valores disponíveis
+  // Se hÃ¡ variaÃ§Ã£o, usar os valores disponÃ­veis
   return uniqueColors.map((c) => ({
     value: c,
     label: `${c} ${c === 1 ? 'cor' : 'cores'}`,
@@ -191,7 +189,7 @@ export function extractColorOptions(
 }
 
 /**
- * Extrai opções de tamanho disponíveis das tabelas
+ * Extrai opÃ§Ãµes de tamanho disponÃ­veis das tabelas
  */
 export function extractSizeOptions(tables: PriceTableInput[]): SizeOption[] {
   if (tables.length === 0) return [];
@@ -217,7 +215,7 @@ export function extractSizeOptions(tables: PriceTableInput[]): SizeOption[] {
     }
   }
 
-  // Ordenar por área
+  // Ordenar por Ã¡rea
   return Array.from(uniqueAreas.values()).sort((a, b) => a.areaCm2 - b.areaCm2);
 }
 
@@ -235,7 +233,7 @@ export function extractQuantityOptions(tiers: PriceTier[]): number[] {
 // ============================================
 
 /**
- * Calcula score de compatibilidade entre tabela e critérios
+ * Calcula score de compatibilidade entre tabela e critÃ©rios
  * Maior score = melhor match
  */
 export function calculateTableScore(
@@ -255,7 +253,7 @@ export function calculateTableScore(
     if (nameMatch) score += 50;
   }
 
-  // Match por código
+  // Match por cÃ³digo
   if (criteria.techniqueCode) {
     const codeMatch = table.tableCode.toLowerCase().includes(criteria.techniqueCode.toLowerCase());
     if (codeMatch) score += 50;
@@ -264,14 +262,14 @@ export function calculateTableScore(
   // Match por cores
   if (criteria.colors && table.maxColors !== null) {
     if (table.maxColors >= criteria.colors) {
-      // Quanto mais próximo do necessário, melhor
+      // Quanto mais prÃ³ximo do necessÃ¡rio, melhor
       score += 30 - Math.min(table.maxColors - criteria.colors, 30);
     } else {
-      score -= 20; // Penaliza se não atende
+      score -= 20; // Penaliza se nÃ£o atende
     }
   }
 
-  // Match por dimensões
+  // Match por dimensÃµes
   if (criteria.widthCm && criteria.heightCm) {
     const fitsWidth = table.maxWidthCm === null || table.maxWidthCm >= criteria.widthCm;
     const fitsHeight = table.maxHeightCm === null || table.maxHeightCm >= criteria.heightCm;

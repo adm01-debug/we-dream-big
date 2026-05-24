@@ -1,11 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Auth from "@/pages/auth/Auth";
+import Auth from '@/pages/auth/Auth';
 import { BrowserRouter } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
 import { HelmetProvider } from 'react-helmet-async';
 
-// Mocking useIPValidation
+// Mocking @/hooks/admin (useIPValidation + useDevGate are both consumed by Auth.tsx)
 vi.mock('@/hooks/admin', () => ({
   useIPValidation: () => ({
     validateIPForAuthenticatedUser: vi.fn().mockResolvedValue({ isAllowed: true }),
@@ -34,7 +33,6 @@ const renderAuth = () => {
     <HelmetProvider>
       <BrowserRouter>
         <Auth />
-        <Toaster />
       </BrowserRouter>
     </HelmetProvider>,
   );

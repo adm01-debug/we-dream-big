@@ -1,5 +1,4 @@
 // Exporting all hooks from ui
-export * from "@/hooks/ui/use-toast";
 export * from "@/hooks/ui/useCloudStatus";
 export * from "@/hooks/ui/useCurrentSection";
 export * from "@/hooks/ui/useErrorHandler";

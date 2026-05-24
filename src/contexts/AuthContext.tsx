@@ -160,6 +160,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSafeToastRoles(userRoles);
   }, [userRoles]);
 
+  // Watchdog (Etapa 8): se isLoading travar (network error, edge function timeout, RLS hang),
+  // força isLoading=false após 8s. Sem isso o ProtectedRoute renderiza spinner infinito
+  // e o usuário fica preso sem URL mudar — sintoma observado em /dashboard anônimo.
+  useEffect(() => {
+    if (!isLoading) return;
+    const timer = window.setTimeout(() => {
+      console.warn('[AuthContext] Watchdog: isLoading travado por 8s — forçando false');
+      setIsLoading(false);
+    }, 8000);
+    return () => window.clearTimeout(timer);
+  }, [isLoading, setIsLoading]);
+
+
   const signIn = async (email: string, password: string) => {
     const log = createClientLogger('auth.signIn', { base: { email_domain: email.split('@')[1] } });
     const { allowed, remainingSeconds } = checkLoginAllowed(email);

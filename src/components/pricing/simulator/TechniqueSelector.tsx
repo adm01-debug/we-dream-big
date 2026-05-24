@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { useExternalPrintAreas } from '@/hooks/simulation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -114,7 +114,7 @@ export function TechniqueSelector({
     return (
       <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-destructive">
         <AlertCircle className="mb-2 h-5 w-5" />
-        <p>Erro ao carregar técnicas</p>
+        <p>Erro ao carregar tÃ©cnicas</p>
       </div>
     );
   }
@@ -123,7 +123,7 @@ export function TechniqueSelector({
     return (
       <div className="py-8 text-center text-muted-foreground">
         <Paintbrush className="mx-auto mb-2 h-8 w-8 opacity-50" />
-        <p>Este produto não possui técnicas de personalização cadastradas</p>
+        <p>Este produto nÃ£o possui tÃ©cnicas de personalizaÃ§Ã£o cadastradas</p>
       </div>
     );
   }
@@ -158,14 +158,14 @@ export function TechniqueSelector({
             wizardStep >= 3 ? 'bg-primary/20 font-medium text-primary' : 'bg-muted',
           )}
         >
-          Técnica
+          TÃ©cnica
         </span>
       </div>
 
       {/* Step 1: Component Selection */}
       {!selectedComponent && (
         <div className="space-y-2">
-          <p className="text-sm font-medium">Qual parte do produto será personalizada?</p>
+          <p className="text-sm font-medium">Qual parte do produto serÃ¡ personalizada?</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {components.map((comp, idx) => (
               <button
@@ -181,7 +181,7 @@ export function TechniqueSelector({
                     <p className="font-medium">{comp.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {comp.locations.length} {comp.locations.length === 1 ? 'local' : 'locais'}{' '}
-                      disponíveis
+                      disponÃ­veis
                     </p>
                   </div>
                 </div>
@@ -196,7 +196,7 @@ export function TechniqueSelector({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">
-              Onde será a gravação em "{selectedComponent.name}"?
+              Onde serÃ¡ a gravaÃ§Ã£o em "{selectedComponent.name}"?
             </p>
             <Button variant="ghost" size="sm" onClick={() => setSelectedComponent(null)}>
               <X className="mr-1 h-3 w-3" /> Voltar
@@ -221,10 +221,10 @@ export function TechniqueSelector({
                     <div>
                       <p className="font-medium">{loc.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {maxWidth && maxHeight ? `${maxWidth}x${maxHeight}mm` : 'Área variável'}
-                        {' • '}
+                        {maxWidth && maxHeight ? `${maxWidth}x${maxHeight}mm` : 'Ãrea variÃ¡vel'}
+                        {' â€¢ '}
                         {loc.techniques.length}{' '}
-                        {loc.techniques.length === 1 ? 'técnica' : 'técnicas'}
+                        {loc.techniques.length === 1 ? 'tÃ©cnica' : 'tÃ©cnicas'}
                       </p>
                     </div>
                   </div>
@@ -239,7 +239,7 @@ export function TechniqueSelector({
       {selectedComponent && selectedLocation && !selectedTechnique && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Qual técnica de gravação?</p>
+            <p className="text-sm font-medium">Qual tÃ©cnica de gravaÃ§Ã£o?</p>
             <Button variant="ghost" size="sm" onClick={() => setSelectedLocation(null)}>
               <X className="mr-1 h-3 w-3" /> Voltar
             </Button>
@@ -259,9 +259,9 @@ export function TechniqueSelector({
                     <div>
                       <p className="font-medium">{tech.areaName || tech.techniqueCode}</p>
                       <p className="text-xs text-muted-foreground">
-                        {tech.techniqueCode && `Código: ${tech.techniqueCode}`}
-                        {tech.maxColors && ` • Até ${tech.maxColors} cores`}
-                        {tech.areaCm2 && ` • ${tech.areaCm2}cm²`}
+                        {tech.techniqueCode && `CÃ³digo: ${tech.techniqueCode}`}
+                        {tech.maxColors && ` â€¢ AtÃ© ${tech.maxColors} cores`}
+                        {tech.areaCm2 && ` â€¢ ${tech.areaCm2}cmÂ²`}
                       </p>
                     </div>
                   </div>
@@ -284,7 +284,7 @@ export function TechniqueSelector({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-success" />
-              <span className="font-medium">Técnica selecionada</span>
+              <span className="font-medium">TÃ©cnica selecionada</span>
             </div>
             <Button
               variant="ghost"
@@ -308,7 +308,7 @@ export function TechniqueSelector({
               <p className="font-medium">{selectedTechnique.locationName}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Técnica</p>
+              <p className="text-xs text-muted-foreground">TÃ©cnica</p>
               <p className="font-medium">{selectedTechnique.techniqueName}</p>
             </div>
           </div>
@@ -317,13 +317,13 @@ export function TechniqueSelector({
               {selectedTechnique.maxWidth && selectedTechnique.maxHeight && (
                 <span className="flex items-center gap-1">
                   <Ruler className="h-3 w-3" />
-                  Área máx: {selectedTechnique.maxWidth}x{selectedTechnique.maxHeight}mm
+                  Ãrea mÃ¡x: {selectedTechnique.maxWidth}x{selectedTechnique.maxHeight}mm
                 </span>
               )}
               {selectedTechnique.maxColors && (
                 <span className="flex items-center gap-1">
                   <Palette className="h-3 w-3" />
-                  Até {selectedTechnique.maxColors} cores
+                  AtÃ© {selectedTechnique.maxColors} cores
                 </span>
               )}
             </div>

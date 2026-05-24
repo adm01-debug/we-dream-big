@@ -1,5 +1,4 @@
 import { type ReactNode } from "react";
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -14,6 +13,7 @@ import { AccessibilityProvider, AriaLiveProvider } from "@/components/a11y";
 import { BridgeStatusBanner } from "@/components/BridgeStatusBanner";
 import { CloudStatusBanner } from "@/components/system/CloudStatusBanner";
 import { CloudStatusDot } from "@/components/system/CloudStatusDot";
+import { RootInteractivityGuard } from "@/components/system/RootInteractivityGuard";
 import { GlobalOfflineAlert } from "@/components/common/GlobalOfflineAlert";
 import { DevOnlyBridgeOverlay } from "@/components/dev/DevOnlyBridgeOverlay";
 import { RouteScrollReset } from "@/components/common/RouteScrollReset";
@@ -46,7 +46,7 @@ const App = () => {
                     <AppBootstrap>
                     <EnhancedErrorBoundary>
                       <AppProviders>
-                        <Toaster />
+                        <RootInteractivityGuard />
                         <Sonner />
                         <CloudStatusBanner />
                         <CloudStatusDot />

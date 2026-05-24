@@ -12,6 +12,7 @@ import {
   getActiveFlags,
   type IntelligenceFlag,
   type StockVelocity,
+  type ProductIntelligenceData,
 } from '@/hooks/intelligence';
 import { useSupplierNames } from '@/hooks/products';
 import {
@@ -41,15 +42,17 @@ export function useStockChartData(productId: string) {
     refetch: refetchSummary,
   } = useStockDailySummary(productId, days);
   const {
-    data: velocity,
+    data: _velocity,
     error: velocityError,
     refetch: refetchVelocity,
   } = useStockVelocity(productId);
+  const velocity = _velocity as StockVelocity[] | undefined;
   const {
-    data: intelligence,
+    data: _intelligence,
     error: intelligenceError,
     refetch: refetchIntelligence,
   } = useProductIntelligenceData(productId);
+  const intelligence = _intelligence as ProductIntelligenceData | null | undefined;
 
   const hasData = !!summaries?.length;
   const hasError = !!(summaryError || velocityError || intelligenceError);
@@ -120,11 +123,11 @@ export function useStockChartData(productId: string) {
   const bestVelocity = useMemo(() => {
     if (effectiveVelocities.length) {
       if (selectedSupplier !== 'all') {
-        const match = effectiveVelocities.find((v) => v.supplier_id === selectedSupplier);
+        const match = effectiveVelocities.find((v: StockVelocity) => v.supplier_id === selectedSupplier);
         if (match) return match;
       }
       return effectiveVelocities.reduce(
-        (best, v) => (v.avg_daily_depletion_7d > (best?.avg_daily_depletion_7d ?? 0) ? v : best),
+        (best: StockVelocity, v: StockVelocity) => (v.avg_daily_depletion_7d > (best?.avg_daily_depletion_7d ?? 0) ? v : best),
         effectiveVelocities[0],
       );
     }
@@ -175,7 +178,8 @@ export function useStockChartData(productId: string) {
       return name ? `em ${name}` : 'fornecedor selecionado';
     }
     const count = effectiveIntelligence?.supplier_count;
-    if (count === null || count === 0) return 'no fornecedor';
+    // eslint-disable-next-line eqeqeq
+    if (count == null || count === 0) return 'no fornecedor';
     return `em ${count} fornecedor${count > 1 ? 'es' : ''}`;
   }, [effectiveIntelligence, selectedSupplier, supplierNamesMap]);
 
