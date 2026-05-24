@@ -9,17 +9,23 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import { X, Check, Minus, Crown, AlertTriangle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { useComparisonHighlight, highlightClasses } from "./ComparisonHighlights";
-import { PriceSparkline } from "./PriceSparkline";
-import { StockRiskBadge } from "./StockRiskBadge";
-import { OtherSuppliersRow } from "./OtherSuppliersRow";
-import type { CompareVariantInfo } from "@/stores/useComparisonStore";
-import type { Product } from "@/types/product-catalog";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { X, Check, Minus, Crown, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { useComparisonHighlight, highlightClasses } from './ComparisonHighlights';
+import { PriceSparkline } from './PriceSparkline';
+import { StockRiskBadge } from './StockRiskBadge';
+import { OtherSuppliersRow } from './OtherSuppliersRow';
+import type { CompareVariantInfo } from '@/stores/useComparisonStore';
+// Runtime/UI Product (from useProducts) — distinct from src/types/product.ts (DB-oriented).
+import type { Product } from '@/types/product-catalog';
 
 export interface CompareEntry {
   product: Product;
@@ -95,19 +101,13 @@ export function CompareTableView({
 
   const eq = {
     sku: allEqual(products.map((p) => p.sku)),
-    category: allEqual(products.map((p) => p.category_name)),
+    category: allEqual(products.map((p) => p.category?.name)),
     supplier: allEqual(products.map((p) => p.supplier?.name)),
     isKit: allEqual(products.map((p) => p.isKit)),
     materials: allEqual(products.map((p) => (p.materials ?? []).slice().sort().join('|'))),
-    publico: allEqual(
-      products.map((p) =>
-        ((p.tags?.publicoAlvo as string[] | undefined) ?? []).slice().sort().join('|'),
-      ),
-    ),
+    publico: allEqual(products.map((p) => (p.tags?.publicoAlvo ?? []).slice().sort().join('|'))),
     datas: allEqual(
-      products.map((p) =>
-        ((p.tags?.datasComemorativas as string[] | undefined) ?? []).slice().sort().join('|'),
-      ),
+      products.map((p) => (p.tags?.datasComemorativas ?? []).slice().sort().join('|')),
     ),
     description: allEqual(products.map((p) => p.description ?? '')),
     weight: allEqual(products.map((p) => p.dimensions?.weight_g ?? null)),
@@ -142,7 +142,7 @@ export function CompareTableView({
                   className="flex min-w-[180px] shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-2 py-1"
                 >
                   <img
-                    src={hoveredVariant[entry.index] ?? entry.product.images?.[0]}
+                    src={hoveredVariant[entry.index] ?? entry.product.images[0]}
                     alt={entry.product.name}
                     className="h-8 w-8 rounded object-cover"
                     loading="lazy"
@@ -187,7 +187,7 @@ export function CompareTableView({
                         </button>
                         <div className="flex flex-col items-center gap-2">
                           <img
-                            src={hoveredVariant[entry.index] ?? entry.product.images?.[0]}
+                            src={hoveredVariant[entry.index] ?? entry.product.images[0]}
                             alt={entry.product.name}
                             className="h-24 w-24 cursor-pointer rounded-lg object-cover transition-all hover:ring-2 hover:ring-primary"
                             onClick={() => navigate(`/produto/${entry.product.id}`)}
@@ -209,21 +209,32 @@ export function CompareTableView({
                           )}
                           {/* Hover swatches → swap header image */}
                           {(entry.product.colors?.length ?? 0) > 1 && (
-                            <div className="flex gap-0.5 flex-wrap justify-center">
-                              {(entry.product.colors ?? []).slice(0, 6).map((c: { name: string; hex?: string }, i: number) => (
-                                <button
-                                  key={i}
-                                  type="button"
-                                  className="w-3.5 h-3.5 rounded-full border border-border hover:scale-125 transition-transform"
-                                  style={{ backgroundColor: c.hex }}
-                                  title={c.name}
-                                  onMouseEnter={() => {
-                                    const altImg = entry.product.images?.[i] ?? entry.product.images?.[0] ?? null;
-                                    setHoveredVariant(prev => ({ ...prev, [entry.index]: altImg }));
-                                  }}
-                                  onMouseLeave={() => setHoveredVariant(prev => ({ ...prev, [entry.index]: null }))}
-                                />
-                              ))}
+                            <div className="flex flex-wrap justify-center gap-0.5">
+                              {entry.product.colors
+                                .slice(0, 6)
+                                .map((c: { name: string; hex?: string }, i: number) => (
+                                  <button
+                                    key={i}
+                                    type="button"
+                                    className="h-3.5 w-3.5 rounded-full border border-border transition-transform hover:scale-125"
+                                    style={{ backgroundColor: c.hex }}
+                                    title={c.name}
+                                    onMouseEnter={() => {
+                                      const altImg =
+                                        entry.product.images[i] ?? entry.product.images[0] ?? null;
+                                      setHoveredVariant((prev) => ({
+                                        ...prev,
+                                        [entry.index]: altImg,
+                                      }));
+                                    }}
+                                    onMouseLeave={() =>
+                                      setHoveredVariant((prev) => ({
+                                        ...prev,
+                                        [entry.index]: null,
+                                      }))
+                                    }
+                                  />
+                                ))}
                             </div>
                           )}
                           <StockRiskBadge product={entry.product} />
@@ -258,32 +269,110 @@ export function CompareTableView({
                 ))}
               </TableRow>
 
-              <HighlightedNumberRow label="Quantidade mínima" products={products} valueFn={(p) => p.minQuantity ?? 0} renderFn={(v) => `${v} un.`} mode="lower-is-better" />
-              <HighlightedNumberRow label="Custo total (qtd. mín.)" products={products} valueFn={(p) => Number(p.price ?? 0) * Number(p.minQuantity ?? 1)} renderFn={(v) => formatCurrency(v)} mode="lower-is-better" subtitle="TCO" />
-              <HighlightedNumberRow label="Estoque" products={products} valueFn={(p) => p.stock ?? 0} renderFn={(v) => `${v.toLocaleString("pt-BR")} un.`} mode="higher-is-better" />
-              <HighlightedNumberRow label="Lead time" products={products} valueFn={(p) => leadTimeProxy(p.stockStatus ?? undefined)} renderFn={(v) => leadTimeLabel(v === 1 ? "in-stock" : v === 2 ? "low-stock" : "out-of-stock")} mode="lower-is-better" />
-              <HighlightedNumberRow label="Variedade de cores" products={products} valueFn={(p) => (p.colors?.length ?? 0)} renderFn={(v) => `${v} cores`} mode="higher-is-better" />
+              <HighlightedNumberRow
+                label="Quantidade mínima"
+                products={products}
+                valueFn={(p) => p.minQuantity}
+                renderFn={(v) => `${v} un.`}
+                mode="lower-is-better"
+              />
+              <HighlightedNumberRow
+                label="Custo total (qtd. mín.)"
+                products={products}
+                valueFn={(p) => Number(p.price ?? 0) * Number(p.minQuantity ?? 1)}
+                renderFn={(v) => formatCurrency(v)}
+                mode="lower-is-better"
+                subtitle="TCO"
+              />
+              <HighlightedNumberRow
+                label="Estoque"
+                products={products}
+                valueFn={(p) => p.stock ?? 0}
+                renderFn={(v) => `${v.toLocaleString('pt-BR')} un.`}
+                mode="higher-is-better"
+              />
+              <HighlightedNumberRow
+                label="Lead time"
+                products={products}
+                valueFn={(p) => leadTimeProxy(p.stockStatus)}
+                renderFn={(v) =>
+                  leadTimeLabel(v === 1 ? 'in-stock' : v === 2 ? 'low-stock' : 'out-of-stock')
+                }
+                mode="lower-is-better"
+              />
+              <HighlightedNumberRow
+                label="Variedade de cores"
+                products={products}
+                valueFn={(p) => p.colors?.length ?? 0}
+                renderFn={(v) => `${v} cores`}
+                mode="higher-is-better"
+              />
 
-              {showRow("sku") && <SimpleRow label="SKU" products={products} render={(p) => <span className="font-mono text-sm">{p.sku}</span>} />}
-              {showRow("category") && <SimpleRow label="Categoria" products={products} render={(p) => <Badge variant="outline">{p.category?.name}</Badge>} />}
-              {showRow("supplier") && (
-                <SimpleRow label="Fornecedor" products={products} render={(p) => (
-                  <div className="flex items-center justify-center gap-1.5">
-                    <span>{p.supplier?.name}</span>
-                  </div>
-                )} />
+              {showRow('sku') && (
+                <SimpleRow
+                  label="SKU"
+                  products={products}
+                  render={(p) => <span className="font-mono text-sm">{p.sku}</span>}
+                />
               )}
-              <SimpleRow label="Estoque (status)" products={products} render={(p) => {
-                const s = getStockStatusLabel(p.stockStatus ?? "");
-                return (<span className={cn("font-medium", s.color)}>{s.label}</span>);
-              }} />
-              {showRow("isKit") && <SimpleRow label="É Kit?" products={products} render={(p) => p.isKit ? <Check className="h-5 w-5 text-success mx-auto" /> : <Minus className="h-5 w-5 text-muted-foreground mx-auto" />} />}
-              <SimpleRow label="Cores disponíveis" products={products} render={(p) => (
-                <div className="flex flex-wrap justify-center gap-1">
-                  {(p.colors ?? []).slice(0, 6).map((c: { name: string; hex?: string }, i: number) => <div key={i} className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: c.hex }} title={c.name} />)}
-                  {(p.colors?.length ?? 0) > 6 && <span className="text-xs text-muted-foreground">+{(p.colors?.length ?? 0) - 6}</span>}
-                </div>
-              )} />
+              {showRow('category') && (
+                <SimpleRow
+                  label="Categoria"
+                  products={products}
+                  render={(p) => <Badge variant="outline">{p.category?.name}</Badge>}
+                />
+              )}
+              {showRow('supplier') && (
+                <SimpleRow
+                  label="Fornecedor"
+                  products={products}
+                  render={(p) => (
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span>{p.supplier?.name}</span>
+                    </div>
+                  )}
+                />
+              )}
+              <SimpleRow
+                label="Estoque (status)"
+                products={products}
+                render={(p) => {
+                  const s = getStockStatusLabel(p.stockStatus);
+                  return <span className={cn('font-medium', s.color)}>{s.label}</span>;
+                }}
+              />
+              {showRow('isKit') && (
+                <SimpleRow
+                  label="É Kit?"
+                  products={products}
+                  render={(p) =>
+                    p.isKit ? (
+                      <Check className="mx-auto h-5 w-5 text-success" />
+                    ) : (
+                      <Minus className="mx-auto h-5 w-5 text-muted-foreground" />
+                    )
+                  }
+                />
+              )}
+              <SimpleRow
+                label="Cores disponíveis"
+                products={products}
+                render={(p) => (
+                  <div className="flex flex-wrap justify-center gap-1">
+                    {p.colors?.slice(0, 6).map((c: { name: string; hex?: string }, i: number) => (
+                      <div
+                        key={i}
+                        className="h-5 w-5 rounded-full border border-border"
+                        style={{ backgroundColor: c.hex }}
+                        title={c.name}
+                      />
+                    ))}
+                    {(p.colors?.length ?? 0) > 6 && (
+                      <span className="text-xs text-muted-foreground">+{p.colors.length - 6}</span>
+                    )}
+                  </div>
+                )}
+              />
               {showRow('materials') && (
                 <SimpleRow
                   label="Materiais"
@@ -328,13 +417,48 @@ export function CompareTableView({
                   }}
                 />
               )}
-              {showRow("datas") && (
-                <SimpleRow label="Datas comemorativas" products={products} render={(p) => {
-                  const datas = p.tags?.datasComemorativas ?? [];
-                  return datas.length > 0
-                    ? <div className="flex flex-wrap justify-center gap-1">{datas.slice(0, 2).map((d: string) => <Badge key={d} variant="outline" className="text-xs">{d}</Badge>)}</div>
-                    : <Minus className="h-4 w-4 text-muted-foreground mx-auto" />;
-                }} />
+              {showRow('publico') && (
+                <SimpleRow
+                  label="Público-alvo"
+                  products={products}
+                  render={(p) => (
+                    <div className="flex flex-wrap justify-center gap-1">
+                      {(p.tags?.publicoAlvo ?? []).slice(0, 3).map((t: string) => (
+                        <Badge key={t} variant="outline" className="text-xs">
+                          {t}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                />
+              )}
+              {showRow('datas') && (
+                <SimpleRow
+                  label="Datas comemorativas"
+                  products={products}
+                  render={(p) =>
+                    (p.tags?.datasComemorativas ?? []).length > 0 ? (
+                      <div className="flex flex-wrap justify-center gap-1">
+                        {p.tags.datasComemorativas.slice(0, 2).map((d: string) => (
+                          <Badge key={d} variant="outline" className="text-xs">
+                            {d}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <Minus className="mx-auto h-4 w-4 text-muted-foreground" />
+                    )
+                  }
+                />
+              )}
+              {showRow('description') && (
+                <SimpleRow
+                  label="Descrição"
+                  products={products}
+                  render={(p) => (
+                    <p className="line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
+                  )}
+                />
               )}
 
               {/* Other suppliers — expandable */}
