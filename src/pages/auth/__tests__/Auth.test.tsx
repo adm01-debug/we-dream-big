@@ -1,8 +1,7 @@
-﻿import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Auth from '@/pages/auth/Auth';
 import { BrowserRouter } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
 import { HelmetProvider } from 'react-helmet-async';
 
 // Mocking @/hooks/admin (useIPValidation + useDevGate are both consumed by Auth.tsx)
@@ -34,7 +33,6 @@ const renderAuth = () => {
     <HelmetProvider>
       <BrowserRouter>
         <Auth />
-        <Toaster />
       </BrowserRouter>
     </HelmetProvider>,
   );
@@ -72,7 +70,7 @@ describe('Auth Page', () => {
 
     fireEvent.click(forgotLink);
 
-    // ForgotPasswordForm monta via AnimatePresence (assÃ­ncrono) â€” aguardar.
+    // ForgotPasswordForm monta via AnimatePresence (assíncrono) — aguardar.
     expect(await screen.findByText(/Esqueceu sua senha\?/i)).toBeInTheDocument();
 
     expect(screen.queryByTestId('login-password-input')).not.toBeInTheDocument();

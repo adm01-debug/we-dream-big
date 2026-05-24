@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/ui/use-toast";
+import { toast } from "sonner";
 
 export interface CommandDefinition {
   id: string;
@@ -17,7 +17,6 @@ export function useSlashCommands(onClose: () => void) {
   const navigate = useNavigate();
   const { setTheme } = useTheme();
   const { signOut } = useAuth();
-  const { toast } = useToast();
 
   const commands: CommandDefinition[] = [
     {
@@ -28,7 +27,7 @@ export function useSlashCommands(onClose: () => void) {
       icon: "Sun",
       action: () => {
         setTheme("light");
-        toast({ title: "Tema alterado", description: "Modo claro ativado." });
+        toast.success("Tema alterado", { description: "Modo claro ativado." });
         onClose();
       },
       keywords: ["light", "claro", "branco"]
@@ -41,7 +40,7 @@ export function useSlashCommands(onClose: () => void) {
       icon: "Moon",
       action: () => {
         setTheme("dark");
-        toast({ title: "Tema alterado", description: "Modo escuro ativado." });
+        toast.success("Tema alterado", { description: "Modo escuro ativado." });
         onClose();
       },
       keywords: ["dark", "escuro", "preto"]
