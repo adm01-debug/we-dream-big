@@ -82,6 +82,23 @@ export function useSupplierComparison(product: Product | null | undefined) {
   return { result, isLoading };
 }
 
+/** Agrupa produtos de uma categoria por supplier (utilitário auxiliar). */
+export function getSupplierProductsInCategory(
+  products: Product[],
+  categoryId: string | number,
+): Map<string, Product[]> {
+  const supplierMap = new Map<string, Product[]>();
+  products.forEach((product) => {
+    if (product.category.id !== categoryId) return;
+    const supplierId = product.supplier.id;
+    if (!supplierMap.has(supplierId)) {
+      supplierMap.set(supplierId, []);
+    }
+    supplierMap.get(supplierId)!.push(product);
+  });
+  return supplierMap;
+}
+
 function calculateNameSimilarity(a: string, b: string): number {
   const wordsA = a.toLowerCase().split(/\s+/).filter(w => w.length > 2);
   const wordsB = new Set(b.toLowerCase().split(/\s+/).filter(w => w.length > 2));
