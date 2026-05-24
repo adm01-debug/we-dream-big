@@ -115,22 +115,6 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.can_approve_discount(_user_id uuid DEFAULT auth.uid())
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$ SELECT public.can_manage_quotes(_user_id) $function$
-;
-
-CREATE OR REPLACE FUNCTION public.can_manage_connections(_user_id uuid DEFAULT auth.uid())
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$ SELECT public.is_supervisor_or_above(_user_id); $function$
-;
-
 CREATE OR REPLACE FUNCTION public.can_view_all_sales()
  RETURNS boolean
  LANGUAGE sql
@@ -145,53 +129,12 @@ AS $function$
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.can_view_audit_logs(_user_id uuid DEFAULT auth.uid())
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$ SELECT public.is_dev(_user_id); $function$
-;
-
-CREATE OR REPLACE FUNCTION public.can_view_connections(_user_id uuid DEFAULT auth.uid())
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$ SELECT public.is_supervisor_or_above(_user_id); $function$
-;
-
-CREATE OR REPLACE FUNCTION public.can_view_telemetry(_user_id uuid DEFAULT auth.uid())
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$ SELECT public.is_supervisor_or_above(_user_id); $function$
-;
-
 CREATE OR REPLACE FUNCTION public.compare_quote_versions(_quote_id uuid, _version_a integer, _version_b integer)
  RETURNS jsonb
  LANGUAGE sql
  STABLE
  SET search_path TO 'public'
 AS $function$ SELECT public.compare_quote_snapshots(_quote_id, _version_a, _version_b); $function$
-;
-
-CREATE OR REPLACE FUNCTION public.enforce_user_id_owner()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_temp'
-AS $function$
-BEGIN
-  -- Enforça que user_id corresponda ao auth.uid() em inserts/updates
-  IF NEW.user_id IS NULL THEN
-    NEW.user_id := auth.uid();
-  ELSIF NEW.user_id != auth.uid() AND NOT public.is_admin_or_above(auth.uid()) THEN
-    RAISE EXCEPTION 'user_id deve corresponder ao usuário autenticado';
-  END IF;
-  RETURN NEW;
-END;
-$function$
 ;
 
 CREATE OR REPLACE FUNCTION public.extract_json_value(p_data jsonb, p_path character varying)
@@ -259,100 +202,11 @@ CREATE OR REPLACE FUNCTION public.get_step_up_user_settings(_user_id uuid DEFAUL
 AS $function$ SELECT public.step_up_user_settings_get(_user_id); $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.is_admin()
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT public.is_supervisor_or_above(auth.uid());
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_admin(_user_id uuid)
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT public.is_supervisor_or_above(_user_id);
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_admin_strict(_user_id uuid DEFAULT auth.uid())
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT public.is_dev(_user_id);
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_manager_or_admin()
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public', 'pg_temp'
-AS $function$
-  SELECT public.is_admin_or_above(auth.uid());
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_seller_only(_user_id uuid DEFAULT auth.uid())
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT public.has_role(_user_id,'vendedor'::public.app_role)
-     AND NOT public.can_manage_quotes(_user_id)
-     AND NOT public.is_admin_strict(_user_id)
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.limit_recently_viewed_products()
  RETURNS trigger
  LANGUAGE plpgsql
  SET search_path TO 'public'
 AS $function$ BEGIN RETURN NEW; END; $function$
-;
-
-CREATE OR REPLACE FUNCTION public.mcp_audit_actor(_fallback uuid)
- RETURNS uuid
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  jwt_sub text;
-  header_actor text;
-BEGIN
-  BEGIN
-    header_actor := current_setting('request.mcp_actor', true);
-  EXCEPTION WHEN OTHERS THEN
-    header_actor := NULL;
-  END;
-  IF header_actor IS NOT NULL AND header_actor <> '' THEN
-    RETURN header_actor::uuid;
-  END IF;
-
-  IF auth.uid() IS NOT NULL THEN
-    RETURN auth.uid();
-  END IF;
-
-  BEGIN
-    jwt_sub := current_setting('request.jwt.claims', true)::jsonb->>'sub';
-  EXCEPTION WHEN OTHERS THEN
-    jwt_sub := NULL;
-  END;
-  IF jwt_sub IS NOT NULL AND jwt_sub <> '' THEN
-    RETURN jwt_sub::uuid;
-  END IF;
-
-  RETURN _fallback;
-END;
-$function$
 ;
 
 CREATE OR REPLACE FUNCTION public.normalize_unit(p_value numeric, p_source_unit character varying, p_target_unit character varying)
@@ -462,82 +316,11 @@ CREATE OR REPLACE FUNCTION public.track_voice_command(_transcript text)
 AS $function$ SELECT public.log_voice_command(_transcript); $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.trg_sync_external_connections()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _secret_name text;
-  _op text := TG_OP;
-BEGIN
-  _secret_name := COALESCE(NEW.secret_name, OLD.secret_name);
-  IF (TG_OP = 'DELETE' AND OLD.secret_name LIKE 'EXTERNAL_%')
-     OR (TG_OP IN ('INSERT','UPDATE') AND NEW.secret_name LIKE 'EXTERNAL_%') THEN
-    PERFORM public.sync_external_connections_from_credentials(
-      _secret_name, _op, auth.uid()
-    );
-  END IF;
-  RETURN COALESCE(NEW, OLD);
-EXCEPTION WHEN OTHERS THEN
-  RETURN COALESCE(NEW, OLD);
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.update_step_up_user_settings(_settings jsonb, _user_id uuid DEFAULT NULL::uuid)
  RETURNS void
  LANGUAGE sql
  SET search_path TO 'public'
 AS $function$ SELECT public.step_up_user_settings_set(_settings, _user_id); $function$
-;
-
-CREATE OR REPLACE FUNCTION public.validate_scheduled_report_email()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  IF NEW.email_to !~ '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' THEN
-    RAISE EXCEPTION 'Email inválido: %', NEW.email_to;
-  END IF;
-  RETURN NEW;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.validate_status_fields()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  IF TG_TABLE_NAME = 'quotes' THEN
-    -- NOTA Fase B (12/05/2026): valores 'approved'/'rejected'/'pending_approval'/'viewed'
-    -- são mantidos por compatibilidade histórica até decisão Fase C
-    -- (novo ciclo de vida do orçamento sem rotas públicas).
-    IF NEW.status NOT IN ('draft', 'pending', 'sent', 'approved', 'rejected', 'expired', 'revision', 'pending_approval', 'converted', 'viewed') THEN
-      RAISE EXCEPTION 'Invalid quote status: %', NEW.status;
-    END IF;
-  END IF;
-  IF TG_TABLE_NAME = 'orders' THEN
-    IF NEW.status NOT IN ('pending', 'confirmed', 'in_production', 'shipped', 'delivered', 'cancelled') THEN
-      RAISE EXCEPTION 'Invalid order status: %', NEW.status;
-    END IF;
-    IF NEW.fulfillment_status NOT IN ('unfulfilled', 'partially_fulfilled', 'fulfilled') THEN
-      RAISE EXCEPTION 'Invalid fulfillment status: %', NEW.fulfillment_status;
-    END IF;
-  END IF;
-  IF TG_TABLE_NAME = 'custom_kits' THEN
-    IF NEW.status NOT IN ('draft', 'ready', 'shared', 'archived') THEN
-      RAISE EXCEPTION 'Invalid kit status: %', NEW.status;
-    END IF;
-  END IF;
-  -- ❌ REMOVIDOS (Fase B Decision 011): branches de kit_share_tokens e quote_approval_tokens
-  --    Tables foram dropadas — rotas públicas com token não existem mais no modelo.
-  RETURN NEW;
-END;
-$function$
 ;
 
 CREATE OR REPLACE FUNCTION public.verify_user_step_up_required(_action step_up_action, _user_id uuid DEFAULT NULL::uuid)
@@ -811,264 +594,11 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.mark_step_up_password_verified(_challenge_id uuid)
- RETURNS boolean
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _uid UUID := auth.uid();
-  _row RECORD;
-BEGIN
-  SELECT * INTO _row FROM public.step_up_challenges
-  WHERE id = _challenge_id AND user_id = _uid AND consumed = false AND expires_at > now()
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RETURN false;
-  END IF;
-
-  UPDATE public.step_up_challenges SET password_verified = true WHERE id = _challenge_id;
-
-  INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, challenge_id)
-  VALUES (_uid, _row.action, _row.target_ref, 'password_verified', _challenge_id);
-
-  RETURN true;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.fn_audit_role_changes()
  RETURNS trigger
  LANGUAGE plpgsql
  SET search_path TO 'public'
 AS $function$ BEGIN RETURN COALESCE(NEW, OLD); END; $function$
-;
-
-CREATE OR REPLACE FUNCTION public.repair_ownership_orphans(_report_id uuid DEFAULT NULL::uuid, _dry_run boolean DEFAULT true, _triggered_by_label text DEFAULT 'manual_admin'::text)
- RETURNS jsonb
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  v_caller uuid := auth.uid();
-  v_report record;
-  v_detail jsonb;
-  v_table text;
-  v_col text;
-  v_null_count bigint;
-  v_orphan_count bigint;
-  v_action text;
-  v_rows int;
-  v_results jsonb := '[]'::jsonb;
-  v_total_deleted int := 0;
-  v_total_deactivated int := 0;
-  v_total_manual int := 0;
-  v_safe_delete text[] := ARRAY[
-    'workspace_notifications', 'rls_denial_log',
-    'mcp_audit_log', 'mcp_keys_audit_log',
-    'role_migration_audit', 'login_attempts'
-  ];
-  v_has_active boolean;
-  v_has_is_active boolean;
-  v_has_status boolean;
-BEGIN
-  IF v_caller IS NULL OR NOT (
-    has_role(v_caller, 'admin'::app_role) OR has_role(v_caller, 'dev'::app_role)
-  ) THEN
-    RAISE EXCEPTION 'repair_ownership_orphans: acesso negado';
-  END IF;
-
-  IF _report_id IS NULL THEN
-    SELECT * INTO v_report
-    FROM public.ownership_audit_reports
-    ORDER BY generated_at DESC LIMIT 1;
-  ELSE
-    SELECT * INTO v_report
-    FROM public.ownership_audit_reports WHERE id = _report_id;
-  END IF;
-
-  IF v_report.id IS NULL THEN
-    RAISE EXCEPTION 'repair_ownership_orphans: nenhum relatório encontrado';
-  END IF;
-
-  FOR v_detail IN SELECT * FROM jsonb_array_elements(v_report.details)
-  LOOP
-    v_table := v_detail->>'table';
-    v_col := v_detail->>'owner_column';
-    v_null_count := COALESCE((v_detail->>'null_owner_count')::bigint, 0);
-    v_orphan_count := COALESCE((v_detail->>'missing_user_count')::bigint, 0);
-
-    SELECT EXISTS(SELECT 1 FROM information_schema.columns
-      WHERE table_schema='public' AND table_name=v_table AND column_name='active')
-      INTO v_has_active;
-    SELECT EXISTS(SELECT 1 FROM information_schema.columns
-      WHERE table_schema='public' AND table_name=v_table AND column_name='is_active')
-      INTO v_has_is_active;
-    SELECT EXISTS(SELECT 1 FROM information_schema.columns
-      WHERE table_schema='public' AND table_name=v_table AND column_name='status')
-      INTO v_has_status;
-
-    IF v_null_count > 0 THEN
-      v_action := 'manual_review';
-      v_rows := 0;
-
-      IF v_table = ANY(v_safe_delete) THEN
-        v_action := 'deleted';
-        IF NOT _dry_run THEN
-          EXECUTE format('DELETE FROM public.%I WHERE %I IS NULL', v_table, v_col);
-          GET DIAGNOSTICS v_rows = ROW_COUNT;
-        ELSE
-          v_rows := v_null_count::int;
-        END IF;
-        v_total_deleted := v_total_deleted + v_rows;
-      ELSIF v_has_is_active THEN
-        v_action := 'deactivated';
-        IF NOT _dry_run THEN
-          EXECUTE format('UPDATE public.%I SET is_active=false WHERE %I IS NULL AND is_active=true', v_table, v_col);
-          GET DIAGNOSTICS v_rows = ROW_COUNT;
-        ELSE
-          v_rows := v_null_count::int;
-        END IF;
-        v_total_deactivated := v_total_deactivated + v_rows;
-      ELSIF v_has_active THEN
-        v_action := 'deactivated';
-        IF NOT _dry_run THEN
-          EXECUTE format('UPDATE public.%I SET active=false WHERE %I IS NULL AND active=true', v_table, v_col);
-          GET DIAGNOSTICS v_rows = ROW_COUNT;
-        ELSE
-          v_rows := v_null_count::int;
-        END IF;
-        v_total_deactivated := v_total_deactivated + v_rows;
-      ELSIF v_has_status THEN
-        v_action := 'deactivated';
-        IF NOT _dry_run THEN
-          EXECUTE format(
-            'UPDATE public.%I SET status=''inactive'' WHERE %I IS NULL AND status<>''inactive''',
-            v_table, v_col
-          );
-          GET DIAGNOSTICS v_rows = ROW_COUNT;
-        ELSE
-          v_rows := v_null_count::int;
-        END IF;
-        v_total_deactivated := v_total_deactivated + v_rows;
-      ELSE
-        v_rows := v_null_count::int;
-        v_total_manual := v_total_manual + v_rows;
-      END IF;
-
-      INSERT INTO public.ownership_repair_logs(
-        report_id, table_name, owner_column, issue_type, action,
-        rows_affected, dry_run, triggered_by, triggered_by_label,
-        notes
-      ) VALUES (
-        v_report.id, v_table, v_col, 'null_owner', v_action,
-        v_rows, _dry_run, v_caller, _triggered_by_label,
-        CASE WHEN v_action='manual_review'
-          THEN 'Sem coluna active/is_active/status; tabela não está na allowlist de exclusão segura'
-          ELSE NULL END
-      );
-
-      v_results := v_results || jsonb_build_object(
-        'table', v_table, 'owner_column', v_col,
-        'issue', 'null_owner', 'action', v_action,
-        'rows_affected', v_rows, 'dry_run', _dry_run
-      );
-    END IF;
-
-    IF v_orphan_count > 0 THEN
-      v_action := 'manual_review';
-      v_rows := 0;
-
-      IF v_table = ANY(v_safe_delete) THEN
-        v_action := 'deleted';
-        IF NOT _dry_run THEN
-          EXECUTE format(
-            'DELETE FROM public.%I t WHERE t.%I IS NOT NULL
-              AND NOT EXISTS (SELECT 1 FROM auth.users u WHERE u.id = t.%I::uuid)',
-            v_table, v_col, v_col
-          );
-          GET DIAGNOSTICS v_rows = ROW_COUNT;
-        ELSE
-          v_rows := v_orphan_count::int;
-        END IF;
-        v_total_deleted := v_total_deleted + v_rows;
-      ELSIF v_has_is_active THEN
-        v_action := 'deactivated';
-        IF NOT _dry_run THEN
-          EXECUTE format(
-            'UPDATE public.%I t SET is_active=false WHERE t.%I IS NOT NULL AND t.is_active=true
-              AND NOT EXISTS (SELECT 1 FROM auth.users u WHERE u.id = t.%I::uuid)',
-            v_table, v_col, v_col
-          );
-          GET DIAGNOSTICS v_rows = ROW_COUNT;
-        ELSE
-          v_rows := v_orphan_count::int;
-        END IF;
-        v_total_deactivated := v_total_deactivated + v_rows;
-      ELSIF v_has_active THEN
-        v_action := 'deactivated';
-        IF NOT _dry_run THEN
-          EXECUTE format(
-            'UPDATE public.%I t SET active=false WHERE t.%I IS NOT NULL AND t.active=true
-              AND NOT EXISTS (SELECT 1 FROM auth.users u WHERE u.id = t.%I::uuid)',
-            v_table, v_col, v_col
-          );
-          GET DIAGNOSTICS v_rows = ROW_COUNT;
-        ELSE
-          v_rows := v_orphan_count::int;
-        END IF;
-        v_total_deactivated := v_total_deactivated + v_rows;
-      ELSIF v_has_status THEN
-        v_action := 'deactivated';
-        IF NOT _dry_run THEN
-          EXECUTE format(
-            'UPDATE public.%I t SET status=''inactive'' WHERE t.%I IS NOT NULL AND t.status<>''inactive''
-              AND NOT EXISTS (SELECT 1 FROM auth.users u WHERE u.id = t.%I::uuid)',
-            v_table, v_col, v_col
-          );
-          GET DIAGNOSTICS v_rows = ROW_COUNT;
-        ELSE
-          v_rows := v_orphan_count::int;
-        END IF;
-        v_total_deactivated := v_total_deactivated + v_rows;
-      ELSE
-        v_rows := v_orphan_count::int;
-        v_total_manual := v_total_manual + v_rows;
-      END IF;
-
-      INSERT INTO public.ownership_repair_logs(
-        report_id, table_name, owner_column, issue_type, action,
-        rows_affected, dry_run, triggered_by, triggered_by_label,
-        notes
-      ) VALUES (
-        v_report.id, v_table, v_col, 'missing_user', v_action,
-        v_rows, _dry_run, v_caller, _triggered_by_label,
-        CASE WHEN v_action='manual_review'
-          THEN 'Sem coluna active/is_active/status; reparo automático inseguro — revisar manualmente'
-          ELSE NULL END
-      );
-
-      v_results := v_results || jsonb_build_object(
-        'table', v_table, 'owner_column', v_col,
-        'issue', 'missing_user', 'action', v_action,
-        'rows_affected', v_rows, 'dry_run', _dry_run
-      );
-    END IF;
-  END LOOP;
-
-  RETURN jsonb_build_object(
-    'report_id', v_report.id,
-    'dry_run', _dry_run,
-    'totals', jsonb_build_object(
-      'deleted', v_total_deleted,
-      'deactivated', v_total_deactivated,
-      'manual_review', v_total_manual
-    ),
-    'actions', v_results
-  );
-END;
-$function$
 ;
 
 CREATE OR REPLACE FUNCTION public.magic_up_get_campaign(_campaign_id uuid)
@@ -1081,26 +611,6 @@ AS $function$
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.check_ip_access(_ip text)
- RETURNS text
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _type TEXT;
-BEGIN
-  SELECT list_type INTO _type
-  FROM public.ip_access_control
-  WHERE ip_address = _ip
-    AND (expires_at IS NULL OR expires_at > now())
-  LIMIT 1;
-  
-  RETURN _type;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.clear_auth_attempts(_email text)
  RETURNS void
  LANGUAGE sql
@@ -1108,31 +618,6 @@ CREATE OR REPLACE FUNCTION public.clear_auth_attempts(_email text)
 AS $function$
     DELETE FROM public.auth_login_attempts WHERE email = _email;
 $function$
-;
-
-CREATE OR REPLACE FUNCTION public.lookup_request_id(_request_id text)
- RETURNS jsonb
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE v_webhook_events jsonb;
-BEGIN
-  IF NOT (public.has_role(auth.uid(), 'admin'::app_role) OR public.has_role(auth.uid(), 'dev'::app_role)) THEN
-    RAISE EXCEPTION 'forbidden' USING ERRCODE = '42501';
-  END IF;
-  IF _request_id IS NULL OR length(_request_id) < 8 OR length(_request_id) > 128 THEN
-    RAISE EXCEPTION 'invalid_request_id' USING ERRCODE = '22023';
-  END IF;
-  SELECT COALESCE(jsonb_agg(row_to_json(r) ORDER BY (r->>'occurred_at')), '[]'::jsonb) INTO v_webhook_events FROM (
-    SELECT occurred_at, source, direction, event_type, endpoint, http_status, duration_ms,
-           attempt, success, error_class, error_message, payload_bytes
-    FROM public.webhook_delivery_metrics WHERE request_id = _request_id
-    ORDER BY occurred_at ASC LIMIT 200
-  ) r;
-  RETURN jsonb_build_object('request_id', _request_id, 'webhook_events', v_webhook_events,
-                            'event_count', jsonb_array_length(v_webhook_events));
-END; $function$
 ;
 
 CREATE OR REPLACE FUNCTION public.check_auth_throttling(_email text, _ip text)
@@ -1172,121 +657,6 @@ BEGIN
     END IF;
 END;
 $function$
-;
-
-CREATE OR REPLACE FUNCTION public.check_hardening_status()
- RETURNS jsonb
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _is_admin boolean; _private_buckets int; _sensitive_realtime int;
-  _pg_trgm_in_extensions boolean; _cleanup_job_active boolean;
-BEGIN
-  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin')
-    INTO _is_admin;
-  IF NOT _is_admin THEN RAISE EXCEPTION 'Admin only'; END IF;
-  SELECT count(*) INTO _private_buckets FROM storage.buckets
-    WHERE id IN ('personalization-images','product-videos','supplier-logos','component-media')
-      AND public = false;
-  SELECT count(*) INTO _sensitive_realtime FROM pg_publication_tables
-    WHERE pubname = 'supabase_realtime' AND schemaname = 'public'
-      AND tablename IN ('discount_approval_requests','kit_variants','kit_comments');
-  SELECT EXISTS (SELECT 1 FROM pg_extension e JOIN pg_namespace n ON n.oid = e.extnamespace
-    WHERE e.extname = 'pg_trgm' AND n.nspname = 'extensions') INTO _pg_trgm_in_extensions;
-  SELECT EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-security-logs-daily' AND active = true)
-    INTO _cleanup_job_active;
-  RETURN jsonb_build_object(
-    'private_buckets_count', _private_buckets, 'private_buckets_ok', _private_buckets = 4,
-    'sensitive_realtime_count', _sensitive_realtime, 'realtime_isolation_ok', _sensitive_realtime = 0,
-    'pg_trgm_in_extensions', _pg_trgm_in_extensions, 'cleanup_job_active', _cleanup_job_active,
-    'mfa_enforced_in_app', true, 'checked_at', now()
-  );
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.consume_step_up_token(_token text, _expected_action step_up_action, _expected_target text DEFAULT NULL::text)
- RETURNS boolean
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _uid UUID := auth.uid();
-  _token_h TEXT;
-  _row RECORD;
-BEGIN
-  IF _uid IS NULL THEN RETURN false; END IF;
-  IF _token IS NULL OR length(_token) < 32 THEN RETURN false; END IF;
-
-  IF NOT public.is_dev(_uid) THEN
-    INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, metadata)
-    VALUES (_uid, _expected_action, _expected_target, 'unauthorized', '{"reason":"role_lost_at_consume"}'::jsonb);
-    RETURN false;
-  END IF;
-
-  _token_h := encode(digest(_token, 'sha256'), 'hex');
-
-  SELECT * INTO _row FROM public.step_up_tokens
-  WHERE token_hash = _token_h AND user_id = _uid AND consumed = false AND expires_at > now()
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, metadata)
-    VALUES (_uid, _expected_action, _expected_target, 'failed', '{"reason":"token_invalid_or_expired"}'::jsonb);
-    RETURN false;
-  END IF;
-
-  IF _row.action <> _expected_action THEN
-    INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, token_id, metadata)
-    VALUES (_uid, _expected_action, _expected_target, 'failed', _row.id, jsonb_build_object('reason','action_mismatch','expected',_expected_action,'got',_row.action));
-    RETURN false;
-  END IF;
-
-  IF _expected_target IS NOT NULL AND _row.target_ref IS DISTINCT FROM _expected_target THEN
-    INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, token_id, metadata)
-    VALUES (_uid, _expected_action, _expected_target, 'failed', _row.id, '{"reason":"target_mismatch"}'::jsonb);
-    RETURN false;
-  END IF;
-
-  UPDATE public.step_up_tokens SET consumed = true, consumed_at = now() WHERE id = _row.id;
-
-  INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, token_id)
-  VALUES (_uid, _expected_action, _expected_target, 'token_consumed', _row.id);
-
-  RETURN true;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.ensure_default_favorite_list(_user_id uuid)
- RETURNS uuid
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  v_list_id uuid;
-BEGIN
-  -- Se já existe default, retorna
-  SELECT id INTO v_list_id 
-  FROM public.favorite_lists 
-  WHERE user_id = _user_id AND is_default = true 
-  LIMIT 1;
-  
-  IF v_list_id IS NOT NULL THEN
-    RETURN v_list_id;
-  END IF;
-  
-  -- Cria lista default
-  INSERT INTO public.favorite_lists (
-    user_id, name, description, color, icon, is_default, position
-  ) VALUES (
-    _user_id, 'Meus Favoritos', 'Lista padrão de favoritos', '#3B82F6', 'Heart', true, 0
-  ) RETURNING id INTO v_list_id;
-  
-  RETURN v_list_id;
-END $function$
 ;
 
 CREATE OR REPLACE FUNCTION public.expert_chat_send_message(_conv_id uuid, _role text, _content text)
@@ -1612,37 +982,6 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.get_active_novelties(p_supplier_code character varying DEFAULT NULL::character varying, p_limit integer DEFAULT 50, p_offset integer DEFAULT 0, p_only_highlighted boolean DEFAULT false)
- RETURNS TABLE(novelty_id uuid, product_id uuid, product_name text, product_sku text, supplier_code character varying, supplier_product_code character varying, detected_at timestamp with time zone, expires_at timestamp with time zone, days_remaining integer, is_highlighted boolean)
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-    RETURN QUERY
-    SELECT 
-        n.id AS novelty_id,
-        n.product_id,
-        p.name AS product_name,
-        p.sku AS product_sku,
-        n.supplier_code,
-        n.supplier_product_code,
-        n.detected_at,
-        n.expires_at,
-        EXTRACT(DAY FROM (n.expires_at - NOW()))::INTEGER AS days_remaining,
-        n.is_highlighted
-    FROM public.product_novelties n
-    JOIN public.products p ON n.product_id = p.id
-    WHERE n.is_active = true
-      AND n.expires_at > NOW()
-      AND (p_supplier_code IS NULL OR n.supplier_code = p_supplier_code)
-      AND (p_only_highlighted = false OR n.is_highlighted = true)
-    ORDER BY n.detected_at DESC
-    LIMIT p_limit
-    OFFSET p_offset;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.get_active_step_up_tokens()
  RETURNS jsonb
  LANGUAGE sql
@@ -1653,69 +992,6 @@ AS $function$
   FROM public.step_up_tokens
   WHERE user_id = auth.uid() AND consumed = false AND expires_at > now();
 $function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_app_health_summary(_minutes integer DEFAULT 60)
- RETURNS jsonb
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  v_since timestamptz := now() - make_interval(mins => GREATEST(1, LEAST(_minutes, 1440)));
-  v_kpis jsonb; v_routes jsonb; v_webhooks jsonb; v_edges jsonb; v_vitals jsonb;
-BEGIN
-  IF NOT (public.has_role(auth.uid(), 'admin'::app_role) OR public.has_role(auth.uid(), 'dev'::app_role)) THEN
-    RAISE EXCEPTION 'forbidden' USING ERRCODE = '42501';
-  END IF;
-  SELECT jsonb_build_object(
-    'total', COUNT(*), 'req_per_min', ROUND((COUNT(*)::numeric / GREATEST(1, _minutes))::numeric, 2),
-    'pct_4xx', CASE WHEN COUNT(*) = 0 THEN 0 ELSE ROUND((COUNT(*) FILTER (WHERE http_status BETWEEN 400 AND 499))::numeric * 100.0 / COUNT(*), 2) END,
-    'pct_5xx', CASE WHEN COUNT(*) = 0 THEN 0 ELSE ROUND((COUNT(*) FILTER (WHERE http_status >= 500))::numeric * 100.0 / COUNT(*), 2) END,
-    'p95_ms', COALESCE(percentile_disc(0.95) WITHIN GROUP (ORDER BY duration_ms), 0),
-    'p99_ms', COALESCE(percentile_disc(0.99) WITHIN GROUP (ORDER BY duration_ms), 0),
-    'window_minutes', _minutes, 'since', v_since
-  ) INTO v_kpis FROM public.webhook_delivery_metrics WHERE occurred_at >= v_since;
-  SELECT COALESCE(jsonb_agg(row_to_json(r)), '[]'::jsonb) INTO v_routes FROM (
-    SELECT endpoint, direction, COUNT(*) AS total,
-      COUNT(*) FILTER (WHERE http_status BETWEEN 400 AND 499) AS count_4xx,
-      COUNT(*) FILTER (WHERE http_status >= 500) AS count_5xx,
-      ROUND((COUNT(*) FILTER (WHERE http_status >= 400))::numeric * 100.0 / NULLIF(COUNT(*),0), 2) AS error_rate_pct,
-      MAX(occurred_at) FILTER (WHERE http_status >= 400) AS last_error_at
-    FROM public.webhook_delivery_metrics
-    WHERE occurred_at >= v_since AND endpoint IS NOT NULL
-    GROUP BY endpoint, direction HAVING COUNT(*) FILTER (WHERE http_status >= 400) > 0
-    ORDER BY (COUNT(*) FILTER (WHERE http_status >= 400)) DESC LIMIT 20
-  ) r;
-  SELECT COALESCE(jsonb_agg(row_to_json(r)), '[]'::jsonb) INTO v_webhooks FROM (
-    SELECT source, direction, COUNT(*) AS total, COUNT(*) FILTER (WHERE NOT success) AS failures,
-      ROUND((COUNT(*) FILTER (WHERE NOT success))::numeric * 100.0 / NULLIF(COUNT(*),0), 2) AS failure_rate_pct,
-      COALESCE(percentile_disc(0.95) WITHIN GROUP (ORDER BY duration_ms), 0) AS p95_ms,
-      MAX(occurred_at) FILTER (WHERE NOT success) AS last_failure_at
-    FROM public.webhook_delivery_metrics WHERE occurred_at >= v_since
-    GROUP BY source, direction ORDER BY failures DESC, total DESC LIMIT 30
-  ) r;
-  SELECT COALESCE(jsonb_agg(row_to_json(r)), '[]'::jsonb) INTO v_edges FROM (
-    SELECT source AS edge_function, COUNT(*) AS total,
-      COALESCE(percentile_disc(0.50) WITHIN GROUP (ORDER BY duration_ms), 0) AS p50_ms,
-      COALESCE(percentile_disc(0.95) WITHIN GROUP (ORDER BY duration_ms), 0) AS p95_ms,
-      COALESCE(percentile_disc(0.99) WITHIN GROUP (ORDER BY duration_ms), 0) AS p99_ms,
-      ROUND(AVG(duration_ms)::numeric, 0) AS avg_ms, MAX(duration_ms) AS max_ms
-    FROM public.webhook_delivery_metrics WHERE occurred_at >= v_since
-    GROUP BY source ORDER BY p95_ms DESC NULLS LAST LIMIT 30
-  ) r;
-  SELECT COALESCE(jsonb_agg(row_to_json(r)), '[]'::jsonb) INTO v_vitals FROM (
-    SELECT metric_name AS name, COUNT(*) AS total,
-      COALESCE(percentile_disc(0.75) WITHIN GROUP (ORDER BY metric_value), 0) AS p75,
-      COUNT(*) FILTER (WHERE rating = 'good') AS count_good,
-      COUNT(*) FILTER (WHERE rating = 'needs-improvement') AS count_needs_improvement,
-      COUNT(*) FILTER (WHERE rating = 'poor') AS count_poor,
-      ROUND((COUNT(*) FILTER (WHERE rating = 'good'))::numeric * 100.0 / NULLIF(COUNT(*), 0), 1) AS good_pct
-    FROM public.app_vitals WHERE created_at >= v_since GROUP BY metric_name ORDER BY metric_name ASC
-  ) r;
-  RETURN jsonb_build_object('kpis', v_kpis, 'top_routes_by_error', v_routes,
-                            'webhooks_by_source', v_webhooks, 'edges_by_latency', v_edges, 'web_vitals', v_vitals);
-END; $function$
 ;
 
 CREATE OR REPLACE FUNCTION public.get_best_supplier_for_quantity(p_variant_id uuid, p_quantity integer, p_criteria character varying DEFAULT 'stock'::character varying)
@@ -1789,29 +1065,6 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.get_client_seasonality(_client_id uuid, _months integer DEFAULT 24)
- RETURNS TABLE(year integer, month integer, quotes_count bigint, total_revenue numeric, avg_ticket numeric)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT
-    EXTRACT(YEAR FROM q.created_at)::int AS year,
-    EXTRACT(MONTH FROM q.created_at)::int AS month,
-    COUNT(*)::bigint AS quotes_count,
-    COALESCE(SUM(q.total), 0)::numeric AS total_revenue,
-    COALESCE(AVG(q.total), 0)::numeric AS avg_ticket
-  FROM public.quotes q
-  WHERE q.client_id = _client_id
-    AND q.status IN ('sent','viewed','approved','converted','pending_approval')
-    AND q.created_at >= now() - (GREATEST(_months, 1) || ' months')::interval
-    AND (q.seller_id = auth.uid()
-      OR has_role(auth.uid(), 'admin'::app_role)
-      OR has_role(auth.uid(), 'manager'::app_role))
-  GROUP BY 1, 2 ORDER BY 1, 2;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.get_cloudflare_stats()
  RETURNS TABLE(total_images bigint, images_with_cloudflare bigint, images_pending bigint, total_videos bigint, videos_with_cloudflare bigint, videos_pending bigint, total_sync_logs bigint, sync_success bigint, sync_errors bigint, last_sync_at timestamp with time zone)
  LANGUAGE plpgsql
@@ -1836,29 +1089,6 @@ BEGIN
         (SELECT COUNT(*) FROM media_sync_log WHERE status = 'error')::BIGINT,
         (SELECT MAX(created_at) FROM media_sync_log)::TIMESTAMPTZ;
 END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_collections_weekly_count(_weeks integer DEFAULT 8)
- RETURNS TABLE(week_start date, item_count bigint)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  WITH weeks AS (
-    SELECT generate_series(
-      date_trunc('week', now())::date - (GREATEST(_weeks, 1) - 1) * 7,
-      date_trunc('week', now())::date,
-      '7 days'::interval
-    )::date AS week_start
-  )
-  SELECT w.week_start, COALESCE(COUNT(ci.id), 0)::bigint AS item_count
-  FROM weeks w
-  LEFT JOIN public.collection_items ci
-    ON date_trunc('week', ci.created_at)::date = w.week_start
-    AND EXISTS (SELECT 1 FROM public.collections c WHERE c.id = ci.collection_id AND c.user_id = auth.uid())
-  GROUP BY w.week_start
-  ORDER BY w.week_start ASC;
 $function$
 ;
 
@@ -1915,129 +1145,6 @@ AS $function$
     WHERE vcd.variant_id = p_variant_id
        OR (vcd.product_id = pv.product_id AND vcd.variant_id IS NULL)
     ORDER BY cd.date_month, cd.date_day;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_connection_failure_window_minutes()
- RETURNS integer
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT COALESCE(
-    (SELECT (value)::text::int FROM public.system_settings WHERE key = 'connection_failure_window_minutes'),
-    30
-  );
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_favorites_weekly_count(_weeks integer DEFAULT 8)
- RETURNS TABLE(week_start date, item_count bigint)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  WITH weeks AS (
-    SELECT generate_series(
-      date_trunc('week', now())::date - (GREATEST(_weeks, 1) - 1) * 7,
-      date_trunc('week', now())::date,
-      '7 days'::interval
-    )::date AS week_start
-  )
-  SELECT w.week_start, COALESCE(COUNT(fi.id), 0)::bigint AS item_count
-  FROM weeks w
-  LEFT JOIN public.favorite_items fi
-    ON fi.user_id = auth.uid() AND date_trunc('week', fi.added_at)::date = w.week_start
-  GROUP BY w.week_start
-  ORDER BY w.week_start ASC;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_industry_benchmark_stats(_company_ids uuid[], _days integer DEFAULT 180)
- RETURNS TABLE(total_clients_sampled integer, avg_ltv numeric, avg_ticket numeric, avg_quotes_per_client numeric, avg_items_per_quote numeric, top_product_name text, total_revenue numeric)
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  v_top_product_name text;
-BEGIN
-  -- Top produto pré-calculado (subquery isolada)
-  SELECT qi.product_name INTO v_top_product_name
-  FROM public.quote_items qi
-  JOIN public.quotes q ON q.id = qi.quote_id
-  WHERE q.client_id = ANY(_company_ids)
-    AND q.status IS DISTINCT FROM 'cancelled'
-    AND q.created_at >= now() - make_interval(days => _days)
-  GROUP BY qi.product_name
-  ORDER BY SUM(qi.quantity) DESC
-  LIMIT 1;
-
-  RETURN QUERY
-  WITH quote_stats AS (
-    SELECT 
-      q.client_id,
-      COUNT(*)::integer            AS quotes_count,
-      COALESCE(AVG(q.total), 0)    AS avg_total,
-      COALESCE(SUM(q.total), 0)    AS client_revenue
-    FROM public.quotes q
-    WHERE q.client_id = ANY(_company_ids)
-      AND q.status IS DISTINCT FROM 'cancelled'
-      AND q.status IS DISTINCT FROM 'draft'
-      AND q.created_at >= now() - make_interval(days => _days)
-    GROUP BY q.client_id
-  ),
-  items_stats AS (
-    SELECT 
-      q.client_id,
-      AVG(item_count.cnt) AS avg_items
-    FROM public.quotes q
-    JOIN LATERAL (
-      SELECT COUNT(*)::numeric AS cnt 
-      FROM public.quote_items qi 
-      WHERE qi.quote_id = q.id
-    ) item_count ON true
-    WHERE q.client_id = ANY(_company_ids)
-      AND q.created_at >= now() - make_interval(days => _days)
-    GROUP BY q.client_id
-  )
-  SELECT 
-    COUNT(DISTINCT qs.client_id)::integer       AS total_clients_sampled,
-    COALESCE(AVG(qs.client_revenue), 0)::numeric AS avg_ltv,
-    COALESCE(AVG(qs.avg_total), 0)::numeric      AS avg_ticket,
-    COALESCE(AVG(qs.quotes_count), 0)::numeric   AS avg_quotes_per_client,
-    COALESCE(AVG(its.avg_items), 0)::numeric     AS avg_items_per_quote,
-    v_top_product_name                           AS top_product_name,
-    COALESCE(SUM(qs.client_revenue), 0)::numeric AS total_revenue
-  FROM quote_stats qs
-  LEFT JOIN items_stats its ON its.client_id = qs.client_id;
-END $function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_industry_top_products(_company_ids uuid[], _days integer DEFAULT 90, _limit integer DEFAULT 10)
- RETURNS TABLE(product_id uuid, product_name text, product_image_url text, total_quantity bigint, unique_clients bigint, unique_sellers bigint, total_revenue numeric, avg_unit_price numeric)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT 
-    oi.product_id,
-    oi.product_name,
-    oi.product_image_url,
-    SUM(oi.quantity)::bigint                                AS total_quantity,
-    COUNT(DISTINCT o.client_id)::bigint                     AS unique_clients,
-    COUNT(DISTINCT o.seller_id)::bigint                     AS unique_sellers,
-    COALESCE(SUM(oi.quantity * oi.unit_price), 0)::numeric  AS total_revenue,
-    COALESCE(AVG(oi.unit_price), 0)::numeric                AS avg_unit_price
-  FROM public.orders o
-  JOIN public.order_items oi ON oi.order_id = o.id
-  WHERE o.client_id = ANY(_company_ids)
-    AND o.status IS DISTINCT FROM 'cancelled'
-    AND o.status IS DISTINCT FROM 'draft'
-    AND o.created_at >= now() - make_interval(days => _days)
-  GROUP BY oi.product_id, oi.product_name, oi.product_image_url
-  ORDER BY SUM(oi.quantity) DESC
-  LIMIT _limit
 $function$
 ;
 
@@ -2113,23 +1220,6 @@ AS $function$
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.get_novelties_stats()
- RETURNS TABLE(total_novelties bigint, active_novelties bigint, highlighted_novelties bigint, expiring_soon bigint)
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-    RETURN QUERY
-    SELECT 
-        COUNT(*)::BIGINT AS total_novelties,
-        COUNT(*) FILTER (WHERE expires_at > NOW() AND is_active = true)::BIGINT AS active_novelties,
-        COUNT(*) FILTER (WHERE is_highlighted = true AND expires_at > NOW() AND is_active = true)::BIGINT AS highlighted_novelties,
-        COUNT(*) FILTER (WHERE expires_at BETWEEN NOW() AND NOW() + INTERVAL '7 days' AND is_active = true)::BIGINT AS expiring_soon
-    FROM public.product_novelties;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.get_pending_images_for_sync(p_limit integer DEFAULT 100)
  RETURNS TABLE(id uuid, product_id uuid, url_original text, image_type character varying, variant_id uuid, color_id uuid)
  LANGUAGE plpgsql
@@ -2177,35 +1267,6 @@ BEGIN
     LIMIT p_limit;
 END;
 $function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_platform_failure_metrics(window_minutes integer DEFAULT 60)
- RETURNS jsonb
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  window_start timestamptz := now() - make_interval(mins => COALESCE(window_minutes, 60));
-  total_calls bigint; total_503 bigint; total_cold bigint; recent_cold_at timestamptz;
-  prev_window_start timestamptz := now() - make_interval(mins => COALESCE(window_minutes, 60) * 2);
-  prev_503 bigint;
-BEGIN
-  SELECT COUNT(*), COUNT(*) FILTER (WHERE is_503 = true),
-         COUNT(*) FILTER (WHERE is_cold_start = true),
-         MAX(created_at) FILTER (WHERE is_cold_start = true)
-    INTO total_calls, total_503, total_cold, recent_cold_at
-  FROM public.query_telemetry WHERE created_at >= window_start;
-  SELECT COUNT(*) FILTER (WHERE is_503 = true) INTO prev_503
-  FROM public.query_telemetry WHERE created_at >= prev_window_start AND created_at < window_start;
-  RETURN jsonb_build_object(
-    'window_minutes', window_minutes, 'total_calls', COALESCE(total_calls, 0),
-    'total_503', COALESCE(total_503, 0), 'total_cold_starts', COALESCE(total_cold, 0),
-    'rate_503_pct', CASE WHEN COALESCE(total_calls, 0) = 0 THEN 0 ELSE ROUND(total_503::numeric / total_calls::numeric * 100, 2) END,
-    'rate_cold_start_pct', CASE WHEN COALESCE(total_calls, 0) = 0 THEN 0 ELSE ROUND(total_cold::numeric / total_calls::numeric * 100, 2) END,
-    'last_cold_start_at', recent_cold_at, 'prev_window_503', COALESCE(prev_503, 0),
-    'delta_503', COALESCE(total_503, 0) - COALESCE(prev_503, 0));
-END; $function$
 ;
 
 CREATE OR REPLACE FUNCTION public.get_step_up_audit(_user_id uuid DEFAULT NULL::uuid, _limit integer DEFAULT 100)
@@ -2289,47 +1350,6 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.get_user_recent_comparisons(p_limit integer DEFAULT 5)
- RETURNS TABLE(id uuid, name text, client_name text, items jsonb, item_count integer, updated_at timestamp with time zone)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT uc.id, uc.name, uc.client_name, uc.items, jsonb_array_length(uc.items) AS item_count, uc.updated_at
-  FROM public.user_comparisons uc
-  WHERE uc.user_id = auth.uid()
-  ORDER BY uc.updated_at DESC
-  LIMIT p_limit;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.log_rls_denial(p_table_name text, p_operation text, p_endpoint text DEFAULT NULL::text, p_query_summary text DEFAULT NULL::text, p_target_id uuid DEFAULT NULL::uuid, p_target_seller_id uuid DEFAULT NULL::uuid, p_policy_hint text DEFAULT NULL::text, p_error_code text DEFAULT NULL::text, p_error_message text DEFAULT NULL::text, p_user_agent text DEFAULT NULL::text)
- RETURNS uuid
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE v_uid UUID := auth.uid(); v_email TEXT; v_role TEXT; v_id UUID;
-BEGIN
-  IF v_uid IS NULL THEN RAISE EXCEPTION 'unauthenticated'; END IF;
-  IF p_operation NOT IN ('SELECT','INSERT','UPDATE','DELETE') THEN
-    RAISE EXCEPTION 'invalid_operation';
-  END IF;
-  SELECT email, role INTO v_email, v_role
-  FROM public.profiles WHERE user_id = v_uid LIMIT 1;
-  INSERT INTO public.rls_denial_log (
-    user_id, user_email, user_role, table_name, operation,
-    endpoint, query_summary, target_id, target_seller_id,
-    policy_hint, error_code, error_message, user_agent
-  ) VALUES (
-    v_uid, v_email, v_role, p_table_name, p_operation,
-    p_endpoint, p_query_summary, p_target_id, p_target_seller_id,
-    p_policy_hint, p_error_code, p_error_message, p_user_agent
-  ) RETURNING id INTO v_id;
-  RETURN v_id;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.get_voice_command_stats(_user_id uuid DEFAULT NULL::uuid, _days integer DEFAULT 30)
  RETURNS jsonb
  LANGUAGE sql
@@ -2343,49 +1363,6 @@ AS $function$
   WHERE created_at > now() - (_days || ' days')::interval
     AND (_user_id IS NULL OR user_id = _user_id)
     AND (_user_id IS NOT NULL OR user_id = auth.uid() OR public.is_admin(auth.uid()));
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.log_full_scope_grant(_operation text, _key_id uuid, _key_prefix text, _challenge_id uuid DEFAULT NULL::uuid, _token_id uuid DEFAULT NULL::uuid, _justification text DEFAULT NULL::text, _confirmation_phrase_ok boolean DEFAULT NULL::boolean, _expires_at timestamp with time zone DEFAULT NULL::timestamp with time zone, _ip inet DEFAULT NULL::inet, _user_agent text DEFAULT NULL::text, _request_id text DEFAULT NULL::text, _extra jsonb DEFAULT '{}'::jsonb)
- RETURNS uuid
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _uid UUID := auth.uid();
-  _action public.step_up_action;
-  _id UUID;
-BEGIN
-  IF _uid IS NULL THEN RAISE EXCEPTION 'unauthorized'; END IF;
-
-  _action := CASE _operation
-    WHEN 'escalate' THEN 'mcp_full_escalate'::public.step_up_action
-    ELSE 'mcp_full_issue'::public.step_up_action
-  END;
-
-  INSERT INTO public.step_up_audit_log (
-    user_id, action, target_ref, event_type,
-    challenge_id, token_id, ip_address, user_agent, metadata
-  ) VALUES (
-    _uid, _action, _key_id::text, 'full_scope_granted',
-    _challenge_id, _token_id, _ip, _user_agent,
-    jsonb_build_object(
-      'operation', _operation, 'key_id', _key_id, 'key_prefix', _key_prefix,
-      'expires_at', _expires_at, 'justification', _justification,
-      'verifications', jsonb_build_object(
-        'is_dev_recheck', true,
-        'step_up_token_consumed', _token_id IS NOT NULL,
-        'can_grant_mcp_full', true,
-        'confirmation_phrase_ok', COALESCE(_confirmation_phrase_ok, true),
-        'has_justification', _justification IS NOT NULL AND length(_justification) > 0
-      ),
-      'request_id', _request_id, 'granted_at', now(), 'extra', _extra
-    )
-  )
-  RETURNING id INTO _id;
-
-  RETURN _id;
-END;
 $function$
 ;
 
@@ -2440,19 +1417,6 @@ BEGIN
     SET is_deleted = false, deleted_at = NULL, is_active = true, updated_at = NOW()
     WHERE id = p_product_id;
     RETURN FOUND;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.revoke_all_user_tokens(_user_id uuid)
- RETURNS void
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  INSERT INTO public.user_token_revocations (user_id, revoked_at)
-  VALUES (_user_id, now())
-  ON CONFLICT (user_id) DO UPDATE SET revoked_at = now();
 END;
 $function$
 ;
@@ -2512,94 +1476,6 @@ BEGIN
     ON CONFLICT (user_id) DO UPDATE SET data = EXCLUDED.data, last_saved_at = now()
     RETURNING id INTO v_draft_id;
     RETURN v_draft_id;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.search_products_semantic(_query text, _products jsonb, _limit integer DEFAULT 20)
- RETURNS TABLE(product_id text, score real, matched_field text)
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _normalized_query text;
-BEGIN
-  IF _query IS NULL OR length(trim(_query)) = 0 THEN RETURN; END IF;
-  IF _products IS NULL OR jsonb_typeof(_products) <> 'array' THEN RETURN; END IF;
-  _normalized_query := lower(trim(_query));
-  RETURN QUERY
-  WITH expanded AS (
-    SELECT
-      COALESCE(p->>'id', p->>'product_id', '') AS pid,
-      lower(COALESCE(p->>'name', '')) AS pname,
-      lower(COALESCE(p->>'description', '')) AS pdesc,
-      lower(COALESCE(
-        (SELECT string_agg(t::text, ' ') FROM jsonb_array_elements_text(COALESCE(p->'tags', '[]'::jsonb)) t), ''
-      )) AS ptags,
-      lower(COALESCE(p->>'category', '')) AS pcat
-    FROM jsonb_array_elements(_products) AS p
-  ),
-  scored AS (
-    SELECT pid,
-      GREATEST(
-        similarity(pname, _normalized_query) * 1.0,
-        similarity(pdesc, _normalized_query) * 0.6,
-        similarity(ptags, _normalized_query) * 0.8,
-        similarity(pcat, _normalized_query) * 0.5
-      ) AS best_score,
-      CASE
-        WHEN similarity(pname, _normalized_query) >= similarity(pdesc, _normalized_query)
-         AND similarity(pname, _normalized_query) >= similarity(ptags, _normalized_query)
-         AND similarity(pname, _normalized_query) >= similarity(pcat, _normalized_query) THEN 'name'
-        WHEN similarity(ptags, _normalized_query) >= similarity(pdesc, _normalized_query)
-         AND similarity(ptags, _normalized_query) >= similarity(pcat, _normalized_query) THEN 'tags'
-        WHEN similarity(pdesc, _normalized_query) >= similarity(pcat, _normalized_query) THEN 'description'
-        ELSE 'category'
-      END AS field
-    FROM expanded WHERE pid <> ''
-  )
-  SELECT pid, best_score::real, field FROM scored
-  WHERE best_score > 0.05
-  ORDER BY best_score DESC
-  LIMIT GREATEST(_limit, 1);
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.search_records_rerank(_query text, _candidates jsonb)
- RETURNS TABLE(id text, score real, matched_field text)
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _q text;
-BEGIN
-  IF _query IS NULL OR length(trim(_query)) = 0 THEN RETURN; END IF;
-  IF _candidates IS NULL OR jsonb_typeof(_candidates) <> 'array' THEN RETURN; END IF;
-  _q := lower(trim(_query));
-  RETURN QUERY
-  WITH expanded AS (
-    SELECT COALESCE(c->>'id', '') AS cid,
-      lower(COALESCE(c->>'label', '')) AS clabel,
-      lower(COALESCE(c->>'sublabel', '')) AS csublabel
-    FROM jsonb_array_elements(_candidates) AS c
-  ),
-  scored AS (
-    SELECT cid,
-      GREATEST(
-        similarity(clabel, _q) * 1.0,
-        word_similarity(_q, clabel) * 0.9,
-        similarity(csublabel, _q) * 0.7,
-        word_similarity(_q, csublabel) * 0.6
-      ) AS best_score,
-      CASE WHEN similarity(clabel, _q) >= similarity(csublabel, _q) THEN 'label' ELSE 'sublabel' END AS field
-    FROM expanded WHERE cid <> ''
-  )
-  SELECT cid, best_score::real, field FROM scored
-  WHERE best_score > 0.05
-  ORDER BY best_score DESC;
 END;
 $function$
 ;
@@ -2678,143 +1554,6 @@ AS $function$
     WHERE uo.user_id = auth.uid()
     AND uo.organization_id = org_id
   );
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.validate_discount_approval_status()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  IF NEW.status NOT IN ('pending', 'approved', 'rejected') THEN
-    RAISE EXCEPTION 'Invalid discount approval status: %', NEW.status;
-  END IF;
-  RETURN NEW;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.user_is_org_member(org_id uuid)
- RETURNS boolean
- LANGUAGE plpgsql
- STABLE SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 
-    FROM public.user_organizations
-    WHERE organization_id = org_id
-      AND user_id = auth.uid()
-  );
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.verify_step_up_otp(_challenge_id uuid, _otp text)
- RETURNS TABLE(token text, expires_at timestamp with time zone)
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _uid UUID := auth.uid();
-  _row RECORD;
-  _otp_h TEXT;
-  _token TEXT;
-  _token_h TEXT;
-  _tid UUID;
-  _exp TIMESTAMPTZ;
-BEGIN
-  IF _uid IS NULL THEN RAISE EXCEPTION 'unauthorized'; END IF;
-
-  SELECT * INTO _row FROM public.step_up_challenges
-  WHERE id = _challenge_id AND user_id = _uid AND consumed = false AND expires_at > now()
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    INSERT INTO public.step_up_audit_log(user_id, event_type, challenge_id, metadata)
-    VALUES (_uid, 'failed', _challenge_id, '{"reason":"challenge_not_found_or_expired"}'::jsonb);
-    RAISE EXCEPTION 'invalid_or_expired_challenge';
-  END IF;
-
-  IF NOT _row.password_verified THEN
-    INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, challenge_id, metadata)
-    VALUES (_uid, _row.action, _row.target_ref, 'failed', _challenge_id, '{"reason":"password_not_verified"}'::jsonb);
-    RAISE EXCEPTION 'password_not_verified_first';
-  END IF;
-
-  IF _row.attempts >= _row.max_attempts THEN
-    INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, challenge_id, metadata)
-    VALUES (_uid, _row.action, _row.target_ref, 'failed', _challenge_id, '{"reason":"max_attempts"}'::jsonb);
-    RAISE EXCEPTION 'max_attempts_exceeded';
-  END IF;
-
-  _otp_h := encode(digest(_otp || _uid::text, 'sha256'), 'hex');
-
-  IF _otp_h <> _row.otp_hash THEN
-    UPDATE public.step_up_challenges SET attempts = attempts + 1 WHERE id = _challenge_id;
-    INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, challenge_id, metadata)
-    VALUES (_uid, _row.action, _row.target_ref, 'failed', _challenge_id, jsonb_build_object('reason','wrong_otp','attempt', _row.attempts + 1));
-    RAISE EXCEPTION 'invalid_otp';
-  END IF;
-
-  _token := encode(gen_random_bytes(32), 'hex');
-  _token_h := encode(digest(_token, 'sha256'), 'hex');
-  _exp := now() + interval '5 minutes';
-
-  INSERT INTO public.step_up_tokens(user_id, action, target_ref, token_hash, challenge_id, expires_at)
-  VALUES (_uid, _row.action, _row.target_ref, _token_h, _challenge_id, _exp)
-  RETURNING id INTO _tid;
-
-  UPDATE public.step_up_challenges
-    SET otp_verified = true, consumed = true
-    WHERE id = _challenge_id;
-
-  INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, challenge_id, token_id)
-  VALUES (_uid, _row.action, _row.target_ref, 'otp_verified', _challenge_id, _tid);
-  INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, challenge_id, token_id)
-  VALUES (_uid, _row.action, _row.target_ref, 'token_issued', _challenge_id, _tid);
-
-  RETURN QUERY SELECT _token, _exp;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_kit_owner(_kit_id uuid, _user_id uuid)
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT EXISTS (SELECT 1 FROM public.custom_kits WHERE id = _kit_id AND user_id = _user_id);
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.record_mcp_access_violation(_user_id uuid, _reason text, _source text, _operation text DEFAULT NULL::text, _target_key_id uuid DEFAULT NULL::uuid, _ip text DEFAULT NULL::text, _user_agent text DEFAULT NULL::text, _request_id text DEFAULT NULL::text, _details jsonb DEFAULT '{}'::jsonb)
- RETURNS uuid
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  v_id UUID;
-BEGIN
-  INSERT INTO public.mcp_access_violations (
-    user_id, reason, source, operation, target_key_id,
-    ip_address, user_agent, request_id, details
-  ) VALUES (
-    _user_id, _reason, _source, _operation, _target_key_id,
-    _ip, _user_agent, _request_id, COALESCE(_details, '{}'::jsonb)
-  )
-  RETURNING id INTO v_id;
-
-  PERFORM public.check_mcp_abuse_threshold(_user_id, _ip);
-
-  RETURN v_id;
-EXCEPTION WHEN OTHERS THEN
-  RAISE WARNING 'record_mcp_access_violation failed: %', SQLERRM;
-  RETURN NULL;
-END;
 $function$
 ;
 
@@ -2908,64 +1647,11 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.increment_kit_template_usage(_template_id uuid)
- RETURNS integer
- LANGUAGE sql
- SET search_path TO 'public'
-AS $function$
-  UPDATE public.kit_templates 
-  SET usage_count = usage_count + 1
-  WHERE id = _template_id AND is_active = true
-  RETURNING usage_count;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.can_grant_mcp_full(_user_id uuid)
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$ SELECT public.is_dev(_user_id); $function$
-;
-
-CREATE OR REPLACE FUNCTION public.enforce_seller_id_owner()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  -- Força seller_id ao auth.uid() na inserção (impede impersonação)
-  IF NEW.seller_id IS NULL OR NEW.seller_id <> auth.uid() THEN
-    NEW.seller_id := auth.uid();
-  END IF;
-  RETURN NEW;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.purge_expired_step_up_artifacts()
  RETURNS integer
  LANGUAGE sql
  SET search_path TO 'public'
 AS $function$ SELECT public.cleanup_orphan_step_up_artifacts() + public.cleanup_expired_step_up_tokens(); $function$
-;
-
-CREATE OR REPLACE FUNCTION public.fill_integration_credential_metadata()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  NEW.length := COALESCE(char_length(NEW.secret_value), 0);
-  IF NEW.length >= 4 THEN
-    NEW.masked_suffix := right(NEW.secret_value, 4);
-  ELSE
-    NEW.masked_suffix := NEW.secret_value;
-  END IF;
-  NEW.updated_at := now();
-  RETURN NEW;
-END;
-$function$
 ;
 
 CREATE OR REPLACE FUNCTION public.fn_dar_set_snapshot_hash()
@@ -2989,78 +1675,11 @@ CREATE OR REPLACE FUNCTION public.fn_force_user_logout()
 AS $function$ BEGIN RETURN NEW; END; $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.generate_secure_token()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  NEW.token := encode(gen_random_bytes(32), 'hex');
-  RETURN NEW;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.invalidate_used_approval_token()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  IF NEW.responded_at IS NOT NULL AND OLD.responded_at IS NULL THEN
-    NEW.status := 'responded';
-    NEW.expires_at := now();
-  END IF;
-  RETURN NEW;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.magic_up_audit_changes()
  RETURNS trigger
  LANGUAGE plpgsql
  SET search_path TO 'public'
 AS $function$ BEGIN RETURN NEW; END; $function$
-;
-
-CREATE OR REPLACE FUNCTION public.validate_ip_access_control()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  IF NEW.list_type NOT IN ('allow', 'block') THEN
-    RAISE EXCEPTION 'Invalid list_type: must be allow or block';
-  END IF;
-  RETURN NEW;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.validate_secret_rotation_action_type()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  IF NEW.action_type NOT IN ('set', 'rotate') THEN
-    RAISE EXCEPTION 'Invalid action_type: must be set or rotate';
-  END IF;
-  RETURN NEW;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.set_magic_up_updated_at()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_temp'
-AS $function$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$function$
 ;
 
 CREATE OR REPLACE FUNCTION public.process_step_up_queue()
@@ -3101,36 +1720,6 @@ BEGIN
 END $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.get_top_collected_products(_days integer DEFAULT 7, _limit integer DEFAULT 6)
- RETURNS TABLE(product_id text, col_count bigint)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT ci.product_id, COUNT(*)::bigint AS col_count
-  FROM public.collection_items ci
-  WHERE ci.created_at >= (now() - make_interval(days => GREATEST(_days, 1)))
-  GROUP BY ci.product_id
-  ORDER BY col_count DESC, MAX(ci.created_at) DESC
-  LIMIT GREATEST(_limit, 1);
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_top_compared_products(p_limit integer DEFAULT 6)
- RETURNS TABLE(product_id text, comparison_count bigint)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT (item->>'productId')::text AS product_id, count(*)::bigint AS comparison_count
-  FROM public.user_comparisons, jsonb_array_elements(items) AS item
-  WHERE updated_at > now() - interval '30 days'
-  GROUP BY (item->>'productId')
-  ORDER BY comparison_count DESC
-  LIMIT p_limit;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.get_mcp_key_status(_key_id uuid)
  RETURNS jsonb
  LANGUAGE sql
@@ -3160,19 +1749,6 @@ BEGIN
 END $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role app_role)
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT EXISTS (
-    SELECT 1 FROM public.user_roles
-    WHERE user_id = _user_id AND role = _role
-  );
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.log_step_up_audit(_event_type text, _action step_up_action DEFAULT NULL::step_up_action, _metadata jsonb DEFAULT '{}'::jsonb)
  RETURNS uuid
  LANGUAGE plpgsql
@@ -3199,53 +1775,6 @@ CREATE OR REPLACE FUNCTION public.mcp_record_access_violation(_key_id uuid, _rea
  LANGUAGE sql
  SET search_path TO 'public'
 AS $function$ SELECT public.mcp_audit_violation(_key_id, _reason, _details); $function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_dev(_user_id uuid DEFAULT auth.uid())
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT public.has_role(_user_id, 'dev'::public.app_role);
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.enforce_created_by_owner()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE v_uid uuid := auth.uid();
-BEGIN
-  IF v_uid IS NULL THEN RETURN NEW; END IF;
-  IF NEW.created_by IS NULL THEN NEW.created_by := v_uid; RETURN NEW; END IF;
-  IF NEW.created_by <> v_uid AND NOT public._can_act_on_behalf_of_others() THEN
-    RAISE EXCEPTION 'Não autorizado: created_by (%) difere do usuário autenticado (%).',
-      NEW.created_by, v_uid USING ERRCODE = '42501';
-  END IF;
-  RETURN NEW;
-EXCEPTION
-  WHEN insufficient_privilege THEN RAISE;
-  WHEN OTHERS THEN
-    RAISE WARNING 'enforce_created_by_owner failed: %', SQLERRM;
-    RETURN NEW;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public._can_act_on_behalf_of_others()
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT auth.uid() IS NULL
-    OR public.has_role(auth.uid(), 'admin'::app_role)
-    OR public.has_role(auth.uid(), 'manager'::app_role)
-    OR public.has_role(auth.uid(), 'supervisor'::app_role)
-    OR public.has_role(auth.uid(), 'dev'::app_role);
-$function$
 ;
 
 CREATE OR REPLACE FUNCTION public.has_active_step_up_challenge(_action step_up_action DEFAULT NULL::step_up_action)
@@ -3282,33 +1811,6 @@ BEGIN
 END $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.get_bundle_suggestions(_product_id uuid)
- RETURNS TABLE(product_id uuid, product_name text, product_image_url text, cooccurrence_count bigint, frequency_percent numeric)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  WITH anchor_quotes AS (
-    SELECT DISTINCT quote_id FROM public.quote_items WHERE product_id = _product_id
-  ),
-  total AS (SELECT COUNT(*)::numeric AS n FROM anchor_quotes),
-  cooc AS (
-    SELECT qi.product_id, MAX(qi.product_name) AS product_name,
-      MAX(qi.product_image_url) AS product_image_url,
-      COUNT(DISTINCT qi.quote_id) AS cnt
-    FROM public.quote_items qi
-    JOIN anchor_quotes aq ON aq.quote_id = qi.quote_id
-    WHERE qi.product_id IS NOT NULL AND qi.product_id <> _product_id
-    GROUP BY qi.product_id
-  )
-  SELECT c.product_id, c.product_name, c.product_image_url, c.cnt AS cooccurrence_count,
-    ROUND((c.cnt::numeric / NULLIF((SELECT n FROM total), 0)) * 100, 1) AS frequency_percent
-  FROM cooc c, total
-  WHERE total.n >= 3 AND (c.cnt::numeric / NULLIF(total.n, 0)) >= 0.30
-  ORDER BY c.cnt DESC LIMIT 5;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.restore_collection_item_from_trash(_item_id uuid)
  RETURNS boolean
  LANGUAGE plpgsql
@@ -3339,56 +1841,6 @@ CREATE OR REPLACE FUNCTION public.refresh_full_scope_grants_view()
  LANGUAGE sql
  SET search_path TO 'public'
 AS $function$ SELECT 1; $function$
-;
-
-CREATE OR REPLACE FUNCTION public.check_rate_limit(_identifier text, _endpoint text, _max_requests integer DEFAULT 60, _window_seconds integer DEFAULT 60, _block_duration_seconds integer DEFAULT 3600)
- RETURNS jsonb
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _row record;
-  _now timestamptz := now();
-  _window_start timestamptz := _now - make_interval(secs => _window_seconds);
-BEGIN
-  INSERT INTO public.request_rate_limits (identifier, endpoint, request_count, window_start)
-  VALUES (_identifier, _endpoint, 1, _now)
-  ON CONFLICT (identifier, endpoint) DO UPDATE
-  SET 
-    request_count = CASE 
-      WHEN request_rate_limits.window_start < _window_start THEN 1
-      ELSE request_rate_limits.request_count + 1
-    END,
-    window_start = CASE
-      WHEN request_rate_limits.window_start < _window_start THEN _now
-      ELSE request_rate_limits.window_start
-    END,
-    blocked_until = CASE
-      WHEN request_rate_limits.blocked_until IS NOT NULL AND request_rate_limits.blocked_until > _now 
-        THEN request_rate_limits.blocked_until
-      WHEN request_rate_limits.window_start >= _window_start AND request_rate_limits.request_count + 1 > _max_requests
-        THEN _now + make_interval(secs => _block_duration_seconds)
-      ELSE NULL
-    END,
-    updated_at = _now
-  RETURNING * INTO _row;
-
-  IF _row.blocked_until IS NOT NULL AND _row.blocked_until > _now THEN
-    RETURN jsonb_build_object('allowed', false, 'reason', 'blocked',
-      'blocked_until', _row.blocked_until,
-      'retry_after_seconds', EXTRACT(EPOCH FROM (_row.blocked_until - _now))::integer);
-  END IF;
-
-  IF _row.request_count > _max_requests THEN
-    RETURN jsonb_build_object('allowed', false, 'reason', 'rate_exceeded',
-      'count', _row.request_count, 'limit', _max_requests,
-      'retry_after_seconds', _block_duration_seconds);
-  END IF;
-
-  RETURN jsonb_build_object('allowed', true, 'count', _row.request_count,
-    'limit', _max_requests, 'remaining', GREATEST(_max_requests - _row.request_count, 0));
-END;
-$function$
 ;
 
 CREATE OR REPLACE FUNCTION public.mcp_audit_violation(_key_id uuid, _reason text, _details jsonb DEFAULT '{}'::jsonb)
@@ -3490,66 +1942,6 @@ CREATE OR REPLACE FUNCTION public.check_geo_country_allowed(_country_code text)
  STABLE
  SET search_path TO 'public'
 AS $function$ SELECT EXISTS(SELECT 1 FROM public.geo_allowed_countries WHERE country_code = upper(_country_code)); $function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_org_admin(org_id uuid)
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  select exists (
-    select 1
-    from public.user_organizations uo
-    where uo.user_id = auth.uid()
-      and uo.organization_id = org_id
-      and uo.role = 'admin'
-  );
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_org_owner_or_admin(org_id uuid)
- RETURNS boolean
- LANGUAGE sql
- STABLE SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
-  select exists (
-    select 1
-    from public.user_organizations uo
-    where uo.user_id = auth.uid()
-      and uo.organization_id = org_id
-      and uo.role in ('owner','admin')
-  );
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_dnd_active()
- RETURNS boolean
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  dnd_enabled BOOLEAN; dnd_start TIME; dnd_end TIME; current_t TIME;
-BEGIN
-  SELECT 
-    COALESCE((preferences->>'dnd_enabled')::boolean, false),
-    (preferences->>'dnd_start')::time,
-    (preferences->>'dnd_end')::time
-  INTO dnd_enabled, dnd_start, dnd_end
-  FROM public.profiles WHERE user_id = auth.uid();
-  
-  IF NOT dnd_enabled OR dnd_start IS NULL OR dnd_end IS NULL THEN RETURN FALSE; END IF;
-  current_t := LOCALTIME;
-  
-  IF dnd_start <= dnd_end THEN
-    RETURN current_t BETWEEN dnd_start AND dnd_end;
-  ELSE
-    RETURN current_t >= dnd_start OR current_t <= dnd_end;
-  END IF;
-END;
-$function$
 ;
 
 CREATE OR REPLACE FUNCTION public.step_up_token_revoke(_token_id uuid)
@@ -3664,22 +2056,6 @@ CREATE OR REPLACE FUNCTION public.purge_old_rate_limits()
 AS $function$ SELECT public.clean_old_rate_limits(); $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.log_user_logout()
- RETURNS void
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  INSERT INTO public.admin_audit_log (
-    user_id, action, resource_type, status, source, details
-  ) VALUES (
-    auth.uid(), 'user.logout', 'auth', 'success', 'client.auth',
-    jsonb_build_object('timestamp', now())
-  );
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.get_my_grantor_status()
  RETURNS jsonb
  LANGUAGE sql
@@ -3701,18 +2077,6 @@ CREATE OR REPLACE FUNCTION public.magic_up_get_brand_kit(_kit_id uuid)
 AS $function$
   SELECT to_jsonb(k) FROM public.magic_up_brand_kits k
   WHERE id = _kit_id AND user_id = auth.uid();
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.mark_all_notifications_read()
- RETURNS void
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  UPDATE public.workspace_notifications SET is_read = TRUE
-  WHERE user_id = auth.uid() AND is_read = FALSE;
-END;
 $function$
 ;
 
@@ -4015,80 +2379,6 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.validate_mcp_key(_key_plain text)
- RETURNS TABLE(key_id uuid, scopes text[], block_reason text, created_by uuid)
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _hash text;
-  _row record;
-  _is_full boolean;
-  _grantor_is_dev boolean;
-BEGIN
-  IF _key_plain IS NULL OR length(_key_plain) < 16 THEN
-    RETURN;
-  END IF;
-
-  _hash := encode(extensions.digest(_key_plain, 'sha256'), 'hex');
-
-  SELECT id, mcp_api_keys.scopes, expires_at, revoked_at, created_by
-  INTO _row
-  FROM public.mcp_api_keys
-  WHERE key_hash = _hash
-  LIMIT 1;
-
-  IF NOT FOUND THEN RETURN; END IF;
-
-  IF _row.revoked_at IS NOT NULL THEN
-    RETURN QUERY SELECT _row.id, NULL::text[], 'revoked'::text, _row.created_by;
-    RETURN;
-  END IF;
-
-  IF _row.expires_at IS NOT NULL AND _row.expires_at < now() THEN
-    RETURN QUERY SELECT _row.id, NULL::text[], 'expired'::text, _row.created_by;
-    RETURN;
-  END IF;
-
-  _is_full := _row.scopes @> ARRAY['*']::text[];
-  IF _is_full THEN
-    IF _row.created_by IS NULL THEN
-      _grantor_is_dev := false;
-    ELSE
-      _grantor_is_dev := public.is_dev(_row.created_by);
-    END IF;
-
-    IF NOT _grantor_is_dev THEN
-      UPDATE public.mcp_api_keys
-        SET revoked_at = now(), updated_at = now()
-        WHERE id = _row.id AND revoked_at IS NULL;
-
-      INSERT INTO public.mcp_key_auto_revocations(key_id, created_by, revoked_at, source, reason)
-      VALUES (_row.id, _row.created_by, now(), 'manual', 'grantor_lost_dev_at_use');
-
-      INSERT INTO public.admin_audit_log (
-        user_id, action, resource_type, resource_id, status, source, details
-      ) VALUES (
-        _row.created_by, 'mcp_key.auto_revoked', 'mcp_api_key', _row.id, 'denied', 'validate_mcp_key',
-        jsonb_build_object('reason', 'grantor_lost_dev_at_use', 'is_full_access', true, 'auto_revoked_at', now())
-      );
-
-      INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, metadata)
-      VALUES (_row.created_by, 'mcp_full_issue', _row.id::text, 'auto_revoked',
-        jsonb_build_object('reason','grantor_lost_dev_at_use','source','validate_mcp_key'));
-
-      RETURN QUERY SELECT _row.id, NULL::text[], 'grantor_lost_dev'::text, _row.created_by;
-      RETURN;
-    END IF;
-  END IF;
-
-  UPDATE public.mcp_api_keys SET last_used_at = now() WHERE id = _row.id;
-
-  RETURN QUERY SELECT _row.id, _row.scopes, NULL::text, _row.created_by;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.record_auth_attempt(_email text, _ip text, _success boolean, _reason text DEFAULT NULL::text, _ua text DEFAULT NULL::text)
  RETURNS void
  LANGUAGE sql
@@ -4111,34 +2401,6 @@ BEGIN
   RETURNING id INTO v_id;
   RETURN v_id;
 END $function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_industry_seasonality(_company_ids uuid[], _months integer DEFAULT 24)
- RETURNS TABLE(year integer, month integer, avg_quotes_per_company numeric, avg_revenue_per_company numeric, companies_active bigint)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  WITH per_client_month AS (
-    SELECT q.client_id,
-      EXTRACT(YEAR FROM q.created_at)::int AS y,
-      EXTRACT(MONTH FROM q.created_at)::int AS m,
-      COUNT(*)::numeric AS qc,
-      COALESCE(SUM(q.total), 0)::numeric AS rev
-    FROM public.quotes q
-    WHERE q.client_id = ANY(_company_ids)
-      AND q.status IN ('sent','viewed','approved','converted','pending_approval')
-      AND q.created_at >= now() - (GREATEST(_months, 1) || ' months')::interval
-      AND auth.uid() IS NOT NULL
-    GROUP BY q.client_id, 2, 3
-  )
-  SELECT y AS year, m AS month,
-    AVG(qc)::numeric AS avg_quotes_per_company,
-    AVG(rev)::numeric AS avg_revenue_per_company,
-    COUNT(DISTINCT client_id)::bigint AS companies_active
-  FROM per_client_month
-  GROUP BY y, m ORDER BY y, m;
-$function$
 ;
 
 CREATE OR REPLACE FUNCTION public.has_permission(_user_id uuid, _code text)
@@ -4283,28 +2545,6 @@ AS $function$
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.reset_optimization_queue(_only_running boolean DEFAULT true)
- RETURNS integer
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  affected int;
-BEGIN
-  IF NOT public.has_role(auth.uid(), 'admin') THEN
-    RAISE EXCEPTION 'forbidden';
-  END IF;
-  IF _only_running THEN
-    UPDATE public.optimization_queue SET status = 'pending', started_at = NULL WHERE status = 'running';
-  ELSE
-    UPDATE public.optimization_queue SET status = 'pending', started_at = NULL, finished_at = NULL, error = NULL WHERE status IN ('running','failed','blocked');
-  END IF;
-  GET DIAGNOSTICS affected = ROW_COUNT;
-  RETURN affected;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.get_login_attempts_status(_email text DEFAULT NULL::text, _ip text DEFAULT NULL::text, _window_minutes integer DEFAULT 15)
  RETURNS jsonb
  LANGUAGE sql
@@ -4320,30 +2560,6 @@ AS $function$
   WHERE created_at > now() - (_window_minutes || ' minutes')::interval
     AND (_email IS NULL OR email = _email)
     AND (_ip IS NULL OR ip_address = _ip);
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.acquire_ai_quota(_user_id uuid, _function_name text, _model text)
- RETURNS jsonb
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  v_check jsonb;
-  v_log_id uuid;
-BEGIN
-  v_check := public.check_ai_quota(_user_id);
-
-  IF NOT (v_check->>'allowed')::boolean THEN
-    RETURN v_check;
-  END IF;
-
-  INSERT INTO public.ai_usage_logs (user_id, function_name, model, status)
-  VALUES (_user_id, _function_name, _model, 'pending')
-  RETURNING id INTO v_log_id;
-
-  RETURN v_check || jsonb_build_object('log_id', v_log_id);
-END;
 $function$
 ;
 
@@ -4398,55 +2614,6 @@ BEGIN
 END $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.request_step_up_challenge(_action step_up_action, _target_ref text DEFAULT NULL::text, _ip inet DEFAULT NULL::inet, _user_agent text DEFAULT NULL::text)
- RETURNS TABLE(challenge_id uuid, otp_plain text, expires_at timestamp with time zone)
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _uid UUID := auth.uid();
-  _otp TEXT;
-  _otp_h TEXT;
-  _cid UUID;
-  _exp TIMESTAMPTZ;
-  _recent_count INT;
-BEGIN
-  IF _uid IS NULL THEN
-    RAISE EXCEPTION 'unauthorized: no session';
-  END IF;
-
-  IF NOT public.is_dev(_uid) THEN
-    INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, ip_address, user_agent)
-    VALUES (_uid, _action, _target_ref, 'unauthorized', _ip, _user_agent);
-    RAISE EXCEPTION 'forbidden: dev role required';
-  END IF;
-
-  SELECT count(*) INTO _recent_count
-  FROM public.step_up_challenges
-  WHERE user_id = _uid AND created_at > (now() - interval '1 hour');
-
-  IF _recent_count >= 5 THEN
-    INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, ip_address, user_agent)
-    VALUES (_uid, _action, _target_ref, 'rate_limited', _ip, _user_agent);
-    RAISE EXCEPTION 'rate_limited: too many step-up requests';
-  END IF;
-
-  _otp := lpad((floor(random() * 1000000))::int::text, 6, '0');
-  _otp_h := encode(digest(_otp || _uid::text, 'sha256'), 'hex');
-  _exp := now() + interval '5 minutes';
-
-  INSERT INTO public.step_up_challenges(user_id, action, target_ref, otp_hash, expires_at, ip_address, user_agent)
-  VALUES (_uid, _action, _target_ref, _otp_h, _exp, _ip, _user_agent)
-  RETURNING id INTO _cid;
-
-  INSERT INTO public.step_up_audit_log(user_id, action, target_ref, event_type, challenge_id, ip_address, user_agent)
-  VALUES (_uid, _action, _target_ref, 'challenge_requested', _cid, _ip, _user_agent);
-
-  RETURN QUERY SELECT _cid, _otp, _exp;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.compare_quote_snapshots(_quote_id uuid, _version_a integer, _version_b integer)
  RETURNS jsonb
  LANGUAGE sql
@@ -4470,95 +2637,6 @@ BEGIN
 END $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.can_manage_quotes(_user_id uuid DEFAULT auth.uid())
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT EXISTS (
-    SELECT 1 FROM public.user_roles
-    WHERE user_id = _user_id
-      AND role IN ('supervisor'::public.app_role, 'admin'::public.app_role, 'manager'::public.app_role)
-  )
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_unread_count()
- RETURNS integer
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-DECLARE count_val INTEGER;
-BEGIN
-  SELECT COUNT(*)::INTEGER INTO count_val
-  FROM public.workspace_notifications
-  WHERE user_id = auth.uid() AND is_read = FALSE;
-  RETURN count_val;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.mark_notification_read(p_notification_id uuid)
- RETURNS void
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  UPDATE public.workspace_notifications SET is_read = TRUE
-  WHERE id = p_notification_id AND user_id = auth.uid();
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.has_org_role(_user_id uuid, _org_id uuid, _role org_role)
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT EXISTS (SELECT 1 FROM public.organization_members
-    WHERE user_id = _user_id AND organization_id = _org_id AND role = _role)
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_user_org_ids(_user_id uuid)
- RETURNS TABLE(organization_id uuid)
- LANGUAGE sql
- SET search_path TO 'public'
-AS $function$
-  SELECT organization_id FROM public.organization_members WHERE user_id = _user_id
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.create_organization_with_owner(_name text, _slug text)
- RETURNS uuid
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE _org_id uuid;
-BEGIN
-  INSERT INTO public.organizations (name, slug) VALUES (_name, _slug)
-  RETURNING id INTO _org_id;
-  INSERT INTO public.organization_members (organization_id, user_id, role)
-  VALUES (_org_id, auth.uid(), 'owner');
-  RETURN _org_id;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_org_member(_user_id uuid, _org_id uuid)
- RETURNS boolean
- LANGUAGE sql
- STABLE SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
-  SELECT EXISTS (SELECT 1 FROM public.organization_members
-    WHERE user_id = _user_id AND organization_id = _org_id)
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.record_app_vital(_name text, _value double precision, _rating text DEFAULT NULL::text, _req_id text DEFAULT NULL::text, _url text DEFAULT NULL::text, _ua text DEFAULT NULL::text, _uid uuid DEFAULT NULL::uuid)
  RETURNS void
  LANGUAGE plpgsql
@@ -4568,20 +2646,6 @@ BEGIN
   INSERT INTO public.app_vitals (metric_name, metric_value, rating, request_id, page_url, user_agent, user_id)
   VALUES (_name, _value, _rating, _req_id, _url, _ua, _uid);
 END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.is_supervisor_or_above(_user_id uuid DEFAULT auth.uid())
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT EXISTS (
-    SELECT 1 FROM public.user_roles
-    WHERE user_id = _user_id 
-      AND role IN ('dev','supervisor','admin','manager')
-  );
 $function$
 ;
 
@@ -4714,106 +2778,6 @@ BEGIN
 END $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.is_kit_collaborator(_kit_id uuid, _user_id uuid)
- RETURNS boolean
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT EXISTS (SELECT 1 FROM public.kit_collaborators WHERE kit_id = _kit_id AND user_id = _user_id);
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.check_ai_quota(_user_id uuid)
- RETURNS jsonb
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  v_role text;
-  v_limit int;
-  v_unlimited boolean;
-  v_used int;
-BEGIN
-  v_role := public._get_user_primary_role(_user_id);
-
-  SELECT monthly_limit, is_unlimited INTO v_limit, v_unlimited
-  FROM public.ai_usage_quotas WHERE role = v_role;
-
-  IF NOT FOUND THEN
-    RETURN jsonb_build_object(
-      'allowed', true, 'used', 0, 'limit', -1, 'remaining', -1,
-      'unlimited', true, 'reason', 'no_quota_for_role'
-    );
-  END IF;
-
-  SELECT count(*)::int INTO v_used
-  FROM public.ai_usage_logs
-  WHERE user_id = _user_id
-    AND created_at >= date_trunc('month', now())
-    AND status != 'error';
-
-  IF v_unlimited THEN
-    RETURN jsonb_build_object(
-      'allowed', true, 'used', v_used, 'limit', -1, 'remaining', -1, 'unlimited', true
-    );
-  END IF;
-
-  RETURN jsonb_build_object(
-    'allowed', v_used < v_limit,
-    'used', v_used,
-    'limit', v_limit,
-    'remaining', greatest(0, v_limit - v_used),
-    'unlimited', false
-  );
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.set_connection_failure_window_minutes(minutes integer)
- RETURNS integer
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  IF NOT public.has_role(auth.uid(), 'admin'::public.app_role) THEN
-    RAISE EXCEPTION 'forbidden: admin role required';
-  END IF;
-  IF minutes NOT IN (0, 15, 30, 60, 120, 240) THEN
-    RAISE EXCEPTION 'invalid window: must be one of 0, 15, 30, 60, 120, 240 minutes';
-  END IF;
-  INSERT INTO public.system_settings (key, value, updated_by, updated_at)
-  VALUES ('connection_failure_window_minutes', to_jsonb(minutes), auth.uid(), now())
-  ON CONFLICT (key) DO UPDATE
-    SET value = EXCLUDED.value, updated_by = EXCLUDED.updated_by, updated_at = EXCLUDED.updated_at;
-  INSERT INTO public.admin_audit_log (user_id, action, resource_type, resource_id, details)
-  VALUES (auth.uid(), 'connection_failure_window_changed', 'system_setting',
-          'connection_failure_window_minutes', jsonb_build_object('minutes', minutes));
-  RETURN minutes;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_connections_auto_test_interval()
- RETURNS integer
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public', 'cron'
-AS $function$
-DECLARE
-  s text; m text;
-BEGIN
-  SELECT schedule INTO s FROM cron.job WHERE jobname = 'connections-auto-test' LIMIT 1;
-  IF s IS NULL THEN RETURN NULL; END IF;
-  m := split_part(s, ' ', 1);
-  IF m LIKE '*/%' THEN RETURN NULLIF(substring(m FROM 3), '')::int;
-  ELSIF m ~ '^[0-9]+$' THEN RETURN 60;
-  END IF;
-  RETURN NULL;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.expert_chat_get_messages(_conv_id uuid, _limit integer DEFAULT 100)
  RETURNS jsonb
  LANGUAGE sql
@@ -4823,36 +2787,6 @@ AS $function$
   WHERE conversation_id = _conv_id
     AND EXISTS (SELECT 1 FROM public.expert_conversations WHERE id = _conv_id AND seller_id = auth.uid())
   LIMIT _limit;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.set_connections_auto_test_interval(minutes integer)
- RETURNS integer
- LANGUAGE plpgsql
- SET search_path TO 'public', 'cron'
-AS $function$
-DECLARE
-  schedule text; job_id bigint;
-BEGIN
-  IF NOT public.has_role(auth.uid(), 'admin'::public.app_role) THEN
-    RAISE EXCEPTION 'forbidden: admin role required';
-  END IF;
-  IF minutes NOT IN (5, 10, 15, 30, 60, 120, 240) THEN
-    RAISE EXCEPTION 'invalid interval: must be one of 5, 10, 15, 30, 60, 120, 240 minutes';
-  END IF;
-  IF minutes < 60 THEN schedule := '*/' || minutes::text || ' * * * *';
-  ELSIF minutes = 60 THEN schedule := '0 * * * *';
-  ELSIF minutes = 120 THEN schedule := '0 */2 * * *';
-  ELSIF minutes = 240 THEN schedule := '0 */4 * * *';
-  END IF;
-  SELECT jobid INTO job_id FROM cron.job WHERE jobname = 'connections-auto-test' LIMIT 1;
-  IF job_id IS NULL THEN RAISE EXCEPTION 'cron job connections-auto-test not found'; END IF;
-  PERFORM cron.alter_job(job_id := job_id, schedule := schedule);
-  INSERT INTO public.admin_audit_log (user_id, action, resource_type, resource_id, details)
-  VALUES (auth.uid(), 'connections_auto_test_interval_changed', 'cron_job', job_id::text,
-          jsonb_build_object('minutes', minutes, 'schedule', schedule));
-  RETURN minutes;
-END;
 $function$
 ;
 
@@ -5126,47 +3060,6 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.get_top_favorited_products(_days integer DEFAULT 7, _limit integer DEFAULT 6)
- RETURNS TABLE(product_id text, fav_count bigint)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT fi.product_id, COUNT(*)::bigint AS fav_count
-  FROM public.favorite_items fi
-  WHERE fi.added_at >= (now() - make_interval(days => GREATEST(_days, 1)))
-  GROUP BY fi.product_id
-  ORDER BY fav_count DESC, MAX(fi.added_at) DESC
-  LIMIT GREATEST(_limit, 1);
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.get_client_top_products(_client_id uuid, _limit integer DEFAULT 15)
- RETURNS TABLE(product_id uuid, product_name text, product_image_url text, total_quantity bigint, occurrences bigint, total_revenue numeric, avg_unit_price numeric, last_quoted_at timestamp with time zone)
- LANGUAGE sql
- STABLE
- SET search_path TO 'public'
-AS $function$
-  SELECT 
-    qi.product_id,
-    qi.product_name,
-    qi.product_image_url,
-    SUM(qi.quantity)::bigint                                AS total_quantity,
-    COUNT(DISTINCT q.id)::bigint                            AS occurrences,
-    COALESCE(SUM(qi.quantity * qi.unit_price), 0)::numeric  AS total_revenue,
-    COALESCE(AVG(qi.unit_price), 0)::numeric                AS avg_unit_price,
-    MAX(q.created_at)                                       AS last_quoted_at
-  FROM public.quotes q
-  JOIN public.quote_items qi ON qi.quote_id = q.id
-  WHERE q.client_id = _client_id
-    AND q.status IS DISTINCT FROM 'cancelled'
-    AND q.status IS DISTINCT FROM 'rejected'
-  GROUP BY qi.product_id, qi.product_name, qi.product_image_url
-  ORDER BY SUM(qi.quantity) DESC
-  LIMIT _limit
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.compute_quote_snapshot_hash(_quote_id uuid)
  RETURNS text
  LANGUAGE plpgsql
@@ -5223,65 +3116,6 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.get_auto_test_job_status(_limit integer DEFAULT 20)
- RETURNS TABLE(run_started_at timestamp with time zone, run_ended_at timestamp with time zone, duration_ms integer, total_tested integer, ok_count integer, fail_count integer, retried_count integer, avg_latency_ms integer)
- LANGUAGE plpgsql
- STABLE
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  IF NOT public.has_role(auth.uid(), 'admin') THEN
-    RAISE EXCEPTION 'forbidden: admin role required';
-  END IF;
-  RETURN QUERY
-  WITH ordered AS (
-    SELECT cth.tested_at, cth.success, cth.latency_ms, cth.attempts, date_trunc('minute', cth.tested_at) AS bucket
-    FROM public.connection_test_history cth
-    WHERE cth.triggered_by = 'cron' AND cth.tested_at > now() - interval '7 days'
-  ),
-  runs AS (
-    SELECT o.bucket,
-      MIN(o.tested_at) AS run_started_at,
-      MAX(o.tested_at) AS run_ended_at,
-      GREATEST(EXTRACT(EPOCH FROM (MAX(o.tested_at) - MIN(o.tested_at))) * 1000, 0)::int AS duration_ms,
-      COUNT(*)::int AS total_tested,
-      COUNT(*) FILTER (WHERE o.success)::int AS ok_count,
-      COUNT(*) FILTER (WHERE NOT o.success)::int AS fail_count,
-      COUNT(*) FILTER (WHERE o.attempts > 1)::int AS retried_count,
-      COALESCE(AVG(o.latency_ms) FILTER (WHERE o.latency_ms IS NOT NULL), 0)::int AS avg_latency_ms
-    FROM ordered o GROUP BY o.bucket
-  )
-  SELECT r.run_started_at, r.run_ended_at, r.duration_ms, r.total_tested, r.ok_count, r.fail_count, r.retried_count, r.avg_latency_ms
-  FROM runs r ORDER BY r.run_started_at DESC LIMIT GREATEST(1, LEAST(_limit, 100));
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.log_access_denied(_blocked_path text, _required_role text, _user_role text DEFAULT NULL::text, _reason text DEFAULT 'route_blocked'::text)
- RETURNS void
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE _uid uuid := auth.uid();
-BEGIN
-  IF _uid IS NULL THEN RETURN; END IF;
-  IF _required_role NOT IN ('dev','admin','supervisor') THEN
-    RAISE EXCEPTION 'invalid required_role: %', _required_role;
-  END IF;
-  INSERT INTO public.admin_audit_log (
-    user_id, action, resource_type, resource_id, status, source,
-    started_at, finished_at, duration_ms, request_id, payload_summary, details
-  ) VALUES (
-    _uid, 'route.access_denied', 'route', _blocked_path, 'denied', 'frontend-guard',
-    now(), now(), 0, gen_random_uuid()::text,
-    jsonb_build_object('blocked_path', _blocked_path),
-    jsonb_build_object('reason', _reason, 'blocked_path', _blocked_path,
-                       'required_role', _required_role, 'user_role', _user_role)
-  );
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.magic_up_save_generation(_data jsonb)
  RETURNS uuid
  LANGUAGE plpgsql
@@ -5320,69 +3154,6 @@ BEGIN
 END $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.record_platform_failure(p_operation text, p_table text DEFAULT NULL::text, p_rpc_name text DEFAULT NULL::text, p_duration_ms integer DEFAULT 0, p_error_message text DEFAULT NULL::text, p_is_503 boolean DEFAULT true, p_is_cold_start boolean DEFAULT false, p_retry_count integer DEFAULT 0)
- RETURNS uuid
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE new_id uuid;
-BEGIN
-  INSERT INTO public.query_telemetry (
-    operation, table_name, rpc_name, duration_ms, record_count, severity,
-    error_message, error_kind, user_id, retry_count, cache_hit, is_503, is_cold_start
-  ) VALUES (
-    COALESCE(p_operation, 'unknown'), p_table, p_rpc_name,
-    GREATEST(COALESCE(p_duration_ms, 0), 0), NULL, 'error',
-    p_error_message, 'network', auth.uid(),
-    GREATEST(COALESCE(p_retry_count, 0), 0), false,
-    COALESCE(p_is_503, true), COALESCE(p_is_cold_start, false)
-  ) RETURNING id INTO new_id;
-  RETURN new_id;
-END; $function$
-;
-
-CREATE OR REPLACE FUNCTION public.record_dev_route_telemetry(_event_type text, _blocked_path text, _user_role text DEFAULT NULL::text, _duration_ms integer DEFAULT NULL::integer)
- RETURNS void
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _uid uuid := auth.uid();
-  _safe_path text; _safe_role text; _safe_duration integer; _recent_count integer;
-  _allowed_events constant text[] := ARRAY['view','back','retry','fallback','request_access','copy_link','mail','abandon'];
-BEGIN
-  IF _uid IS NULL THEN RETURN; END IF;
-  IF NOT (_event_type = ANY (_allowed_events)) THEN
-    RAISE EXCEPTION 'invalid event_type: %', _event_type USING ERRCODE = '22023';
-  END IF;
-  _safe_path := substring(coalesce(_blocked_path, '') from 1 for 200);
-  IF length(_safe_path) = 0 THEN RAISE EXCEPTION 'blocked_path required' USING ERRCODE = '22023'; END IF;
-  _safe_role := substring(coalesce(_user_role, '') from 1 for 32);
-  IF _safe_role NOT IN ('dev','admin','supervisor','agente','agent','vendedor','') THEN _safe_role := 'unknown'; END IF;
-  IF length(_safe_role) = 0 THEN _safe_role := NULL; END IF;
-  IF _duration_ms IS NULL THEN _safe_duration := NULL;
-  ELSIF _duration_ms < 0 THEN _safe_duration := 0;
-  ELSIF _duration_ms > 3600000 THEN _safe_duration := 3600000;
-  ELSE _safe_duration := _duration_ms; END IF;
-  SELECT count(*) INTO _recent_count FROM public.admin_audit_log
-  WHERE user_id = _uid AND action = 'route.ux_event' AND source = 'dev-route-ui'
-    AND created_at > now() - interval '1 minute';
-  IF _recent_count >= 30 THEN RETURN; END IF;
-  INSERT INTO public.admin_audit_log (
-    user_id, action, resource_type, resource_id, status, source,
-    started_at, finished_at, duration_ms, request_id, payload_summary, details
-  ) VALUES (
-    _uid, 'route.ux_event', 'route', _safe_path,
-    CASE WHEN _event_type IN ('view','abandon','copy_link','mail') THEN 'denied'
-         WHEN _event_type IN ('back','retry','fallback') THEN 'partial'
-         WHEN _event_type = 'request_access' THEN 'success' ELSE 'denied' END,
-    'dev-route-ui', now(), now(), _safe_duration, gen_random_uuid()::text,
-    jsonb_build_object('event_type', _event_type, 'blocked_path', _safe_path),
-    jsonb_build_object('event_type', _event_type, 'blocked_path', _safe_path, 'user_role', _safe_role, 'duration_ms', _safe_duration)
-  );
-END; $function$
-;
-
 CREATE OR REPLACE FUNCTION public.magic_up_get_dashboard()
  RETURNS jsonb
  LANGUAGE sql
@@ -5419,4 +3190,3 @@ AS $function$
   WHERE id = _conv_id AND seller_id = auth.uid();
 $function$
 ;
-
