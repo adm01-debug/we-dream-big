@@ -191,10 +191,10 @@ export function useFiltersPageState() {
   useEffect(() => {
     const handleResize = () => {
       const w = window.innerWidth;
-      if (w < 640 && gridColumns > 1) {
-        setGridColumns(1);
-      } else if (w >= 640 && w < 768 && gridColumns > 2) {
-        setGridColumns(2);
+      if (w < 640 && gridColumns > 3) {
+        setGridColumns(3);
+      } else if (w >= 640 && w < 768 && gridColumns > 3) {
+        setGridColumns(3);
       }
     };
     handleResize();
@@ -364,9 +364,7 @@ export function useFiltersPageState() {
       result = [];
     if (!hasMaterialFilter && filters.materiais.length > 0)
       result = result.filter((product) => {
-        const materialsStr = Array.isArray(product.materials)
-          ? product.materials.join(' ').toLowerCase()
-          : (product.materials || '').toLowerCase();
+        const materialsStr = product.materials.join(' ').toLowerCase();
         return filters.materiais.some((m) => materialsStr.includes(m.toLowerCase()));
       });
     const priceFilterActive = filters.priceRange[0] > 0 || filters.priceRange[1] < 9999;
@@ -378,9 +376,7 @@ export function useFiltersPageState() {
     if (filters.minStock > 0)
       result = result.filter((product) => {
         if (product.variations && product.variations.length > 0)
-          return product.variations.some(
-            (v: Record<string, unknown>) => ((v.stock as number) ?? 0) >= filters.minStock,
-          );
+          return product.variations.some((v) => (v.stock ?? 0) >= filters.minStock);
         return (product.stock || 0) >= filters.minStock;
       });
     if (filters.inStock) result = result.filter((product) => (product.stock || 0) > 0);

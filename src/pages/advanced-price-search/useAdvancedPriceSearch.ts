@@ -84,7 +84,7 @@ export function useAdvancedPriceSearch() {
       return true;
     });
 
-    const withPrices: ProductWithCalculatedPrice[] = result.map((product: Product) => {
+    const withPrices = result.map((product: Product) => {
       const productPrice = product.price || 0;
       let customizationPrice = 0,
         setupPrice = 0,
@@ -96,7 +96,7 @@ export function useAdvancedPriceSearch() {
           (t) =>
             t.min_quantity <= filters.minQuantity &&
             (!t.max_quantity || t.max_quantity >= filters.minQuantity) &&
-            t.technique_name.toLowerCase().includes(filters.technique.toLowerCase()),
+            (t.technique_name ?? '').toLowerCase().includes(filters.technique.toLowerCase()),
         );
 
         if (matchingTable) {
@@ -115,7 +115,7 @@ export function useAdvancedPriceSearch() {
           (productPrice + customizationPrice + handlingPrice) * filters.minQuantity + setupPrice,
         matchingTechnique: matchingTable,
       };
-    });
+    }) as unknown as ProductWithCalculatedPrice[];
 
     return withPrices;
   }, [isSearching, products, filters, priceTables]);

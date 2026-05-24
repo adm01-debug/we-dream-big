@@ -8,7 +8,12 @@
  * falls back to seeded mock data for demo/loading states.
  */
 import { useMemo } from 'react';
-import { useProductIntelligenceData, useStockVelocity, type StockVelocity } from '@/hooks/intelligence';
+import {
+  useProductIntelligenceData,
+  useStockVelocity,
+  type StockVelocity,
+  type ProductIntelligenceData,
+} from '@/hooks/intelligence';
 import { generateMockVelocities, generateMockIntelligence } from '@/lib/stock-chart-utils';
 
 type BadgeType =
@@ -20,7 +25,7 @@ type BadgeType =
   | 'frequent-restock'
   | 'last-units' // low stock + high velocity (stockout risk)
   | 'best-seller' // top tier velocity
-  | 'class-a';   // ABC classification A
+  | 'class-a'; // ABC classification A
 
 export interface IntelligenceBadge {
   type: BadgeType;
@@ -35,10 +40,12 @@ export function useProductIntelligenceBadges(
   catalogFlags?: {
     featured?: boolean;
     new_arrival?: boolean;
-  }
+  },
 ) {
-  const { data: intelligence, isLoading: loadingIntel } = useProductIntelligenceData(productId);
-  const { data: velocity, isLoading: loadingVel } = useStockVelocity(productId);
+  const { data: intelligenceRaw, isLoading: loadingIntel } = useProductIntelligenceData(productId);
+  const { data: velocityRaw, isLoading: loadingVel } = useStockVelocity(productId);
+  const intelligence = intelligenceRaw as ProductIntelligenceData | null | undefined;
+  const velocity = velocityRaw as StockVelocity[] | undefined;
 
   const badges = useMemo((): IntelligenceBadge[] => {
     const mockVels = productId ? generateMockVelocities(productId) : [];
@@ -83,7 +90,8 @@ export function useProductIntelligenceBadges(
     // === 3. Emergente (trend > 1.3) ===
     const bestVel = effectiveVels.length
       ? effectiveVels.reduce(
-          (best: StockVelocity, v: StockVelocity) => (v.avg_daily_depletion_7d > (best?.avg_daily_depletion_7d ?? 0) ? v : best),
+          (best: StockVelocity, v: StockVelocity) =>
+            v.avg_daily_depletion_7d > (best?.avg_daily_depletion_7d ?? 0) ? v : best,
           effectiveVels[0],
         )
       : null;

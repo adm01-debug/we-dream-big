@@ -12,6 +12,7 @@ import {
   useQuotes,
   useQuoteTemplates,
   useSellerDiscountLimits,
+  type Quote,
   type QuoteItem,
   type QuoteItemPersonalization,
   type QuoteTemplate,
@@ -38,6 +39,7 @@ import {
 } from '@/utils/product-search';
 import { getPriceFreshness } from '@/utils/price-freshness';
 import * as QuoteCalc from '@/logic/quotes/calculations';
+import type { PromobrindProduct } from '@/lib/external-db';
 
 interface Product {
   id: string;
@@ -780,7 +782,7 @@ export function useQuoteBuilderState() {
 
   // ── Template ──
   const applyTemplate = useCallback((template: QuoteTemplate) => {
-    const newItems: QuoteItem[] = template.items_data.map((item) => ({
+    const newItems: QuoteItem[] = template.items.map((item: QuoteTemplateItem) => ({
       product_id: item.productId || '',
       product_name: item.productName,
       product_sku: item.productSku,
@@ -789,14 +791,16 @@ export function useQuoteBuilderState() {
       unit_price: item.unitPrice,
       color_name: item.colorName,
       color_hex: item.colorHex,
-      personalizations: item.personalizations?.map((p) => ({
-        technique_id: p.techniqueId,
-        technique_name: p.techniqueName,
-        colors_count: p.colorsCount,
-        positions_count: p.positionsCount,
-        unit_cost: p.unitCost,
-        setup_cost: p.setupCost,
-      })),
+      personalizations: item.personalizations?.map(
+        (p: NonNullable<QuoteTemplateItem['personalizations']>[number]) => ({
+          technique_id: p.techniqueId,
+          technique_name: p.techniqueName,
+          colors_count: p.colorsCount,
+          positions_count: p.positionsCount,
+          unit_cost: p.unitCost,
+          setup_cost: p.setupCost,
+        }),
+      ),
     }));
     setItems(newItems);
     if (template.discount_percent > 0) {
@@ -936,14 +940,19 @@ export function useQuoteBuilderState() {
       };
       let result;
       if (isEditMode && quoteId) {
-        result = await updateQuote(quoteId, quoteData, items);
+        result = await updateQuote(quoteId, quoteData as Partial<Quote>, items);
       } else {
-        result = await createQuote(quoteData, items);
+        result = await createQuote(quoteData as Partial<Quote>, items);
       }
 
       // If pending_approval, create approval request usando desconto REAL (não aparente)
       if (result && status === 'pending_approval' && maxDiscountPercent !== null) {
-        await requestApproval(result.id, realDiscountPercent, maxDiscountPercent, sellerNotes);
+        await requestApproval(
+          result.id ?? '',
+          realDiscountPercent,
+          maxDiscountPercent,
+          sellerNotes,
+        );
       }
 
       if (result) {
