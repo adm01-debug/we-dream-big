@@ -22,15 +22,15 @@ export interface StockEntry {
   expectedDate: string;
   expectedQuantity: number;
   thumbnail: string | null;
-  entryIndex: number;
-  supplierSku: string;
-  currentStock: number;
-  reservedStock: number;
+  supplierSku?: string;
+  currentStock?: number;
+  reservedStock?: number;
+  entryIndex?: number;
 }
 
 export interface ColorSummary {
   name: string;
-  hex?: string;
+  hex: string | null;
   thumbnail: string | null;
   currentStock: number;
   incomingTotal: number;
@@ -81,25 +81,24 @@ export function useProductVariantsWithStock(productId: string | undefined) {
  */
 export function processStockEntries(variants: VariantWithStock[]): StockEntry[] {
   const entries: StockEntry[] = [];
-  const colorIndexMap = new Map<string, number>();
 
+  const entryCountByVariant = new Map<string, number>();
   for (const v of variants) {
     if (v.next_entry_date && v.next_entry_quantity && v.next_entry_quantity > 0) {
-      const colorName = v.color_name || 'Sem cor';
-      const idx = (colorIndexMap.get(colorName) ?? 0) + 1;
-      colorIndexMap.set(colorName, idx);
+      const idx = (entryCountByVariant.get(v.id) ?? 0) + 1;
+      entryCountByVariant.set(v.id, idx);
       entries.push({
-        id: `${v.id}-entry-${idx}`,
+        id: `${v.id}-${idx}`,
         variantId: v.id,
-        colorName,
+        colorName: v.color_name || 'Sem cor',
         colorHex: v.color_hex,
         expectedDate: v.next_entry_date,
         expectedQuantity: v.next_entry_quantity,
         thumbnail: v.selected_thumbnail,
-        entryIndex: idx,
         supplierSku: v.sku,
         currentStock: v.stock_quantity ?? 0,
         reservedStock: 0,
+        entryIndex: idx,
       });
     }
   }
@@ -125,7 +124,7 @@ export function calculateColorSummary(
     } else {
       colorMap.set(name, {
         name,
-        hex: v.color_hex ?? undefined,
+        hex: v.color_hex,
         thumbnail: v.selected_thumbnail,
         currentStock: v.stock_quantity || 0,
         incomingTotal: 0,

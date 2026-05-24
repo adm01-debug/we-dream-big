@@ -1,5 +1,9 @@
+import { type createClient } from '@supabase/supabase-js';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+
+// 'audit_log' table not yet in generated schema — bypass type checking via raw client cast
+const db = supabase as unknown as ReturnType<typeof createClient>;
 
 export type AuditAction = 'INSERT' | 'UPDATE' | 'DELETE';
 
@@ -62,8 +66,7 @@ export function useAuditLog() {
     newValues = null,
   }: AuditLogParams): Promise<{ success: boolean; error?: Error }> => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await supabase.from('audit_log' as any).insert({
+      const { error } = await db.from('audit_log').insert({
         user_id: user?.id || null,
         action,
         entity_type: entityType,
@@ -72,7 +75,7 @@ export function useAuditLog() {
         new_values: newValues,
         ip_address: null, // Pode ser capturado via API externa se necessário
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
-      });
+      } as never);
 
       if (error) {
         console.error('Erro ao registrar audit log:', error);
@@ -206,8 +209,8 @@ export async function fetchAuditHistory(
   entityType: AuditEntityType,
   entityId: string,
 ): Promise<AuditLogEntry[]> {
-  const { data, error } = await supabase
-    .from('audit_log' as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+  const { data, error } = await db
+    .from('audit_log')
     .select(
       `
       *,
@@ -226,7 +229,7 @@ export async function fetchAuditHistory(
     return [];
   }
 
-  return (data || []) as unknown as AuditLogEntry[];
+  return (data || []) as AuditLogEntry[];
 }
 
 /**
@@ -242,8 +245,8 @@ export async function fetchAllAuditLogs(
   },
   limit = 100,
 ): Promise<AuditLogEntry[]> {
-  let query = supabase
-    .from('audit_log' as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+  let query = db
+    .from('audit_log')
     .select(
       `
       *,
@@ -279,5 +282,5 @@ export async function fetchAllAuditLogs(
     return [];
   }
 
-  return (data || []) as unknown as AuditLogEntry[];
+  return (data || []) as AuditLogEntry[];
 }

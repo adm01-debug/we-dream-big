@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { type createClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Tables not yet in generated schema — bypass type checking via raw client cast
+const db = supabase as unknown as ReturnType<typeof createClient>;
 
 interface AllowedIP {
   id: string;
@@ -23,7 +27,7 @@ export function useAllowedIPs(targetUserId?: string) {
   const fetchCurrentIP = useCallback(async () => {
     try {
       const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
+      const data = (await response.json()) as { ip: string };
       setCurrentIP(data.ip);
     } catch (error) {
       console.error('Error fetching current IP:', error);
@@ -38,14 +42,14 @@ export function useAllowedIPs(targetUserId?: string) {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('user_allowed_ips' as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      const { data, error } = await db
+        .from('user_allowed_ips')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAllowedIPs(data || []);
+      setAllowedIPs((data || []) as AllowedIP[]);
     } catch (error) {
       console.error('Error fetching allowed IPs:', error);
     } finally {
@@ -65,17 +69,16 @@ export function useAllowedIPs(targetUserId?: string) {
       }
 
       try {
-        const { error } = await supabase
-          .from('user_allowed_ips' as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-          .insert({
-            user_id: userId,
-            ip_address: ipAddress,
-            label: label || null,
-            created_by: user.id,
-          });
+        const { error } = await db.from('user_allowed_ips').insert({
+          user_id: userId,
+          ip_address: ipAddress,
+          label: label || null,
+          created_by: user.id,
+        } as never);
 
         if (error) {
-          if (error.code === '23505') {
+          const e = error as { code?: string };
+          if (e.code === '23505') {
             return { success: false, error: 'Este IP já está cadastrado' };
           }
           throw error;
@@ -96,10 +99,7 @@ export function useAllowedIPs(targetUserId?: string) {
   const removeIP = useCallback(
     async (ipId: string): Promise<{ success: boolean; error?: string }> => {
       try {
-        const { error } = await supabase
-          .from('user_allowed_ips' as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-          .delete()
-          .eq('id', ipId);
+        const { error } = await db.from('user_allowed_ips').delete().eq('id', ipId);
 
         if (error) throw error;
 
@@ -118,8 +118,8 @@ export function useAllowedIPs(targetUserId?: string) {
   const toggleIP = useCallback(
     async (ipId: string, isActive: boolean): Promise<{ success: boolean; error?: string }> => {
       try {
-        const { error } = await supabase
-          .from('user_allowed_ips' as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+        const { error } = await db
+          .from('user_allowed_ips')
           .update({ is_active: isActive })
           .eq('id', ipId);
 

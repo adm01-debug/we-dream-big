@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
+import { type createClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import * as OTPAuth from 'otpauth';
+
+// Tables not yet in generated schema — bypass type checking via raw client cast
+const db = supabase as unknown as ReturnType<typeof createClient>;
 
 interface TwoFactorSettings {
   id: string;
@@ -9,6 +13,15 @@ interface TwoFactorSettings {
   is_enabled: boolean;
   enabled_at: string | null;
   created_at: string;
+}
+
+interface User2FARow {
+  id: string;
+  user_id: string;
+  is_enabled: boolean;
+  enabled_at: string | null;
+  created_at: string;
+  totp_secret?: string | null;
 }
 
 export function use2FA(targetUserId?: string) {
@@ -26,14 +39,14 @@ export function use2FA(targetUserId?: string) {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('user_2fa_settings' as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      const { data, error } = await db
+        .from('user_2fa_settings')
         .select('id, user_id, is_enabled, enabled_at, created_at')
         .eq('user_id', effectiveUserId)
         .maybeSingle();
 
       if (error) throw error;
-      setSettings(data);
+      setSettings(data as TwoFactorSettings | null);
     } catch (error) {
       console.error('Error fetching 2FA settings:', error);
     } finally {
@@ -97,15 +110,13 @@ export function use2FA(targetUserId?: string) {
           Math.random().toString(36).substring(2, 10).toUpperCase(),
         );
 
-        const { error } = await supabase
-          .from('user_2fa_settings' as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-          .upsert({
-            user_id: effectiveUserId,
-            totp_secret: pendingSecret,
-            is_enabled: true,
-            backup_codes: backupCodes,
-            enabled_at: new Date().toISOString(),
-          });
+        const { error } = await db.from('user_2fa_settings').upsert({
+          user_id: effectiveUserId,
+          totp_secret: pendingSecret,
+          is_enabled: true,
+          backup_codes: backupCodes,
+          enabled_at: new Date().toISOString(),
+        });
 
         if (error) throw error;
 
@@ -131,27 +142,28 @@ export function use2FA(targetUserId?: string) {
 
       try {
         // Buscar secret atual
-        const { data: currentSettings } = await supabase
-          .from('user_2fa_settings' as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+        const { data: currentSettings } = await db
+          .from('user_2fa_settings')
           .select('totp_secret')
           .eq('user_id', effectiveUserId)
           .single();
 
-        if (!currentSettings?.totp_secret) {
+        const row = currentSettings as User2FARow | null;
+        if (!row?.totp_secret) {
           return { success: false, error: '2FA não está habilitado' };
         }
 
         // Se token fornecido, verificar. Admin pode desativar sem token se targetUserId diferente
         if (token) {
-          if (!verifyToken(currentSettings.totp_secret, token)) {
+          if (!verifyToken(row.totp_secret, token)) {
             return { success: false, error: 'Código inválido' };
           }
         } else if (!targetUserId) {
           return { success: false, error: 'Código necessário' };
         }
 
-        const { error } = await supabase
-          .from('user_2fa_settings' as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+        const { error } = await db
+          .from('user_2fa_settings')
           .update({
             is_enabled: false,
             totp_secret: null,

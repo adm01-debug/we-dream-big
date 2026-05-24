@@ -3,7 +3,7 @@
  *
  * Converts raw PromobrindProduct to the internal Product format.
  */
-import type { Product } from '@/types/product';
+import type { Product } from '@/types/product-catalog';
 import {
   type PromobrindProduct,
   getProductImageUrl,
@@ -113,12 +113,8 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
   return {
     id: p.id,
     name: p.name,
-    description: (p.description || p.short_description || p.meta_description) ?? null,
-    category_id:
-      (p.category_id !== null && p.category_id !== undefined ? Number(p.category_id) : null) ??
-      (p.main_category_id !== null && p.main_category_id !== undefined
-        ? Number(p.main_category_id)
-        : null),
+    description: p.description || p.short_description || p.meta_description || null,
+    category_id: p.category_id || p.main_category_id || null,
     category_name: p.category_name || null,
     price: getProductPrice(p),
     image_url: images[0],
@@ -126,7 +122,7 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
     images,
     sku: p.sku,
     stock,
-    colors,
+    colors: colors as never,
     materials: parseMaterials(p.materials),
     supplier_reference: p.supplier_reference,
     brand: p.brand,
@@ -159,7 +155,7 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
     packingClassification: p.packing_classification,
     hasCommercialPackaging: p.has_commercial_packaging,
     repackingType: p.repacking_type,
-    packagingContext: p.packaging_context,
+    packagingContext: p.packaging_context as Product['packagingContext'],
     boxImage: p.box_image,
     boxWidthMm: p.box_width_mm,
     boxHeightMm: p.box_height_mm,
@@ -180,31 +176,33 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
         : null) ??
       (typeof p.updated_at === 'string' && p.updated_at.trim() !== '' ? p.updated_at : null),
     priceFreshnessThresholdDays: p.price_freshness_threshold_days ?? null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    variations: variations.length > 0 ? (variations as any) : undefined,
+    variations: variations.length > 0 ? (variations as never) : undefined,
     productVideos: p.product_videos?.length ? p.product_videos : undefined,
     kitItems:
-      p.kit_components?.map((c) => ({
-        id: c.id,
-        productId: c.component_product_id || c.id,
-        productName: c.component_name || 'Componente',
-        quantity: c.quantity || 1,
-        sku: c.component_sku || c.component_code || '',
-        imageUrl: c.primary_image_url || null,
-        isOptional: c.is_optional || false,
-        isPackaging: c.is_packaging || false,
-        isReplaceable: c.is_replaceable || false,
-        allowsPersonalization: c.allows_personalization || false,
-        material: c.material || null,
-        weightG: c.weight_g || null,
-        heightMm: c.height_mm ?? null,
-        widthMm: c.width_mm ?? null,
-        lengthMm: c.length_mm ?? null,
-        componentTypeCode: c.component_type_code ?? null,
-        supplierComponentCode: c.supplier_component_code ?? null,
-        description: c.component_description ?? null,
-        personalizationNotes: c.personalization_notes ?? null,
-        color: c.color ?? null,
-      })) || undefined,
-  } as unknown as Product;
+      p.kit_components?.map((c) => {
+        const ck = c as Record<string, unknown>;
+        return {
+          id: c.id,
+          productId: c.component_product_id || c.id,
+          productName: c.component_name || 'Componente',
+          quantity: c.quantity || 1,
+          sku: c.component_sku || c.component_code || '',
+          imageUrl: c.primary_image_url || null,
+          isOptional: c.is_optional || false,
+          isPackaging: c.is_packaging || false,
+          isReplaceable: c.is_replaceable || false,
+          allowsPersonalization: c.allows_personalization || false,
+          material: c.material || null,
+          weightG: c.weight_g || null,
+          heightMm: c.height_mm ?? null,
+          widthMm: c.width_mm ?? null,
+          lengthMm: c.length_mm ?? null,
+          componentTypeCode: (ck.component_type_code ?? null) as string | null,
+          supplierComponentCode: (ck.supplier_component_code ?? null) as string | null,
+          description: (ck.component_description ?? null) as string | null,
+          personalizationNotes: (ck.personalization_notes ?? null) as string | null,
+          color: (ck.color ?? null) as string | null,
+        };
+      }) || undefined,
+  };
 }

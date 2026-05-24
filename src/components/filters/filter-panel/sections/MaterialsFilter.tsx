@@ -8,20 +8,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MaterialBadge } from '@/components/materials/MaterialBadge';
 import { cn } from '@/lib/utils';
+import type { MaterialGroup, MaterialComplete } from '@/services/materialService';
 
 interface MaterialsFilterProps {
   materialSearch: string;
   setMaterialSearch: (v: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  materialGroups: Record<string, any>[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  allMaterials: Record<string, any>[];
+  materialGroups: MaterialGroup[];
+  allMaterials: MaterialComplete[];
   materialsLoading: boolean;
   materialFilterState: { selectedGroups: string[]; selectedTypes: string[] };
   toggleMaterialGroup: (slug: string) => void;
   toggleMaterialType: (slug: string) => void;
   isMaterialGroupSelected: (slug: string) => boolean;
-  getTypesForGroup: (slug: string) => unknown[];
+  getTypesForGroup: (slug: string) => MaterialComplete[];
   openSections: string[];
   toggleSection: (id: string) => void;
 }

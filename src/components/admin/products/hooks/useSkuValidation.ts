@@ -22,17 +22,16 @@ export function useSkuValidation(currentSku: string, isEdit: boolean, originalSk
       try {
         const { fetchPromobrindProducts } = await import('@/lib/external-db');
         const existing = await fetchPromobrindProducts({ search: currentSku, limit: 5 });
-        const raw = Array.isArray(existing)
+        const products = (Array.isArray(existing)
           ? existing
-          : (((existing as Record<string, unknown>).products as unknown[] | undefined) ?? []);
-        const products = raw as Record<string, unknown>[];
+          : (existing as Record<string, unknown>).products || []) as Array<Record<string, unknown>>;
         const dup = products.find(
           (p: Record<string, unknown>) =>
             (p.sku as string | undefined)?.toLowerCase() === currentSku.toLowerCase(),
         );
         if (dup) {
           setStatus('duplicate');
-          setDuplicateName((dup.name as string) || '');
+          setDuplicateName(String(dup.name || ''));
         } else {
           setStatus('valid');
           setDuplicateName('');

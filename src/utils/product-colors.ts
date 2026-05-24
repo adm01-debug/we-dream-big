@@ -127,28 +127,32 @@ export function normalizeColors(colors: unknown[] | undefined): ProductColor[] {
       };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const obj = c as any;
-    const name = obj.name || obj.color_name || 'Sem cor';
-    const groupSlug = obj.groupSlug || undefined;
-    const variationSlug = obj.variationSlug || undefined;
-    const group = obj.groupName || obj.group || obj.color_group || detectColorGroup(name);
+    const co = c as Record<string, unknown>;
+    const name = String(co.name || co.color_name || 'Sem cor');
+    const groupSlug = co.groupSlug ? String(co.groupSlug) : undefined;
+    const variationSlug = co.variationSlug ? String(co.variationSlug) : undefined;
+    const group = String(co.groupName || co.group || co.color_group || detectColorGroup(name));
 
-    let hex = obj.hex || obj.hex_code || obj.color_hex;
+    let hex = (co.hex || co.hex_code || co.color_hex) as string | null | undefined;
     if (!hex || hex === '#CCCCCC') {
       const knownHex = findKnownHex(name);
       if (knownHex) hex = knownHex;
     }
 
+    const images =
+      Array.isArray(co.images) && co.images.length ? (co.images as string[]) : undefined;
     return {
       name,
       hex: hex || '#CCCCCC',
       group,
       groupSlug,
       variationSlug,
-      code: obj.code || obj.color_code || obj.supplier_code || undefined,
-      image: obj.image || undefined,
-      images: obj.images?.length ? obj.images : undefined,
+      code:
+        co.code || co.color_code || co.supplier_code
+          ? String(co.code || co.color_code || co.supplier_code)
+          : undefined,
+      image: co.image ? String(co.image) : undefined,
+      images,
     };
   });
 }
