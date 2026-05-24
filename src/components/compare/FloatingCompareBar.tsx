@@ -10,7 +10,7 @@ import type { Product } from "@/types/product";
 import { cn } from "@/lib/utils";
 
 export const FloatingCompareBar = React.forwardRef<HTMLDivElement>(
-  function FloatingCompareBar(_props, ref) {
+  function FloatingCompareBar(_props, _ref) {
   const navigate = useNavigate();
   const { compareItems, removeByIndex, clearCompare, compareCount } =
     useComparisonStore();
