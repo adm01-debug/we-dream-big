@@ -92,7 +92,7 @@ export function TechniqueCard({
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm truncate">{technique.name}</span>
               {recommendation.isRecommended && (
-                <Badge className="bg-gradient-to-r from-warning to-orange text-primary-foreground text-[10px] px-1.5 h-5 gap-0.5">
+                <Badge className="bg-gradient-to-r from-warning to-brand-primary text-primary-foreground text-[10px] px-1.5 h-5 gap-0.5">
                   <Sparkles className="h-2.5 w-2.5" />IA
                 </Badge>
               )}
@@ -133,7 +133,7 @@ export function TechniqueCard({
       )}>
         {recommendation.isRecommended && !isSelected && (
           <div className="absolute top-0 right-0 z-10">
-            <div className="bg-gradient-to-l from-warning to-orange text-primary-foreground text-[10px] font-medium px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
+            <div className="bg-gradient-to-l from-warning to-brand-primary text-primary-foreground text-[10px] font-medium px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
               <Sparkles className="h-3 w-3" />Recomendada
             </div>
           </div>
@@ -172,7 +172,7 @@ export function TechniqueCard({
                 <Badge variant="outline" className="text-xs font-mono">{technique.code}</Badge>
                 {recommendation.isRecommended && (
                   <TooltipProvider><Tooltip><TooltipTrigger asChild>
-                    <Badge className="bg-gradient-to-r from-warning to-orange text-primary-foreground text-xs gap-1"><Sparkles className="h-3 w-3" />Recomendada IA</Badge>
+                    <Badge className="bg-gradient-to-r from-warning to-brand-primary text-primary-foreground text-xs gap-1"><Sparkles className="h-3 w-3" />Recomendada IA</Badge>
                   </TooltipTrigger><TooltipContent>
                     <p>{recommendation.recommendationReason}</p>
                     {recommendation.matchedKeywords.length > 0 && <p className="text-xs text-muted-foreground mt-1">Match: {recommendation.matchedKeywords.join(', ')}</p>}

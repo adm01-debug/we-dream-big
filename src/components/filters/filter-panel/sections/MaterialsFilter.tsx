@@ -43,9 +43,9 @@ export function MaterialsFilter({
     <div className="space-y-3">
       {(materialFilterState.selectedGroups.length > 0 ||
         materialFilterState.selectedTypes.length > 0) && (
-        <div className="rounded-lg border border-orange/20 bg-orange/5 p-2.5">
+        <div className="rounded-lg border border-brand-primary/20 bg-brand-primary/5 p-2.5">
           <div className="mb-2 flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-xs font-medium text-orange">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-brand-primary">
               <Gem className="h-3 w-3" />
               Selecionados
             </span>
@@ -119,7 +119,7 @@ export function MaterialsFilter({
         <span>•</span>
         <span>{allMaterials.length} materiais</span>
         <span>•</span>
-        <span className="font-medium text-orange">
+        <span className="font-medium text-brand-primary">
           {materialFilterState.selectedGroups.length + materialFilterState.selectedTypes.length}{' '}
           selecionados
         </span>
@@ -157,7 +157,7 @@ export function MaterialsFilter({
                     className={cn(
                       'rounded-lg border transition-all',
                       hasSelection
-                        ? 'border-orange/30 bg-orange/5'
+                        ? 'border-brand-primary/30 bg-brand-primary/5'
                         : 'border-border/50 hover:border-border',
                     )}
                   >
@@ -173,7 +173,7 @@ export function MaterialsFilter({
                         className="flex flex-1 items-center justify-between text-left"
                         aria-label={`${isOpen ? 'Recolher' : 'Expandir'} tipos de ${group.group_name}`}
                       >
-                        <span className={cn('text-sm font-medium', hasSelection && 'text-orange')}>
+                        <span className={cn('text-sm font-medium', hasSelection && 'text-brand-primary')}>
                           {group.group_name}
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -212,7 +212,7 @@ export function MaterialsFilter({
                                   key={type.type_slug}
                                   className={cn(
                                     'flex items-center gap-2 rounded-md px-2 py-1 transition-colors',
-                                    isTypeSelected ? 'bg-orange/10' : 'hover:bg-muted/50',
+                                    isTypeSelected ? 'bg-brand-primary/10' : 'hover:bg-muted/50',
                                   )}
                                 >
                                   <Checkbox

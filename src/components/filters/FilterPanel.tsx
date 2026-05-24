@@ -74,7 +74,7 @@ export function FilterPanel({
       <div className="px-1">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground text-xs whitespace-nowrap">Mínimo por cor</span>
-          <DebouncedPriceInput value={filters.minStock || ''} onChange={(v) => onFilterChange({ ...filters, minStock: v })} fallback={0} placeholder="Ex: 500" min={0} className={filters.minStock > 0 ? 'border-orange/60' : ''} />
+          <DebouncedPriceInput value={filters.minStock || ''} onChange={(v) => onFilterChange({ ...filters, minStock: v })} fallback={0} placeholder="Ex: 500" min={0} className={filters.minStock > 0 ? 'border-brand-primary/60' : ''} />
           <span className="text-muted-foreground text-xs">un.</span>
         </div>
       </div>
@@ -84,12 +84,12 @@ export function FilterPanel({
         <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center gap-1 flex-1">
             <span className="text-muted-foreground text-xs">R$</span>
-            <DebouncedPriceInput value={filters.priceRange[0]} onChange={(v) => onFilterChange({ ...filters, priceRange: [v, filters.priceRange[1]] })} fallback={0} min={0} className={filters.priceRange[0] > 0 ? 'border-orange/60' : ''} />
+            <DebouncedPriceInput value={filters.priceRange[0]} onChange={(v) => onFilterChange({ ...filters, priceRange: [v, filters.priceRange[1]] })} fallback={0} min={0} className={filters.priceRange[0] > 0 ? 'border-brand-primary/60' : ''} />
           </div>
           <span className="text-muted-foreground text-xs">até</span>
           <div className="flex items-center gap-1 flex-1">
             <span className="text-muted-foreground text-xs">R$</span>
-            <DebouncedPriceInput value={filters.priceRange[1] >= 9999 ? '' : filters.priceRange[1]} onChange={(v) => onFilterChange({ ...filters, priceRange: [filters.priceRange[0], v || 9999] })} fallback={9999} placeholder="Sem limite" min={0} className={filters.priceRange[1] < 9999 ? 'border-orange/60' : ''} />
+            <DebouncedPriceInput value={filters.priceRange[1] >= 9999 ? '' : filters.priceRange[1]} onChange={(v) => onFilterChange({ ...filters, priceRange: [filters.priceRange[0], v || 9999] })} fallback={9999} placeholder="Sem limite" min={0} className={filters.priceRange[1] < 9999 ? 'border-brand-primary/60' : ''} />
           </div>
         </div>
       </div>

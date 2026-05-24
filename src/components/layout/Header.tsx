@@ -244,7 +244,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                 >
                   <Heart className="h-[17px] w-[17px]" strokeWidth={1.75} />
                   {favoriteCount > 0 && (
-                    <Badge className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center border-0 bg-orange px-1 text-[9px] text-orange-foreground">
+                    <Badge className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center border-0 bg-brand-primary px-1 text-[9px] text-brand-primary-foreground">
                       {favoriteCount > 99 ? '99+' : favoriteCount}
                     </Badge>
                   )}
@@ -272,7 +272,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                 >
                   <GitCompare className="h-[17px] w-[17px]" strokeWidth={1.75} />
                   {compareCount > 0 && (
-                    <Badge className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center border-0 bg-orange px-1 text-[9px] text-orange-foreground">
+                    <Badge className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center border-0 bg-brand-primary px-1 text-[9px] text-brand-primary-foreground">
                       {compareCount > 4 ? '4' : compareCount}
                     </Badge>
                   )}
@@ -333,7 +333,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                   <Heart className="mr-2 h-4 w-4" />
                   Favoritos
                   {favoriteCount > 0 && (
-                    <Badge className="ml-auto h-5 min-w-5 border-0 bg-orange px-1.5 text-[10px] text-orange-foreground">
+                    <Badge className="ml-auto h-5 min-w-5 border-0 bg-brand-primary px-1.5 text-[10px] text-brand-primary-foreground">
                       {favoriteCount}
                     </Badge>
                   )}
@@ -342,7 +342,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                   <GitCompare className="mr-2 h-4 w-4" />
                   Comparar
                   {compareCount > 0 && (
-                    <Badge className="ml-auto h-5 min-w-5 border-0 bg-orange px-1.5 text-[10px] text-orange-foreground">
+                    <Badge className="ml-auto h-5 min-w-5 border-0 bg-brand-primary px-1.5 text-[10px] text-brand-primary-foreground">
                       {compareCount}
                     </Badge>
                   )}

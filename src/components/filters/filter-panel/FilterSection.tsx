@@ -5,8 +5,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { cn } from '@/lib/utils';
 
 export const SECTION_ICON_COLORS: Record<string, string> = {
-  cores: "text-orange",
-  categorias: "text-orange/80",
+  cores: "text-brand-primary",
+  categorias: "text-brand-primary/80",
   estoque: "text-info",
   preco: "text-success",
   fornecedores: "text-info",
@@ -52,16 +52,16 @@ export function FilterSection({
 
   return (
     <Collapsible open={isOpen} onOpenChange={() => onToggle(id)}>
-      <div className={cn("transition-all duration-200 border-l-[3px]", hasActive ? "border-l-orange bg-orange/5" : "border-l-transparent hover:border-l-muted-foreground/20")}>
+      <div className={cn("transition-all duration-200 border-l-[3px]", hasActive ? "border-l-brand-primary bg-brand-primary/5" : "border-l-transparent hover:border-l-muted-foreground/20")}>
         <CollapsibleTrigger className={cn(
           "flex items-center justify-between w-full py-2.5 px-3 text-sm font-medium transition-all duration-200 group",
-          isOpen ? "text-orange" : hasActive ? "text-foreground" : "text-foreground/80 hover:text-foreground"
+          isOpen ? "text-brand-primary" : hasActive ? "text-foreground" : "text-foreground/80 hover:text-foreground"
         )}>
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            {icon && <span className={cn("transition-colors duration-200 shrink-0", isOpen ? "text-orange" : iconColor)}>{icon}</span>}
+            {icon && <span className={cn("transition-colors duration-200 shrink-0", isOpen ? "text-brand-primary" : iconColor)}>{icon}</span>}
             <span className="truncate">{title}</span>
             {hasActive && !isOpen && (
-              <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 text-[10px] font-bold rounded-full bg-orange text-orange-foreground shrink-0 animate-scale-in">{activeCount}</span>
+              <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 text-[10px] font-bold rounded-full bg-brand-primary text-brand-primary-foreground shrink-0 animate-scale-in">{activeCount}</span>
             )}
             {tooltip && (
               <Tooltip delayDuration={300}>
@@ -76,7 +76,7 @@ export function FilterSection({
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {!isOpen && activeSummary && <span className="text-[10px] text-muted-foreground max-w-24 truncate hidden sm:inline">{activeSummary}</span>}
-            <span className={cn("transition-all duration-200", "group-hover:text-orange", isOpen ? "text-orange" : "text-muted-foreground/50")}>
+            <span className={cn("transition-all duration-200", "group-hover:text-brand-primary", isOpen ? "text-brand-primary" : "text-muted-foreground/50")}>
               {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </span>
           </div>

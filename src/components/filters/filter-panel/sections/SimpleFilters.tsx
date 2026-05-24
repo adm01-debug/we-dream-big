@@ -203,7 +203,7 @@ export function TagsFilter({
             className={cn(
               "px-2.5 py-1 text-xs rounded-full border transition-all",
               (filters.tags || []).includes(tag.id)
-                ? "bg-orange text-orange-foreground border-orange"
+                ? "bg-brand-primary text-brand-primary-foreground border-brand-primary"
                 : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
             )}
           >

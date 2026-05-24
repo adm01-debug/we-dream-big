@@ -21,13 +21,13 @@ export function FilterPanelHeader({
     <div className="pb-3 mb-1">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange to-orange-hover flex items-center justify-center shadow-md shadow-orange/20">
-            <SlidersHorizontal className="h-4 w-4 text-orange-foreground" />
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-primary-hover flex items-center justify-center shadow-md shadow-brand-primary/20">
+            <SlidersHorizontal className="h-4 w-4 text-brand-primary-foreground" />
           </div>
           <div>
             <h3 className="font-display font-bold text-sm text-foreground tracking-tight">Filtros</h3>
             {activeFiltersCount > 0 ? (
-              <span className="text-[10px] text-orange font-medium">
+              <span className="text-[10px] text-brand-primary font-medium">
                 {activeFiltersCount} filtro{activeFiltersCount > 1 ? 's' : ''} ativo{activeFiltersCount > 1 ? 's' : ''}
               </span>
             ) : (
@@ -36,7 +36,7 @@ export function FilterPanelHeader({
           </div>
         </div>
         {activeFiltersCount > 0 && (
-          <span className="inline-flex items-center justify-center h-7 min-w-7 px-2 text-xs font-bold rounded-full bg-orange text-orange-foreground shadow-sm shadow-orange/30 animate-scale-in">
+          <span className="inline-flex items-center justify-center h-7 min-w-7 px-2 text-xs font-bold rounded-full bg-brand-primary text-brand-primary-foreground shadow-sm shadow-brand-primary/30 animate-scale-in">
             {activeFiltersCount}
           </span>
         )}
@@ -52,7 +52,7 @@ export function FilterPanelHeader({
               className={cn(
                 "text-xs h-7 px-3 gap-1.5 transition-all",
                 activeFiltersCount > 0
-                  ? "border-orange/40 text-orange hover:bg-orange/10 hover:text-orange"
+                  ? "border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 hover:text-brand-primary"
                   : "border-border/50 text-muted-foreground/50 cursor-not-allowed"
               )}
               disabled={activeFiltersCount === 0}
@@ -83,12 +83,12 @@ export function FilterPanelHeader({
       </div>
 
       <div className="relative mt-3">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-orange z-10" />
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-brand-primary z-10" />
         <Input
           placeholder="Buscar filtro..."
           value={filterSearch}
           onChange={(e) => setFilterSearch(e.target.value)}
-          className="h-8 text-xs pl-8 pr-8 bg-muted/30 border-border/40 placeholder:text-muted-foreground/40 focus:border-orange/50"
+          className="h-8 text-xs pl-8 pr-8 bg-muted/30 border-border/40 placeholder:text-muted-foreground/40 focus:border-brand-primary/50"
           aria-label="Buscar seção de filtro por nome"
         />
         {filterSearch && (

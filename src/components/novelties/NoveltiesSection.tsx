@@ -124,7 +124,7 @@ export function NoveltiesSection() {
         {/* Mini stats row */}
         {stats && (
           <div className="flex items-center gap-4 mt-4 text-sm">
-            <div className="flex items-center gap-1.5 text-orange">
+            <div className="flex items-center gap-1.5 text-brand-primary">
               <Flame className="h-4 w-4" />
               <span className="font-semibold tabular-nums">{stats.arrivedToday}</span>
               <span className="text-muted-foreground text-xs">hoje</span>
@@ -207,7 +207,7 @@ export function NoveltiesSection() {
                           {item.product_name}
                         </h4>
                         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                          <span className={cn(fresh ? "text-orange font-medium" : "")}>
+                          <span className={cn(fresh ? "text-brand-primary font-medium" : "")}>
                             {formatDaysAgo(item.detected_at)}
                           </span>
                           {item.supplier_name && (

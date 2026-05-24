@@ -75,7 +75,7 @@ export function useProductIntelligenceBadges(
         type: 'hot-item',
         label: 'Hot Item',
         icon: '🔥',
-        color: 'bg-orange-100 text-orange-800 border-orange-200',
+        color: 'bg-brand-primary-100 text-brand-primary-800 border-brand-primary-200',
         priority: 80,
       });
     }

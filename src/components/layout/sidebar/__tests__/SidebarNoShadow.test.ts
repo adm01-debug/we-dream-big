@@ -89,7 +89,7 @@ describe('Sidebar — sem sombras/brilhos em hover/active (light + dark)', () =>
     // Estratégia: pega a linha inteira, e se tiver ring-(orange|primary) sem focus-visible: na frente, falha.
     const lines = content.split('\n');
     for (const line of lines) {
-      const ringColor = line.match(/\bring-(?:orange|primary)(?:\/\d+)?\b/);
+      const ringColor = line.match(/\bring-(?:orange|primary|brand-primary)(?:\/\d+)?\b/);
       if (ringColor && !/focus-visible:ring/.test(line)) {
         throw new Error(
           `Ring colorido fora de focus-visible (vira glow em dark) em ${NAV_FILE}: ${line.trim()}`,
@@ -107,7 +107,7 @@ describe('Sidebar — sem sombras/brilhos em hover/active (light + dark)', () =>
     // visual de notificações, sem efeito de glow no item de navegação.
     const lines = content.split('\n');
     for (const line of lines) {
-      const borderColor = line.match(/\bborder-(?:orange|primary)(?:\/\d+)?\b/);
+      const borderColor = line.match(/\bborder-(?:orange|primary|brand-primary)(?:\/\d+)?\b/);
       if (borderColor && !/focus-visible:/.test(line) && !/rounded-full/.test(line)) {
         throw new Error(
           `Border colorido detectado em ${NAV_FILE}: ${line.trim()}. Use apenas background sólido para destacar ativos.`,

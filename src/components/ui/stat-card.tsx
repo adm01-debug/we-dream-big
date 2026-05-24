@@ -121,7 +121,7 @@ export function StatCard({
           variant === "warning" && "bg-warning",
           variant === "danger" && "bg-destructive",
           variant === "info" && "bg-info",
-          variant === "orange" && "bg-orange"
+          variant === "orange" && "bg-brand-primary"
         )}
       />
     </div>

@@ -229,7 +229,7 @@ export function StockFilterToolbar({
                       fallback={0}
                       placeholder="Ex: 500"
                       min={0}
-                      className={filters.minQuantityNeeded && filters.minQuantityNeeded > 0 ? 'border-orange/60' : ''}
+                      className={filters.minQuantityNeeded && filters.minQuantityNeeded > 0 ? 'border-brand-primary/60' : ''}
                     />
                     <span className="text-muted-foreground text-xs">un.</span>
                   </div>

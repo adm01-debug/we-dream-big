@@ -71,7 +71,7 @@ const variants: Record<EmptyStateVariant, {
     icon: ShoppingCart,
     title: "Nenhum pedido encontrado",
     description: "Os pedidos aparecerão aqui quando os orçamentos forem aprovados.",
-    color: "text-orange"
+    color: "text-brand-primary"
   },
   clients: {
     icon: Users,

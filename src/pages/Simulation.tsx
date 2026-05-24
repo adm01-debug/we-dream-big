@@ -63,8 +63,8 @@ export default function SimulationPage() {
           <Button onClick={() => runSimulation('resilience')} disabled={loading} variant="outline" className="gap-2">
             <Zap className="h-4 w-4" /> Resiliência
           </Button>
-          <Button onClick={() => runSimulation('fuzzing')} disabled={loading} variant="outline" className="gap-2 border-orange-200 hover:bg-orange-50">
-            <ShieldAlert className="h-4 w-4 text-orange-500" /> Fuzzing
+          <Button onClick={() => runSimulation('fuzzing')} disabled={loading} variant="outline" className="gap-2 border-brand-primary-200 hover:bg-brand-primary-50">
+            <ShieldAlert className="h-4 w-4 text-brand-primary-500" /> Fuzzing
           </Button>
           <Button onClick={() => runSimulation('load')} disabled={loading} variant="default" className="gap-2 bg-indigo-600 hover:bg-indigo-700">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}

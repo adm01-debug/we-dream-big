@@ -110,7 +110,7 @@ export function getKindBadgeClass(tone: ErrorTone): string {
     case "timeout":
       return "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400";
     case "network":
-      return "border-orange-500/40 bg-orange-500/10 text-orange-700 dark:text-orange-400";
+      return "border-brand-primary-500/40 bg-brand-primary-500/10 text-brand-primary-700 dark:text-brand-primary-400";
     case "dns":
       return "border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-400";
     case "auth":

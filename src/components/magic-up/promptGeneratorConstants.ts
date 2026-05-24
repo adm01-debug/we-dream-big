@@ -46,7 +46,7 @@ export const SEASONS = [
 ];
 
 export const MOOD_COLORS: Record<string, string> = {
-  warm: "bg-orange/10 text-orange border-orange/20",
+  warm: "bg-brand-primary/10 text-brand-primary border-brand-primary/20",
   elegant: "bg-primary/10 text-primary border-primary/20",
   dynamic: "bg-primary/15 text-primary/80 border-primary/25",
   serene: "bg-primary/10 text-primary border-primary/20",

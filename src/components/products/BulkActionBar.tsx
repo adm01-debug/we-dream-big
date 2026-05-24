@@ -160,7 +160,7 @@ export const BulkActionBar = memo(function BulkActionBar({
                   label="Catálogo"
                   onClick={onBulkPDF}
                   index={2}
-                  className="text-orange-500 hover:text-orange-500 hover:bg-orange-500/10"
+                  className="text-brand-primary-500 hover:text-brand-primary-500 hover:bg-brand-primary-500/10"
                 />
               )}
             </div>

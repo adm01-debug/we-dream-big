@@ -46,7 +46,7 @@ const VARIANT_STYLES: Record<StatVariant, { iconBg: string; iconColor: string; g
   warning: { iconBg: "bg-warning/15", iconColor: "text-warning", glow: "hover:shadow-[0_0_20px_hsl(var(--warning)/0.15)]" },
   info:    { iconBg: "bg-info/15",    iconColor: "text-info",    glow: "hover:shadow-[0_0_20px_hsl(var(--info)/0.15)]" },
   default: { iconBg: "bg-primary/15", iconColor: "text-primary", glow: "hover:shadow-[0_0_20px_hsl(var(--primary)/0.15)]" },
-  orange:  { iconBg: "bg-orange/15",  iconColor: "text-orange",  glow: "hover:shadow-[0_0_20px_hsl(var(--orange)/0.15)]" },
+  orange:  { iconBg: "bg-brand-primary/15",  iconColor: "text-brand-primary",  glow: "hover:shadow-[0_0_20px_hsl(var(--brand-primary)/0.15)]" },
 };
 
 function StatCard({ label, value, suffix = "", subtitle, icon, variant, delay = 0 }: StatCardProps) {

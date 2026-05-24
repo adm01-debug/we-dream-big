@@ -140,7 +140,7 @@ export function StockHistoryChart({ productId }: StockHistoryChartProps) {
                 className={cn(
                   'text-xs font-bold',
                   effectiveIntelligence.abc_classification === 'A'
-                    ? 'border-orange/30 bg-orange/15 text-orange'
+                    ? 'border-brand-primary/30 bg-brand-primary/15 text-brand-primary'
                     : effectiveIntelligence.abc_classification === 'B'
                       ? 'border-success/30 bg-success/15 text-success'
                       : 'border-border bg-muted text-muted-foreground',

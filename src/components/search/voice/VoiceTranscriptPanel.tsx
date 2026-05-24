@@ -18,7 +18,7 @@ const ACTION_META: Record<string, { icon: React.ElementType; label: string; colo
   search: { icon: () => null, label: "Busca", color: "text-primary" },
   filter: { icon: () => null, label: "Filtro", color: "text-accent-foreground" },
   navigate: { icon: () => null, label: "Navegação", color: "text-success" },
-  sort: { icon: () => null, label: "Ordenação", color: "text-orange" },
+  sort: { icon: () => null, label: "Ordenação", color: "text-brand-primary" },
   clear: { icon: () => null, label: "Limpar", color: "text-destructive" },
   answer: { icon: () => null, label: "Resposta", color: "text-secondary-foreground" },
 };

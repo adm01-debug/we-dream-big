@@ -45,7 +45,7 @@ const categoryConfig = {
   product: { icon: Package, label: "Produto", color: "text-primary" },
   quote: { icon: FileText, label: "Orçamento", color: "text-success" },
   client: { icon: Users, label: "Cliente", color: "text-primary" },
-  order: { icon: ShoppingCart, label: "Pedido", color: "text-orange" },
+  order: { icon: ShoppingCart, label: "Pedido", color: "text-brand-primary" },
   page: { icon: ArrowRight, label: "Página", color: "text-muted-foreground" },
   action: { icon: Sparkles, label: "Ação", color: "text-primary" },
 };

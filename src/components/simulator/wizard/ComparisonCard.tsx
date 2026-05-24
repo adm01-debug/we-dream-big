@@ -70,7 +70,7 @@ export function ComparisonCard({
               <h4 className="font-bold text-xl">{result.techniqueName}</h4>
               <Badge variant="outline" className="text-xs font-mono">{result.techniqueCode}</Badge>
               {isBestValue && (
-                <Badge className="bg-gradient-to-r from-warning to-orange text-primary-foreground border-0 gap-1.5 px-3 py-1 shadow-lg shadow-amber-500/25 text-sm">
+                <Badge className="bg-gradient-to-r from-warning to-brand-primary text-primary-foreground border-0 gap-1.5 px-3 py-1 shadow-lg shadow-amber-500/25 text-sm">
                   <Trophy className="h-4 w-4" />Melhor Custo-Benefício
                 </Badge>
               )}

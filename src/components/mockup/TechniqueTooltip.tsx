@@ -41,7 +41,7 @@ const TECHNIQUE_INFO: Record<string, {
     colors: "Até 15 cores",
     bestFor: "Camisas, bonés, jaquetas",
     visualStyle: "Textura 3D com linhas visíveis",
-    gradient: "from-warning to-orange",
+    gradient: "from-warning to-brand-primary",
   },
   silk: {
     description: "Serigrafia tradicional para grandes quantidades",

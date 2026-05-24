@@ -38,9 +38,9 @@ export function RamosFilter({
   return (
     <div className="space-y-3">
       {(filters.ramosAtividade.length > 0 || filters.segmentosAtividade.length > 0) && (
-        <div className="rounded-lg border border-orange/20 bg-orange/5 p-2.5">
+        <div className="rounded-lg border border-brand-primary/20 bg-brand-primary/5 p-2.5">
           <div className="mb-2 flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-xs font-medium text-orange">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-brand-primary">
               <Building2 className="h-3 w-3" />
               Selecionados
             </span>
@@ -127,7 +127,7 @@ export function RamosFilter({
         <span>•</span>
         <span>{totalRamoSegmentos} segmentos</span>
         <span>•</span>
-        <span className="font-medium text-orange">
+        <span className="font-medium text-brand-primary">
           {filters.ramosAtividade.length + filters.segmentosAtividade.length} selecionados
         </span>
       </div>

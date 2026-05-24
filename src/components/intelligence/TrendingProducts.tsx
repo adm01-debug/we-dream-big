@@ -65,7 +65,7 @@ export function TrendingProducts({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-base">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-orange to-warning">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-brand-primary to-warning">
                 <TrendingUp className="h-3.5 w-3.5 text-primary-foreground" />
               </div>
               🔥 Produtos em Alta
@@ -100,7 +100,7 @@ export function TrendingProducts({
                     'flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold',
                     index === 0 && 'bg-warning/20 text-warning',
                     index === 1 && 'bg-muted/50 text-muted-foreground',
-                    index === 2 && 'bg-orange/20 text-orange',
+                    index === 2 && 'bg-brand-primary/20 text-brand-primary',
                     index > 2 && 'bg-muted text-muted-foreground',
                   )}
                 >

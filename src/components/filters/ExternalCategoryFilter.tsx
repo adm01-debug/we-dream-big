@@ -136,7 +136,7 @@ export function ExternalCategoryFilter({
           className={cn(
             "flex items-center gap-2 py-1.5 px-2 rounded-md transition-colors",
             isSelected
-              ? "bg-orange/10 ring-1 ring-inset ring-orange/20"
+              ? "bg-brand-primary/10 ring-1 ring-inset ring-brand-primary/20"
               : "hover:bg-muted/50"
           )}
           style={{ paddingLeft: `${8 + level * 16}px` }}
@@ -148,7 +148,7 @@ export function ExternalCategoryFilter({
               onClick={() => toggleExpand(node.id)}
               className={cn(
                 "p-0.5 rounded transition-colors",
-                isSelected ? "hover:bg-orange/10" : "hover:bg-muted"
+                isSelected ? "hover:bg-brand-primary/10" : "hover:bg-muted"
               )}
             >
               {isExpanded ? (
@@ -166,7 +166,7 @@ export function ExternalCategoryFilter({
             id={`ext-cat-${node.id}`}
             checked={isSelected}
             onCheckedChange={() => toggleCategory(node.id)}
-            className="h-4 w-4 rounded-full border-orange/60 data-[state=checked]:border-orange data-[state=checked]:bg-orange data-[state=checked]:text-orange-foreground"
+            className="h-4 w-4 rounded-full border-brand-primary/60 data-[state=checked]:border-brand-primary data-[state=checked]:bg-brand-primary data-[state=checked]:text-brand-primary-foreground"
           />
 
           {/* Label */}
@@ -184,7 +184,7 @@ export function ExternalCategoryFilter({
               className={cn(
                 "flex-shrink-0 text-[10px] font-medium tabular-nums px-1.5 py-0.5 rounded-full",
                 isSelected
-                  ? "bg-orange/20 text-orange"
+                  ? "bg-brand-primary/20 text-brand-primary"
                   : "bg-muted text-muted-foreground"
               )}
               title={`${totalCount} produtos${hasChildren ? ` (${node.products_count ?? 0} diretos)` : ''}`}
@@ -219,9 +219,9 @@ export function ExternalCategoryFilter({
     <div className="space-y-3">
       {/* Categorias selecionadas */}
       {selectedCategories.length > 0 && (
-        <div className="p-2 bg-orange/5 rounded-lg border border-orange/20">
+        <div className="p-2 bg-brand-primary/5 rounded-lg border border-brand-primary/20">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-orange flex items-center gap-1.5">
+            <span className="text-xs font-medium text-brand-primary flex items-center gap-1.5">
               <Layers className="h-3 w-3" />
               Selecionadas ({selectedCategories.length})
             </span>
@@ -291,7 +291,7 @@ export function ExternalCategoryFilter({
             <RefreshCw className={cn("h-3 w-3", isFetching && "animate-spin")} />
             {isFetching ? "Atualizando..." : "Atualizar"}
           </button>
-          <span className="text-orange font-medium">
+          <span className="text-brand-primary font-medium">
             {selectedCategories.length} selecionadas
           </span>
         </div>
