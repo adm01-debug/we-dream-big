@@ -7,18 +7,18 @@
  * - Código de orçamento automático
  */
 
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Calculator, 
-  Clock, 
-  AlertCircle, 
-  Package, 
+import {
+  Calculator,
+  Clock,
+  AlertCircle,
+  Package,
   Paintbrush,
   Copy,
   CheckCircle2,
