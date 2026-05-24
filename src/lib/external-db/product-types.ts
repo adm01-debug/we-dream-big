@@ -74,14 +74,24 @@ export interface PromobrindProduct {
   price_updated_at?: string | null;
   price_freshness_threshold_days?: number | null;
   kit_components?: Array<{
-    id: string; component_name: string | null; component_code: string | null;
-    component_product_id: string | null; component_sku: string | null;
-    quantity: number | null; display_order: number | null;
-    is_optional: boolean | null; is_packaging: boolean | null;
-    is_replaceable: boolean | null; allows_personalization: boolean | null;
-    material: string | null; primary_image_url: string | null;
-    height_mm: number | null; width_mm: number | null; length_mm: number | null;
-    weight_g: number | null; notes: string | null;
+    id: string;
+    component_name: string | null;
+    component_code: string | null;
+    component_product_id: string | null;
+    component_sku: string | null;
+    quantity: number | null;
+    display_order: number | null;
+    is_optional: boolean | null;
+    is_packaging: boolean | null;
+    is_replaceable: boolean | null;
+    allows_personalization: boolean | null;
+    material: string | null;
+    primary_image_url: string | null;
+    height_mm: number | null;
+    width_mm: number | null;
+    length_mm: number | null;
+    weight_g: number | null;
+    notes: string | null;
   }> | null;
 
   // ------------------------------------------------------------------
@@ -208,5 +218,7 @@ export const PRODUCT_SELECT_FIELDS_DETAIL =
 // #2: also trigger fallback when orderBy hits a missing column
 export function shouldFallbackSelect(err: unknown) {
   const msg = err instanceof Error ? err.message : String(err);
-  return /(sale_price|base_price|image_url|supplier_name|category_name|product_videos|selected_images|gender|price_updated_at|price_freshness_threshold_days|does not exist|não existe|undefined column|column .+ does not exist|could not identify an ordering operator|order by)/i.test(msg);
+  return /(sale_price|base_price|image_url|supplier_name|category_name|product_videos|selected_images|gender|price_updated_at|price_freshness_threshold_days|does not exist|não existe|undefined column|column .+ does not exist|could not identify an ordering operator|order by)/i.test(
+    msg,
+  );
 }

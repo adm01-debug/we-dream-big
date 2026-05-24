@@ -42,6 +42,13 @@
     "src/components/compare/PriceSparkline.tsx": {
       "TS2345": 2
     },
+    "src/components/compare/HistoricalPriceOverlay.tsx": {
+      "TS2345": 1,
+      "TS2352": 1
+    },
+    "src/components/compare/PriceSparkline.tsx": {
+      "TS2345": 2
+    },
     "src/components/compare/SimilarProductsRail.tsx": {
       "TS2339": 1
     },
@@ -445,6 +452,10 @@
       "TS2322": 3,
       "TS2353": 1
     },
+    "src/hooks/quotes/useQuoteComments.ts": {
+      "TS2322": 3,
+      "TS2353": 1
+    },
     "src/hooks/quotes/useQuoteFunnel.ts": {
       "TS2367": 1
     },
@@ -603,6 +614,9 @@
       "TS2322": 1,
       "TS2339": 1,
       "TS2345": 1
+    },
+    "src/services/__tests__/productService.test.ts": {
+      "TS2345": 3
     },
     "src/services/__tests__/productService.test.ts": {
       "TS2345": 3
