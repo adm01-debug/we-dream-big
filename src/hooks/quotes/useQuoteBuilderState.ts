@@ -10,8 +10,8 @@ import {
   useDiscountApproval,
   useQuoteItems,
   useQuotes,
-  useSellerDiscountLimits,
   useQuoteTemplates,
+  useSellerDiscountLimits,
   type QuoteItem,
   type QuoteItemPersonalization,
   type QuoteTemplate,
@@ -25,7 +25,6 @@ import { formatCurrency as fmtCurrency } from '@/lib/format';
 import { validateQuoteForm, QUOTE_FIELD_LABELS } from '@/lib/validations';
 import { useAuth } from '@/contexts/AuthContext';
 import { findKnownHex, type ExternalVariantStock } from '@/hooks/products';
-import type { PromobrindProduct } from '@/lib/external-db';
 import { useDebounce } from '@/hooks/common';
 import type {
   SelectedCompanyInfo,
