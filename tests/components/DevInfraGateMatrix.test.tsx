@@ -19,10 +19,12 @@ describe('DevInfraGate Matrix — Parameterized Permission Tests', () => {
     vi.clearAllMocks();
   });
 
+  // DevOnlyBridgeOverlay usa <DevOnly strict> → apenas isDev controla visibilidade;
+  // isAllowed (env/localStorage override) é ignorado no modo strict.
   const testCases = [
     { isAllowed: true,  isDev: true,  expectedVisible: true,  desc: 'Usuário Dev com permissão aprovada' },
-    { isAllowed: true,  isDev: false, expectedVisible: true,  desc: 'Usuário não-Dev mas com permissão aprovada (ex: override ou Admin)' },
-    { isAllowed: false, isDev: true,  expectedVisible: false, desc: 'Usuário Dev mas com permissão negada (ex: env gate desligado)' },
+    { isAllowed: true,  isDev: false, expectedVisible: false, desc: 'Usuário não-Dev mas com permissão aprovada (strict: isDev=false bloqueia)' },
+    { isAllowed: false, isDev: true,  expectedVisible: true,  desc: 'Usuário Dev mas com isAllowed=false (strict: isDev=true libera)' },
     { isAllowed: false, isDev: false, expectedVisible: false, desc: 'Usuário comum com permissão negada' },
   ];
 
