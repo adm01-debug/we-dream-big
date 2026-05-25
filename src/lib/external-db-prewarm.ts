@@ -14,15 +14,23 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
+type PrewarmTable =
+  | 'products'
+  | 'product_images'
+  | 'product_variants'
+  | 'categories'
+  | 'suppliers'
+  | 'color_groups';
+
 // Tabelas principais que convém ter no pool antes do primeiro uso
-const PREWARM_TABLES = [
+const PREWARM_TABLES: readonly PrewarmTable[] = [
   'products',
   'product_images',
   'product_variants',
   'categories',
   'suppliers',
   'color_groups',
-] as const;
+];
 
 let lastPrewarmAt = 0;
 const PREWARM_COOLDOWN_MS = 5 * 60 * 1000;
@@ -33,17 +41,12 @@ const SESSION_KEY = '__pg_prewarm_done__';
  * SELECT id LIMIT 1 é suficiente para abrir a conexão no pool.
  */
 async function warmAllTables(
-  tables: readonly string[],
-): Promise<Array<{ table: string; ok: boolean; ms: number; err?: string }>> {
+  tables: readonly PrewarmTable[],
+): Promise<Array<{ table: PrewarmTable; ok: boolean; ms: number; err?: string }>> {
   const t0 = performance.now();
 
   const results = await Promise.allSettled(
-    tables.map((table) =>
-      // Tipos gerados automaticamente podem não cobrir todas as tabelas;
-      // usamos 'any' para evitar erro de compilação sem alterar o runtime.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      supabase.from(table as any).select('id').limit(1),
-    ),
+    tables.map((table) => supabase.from(table).select('id').limit(1)),
   );
 
   const totalMs = Math.round(performance.now() - t0);
@@ -68,9 +71,7 @@ async function warmAllTables(
  *  - `oncePerSession`: respeita flag em sessionStorage (default false).
  *    Quando true, dispara no máximo 1x por sessão de browser.
  */
-export async function prewarmExternalDb(
-  opts: { force?: boolean; oncePerSession?: boolean } = {},
-) {
+export async function prewarmExternalDb(opts: { force?: boolean; oncePerSession?: boolean } = {}) {
   const { force = false, oncePerSession = false } = opts;
 
   if (!force && oncePerSession) {
@@ -116,9 +117,7 @@ export async function prewarmExternalDb(
     /* ignore */
   }
 
-  logger.log(
-    `[Prewarm] Done in ${totalMs}ms — ok=${okCount} fail=${failCount} (PostgREST native)`,
-  );
+  logger.log(`[Prewarm] Done in ${totalMs}ms — ok=${okCount} fail=${failCount} (PostgREST native)`);
 }
 
 /**
