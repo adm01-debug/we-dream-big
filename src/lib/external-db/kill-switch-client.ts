@@ -31,6 +31,35 @@ type SwitchCheck = {
   shouldApply?: boolean;
 };
 
+type KillSwitchRow = {
+  enabled?: boolean | null;
+  legacy_message?: string | null;
+};
+
+type KillSwitchQueryResult = {
+  data: KillSwitchRow | null;
+  error: { message?: string } | null;
+};
+
+type KillSwitchRpcResult = {
+  data: boolean | null;
+  error: { message?: string } | null;
+};
+
+type KillSwitchTableClient = {
+  from(table: 'system_kill_switches'): {
+    select(columns: 'enabled, legacy_message'): {
+      eq(column: 'switch_name', value: string): {
+        maybeSingle(): Promise<KillSwitchQueryResult>;
+      };
+    };
+  };
+  rpc(
+    fn: 'fn_should_apply_kill_switch',
+    args: { p_switch_name: string; p_bucket_key: string },
+  ): Promise<KillSwitchRpcResult>;
+};
+
 const memoryCache = new Map<string, SwitchCheck>();
 
 /**
@@ -119,8 +148,10 @@ export async function getKillSwitchState(switchName: string): Promise<KillSwitch
 
   // 3) Network
   try {
-    // deno-lint-ignore no-explicit-any
-    const client = supabase as any;
+    // Cast controlado: a tabela `system_kill_switches` foi criada
+    // após o último gen-types e ainda não está no Database type. Substituir
+    // por `from('system_kill_switches')` tipado quando rodar `supabase gen types`.
+    const client = supabase as unknown as KillSwitchTableClient;
     const { data, error } = await client
       .from('system_kill_switches')
       .select('enabled, legacy_message')

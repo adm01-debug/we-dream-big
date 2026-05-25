@@ -216,7 +216,7 @@ export default function ObservabilityDashboard(): JSX.Element {
                       {row.details ?? '—'}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums text-xs text-gray-500">
-                      {row.duration_ms != null ? `${Number(row.duration_ms).toFixed(1)}ms` : '—'}
+                      {row.duration_ms !== null ? `${Number(row.duration_ms).toFixed(1)}ms` : '—'}
                     </td>
                   </tr>
                 ))}
