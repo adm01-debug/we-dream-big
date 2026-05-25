@@ -129,7 +129,11 @@ const App = () => {
         <ThemeInitializer />
         <AccessibilityProvider>
           <AriaLiveProvider>
-            <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+            {/*
+             * Keep v7_startTransition disabled: under concurrent root work it can
+             * update history before the matching route render commits.
+             */}
+            <BrowserRouter future={{ v7_relativeSplatPath: true }}>
               <AuthProvider>
                 <AppBootstrapContainer>
                   <AppBootstrap>
