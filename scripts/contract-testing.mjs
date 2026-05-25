@@ -35,6 +35,9 @@ const ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_R
 const PRODUCT_WEBHOOK_SECRET = process.env.N8N_PRODUCT_WEBHOOK_SECRET || '';
 const TIMEOUT_MS = Number(process.env.CONTRACT_TEST_TIMEOUT_MS || 10000);
 const CONTRACT_USER_AGENT = 'PromoGiftsContractSmoke/1.0';
+const UPSTREAM_RETRY_COUNT = Number(process.env.CONTRACT_TEST_UPSTREAM_RETRIES || 8);
+const UPSTREAM_RETRY_DELAY_MS = Number(process.env.CONTRACT_TEST_UPSTREAM_RETRY_DELAY_MS || 1000);
+const TRANSIENT_UPSTREAM_STATUSES = new Set([502, 503, 504]);
 
 if (!ANON_KEY) {
   console.error('❌ SUPABASE_ANON_KEY (ou SERVICE_ROLE_KEY) é obrigatório.');
@@ -206,18 +209,29 @@ async function runScenario(contract, scenario) {
     headers['x-webhook-signature'] = `sha256=${signature}`;
   }
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   let res;
+  let text = '';
   try {
-    res = await fetch(url, { method: 'POST', headers, body, signal: controller.signal });
+    for (let attempt = 0; attempt <= UPSTREAM_RETRY_COUNT; attempt++) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+      try {
+        res = await fetch(url, { method: 'POST', headers, body, signal: controller.signal });
+        text = await res.text();
+      } finally {
+        clearTimeout(timer);
+      }
+
+      if (!TRANSIENT_UPSTREAM_STATUSES.has(res.status) || attempt === UPSTREAM_RETRY_COUNT) {
+        break;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, UPSTREAM_RETRY_DELAY_MS));
+    }
   } catch (err) {
     return { ok: false, reason: `fetch error: ${err.message}` };
-  } finally {
-    clearTimeout(timer);
   }
 
-  const text = await res.text();
   let json;
   try {
     json = JSON.parse(text);
