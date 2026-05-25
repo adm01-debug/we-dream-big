@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-25T03:08:22.061Z",
-  "totalErrors": 498,
+  "generatedAt": "2026-05-25T14:23:22.196Z",
+  "totalErrors": 509,
   "counts": {
     "src/components/admin/products/BulkImportDialog.tsx": {
       "TS2322": 1
@@ -649,6 +649,10 @@
     },
     "src/utils/productPdfExport.ts": {
       "TS18048": 1
+    },
+    "src/integrations/supabase/types.ts": {
+      "TS2300": 10,
+      "TS2717": 1
     }
   }
 }
