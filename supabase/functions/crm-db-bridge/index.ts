@@ -1,6 +1,6 @@
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { z } from "../_shared/contracts/index.ts";
 import { runBotProtection } from '../_shared/bot-protection.ts';
 import { getBreaker, circuitOpenResponse, getAllBreakerStatuses } from '../_shared/circuit-breaker.ts';
 import { AsyncLocalStorage } from "node:async_hooks";

@@ -1,6 +1,6 @@
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { authenticateRequest, requireRole, authErrorResponse } from '../_shared/auth.ts';
-import { z } from "https://esm.sh/zod@3.23.8";
+import { z } from "../_shared/contracts/index.ts";
 import { fetchWithBreaker, CircuitOpenError, circuitOpenResponse } from '../_shared/external-fetch.ts';
 
 const BodySchema = z.object({

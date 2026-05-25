@@ -15,7 +15,7 @@
 // token como usado — preserva a possibilidade de execução real depois.
 // ----------------------------------------------------------------------------
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { z } from "../_shared/contracts/index.ts";
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts";
 
 type CheckStatus = "pass" | "fail" | "skipped" | "error";

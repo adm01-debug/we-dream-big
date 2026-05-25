@@ -1,7 +1,6 @@
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
-
+import { z } from "../_shared/contracts/index.ts";
 const BodySchema = z.object({
   token: z.string().min(1, "Token não fornecido"),
 });

@@ -1,8 +1,7 @@
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import { safeErrorResponse } from '../_shared/error-response.ts';
 import { logSecurityEvent } from '../_shared/security.ts';
-import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
-
+import { z } from "../_shared/contracts/index.ts";
 const BodySchema = z.object({
   endpoint: z.enum(['login', 'api', 'ai', 'approval']).default('api'),
 }).partial();

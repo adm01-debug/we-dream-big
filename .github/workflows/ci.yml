@@ -127,6 +127,9 @@ jobs:
       - name: ESLint baseline gate (bloqueia apenas regressões novas)
         run: npm run lint:baseline
 
+      - name: Zod pinning gate (issue #52 — barrel centralization)
+        run: npm run check:zod-pinning
+
       # hooks já cobertos pelo job dedicado hooks-tests (timeout-minutes: 10).
       # test:strict-ref e test:coverage omitidos aqui — rodam em ref-warning-suite
       # e integration-tests respectivamente, evitando tripla execução da suite.

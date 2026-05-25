@@ -3,7 +3,7 @@ import { authenticateRequest, requireRole, authErrorResponse } from '../_shared/
 // Comparison AI Advisor — Lovable AI Gateway
 // Recebe lista slim de produtos e retorna 3-5 bullets + bestFor highVolume/fastDelivery/premium.
 
-import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { z } from "../_shared/contracts/index.ts";
 import { safeErrorFields } from '../_shared/log-safety.ts';
 
 // Fallback CORS headers — sobrescritos per-request via getCorsHeaders(req).

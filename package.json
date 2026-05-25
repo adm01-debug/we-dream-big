@@ -26,6 +26,7 @@
     "lint:check": "eslint src --max-warnings=500",
     "lint:baseline": "node scripts/check-eslint-baseline.mjs",
     "lint:baseline:update": "node scripts/eslint-baseline-generate.mjs",
+    "check:zod-pinning": "node scripts/check-zod-pinning.mjs",
     "typecheck": "node scripts/check-tsc-baseline.mjs",
     "qa:lint": "eslint src --max-warnings=500",
     "qa:typecheck": "tsc -p tsconfig.app.json --noEmit",

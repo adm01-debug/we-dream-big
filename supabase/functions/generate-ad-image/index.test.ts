@@ -1,7 +1,6 @@
 import "https://deno.land/std@0.224.0/dotenv/load.ts";
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
-
+import { z } from "../_shared/contracts/index.ts";
 // Mirror the schema from the function
 const BodySchema = z.object({
   productImageUrl: z.string().url(),

@@ -1,6 +1,6 @@
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
-import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { z } from "../_shared/contracts/index.ts";
 import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
 import { SYSTEM_PROMPT, VOICE_COMMAND_TOOL, TOOL_CHOICE } from './systemPrompt.ts';
 import { parseAiResponse } from './parseAiResponse.ts';

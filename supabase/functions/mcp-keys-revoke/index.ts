@@ -6,7 +6,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
  * payload_summary antes do trigger DB.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { z } from "../_shared/contracts/index.ts";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
 import { writeAuditEntry, summarizePayload, extractRequestMeta } from "../_shared/audit-log.ts";
 import { recordMcpViolation, mapViolationReason } from "../_shared/mcp-violations.ts";

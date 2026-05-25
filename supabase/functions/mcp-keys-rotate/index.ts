@@ -8,7 +8,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { z } from "../_shared/contracts/index.ts";
 import {
   FULL_SCOPE_CONFIRMATION,
   FULL_SCOPE_MIN_JUSTIFICATION,

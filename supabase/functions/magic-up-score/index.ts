@@ -2,8 +2,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
 import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
 import { runBotProtection } from '../_shared/bot-protection.ts';
-import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
-
+import { z } from "../_shared/contracts/index.ts";
 const CriterionSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),

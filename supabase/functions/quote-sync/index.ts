@@ -2,7 +2,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { authenticateRequest, requireRole, authErrorResponse } from "../_shared/auth.ts";
 /// <reference lib="deno.ns" />
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { z } from "../_shared/contracts/index.ts";
 import { parseBodyWithSchema } from "../_shared/zod-validate.ts";
 import { resolveCredential } from "../_shared/credentials.ts";
 

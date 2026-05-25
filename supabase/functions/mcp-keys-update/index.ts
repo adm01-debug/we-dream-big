@@ -6,7 +6,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
  * Toda mudança é auditada com request_id, payload_summary, duração e status.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { z } from "../_shared/contracts/index.ts";
 import {
   KNOWN_SCOPES,
   FULL_SCOPE_CONFIRMATION,

@@ -1,6 +1,6 @@
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { z } from "../_shared/contracts/index.ts";
 import { runBotProtection } from '../_shared/bot-protection.ts';
 
 const BodySchema = z.object({

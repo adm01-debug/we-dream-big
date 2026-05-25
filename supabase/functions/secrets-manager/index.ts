@@ -2,7 +2,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // Admin-only secrets manager for the Conexões hub.
 // Persists values in `integration_credentials` and never returns plaintext to the client.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+import { z } from "../_shared/contracts/index.ts";
 import {
   invalidateCredentialCache,
   getCredentialCacheMetrics,
