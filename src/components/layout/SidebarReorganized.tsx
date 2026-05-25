@@ -168,12 +168,11 @@ export const SidebarReorganized = React.memo(
     useEffect(() => {
       document.documentElement.style.setProperty('--sidebar-w', isCollapsed ? '4rem' : '16rem');
     }, [isCollapsed]);
+
     const _isItemActive = (href: string, exact?: boolean) =>
       isNavItemActive(location.pathname, href, exact);
 
     // Compute which groups should be auto-opened for the current route.
-    // Derived synchronously from `location` so back/forward navigation never
-    // flickers (no post-commit useEffect lag).
     const computeAutoOpen = useCallback(() => {
       const next: Record<string, boolean> = {};
       navGroups.forEach((group) => {
@@ -187,15 +186,13 @@ export const SidebarReorganized = React.memo(
 
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(computeAutoOpen);
 
-    // Track the last pathname we synced so we only override user-toggled state
-    // when the route actually changes (incl. via popstate / back-forward).
-    const lastSyncedPathRef = React.useRef(location.pathname);
-    if (lastSyncedPathRef.current !== location.pathname) {
-      lastSyncedPathRef.current = location.pathname;
-      // setState during render is safe here: React bails out on equal state and
-      // schedules the update before paint, eliminating the 1-frame flicker.
+    // Sync open groups when the route changes (back/forward navigation).
+    // Using useEffect instead of setState-during-render to avoid infinite
+    // re-render loops caused by computeAutoOpen returning a new object reference
+    // on every invocation.
+    useEffect(() => {
       setOpenGroups(computeAutoOpen());
-    }
+    }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const { isAdmin, isDev } = useAuth();
     const isMobile = useMediaQuery('(max-width: 1023px)');
@@ -277,26 +274,15 @@ export const SidebarReorganized = React.memo(
 
     const hasAnyGroupOpen = Object.values(openGroups).some(Boolean);
 
-    // Receives the next open value from Radix Collapsible. Trusting Radix's
-    // value (instead of inverting our own) keeps state consistent if the
-    // Collapsible re-emits the same state due to focus/escape interactions.
     const toggleGroup = (groupId: string, next: boolean) => {
       setOpenGroups((prev) => (prev[groupId] === next ? prev : { ...prev, [groupId]: next }));
     };
 
-    // Defense-in-depth: além das flags declarativas (`devOnly`/`adminOnly`),
-    // o SSOT `restricted-routes.ts` é consultado por `href`. Assim:
-    //  - rota dev-only ⇒ visível só p/ isDev (mesmo se faltou marcar a flag)
-    //  - rota admin-only ⇒ visível só p/ isAdmin (= supervisor OU dev)
-    //  - supervisor SEM dev nunca enxerga itens técnicos, mesmo que outro
-    //    desenvolvedor os marque erroneamente como `adminOnly`.
     const isItemVisible = useCallback(
       (item: { href?: string; adminOnly?: boolean; devOnly?: boolean }): boolean => {
         const href = item.href ?? '';
-        // 1) Flags declarativas
         if (item.devOnly && !isDev) return false;
         if (item.adminOnly && !isAdmin) return false;
-        // 2) SSOT por path (defesa contra flags faltantes/erradas)
         if (href && isDevOnlyPath(href) && !isDev) return false;
         if (href && isAdminOnlyPath(href) && !isAdmin) return false;
         return true;
@@ -312,7 +298,6 @@ export const SidebarReorganized = React.memo(
             ...g,
             items: g.items.filter(isItemVisible).map((i) => ({
               ...i,
-              // Filtra também os filhos (ex.: subitens de Cadastros)
               children: i.children?.filter(isItemVisible),
             })),
           }))
