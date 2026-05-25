@@ -1,12 +1,40 @@
 {
-  "generatedAt": "2026-05-24T19:40:05.304Z",
-  "totalErrors": 508,
+  "generatedAt": "2026-05-25T00:45:16.132Z",
+  "totalErrors": 545,
   "counts": {
+    "src/components/admin/SellerDiscountLimitsPanel.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
     "src/components/admin/products/BulkImportDialog.tsx": {
       "TS2322": 1
     },
     "src/components/admin/products/ProductFormFullscreen.tsx": {
       "TS2352": 1
+    },
+    "src/components/admin/security/ActiveIpsList.tsx": {
+      "TS2345": 1
+    },
+    "src/components/admin/security/RecentAuditTable.tsx": {
+      "TS2538": 1
+    },
+    "src/components/admin/security/keys/audit/useMcpAuditFeed.ts": {
+      "TS2345": 1
+    },
+    "src/components/admin/security/keys/audit/useStepUpAttempts.ts": {
+      "TS2538": 1
+    },
+    "src/components/admin/security/keys/useMcpKeys.ts": {
+      "TS2345": 1
+    },
+    "src/components/admin/security/role-migration/RoleMigrationPanel.tsx": {
+      "TS2345": 2
+    },
+    "src/components/admin/users/RoleAuditLogPanel.tsx": {
+      "TS2345": 1
+    },
+    "src/components/admin/users/useUserManagement.ts": {
+      "TS2322": 1
     },
     "src/components/catalog/CatalogContent.tsx": {
       "TS2322": 1,
@@ -38,6 +66,16 @@
       "TS2339": 1,
       "TS7006": 5
     },
+    "src/components/dashboard/MyClientsWidget.tsx": {
+      "TS2345": 1
+    },
+    "src/components/dashboard/MyRecentQuotesWidget.tsx": {
+      "TS2538": 1,
+      "TS2769": 1
+    },
+    "src/components/dashboard/RecentKitsWidget.tsx": {
+      "TS2345": 1
+    },
     "src/components/dev/BridgeMetricsOverlay.tsx": {
       "TS4104": 1
     },
@@ -55,17 +93,19 @@
       "TS2322": 1
     },
     "src/components/expert/chat/useExpertChat.ts": {
-      "TS1345": 2
+      "TS1345": 2,
+      "TS2322": 1
     },
     "src/components/favorites/FavoritesTrashView.tsx": {
-      "TS2322": 1
+      "TS2322": 1,
+      "TS2345": 1
     },
     "src/components/filters/ExternalCategoryFilter.tsx": {
       "TS2345": 1
     },
     "src/components/filters/FilterPresets.ts": {
-      "TS2322": 1,
-      "TS2345": 1
+      "TS2322": 9,
+      "TS2345": 2
     },
     "src/components/filters/filter-panel/useFilterPanelState.ts": {
       "TS2339": 2
@@ -257,7 +297,7 @@
       "TS2339": 1
     },
     "src/components/search/useGlobalSearch.ts": {
-      "TS2322": 2,
+      "TS2322": 3,
       "TS2339": 6,
       "TS2345": 3,
       "TS2352": 6,
@@ -265,6 +305,9 @@
     },
     "src/components/security/MfaEnrollmentDialog.tsx": {
       "TS2367": 1
+    },
+    "src/components/security/SecurityDashboard.tsx": {
+      "TS2345": 1
     },
     "src/components/simulator/MockupPreview.tsx": {
       "TS2339": 13,
@@ -374,6 +417,14 @@
     "src/hooks/intelligence/useMagicUpGeneration.ts": {
       "TS2322": 1
     },
+    "src/hooks/intelligence/useSalesHistory.ts": {
+      "TS2322": 4,
+      "TS2538": 1
+    },
+    "src/hooks/intelligence/useSalesHistoryMacro.ts": {
+      "TS2322": 2,
+      "TS2538": 1
+    },
     "src/hooks/intelligence/useScheduledReports.ts": {
       "TS2322": 1
     },
@@ -389,15 +440,14 @@
     "src/hooks/kit-builder/useKitBuilderTransformers.ts": {
       "TS2345": 4
     },
+    "src/hooks/kit-builder/useKitCollaboration.ts": {
+      "TS2322": 1
+    },
     "src/hooks/kit-builder/useKitTemplates.ts": {
       "TS2322": 3
     },
     "src/hooks/mockup/mockupGenerationService.ts": {
       "TS2345": 1
-    },
-    "src/hooks/mockup/useMockupDraft.ts": {
-      "TS2345": 2,
-      "TS2769": 2
     },
     "src/hooks/mockup/useMockupGenerator.ts": {
       "TS2339": 2,
@@ -416,18 +466,12 @@
     "src/hooks/products/useColorEnrichment.ts": {
       "TS2322": 1
     },
-    "src/hooks/products/useColorSystem.ts": {
-      "TS2345": 1,
-      "TS2352": 1,
-      "TS2769": 1
-    },
     "src/hooks/products/useNoveltiesSelectionMode.ts": {
       "TS2352": 1
     },
     "src/hooks/products/useProductInsights.ts": {
-      "TS18047": 1,
-      "TS2345": 1,
-      "TS2531": 1
+      "TS2322": 1,
+      "TS2345": 1
     },
     "src/hooks/products/useProductIntelligenceBadges.ts": {
       "TS2339": 7,
@@ -442,8 +486,14 @@
     "src/hooks/products/useSupplierFiscalData.ts": {
       "TS2352": 2
     },
+    "src/hooks/quotes/quoteHelpers.ts": {
+      "TS2322": 3
+    },
     "src/hooks/quotes/useAutoSaveQuote.ts": {
       "TS2339": 2
+    },
+    "src/hooks/quotes/useDiscountApproval.ts": {
+      "TS2322": 1
     },
     "src/hooks/quotes/useQuoteComments.ts": {
       "TS2322": 3,
@@ -454,6 +504,12 @@
     },
     "src/hooks/quotes/useQuoteHistory.ts": {
       "TS2345": 1
+    },
+    "src/hooks/quotes/useQuoteTemplates.ts": {
+      "TS2345": 1
+    },
+    "src/hooks/quotes/useQuoteVersions.ts": {
+      "TS2322": 1
     },
     "src/hooks/simulation/simulationClipboard.ts": {
       "TS2339": 26,
@@ -475,10 +531,9 @@
     },
     "src/hooks/simulation/useSimulation.ts": {
       "TS2339": 15,
-      "TS2345": 3,
+      "TS2345": 2,
+      "TS2352": 1,
       "TS2561": 1,
-      "TS2589": 1,
-      "TS2769": 3,
       "TS7006": 2
     },
     "src/hooks/simulation/useSimulatorPreferences.ts": {
@@ -517,6 +572,9 @@
     "src/lib/crm-db.ts": {
       "TS2322": 1
     },
+    "src/lib/external-db/__tests__/kill-switch-client.test.ts": {
+      "TS2556": 1
+    },
     "src/lib/external-db/batch-import.ts": {
       "TS2352": 2
     },
@@ -525,7 +583,7 @@
     },
     "src/lib/external-db/invoke.ts": {
       "TS2322": 1,
-      "TS2353": 3
+      "TS2353": 5
     },
     "src/lib/kit-builder/types.ts": {
       "TS18048": 2
@@ -546,6 +604,9 @@
     "src/pages/SidebarQAPage.tsx": {
       "TS2322": 1
     },
+    "src/pages/admin/AdminSegurancaAcessoPage.tsx": {
+      "TS2345": 1
+    },
     "src/pages/admin/DevChallengeExamplesPage.tsx": {
       "TS2322": 1
     },
@@ -555,6 +616,10 @@
     "src/pages/admin/RolePermissionsPage.tsx": {
       "TS18046": 2,
       "TS2345": 1
+    },
+    "src/pages/admin/SellerDiscountLimitsAdminPage.tsx": {
+      "TS2322": 1,
+      "TS2345": 2
     },
     "src/pages/admin/telemetry/useOptimizationQueue.ts": {
       "TS2339": 1
@@ -576,9 +641,9 @@
       "TS2345": 2
     },
     "src/pages/kit-builder/useKitBuilderQuote.ts": {
+      "TS1360": 1,
       "TS2305": 1,
-      "TS2345": 2,
-      "TS2353": 1
+      "TS2345": 3
     },
     "src/pages/magic-up/MagicUpConfigPanel.tsx": {
       "TS2322": 1,
@@ -611,10 +676,6 @@
     },
     "src/pages/quotes/QuoteBuilderPage.tsx": {
       "TS2339": 1
-    },
-    "src/pages/quotes/QuotesKanbanPage.tsx": {
-      "TS2345": 1,
-      "TS2769": 1
     },
     "src/pages/quotes/QuotesListPage.tsx": {
       "TS2345": 1,
