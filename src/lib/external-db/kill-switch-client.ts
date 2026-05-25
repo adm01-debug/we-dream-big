@@ -16,8 +16,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
-const MEM_TTL_MS = 60_000;       // 60s — alinhado ao cache do helper back-end
-const STORAGE_TTL_MS = 300_000;  // 5min — sobrevive reload/aba
+const MEM_TTL_MS = 60_000; // 60s — alinhado ao cache do helper back-end
+const STORAGE_TTL_MS = 300_000; // 5min — sobrevive reload/aba
 const STORAGE_KEY_PREFIX = 'kill_switch:';
 
 type SwitchCheck = {
@@ -87,19 +87,16 @@ export async function getKillSwitchState(switchName: string): Promise<KillSwitch
 
   // 3) Network (consulta REST nativa — tabela tem GRANT SELECT TO anon)
   try {
-    // Cast para `any` controlado: a tabela `system_kill_switches` foi criada
-    // após o último gen-types e ainda não está no Database type. Substituir
-    // por `from('system_kill_switches')` tipado quando rodar `supabase gen types`.
-    // deno-lint-ignore no-explicit-any
-    const client = supabase as any;
-    const { data, error } = await client
+    const { data, error } = await supabase
       .from('system_kill_switches')
       .select('enabled, legacy_message')
       .eq('switch_name', switchName)
       .maybeSingle();
 
     if (error) {
-      logger.warn(`[kill-switch-client] consulta falhou para "${switchName}" — fail-open: ${error.message}`);
+      logger.warn(
+        `[kill-switch-client] consulta falhou para "${switchName}" — fail-open: ${error.message}`,
+      );
       return { enabled: true, source: 'fail-open' };
     }
 
@@ -118,7 +115,9 @@ export async function getKillSwitchState(switchName: string): Promise<KillSwitch
 
     return { enabled: check.enabled, message: check.legacy_message, source: 'network' };
   } catch (e) {
-    logger.warn(`[kill-switch-client] erro inesperado para "${switchName}" — fail-open: ${(e as Error).message}`);
+    logger.warn(
+      `[kill-switch-client] erro inesperado para "${switchName}" — fail-open: ${(e as Error).message}`,
+    );
     return { enabled: true, source: 'fail-open' };
   }
 }
