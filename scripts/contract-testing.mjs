@@ -23,6 +23,7 @@
  *   2 → variável de ambiente obrigatória ausente
  */
 
+import { createHmac } from 'node:crypto';
 import process from 'node:process';
 
 // ---------------------------------------------------------------------------
@@ -33,6 +34,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'http://localhost:54321';
 const ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const PRODUCT_WEBHOOK_SECRET = process.env.N8N_PRODUCT_WEBHOOK_SECRET || '';
 const TIMEOUT_MS = Number(process.env.CONTRACT_TEST_TIMEOUT_MS || 10000);
+const CONTRACT_USER_AGENT = 'PromoGiftsContractSmoke/1.0';
 
 if (!ANON_KEY) {
   console.error('❌ SUPABASE_ANON_KEY (ou SERVICE_ROLE_KEY) é obrigatório.');
@@ -47,7 +49,7 @@ const CONTRACTS = [
   {
     name: 'product-webhook',
     endpoint: 'product-webhook',
-    extraHeaders: PRODUCT_WEBHOOK_SECRET ? { 'x-webhook-secret': PRODUCT_WEBHOOK_SECRET } : {},
+    signProductWebhook: true,
     scenarios: [
       {
         description: 'valid payload v1 (explicit)',
@@ -183,14 +185,26 @@ const CONTRACTS = [
 
 async function runScenario(contract, scenario) {
   const url = `${SUPABASE_URL}/functions/v1/${contract.endpoint}`;
+  const body = scenario.rawBody !== undefined ? scenario.rawBody : JSON.stringify(scenario.payload);
   const headers = {
     'Content-Type': 'application/json',
+    'User-Agent': CONTRACT_USER_AGENT,
     Authorization: `Bearer ${ANON_KEY}`,
     ...(contract.extraHeaders ?? {}),
     ...(scenario.headers ?? {}),
   };
 
-  const body = scenario.rawBody !== undefined ? scenario.rawBody : JSON.stringify(scenario.payload);
+  if (contract.signProductWebhook && PRODUCT_WEBHOOK_SECRET) {
+    const timestamp = String(Math.floor(Date.now() / 1000));
+    const nonce = `contract-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const signature = createHmac('sha256', PRODUCT_WEBHOOK_SECRET)
+      .update(`${timestamp}.${nonce}.${body}`)
+      .digest('hex');
+
+    headers['x-webhook-timestamp'] = timestamp;
+    headers['x-webhook-nonce'] = nonce;
+    headers['x-webhook-signature'] = `sha256=${signature}`;
+  }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
