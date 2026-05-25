@@ -162,12 +162,20 @@ export function useSellerCarts() {
   // Add item to cart
   const addItem = useMutation({
     mutationFn: async ({ cartId, item }: { cartId: string; item: AddToCartInput }) => {
-      const { data: existing } = await supabase
+      // Dedup pela identidade COMPLETA da variante (produto + cor). Antes casava
+      // só por product_id, o que (a) mesclava a 2ª cor na linha da 1ª — perdendo
+      // a variante — e (b) estourava o .maybeSingle() quando 2+ linhas do mesmo
+      // produto coexistiam. `.eq` não casa NULL no PostgREST: usar `.is` p/ nulos.
+      const colorName = item.color_name ?? null;
+      let lookup = supabase
         .from('seller_cart_items')
         .select('id, quantity')
         .eq('cart_id', cartId)
-        .eq('product_id', item.product_id)
-        .maybeSingle();
+        .eq('product_id', item.product_id);
+      lookup =
+        colorName === null ? lookup.is('color_name', null) : lookup.eq('color_name', colorName);
+
+      const { data: existing } = await lookup.limit(1).maybeSingle();
 
       if (existing) {
         const { error } = await supabase
