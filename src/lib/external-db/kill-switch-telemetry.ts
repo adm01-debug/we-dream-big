@@ -22,6 +22,11 @@ export interface KillSwitchHit {
 }
 
 type QueuedHit = KillSwitchHit & { source: 'front'; occurred_at: string };
+type KillSwitchHitsClient = {
+  from(table: 'kill_switch_hits'): {
+    insert(rows: QueuedHit[]): Promise<{ error: { message?: string } | null }>;
+  };
+};
 
 const BUFFER_MAX_SIZE = 20;
 const FLUSH_INTERVAL_MS = 5_000;
@@ -55,13 +60,14 @@ async function flush(): Promise<void> {
   const toSend = buffer.splice(0, BUFFER_MAX_SIZE);
 
   try {
-    const { error } = await supabase.from('kill_switch_hits').insert(toSend);
+    // Cast: kill_switch_hits foi criada após o último gen-types; quando rodar
+    // `supabase gen types` o cast pode ser removido.
+    const client = supabase as unknown as KillSwitchHitsClient;
+    const { error } = await client.from('kill_switch_hits').insert(toSend);
 
     if (error) {
       // Em caso de erro, devolve ao buffer (limitado para evitar crescimento)
-      logger.warn(
-        `[kill-switch-telemetry] flush falhou (${toSend.length} eventos descartados ou re-enfileirados): ${error.message}`,
-      );
+      logger.warn(`[kill-switch-telemetry] flush falhou (${toSend.length} eventos descartados ou re-enfileirados): ${error.message}`);
       buffer = [...toSend.slice(0, MAX_RETAINED_ON_FAILURE - buffer.length), ...buffer];
     }
   } catch (e) {
@@ -120,8 +126,7 @@ export async function flushKillSwitchTelemetry(): Promise<void> {
  * Reset apenas para testes.
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention -- test-only reset helper
-export function __resetKillSwitchTelemetry(): void {
+export function resetKillSwitchTelemetryForTests(): void {
   if (flushTimer) {
     clearTimeout(flushTimer);
     flushTimer = null;
