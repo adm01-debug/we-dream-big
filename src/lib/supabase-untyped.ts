@@ -22,9 +22,11 @@
  *   file remains a safety net for future tables that are not in the generated
  *   schema yet.
  *
- *   CI guard: `.github/workflows/lint-untyped-from.yml` fails the build if any
- *   `untypedFrom("X")` call references a table not present in types.ts. That
- *   is the exact condition that caused silent failures on 2026-05-24.
+ * CI guard:
+ *   `.github/workflows/lint-untyped-from.yml` fails the build if any
+ *   `untypedFrom("X")` call references a table not present in generated
+ *   Supabase types. That is the exact condition that caused silent failures
+ *   on 2026-05-24.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
