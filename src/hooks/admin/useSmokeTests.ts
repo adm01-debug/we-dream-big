@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { untypedFrom } from '@/lib/supabase-untyped';
 
 export interface SmokeTestRow {
   ran_at: string;
@@ -42,6 +43,10 @@ export interface SmokeTestsData {
   runNow: () => Promise<void>;
 }
 
+type SmokeTestRpcClient = {
+  rpc(fn: 'fn_run_and_persist_smoke_tests'): Promise<{ error: { message?: string } | null }>;
+};
+
 export function useSmokeTests(): SmokeTestsData {
   const [latest, setLatest] = useState<SmokeTestRow[]>([]);
   const [trend, setTrend] = useState<SmokeTestTrend[]>([]);
@@ -52,11 +57,9 @@ export function useSmokeTests(): SmokeTestsData {
 
   const load = useCallback(async () => {
     try {
-      // deno-lint-ignore no-explicit-any
-      const client = supabase as any;
       const [latestRes, trendRes] = await Promise.all([
-        client.from('v_smoke_tests_latest_run').select('*'),
-        client.from('v_smoke_tests_trend').select('*'),
+        untypedFrom<SmokeTestRow>('v_smoke_tests_latest_run').select('*'),
+        untypedFrom<SmokeTestTrend>('v_smoke_tests_trend').select('*'),
       ]);
 
       if (latestRes.error) throw new Error(`latest: ${latestRes.error.message}`);
@@ -81,8 +84,7 @@ export function useSmokeTests(): SmokeTestsData {
     if (running) return;
     setRunning(true);
     try {
-      // deno-lint-ignore no-explicit-any
-      const client = supabase as any;
+      const client = supabase as unknown as SmokeTestRpcClient;
       const { error: rpcError } = await client.rpc('fn_run_and_persist_smoke_tests');
       if (rpcError) throw new Error(rpcError.message);
       await load();
