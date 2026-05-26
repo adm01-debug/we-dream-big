@@ -1,10 +1,8 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const CONCURRENCY = 50;
-const TOTAL_REQUESTS = 500;
+const TOTAL_REQUESTS = 1000;
 
 async function runLoadTest(name: string, path: string, method = "GET", body: any = null) {
   console.log(`Starting load test for ${name} (${TOTAL_REQUESTS} requests, concurrency ${CONCURRENCY})...`);
@@ -49,7 +47,6 @@ async function runLoadTest(name: string, path: string, method = "GET", body: any
   console.log(`- Success: ${success}`);
   console.log(`- Failure: ${failure}`);
   console.log(`- Total Time: ${(totalTime / 1000).toFixed(2)}s`);
-  console.log(`- Throughput: ${(success / (totalTime / 1000)).toFixed(1)} req/s`);
   console.log(`- Avg Latency: ${avgLatency.toFixed(0)}ms`);
   console.log(`- P95 Latency: ${p95Latency.toFixed(0)}ms`);
 }

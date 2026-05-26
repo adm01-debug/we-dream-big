@@ -106,14 +106,6 @@ export async function runBotProtection(
   corsHeaders: Record<string, string>,
 ): Promise<BotProtectionResult> {
   const ip = getClientIp(req);
-  const authHeader = req.headers.get('Authorization');
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-  // SEC-003 bypass: Allow service_role to skip bot protection/rate limits
-  if (authHeader === `Bearer ${serviceKey}` || (serviceKey && authHeader?.includes(serviceKey.substring(0, 20)))) {
-    return { allowed: true };
-  }
-
   const ua = req.headers.get('user-agent');
   const admin = getBotAdminClient();
 
