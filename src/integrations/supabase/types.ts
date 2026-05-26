@@ -7014,6 +7014,10 @@ export type Database = {
         Args: { _template_id: string }
         Returns: undefined
       }
+      increment_webhook_stats: {
+        Args: { p_endpoint_id: string; p_is_invalid: boolean }
+        Returns: undefined
+      }
       is_admin:
         | { Args: never; Returns: boolean }
         | { Args: { _user_id?: string }; Returns: boolean }
