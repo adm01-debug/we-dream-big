@@ -72,11 +72,7 @@ export function useCatalogState() {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [viewMode, setViewModeState] = useState<ViewMode>(getPersistedViewMode);
   const setViewMode = useCallback((mode: ViewMode) => {
-    setIsTransitioning(true);
-    React.startTransition(() => {
-      setViewModeState(mode);
-      setIsTransitioning(false);
-    });
+    setViewModeState(mode);
     try {
       localStorage.setItem(VIEW_MODE_KEY, mode);
     } catch {
@@ -85,11 +81,7 @@ export function useCatalogState() {
   }, []);
   const [gridColumns, setGridColumnsState] = useState<ColumnCount>(getDefaultColumns);
   const setGridColumns = useCallback((cols: ColumnCount) => {
-    setIsTransitioning(true);
-    React.startTransition(() => {
-      setGridColumnsState(cols);
-      setIsTransitioning(false);
-    });
+    setGridColumnsState(cols);
     try {
       localStorage.setItem(GRID_COLUMNS_KEY, String(cols));
     } catch {
