@@ -45,6 +45,7 @@ interface CatalogContentProps {
   activeColorFilter?: ActiveColorFilter | null;
   activeProductId?: string | null;
   setActiveProductId?: (id: string | null) => void;
+  hideCategoryBadges?: boolean;
 }
 
 export const CatalogContent = memo(function CatalogContent({
@@ -76,6 +77,7 @@ export const CatalogContent = memo(function CatalogContent({
   activeColorFilter,
   activeProductId: _activeProductId,
   setActiveProductId: _setActiveProductId,
+  hideCategoryBadges = false,
 }: CatalogContentProps) {
   const selection = useCatalogSelection(paginatedProducts, selectionMode, onSelectedCountChange);
   const { selectedIds, toggleSelect: onToggleSelect } = selection;
@@ -83,21 +85,21 @@ export const CatalogContent = memo(function CatalogContent({
   if (shouldShowCatalogSkeleton) {
     if (viewMode === 'list') {
       return (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
               className="duration-300 animate-in fade-in slide-in-from-left-2"
               style={{ animationDelay: `${i * 30}ms` }}
             >
-              <ProductListItemSkeleton />
+              <ProductCardSkeleton variant="compact" selectionMode={selectionMode} />
             </div>
           ))}
         </div>
       );
     }
     if (viewMode === 'table') {
-      return <ProductTableSkeleton rows={10} />;
+      return <ProductTableSkeleton rows={10} selectionMode={selectionMode} />;
     }
     return (
       <ProductGridSkeleton 
@@ -105,6 +107,7 @@ export const CatalogContent = memo(function CatalogContent({
         columns={gridColumns} 
         variant="default" 
         hideCategoryBadges={hideCategoryBadges}
+        selectionMode={selectionMode}
       />
     );
   }
