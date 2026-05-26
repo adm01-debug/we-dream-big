@@ -1,22 +1,23 @@
 import { readFileSync, readdirSync, statSync } from "fs";
 import { join, extname } from "path";
 
-const LEGACY_SKELETON_FILES = [
-  "src/components/layout/SkeletonLoaders.tsx",
-];
-
 const ALLOWED_IMPORT_SKELETON_UI = [
   "src/components/loading/ModernSkeletons.tsx",
-  "src/components/layout/SkeletonLoaders.tsx", // Temporary until fully migrated
-  "src/components/ui/skeleton.tsx" // The component itself
+  "src/components/layout/SkeletonLoaders.tsx",
+  "src/components/ui/skeleton.tsx",
+  "src/components/cart/CartItemSkeleton.tsx",
+  "src/components/products/ProductDetailSkeleton.tsx",
+  "src/components/bi/BISkeletons.tsx"
 ];
+
+const IGNORED_DIRS = ["node_modules", ".git", "dist", ".next", ".agents"];
 
 function getFiles(dir, fileList = []) {
   const files = readdirSync(dir);
   for (const file of files) {
     const name = join(dir, file);
     if (statSync(name).isDirectory()) {
-      if (name.includes("node_modules") || name.includes(".git")) continue;
+      if (IGNORED_DIRS.some(d => name.includes(d))) continue;
       getFiles(name, fileList);
     } else {
       if ([".tsx", ".ts", ".js", ".jsx"].includes(extname(name))) {
@@ -27,33 +28,36 @@ function getFiles(dir, fileList = []) {
   return fileList;
 }
 
-console.log("🔍 Checking for legacy skeleton usage...");
+console.log("🔍 Checking for legacy skeleton usage and standard compliance...");
 
 const allFiles = getFiles("src");
 let errors = 0;
+let warnings = 0;
 
 for (const file of allFiles) {
   const content = readFileSync(file, "utf8");
   
-  // Check for direct imports of ui/skeleton outside of ModernSkeletons
+  // Rule 1: Avoid direct imports of @/components/ui/skeleton in pages/features
   if (content.includes("@/components/ui/skeleton") && !ALLOWED_IMPORT_SKELETON_UI.includes(file)) {
-    console.warn(`⚠️ [RECOMENDAÇÃO] O arquivo ${file} está importando diretamente o Skeleton base. Prefira usar componentes de ModernSkeletons para consistência.`);
+    console.warn(`⚠️ [WARNING] ${file} imports Skeleton directly. Consider using ModernSkeletons components.`);
+    warnings++;
   }
 
-  // Check for usage of legacy SkeletonLoaders
-  if (content.includes("@/components/layout/SkeletonLoaders") && file !== "src/components/layout/SkeletonLoaders.tsx") {
-    // console.log(`ℹ️ ${file} usa SkeletonLoaders.tsx`);
-  }
-}
-
-// Check if any Suspense boundaries might be nesting skeletons (double skeleton)
-// This is harder to check statically, but we can look for suspicious patterns
-for (const file of allFiles) {
-  const content = readFileSync(file, "utf8");
+  // Rule 2: Check for multiple Suspense in the same file (potential double skeleton)
   const suspenseCount = (content.match(/<Suspense/g) || []).length;
   if (suspenseCount > 1) {
-    console.log(`📌 [INFO] ${file} tem múltiplos Suspense. Verifique se não há skeletons aninhados causando 'duplo skeleton'.`);
+    console.info(`ℹ️ [INFO] ${file} has multiple Suspense blocks (${suspenseCount}). Ensure they aren't nesting skeletons.`);
+  }
+
+  // Rule 3: Ensure skeletons have IDs for traceability
+  if (file === "src/components/loading/ModernSkeletons.tsx") {
+    const skeletonUsageWithoutId = (content.match(/<Skeleton(?!.*id=)/g) || []).length;
+    if (skeletonUsageWithoutId > 0) {
+      console.error(`❌ [ERROR] ${file} has ${skeletonUsageWithoutId} Skeleton usages without an 'id' prop.`);
+      errors++;
+    }
   }
 }
 
-console.log("\n✅ Verificação concluída.");
+console.log(`\n✅ Audit complete: ${errors} errors, ${warnings} warnings.`);
+if (errors > 0) process.exit(1);
