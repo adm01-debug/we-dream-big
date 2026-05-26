@@ -117,6 +117,15 @@ test.describe("E2E Comprehensive: Do Login ao Checkout e Admin", () => {
       await page.locator('[data-testid="payment-method-select-root"]').first().click();
       await page.getByRole("option").first().click(); // Seleciona primeira opção
       
+      await page.locator('[data-testid="payment-terms-select-root"]').first().click();
+      await page.getByRole("option").first().click();
+      
+      await page.locator('[data-testid="delivery-time-select-root"]').first().click();
+      await page.getByRole("option").first().click();
+      
+      await page.locator('[data-testid="shipping-type-select-root"]').first().click();
+      await page.getByRole("option").first().click();
+      
       await clickTestId(page, "wizard-next-button");
       
       // Step 3: Itens (Já deve ter o item do carrinho)
@@ -128,6 +137,7 @@ test.describe("E2E Comprehensive: Do Login ao Checkout e Admin", () => {
       // Validar redirect para visualização do orçamento
       await page.waitForURL(/\/orcamentos\/[0-9a-f-]{36}/, { timeout: 20_000 });
       await expectVisibleByTestId(page, "page-title-orcamentos");
+
     });
   });
 
