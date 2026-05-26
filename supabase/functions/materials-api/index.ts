@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const { action, groupId, materialId, productId, materialTypeIds, materialGroupSlugs, limit } = parsed.data;
+    const { action, groupId, materialId, productId, materialTypeIds, materialTypeSlugs, materialGroupSlugs, limit } = parsed.data;
 
     // Conectar ao banco externo
     // fix: ssot-bypass — use credential vault (aliases EXTERNAL_SUPABASE_URL / SERVICE_ROLE_KEY)
