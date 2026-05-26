@@ -18,10 +18,11 @@ async function invoke(name: string, method = "POST", body: any = {}, headers: an
   return res;
 }
 
-Deno.test("PRODUCTION READINESS: Environment check", () => {
-  assert(SUPABASE_URL, "SUPABASE_URL must be set");
-  assert(SERVICE_ROLE_KEY, "SERVICE_ROLE_KEY must be set");
-  console.log(`Testing against: ${SUPABASE_URL}`);
+Deno.test("PRODUCTION READINESS: cors-audit check", async () => {
+  const res = await invoke("cors-audit", "GET");
+  assertEquals(res.status, 200);
+  const data = await res.json();
+  assert(data.audit_results || data.results);
 });
 
 Deno.test("PRODUCTION READINESS: health-check should be healthy", async () => {
