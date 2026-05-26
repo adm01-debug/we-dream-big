@@ -56,25 +56,15 @@ Deno.serve(async (req) => {
     const { imageBase64, category, color } = parsed.data;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+    const HF_ACCESS_TOKEN = Deno.env.get("HF_ACCESS_TOKEN");
 
     console.log("Analyzing image with AI...");
 
-    const model = "google/gemini-2.5-flash";
-
-    // Step 1: Analyze image to extract product characteristics
-    const analysisResponse = await callAiWithTracking({
-      userId: user.id,
-      functionName: "visual-search",
-      model,
-      apiKey: LOVABLE_API_KEY,
-      requestBody: {
-        messages: [
-          {
-            role: "system",
-            content: `Você é um Especialista Sênior em Identificação de Produtos e Estrategista de Merchandising.
+    const requestBody = {
+      messages: [
+        {
+          role: "system",
+          content: `Você é um Especialista Sênior em Identificação de Produtos e Estrategista de Merchandising.
 Sua missão é analisar imagens de brindes corporativos e extrair metadados precisos para busca técnica em catálogo.
 
 Ao analisar, considere:
@@ -101,69 +91,103 @@ Responda APENAS em JSON com este formato:
     {"label": "nome do ponto", "x": 0-100, "y": 0-100, "description": "descrição curta (3-5 palavras)"}
   ]
 }`
-          },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Analise profundamente esta imagem. 
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Analise profundamente esta imagem. 
 ${category ? `O usuário sugeriu a categoria: ${category}.` : ""}
 ${color ? `O usuário sugeriu a cor: ${color}.` : ""}
 Use essas dicas para refinar sua percepção, mas priorize o que você vê visualmente.`
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`
-                }
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`
               }
-            ]
-          }
-        ]
-      },
-    });
+            }
+          ]
+        }
+      ]
+    };
 
-    if (!analysisResponse.ok) {
-      const errorText = await analysisResponse.text();
-      console.error("AI analysis error:", { 
-        status: analysisResponse.status,
-        statusText: analysisResponse.statusText,
-        error: errorText,
-        requested_model: model,
-        headers: Object.fromEntries(analysisResponse.headers.entries())
-      });
-      
-      if (analysisResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    let analysisContent = "";
+    let usedProvider = "none";
+
+    // Attempt Hugging Face if token is present
+    if (HF_ACCESS_TOKEN) {
+      try {
+        console.log("Using Hugging Face for analysis...");
+        const hfModel = "meta-llama/Llama-3.2-11B-Vision-Instruct";
+        const hfResponse = await fetch(
+          `https://api-inference.huggingface.co/models/${hfModel}/v1/chat/completions`,
+          {
+            headers: {
+              Authorization: `Bearer ${HF_ACCESS_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+            method: "POST",
+            body: JSON.stringify({
+              model: hfModel,
+              messages: requestBody.messages,
+              max_tokens: 1024,
+            }),
+          }
         );
+
+        if (hfResponse.ok) {
+          const hfData = await hfResponse.json();
+          analysisContent = hfData.choices?.[0]?.message?.content || "";
+          usedProvider = "huggingface";
+          console.log("Hugging Face analysis successful");
+        } else {
+          const hfError = await hfResponse.text();
+          console.error("Hugging Face error:", hfError);
+        }
+      } catch (hfErr) {
+        console.error("Hugging Face fetch failed:", hfErr);
       }
-      if (analysisResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos insuficientes. Adicione créditos ao workspace." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
-      throw new Error(`AI analysis failed: ${analysisResponse.status} - ${errorText.slice(0, 200)}`);
     }
 
-    const analysisData = await analysisResponse.json();
-    console.log("AI analysis response debug:", {
-      model: analysisData.model,
-      usage: analysisData.usage,
-      router_info: {
-        provider: analysisData.usage?._x_router_used_provider,
-        model: analysisData.usage?._x_router_used_model,
-        attempts: analysisData.usage?._x_router_attempts,
-        fallback: analysisData.usage?._x_router_fallback_used
+    // Fallback to Lovable AI Gateway if HF failed or no token
+    if (!analysisContent && LOVABLE_API_KEY) {
+      console.log("Falling back to Lovable AI Gateway...");
+      const model = "google/gemini-2.5-flash";
+      const analysisResponse = await callAiWithTracking({
+        userId: user.id,
+        functionName: "visual-search",
+        model,
+        apiKey: LOVABLE_API_KEY,
+        requestBody,
+      });
+
+      if (analysisResponse.ok) {
+        const analysisData = await analysisResponse.json();
+        analysisContent = analysisData.choices?.[0]?.message?.content || "";
+        usedProvider = "lovable";
+      } else {
+        const errorText = await analysisResponse.text();
+        console.error("AI analysis error (Lovable):", { 
+          status: analysisResponse.status,
+          error: errorText,
+        });
+        
+        if (analysisResponse.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
-    });
-    const analysisContent = analysisData.choices?.[0]?.message?.content || "";
-    
-    console.log("AI analysis completed");
+    }
+
+    if (!analysisContent) {
+      throw new Error("Não foi possível realizar a análise visual. Verifique as configurações de IA (Hugging Face/Lovable).");
+    }
+
+    console.log(`AI analysis completed via ${usedProvider}`);
 
     // Parse JSON from response
     let productAnalysis;
