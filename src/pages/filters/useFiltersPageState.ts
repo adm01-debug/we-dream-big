@@ -70,9 +70,10 @@ export function useFiltersPageState() {
     if (sizes.length) f.sizes = sizes;
     const pMin = get('priceMin');
     const pMax = get('priceMax');
-    if (pMin || pMax) f.priceRange = [pMin ? parseInt(pMin) : 0, pMax ? parseInt(pMax) : 9999];
+    // FIX-04: usar parseFloat para preservar centavos (ex: "15.99" → 15.99, não 15)
+    if (pMin || pMax) f.priceRange = [pMin ? parseFloat(pMin) : 0, pMax ? parseFloat(pMax) : 9999];
     const ms = get('minStock');
-    if (ms) f.minStock = parseInt(ms);
+    if (ms) f.minStock = parseInt(ms); // minStock é sempre inteiro — parseInt ok
     if (get('inStock') === '1') f.inStock = true;
     if (get('isKit') === '1') f.isKit = true;
     if (get('featured') === '1') f.featured = true;
@@ -200,12 +201,8 @@ export function useFiltersPageState() {
   }, [gridColumns]);
   const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
   const [commandAction, setCommandAction] = useState<string | null>(null);
-  const [appliedFilters, setAppliedFilters] = useState<
-    Array<{
-      type: 'category' | 'color' | 'price' | 'material' | 'stock' | 'featured' | 'kit';
-      label: string;
-    }>
-  >([]);
+  // FIX-12: removido estado 'appliedFilters' — declarado mas nunca consumido (dead code).
+  // Era exportado no return mas nenhum consumer o utilizava, gerando re-renders desnecessários.
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
 
@@ -291,7 +288,11 @@ export function useFiltersPageState() {
   // Apply filters
   const filteredProducts = useMemo(() => {
     let result = hasFuzzySearch ? [...fuzzySearchResults] : [...realProducts];
-    if (filters.search) {
+
+    // FIX-01: filtro de busca substring só aplica quando NÃO há fuzzy search ativo.
+    // Antes, o substring filter rodava SEMPRE, eliminando resultados fuzzy corretos
+    // (ex: "sqz" encontrava "Squeeze" via fuzzy, mas .includes("sqz") === false matava o item).
+    if (filters.search && !hasFuzzySearch) {
       const s = filters.search.toLowerCase();
       result = result.filter(
         (p) =>
@@ -378,7 +379,14 @@ export function useFiltersPageState() {
           );
         return (product.stock || 0) >= filters.minStock;
       });
-    if (filters.inStock) result = result.filter((product) => (product.stock || 0) > 0);
+    // FIX-03: verificar variações além do estoque agregado.
+    // Produto com stock=0 mas com variações em estoque era incorretamente excluído.
+    if (filters.inStock)
+      result = result.filter((product) => {
+        if (product.variations && product.variations.length > 0)
+          return product.variations.some((v: ProductVariation) => (v.stock ?? 0) > 0);
+        return (product.stock || 0) > 0;
+      });
     if (filters.hasCommercialPackaging)
       result = result.filter((product) => product.hasCommercialPackaging === true);
     if (filters.isKit) result = result.filter((product) => product.isKit === true);
@@ -465,6 +473,9 @@ export function useFiltersPageState() {
   }, [filters.search, enrichedFilteredProducts.length]);
 
   // Active filters summary
+  // FIX-05: adicionados 11 tipos ausentes (priceRange, minStock, inStock, isKit, featured,
+  // isNew, hasPersonalization, hasCommercialPackaging, search, techniques, tags).
+  // Chips removíveis no cabeçalho não apareciam para esses filtros.
   const activeFiltersSummary = useMemo(() => {
     const summary: { label: string; value: string; key: keyof FilterState }[] = [];
     const totalCores =
@@ -538,6 +549,42 @@ export function useFiltersPageState() {
         value: `${sizesArr.length} selecionado${sizesArr.length > 1 ? 's' : ''}`,
         key: 'sizes',
       });
+    // Tipos ausentes no original — FIX-05:
+    const techArr = filters.techniques || [];
+    if (techArr.length > 0)
+      summary.push({
+        label: 'Técnicas',
+        value: `${techArr.length} selecionada${techArr.length > 1 ? 's' : ''}`,
+        key: 'techniques',
+      });
+    const tagsArr = filters.tags || [];
+    if (tagsArr.length > 0)
+      summary.push({
+        label: 'Tags',
+        value: `${tagsArr.length} selecionada${tagsArr.length > 1 ? 's' : ''}`,
+        key: 'tags',
+      });
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 9999) {
+      const min = filters.priceRange[0] > 0 ? `R$${filters.priceRange[0]}` : '';
+      const max = filters.priceRange[1] < 9999 ? `R$${filters.priceRange[1]}` : '';
+      summary.push({
+        label: 'Preço',
+        value: min && max ? `${min}–${max}` : min || max,
+        key: 'priceRange',
+      });
+    }
+    if (filters.minStock > 0)
+      summary.push({ label: 'Estoque mín.', value: `${filters.minStock} un.`, key: 'minStock' });
+    if (filters.inStock) summary.push({ label: 'Em estoque', value: 'Sim', key: 'inStock' });
+    if (filters.isKit) summary.push({ label: 'Kit', value: 'Sim', key: 'isKit' });
+    if (filters.featured) summary.push({ label: 'Destaque', value: 'Sim', key: 'featured' });
+    if (filters.isNew) summary.push({ label: 'Lançamento', value: 'Sim', key: 'isNew' });
+    if (filters.hasPersonalization)
+      summary.push({ label: 'Personalizável', value: 'Sim', key: 'hasPersonalization' });
+    if (filters.hasCommercialPackaging)
+      summary.push({ label: 'Embalagem', value: 'Comercial', key: 'hasCommercialPackaging' });
+    if (filters.search)
+      summary.push({ label: 'Busca', value: `"${filters.search}"`, key: 'search' });
     return summary;
   }, [filters]);
 
@@ -554,8 +601,15 @@ export function useFiltersPageState() {
       setFilters({ ...filters, materiais: [], materialGroups: [], materialTypes: [] });
     else if (key === 'ramosAtividade')
       setFilters({ ...filters, ramosAtividade: [], segmentosAtividade: [] });
+    // FIX-02: priceRange precisa de valor sentinela [0,9999], não [] (que causaria crash downstream).
+    else if (key === 'priceRange')
+      setFilters({ ...filters, priceRange: [0, 9999] });
+    // FIX-02 (cont): search é string, não boolean nem array.
+    else if (key === 'search')
+      setFilters({ ...filters, search: '' });
     else if (Array.isArray(filters[key])) setFilters({ ...filters, [key]: [] });
     else if (typeof filters[key] === 'boolean') setFilters({ ...filters, [key]: false });
+    else if (typeof filters[key] === 'number') setFilters({ ...filters, [key]: 0 });
     setActivePresetId(undefined);
   };
 
@@ -583,8 +637,7 @@ export function useFiltersPageState() {
     setVoiceOverlayOpen,
     commandAction,
     setCommandAction,
-    appliedFilters,
-    setAppliedFilters,
+    // FIX-12: appliedFilters/setAppliedFilters removidos (dead code — nenhum consumer)
     mobileFiltersOpen,
     setMobileFiltersOpen,
     isFiltering,

@@ -47,14 +47,14 @@ export function sortProducts(
           const aScore = aEntry?.turnoverScore ?? 0;
           const bScore = bEntry?.turnoverScore ?? 0;
           if (bScore !== aScore) return bScore - aScore;
-          // Desempate: velocidade de saída 7d
+          // Desempate: velocidade de saida 7d
           const aVel = aEntry?.velocity7d ?? 0;
           const bVel = bEntry?.velocity7d ?? 0;
           if (bVel !== aVel) return bVel - aVel;
           return a.name.localeCompare(b.name);
         });
       } else {
-        // Fallback: flags do produto (quando MV não populada)
+        // Fallback: flags do produto (quando MV nao populada)
         products.sort((a, b) => {
           const aScore = (a.featured ? 2 : 0) + (a.newArrival ? 1 : 0);
           const bScore = (b.featured ? 2 : 0) + (b.newArrival ? 1 : 0);
@@ -64,7 +64,10 @@ export function sortProducts(
       }
       break;
     }
+    // FIX-06+13: "popularity" era mapeado no voice agent mas nao tinha case aqui.
+    // Adicionado alias para best-seller-promo (semanticamente equivalente).
     case "best-seller-promo":
+    case "popularity":
       products.sort((a, b) => {
         const map = options?.promoSalesMap;
         const aCount = map?.get(a.id) || 0;
