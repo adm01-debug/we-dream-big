@@ -1,6 +1,10 @@
 /**
  * AdminProductFormPage — Página full-screen para criar/editar produtos
  * Substitui o Dialog modal por uma experiência imersiva com sidebar de navegação
+ *
+ * BUGFIXES (2026-05-26):
+ *  T-30: UUID validation before fetch — invalid IDs redirect instead of failing silently
+ *  T-12: Removed duplicate `active` field from productData payload
  */
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
@@ -32,14 +36,21 @@ const AuditHistory = lazyWithRetry(() =>
   import('@/components/audit/AuditHistory').then((m) => ({ default: m.AuditHistory })),
 );
 
+// T-30 FIX: UUID v4 regex for route param validation
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function AdminProductFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = !!id && id !== 'novo';
 
+  // T-30 FIX: Validate UUID format before making any API calls.
+  // An invalid UUID would produce a DB error that's hard to debug.
+  const isValidId = !isEdit || UUID_REGEX.test(id ?? '');
+
   const [product, setProduct] = useState<PromobrindProduct | null>(null);
   const [duplicateProduct, setDuplicateProduct] = useState<PromobrindProduct | null>(null);
-  const [isLoading, setIsLoading] = useState(isEdit);
+  const [isLoading, setIsLoading] = useState(isEdit && isValidId);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'form' | 'history'>('form');
 
@@ -64,7 +75,13 @@ export default function AdminProductFormPage() {
 
   // Load product data for edit mode
   useEffect(() => {
+    // T-30 FIX: Reject invalid UUIDs before fetching
     if (!isEdit) return;
+    if (!isValidId) {
+      toast.error(`ID de produto inválido: "${id}". Redirecionando para o cadastro.`);
+      navigate('/admin/cadastros');
+      return;
+    }
 
     const loadProduct = async () => {
       if (!id) return;
@@ -87,7 +104,7 @@ export default function AdminProductFormPage() {
     };
 
     loadProduct();
-  }, [id, isEdit, navigate]);
+  }, [id, isEdit, isValidId, navigate]);
 
   const productToFormData = useCallback((p: PromobrindProduct): Partial<ProductFormData> => {
     return {
@@ -128,7 +145,8 @@ export default function AdminProductFormPage() {
       packaging_material: p.packaging_material ?? '',
       packaging_color: p.packaging_color ?? '',
       packaging_finish: p.packaging_finish ?? '',
-      is_active: p.is_active ?? p.active ?? true,
+      // T-12: prefer is_active; fall back to _deprecated_active (renamed from active) during migration
+      is_active: p.is_active ?? (p as unknown as Record<string, unknown>)._deprecated_active as boolean | undefined ?? p.active ?? true,
       is_featured: p.is_featured ?? false,
       is_bestseller: p.is_bestseller ?? false,
       is_new: p.is_new ?? false,
@@ -221,8 +239,8 @@ export default function AdminProductFormPage() {
         is_kit: data.product_type === 'kit',
         min_quantity: data.min_quantity ?? 1,
         min_order_quantity: data.min_order_quantity ?? null,
+        // T-12 FIX: only send is_active (canonical); removed `active: data.is_active` duplicate
         is_active: data.is_active,
-        active: data.is_active,
         is_featured: data.is_featured,
         is_bestseller: data.is_bestseller,
         is_new: data.is_new,
