@@ -7,6 +7,9 @@ import { defaultFilters } from '../components/filters/FilterPanel';
 
 describe('CatalogToolbar Regression', () => {
   it('SelectTrigger should receive click events despite being inside a Tooltip', async () => {
+    // Mock scrollIntoView for Radix Select compatibility in JSDOM
+    window.HTMLElement.prototype.scrollIntoView = vi.fn();
+
     const setSortBy = vi.fn();
     const mockProps = {
       filters: defaultFilters,
@@ -32,25 +35,17 @@ describe('CatalogToolbar Regression', () => {
       </TooltipProvider>
     );
 
-    // Find the select trigger (it has aria-label="Ordenar por")
+    // Find the select trigger
     const trigger = screen.getByLabelText(/ordenar por/i);
     expect(trigger).toBeDefined();
 
     // Click the trigger to open the dropdown
     fireEvent.click(trigger);
 
-    // Since we are using Radix UI Select, we look for items in the portal
-    // We expect the menu to open. We can check for one of the sort options.
-    // Note: In tests, Select might need some wait if it's animated or uses Portals
+    // Wait for options to be rendered
     await waitFor(() => {
-      const items = screen.queryAllByRole('option');
-      // If it doesn't find by role, we check by text as a fallback for the specific mock setup
-      if (items.length === 0) {
-        // Fallback to searching for the text of an option
-        expect(screen.getByText(/Menor Preço/i)).toBeDefined();
-      } else {
-        expect(items.length).toBeGreaterThan(0);
-      }
+      // Find one of the options to confirm the menu is open
+      expect(screen.getByText(/Menor Preço/i)).toBeDefined();
     });
   });
 });
