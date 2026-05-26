@@ -1,1 +1,82 @@
-aW1wb3J0IHsgdHlwZSBQcm9kdWN0LCB0eXBlIFN1cHBsaWVyU2FsZXNFbnRyeSB9IGZyb20gIkAvaG9va3MvcHJvZHVjdHMiOwoKLyoqCiAqIENlbnRyYWxpemVkIHByb2R1Y3Qgc29ydGluZyBsb2dpYy4KICogVXNlZCBieSBib3RoIHRoZSBDYXRhbG9nIChJbmRleCkgYW5kIFN1cGVyIEZpbHRlciAoRmlsdGVyc1BhZ2UpLgogKi8KZXhwb3J0IGZ1bmN0aW9uIHNvcnRQcm9kdWN0cygKICBwcm9kdWN0czogUHJvZHVjdFtdLAogIHNvcnRCeTogc3RyaW5nLAogIG9wdGlvbnM/OiB7CiAgICBwcm9tb1NhbGVzTWFwPzogTWFwPHN0cmluZywgbnVtYmVyPjsKICAgIHN1cHBsaWVyU2FsZXNNYXA/OiBNYXA8c3RyaW5nLCBTdXBwbGllclNhbGVzRW50cnk+OwogICAgc2tpcFNvcnQ/OiBib29sZWFuOwogIH0KKTogUHJvZHVjdFtdIHsKICBpZiAob3B0aW9ucz8uc2tpcFNvcnQpIHJldHVybiBwcm9kdWN0czsKCiAgc3dpdGNoIChzb3J0QnkpIHsKICAgIGNhc2UgInJlbGV2YW5jZSI6CiAgICAgIC8vIEluIHJlbGV2YW5jZSBtb2RlLCB3ZSBwcmVzZXJ2ZSB0aGUgc2VhcmNoIHJhbmtpbmcgb3JkZXIKICAgICAgLy8gKHJhbmtQcm9kdWN0U2VhcmNoUmVzdWx0cyBhbHJlYWR5IGhhbmRsZXMgdGhlIGhpZXJhcmNoeSkKICAgICAgYnJlYWs7CiAgICBjYXNlICJuYW1lIjoKICAgICAgcHJvZHVjdHMuc29ydCgoYSwgYikgPT4gYS5uYW1lLmxvY2FsZUNvbXBhcmUoYi5uYW1lKSk7CiAgICAgIGJyZWFrOwogICAgY2FzZSAicHJpY2UtYXNjIjoKICAgICAgcHJvZHVjdHMuc29ydCgoYSwgYikgPT4gYS5wcmljZSAtIGIucHJpY2UpOwogICAgICBicmVhazsKICAgIGNhc2UgInByaWNlLWRlc2MiOgogICAgICBwcm9kdWN0cy5zb3J0KChhLCBiKSA9PiBiLnByaWNlIC0gYS5wcmljZSk7CiAgICAgIGJyZWFrOwogICAgY2FzZSAic3RvY2siOgogICAgICBwcm9kdWN0cy5zb3J0KChhLCBiKSA9PiAoYi5zdG9jayB8fCAwKSAtIChhLnN0b2NrIHx8IDApKTsKICAgICAgYnJlYWs7CiAgICBjYXNlICJuZXdlc3QiOgogICAgICBwcm9kdWN0cy5zb3J0KChhLCBiKSA9PgogICAgICAgIG5ldyBEYXRlKGIuY3JlYXRlZF9hdCB8fCAwKS5nZXRUaW1lKCkgLSBuZXcgRGF0ZShhLmNyZWF0ZWRfYXQgfHwgMCkuZ2V0VGltZSgpCiAgICAgICk7CiAgICAgIGJyZWFrOwogICAgY2FzZSAiYmVzdC1zZWxsZXItc3VwcGxpZXIiOiB7CiAgICAgIGNvbnN0IHNNYXAgPSBvcHRpb25zPy5zdXBwbGllclNhbGVzTWFwOwogICAgICBpZiAoc01hcCAmJiBzTWFwLnNpemUgPiAwKSB7CiAgICAgICAgLy8gUmVhbCBkYXRhIGZyb20gZXh0ZXJuYWwgREIgKG12X3Byb2R1Y3RfaW50ZWxsaWdlbmNlKQogICAgICAgIHByb2R1Y3RzLnNvcnQoKGEsIGIpID0+IHsKICAgICAgICAgIGNvbnN0IGFFbnRyeSA9IHNNYXAuZ2V0KGEuaWQpOwogICAgICAgICAgY29uc3QgYkVudHJ5ID0gc01hcC5nZXQoYi5pZCk7CiAgICAgICAgICBjb25zdCBhU2NvcmUgPSBhRW50cnk/LnR1cm5vdmVyU2NvcmUgPz8gMDsKICAgICAgICAgIGNvbnN0IGJTY29yZSA9IGJFbnRyeT8udHVybm92ZXJTY29yZSA/PyAwOwogICAgICAgICAgaWYgKGJTY29yZSAhPT0gYVNjb3JlKSByZXR1cm4gYlNjb3JlIC0gYVNjb3JlOwogICAgICAgICAgLy8gRGVzZW1wYXRlOiB2ZWxvY2lkYWRlIGRlIHNhaWRhIDdkCiAgICAgICAgICBjb25zdCBhVmVsID0gYUVudHJ5Py52ZWxvY2l0eTdkID8/IDA7CiAgICAgICAgICBjb25zdCBiVmVsID0gYkVudHJ5Py52ZWxvY2l0eTdkID8/IDA7CiAgICAgICAgICBpZiAoYlZlbCAhPT0gYVZlbCkgcmV0dXJuIGJWZWwgLSBhVmVsOwogICAgICAgICAgcmV0dXJuIGEubmFtZS5sb2NhbGVDb21wYXJlKGIubmFtZSk7CiAgICAgICAgfSk7CiAgICAgIH0gZWxzZSB7CiAgICAgICAgLy8gRmFsbGJhY2s6IGZsYWdzIGRvIHByb2R1dG8gKHF1YW5kbyBNViBuYW8gcG9wdWxhZGEpCiAgICAgICAgcHJvZHVjdHMuc29ydCgoYSwgYikgPT4gewogICAgICAgICAgY29uc3QgYVNjb3JlID0gKGEuZmVhdHVyZWQgPyAyIDogMCkgKyAoYS5uZXdBcnJpdmFsID8gMSA6IDApOwogICAgICAgICAgY29uc3QgYlNjb3JlID0gKGIuZmVhdHVyZWQgPyAyIDogMCkgKyAoYi5uZXdBcnJpdmFsID8gMSA6IDApOwogICAgICAgICAgaWYgKGJTY29yZSAhPT0gYVNjb3JlKSByZXR1cm4gYlNjb3JlIC0gYVNjb3JlOwogICAgICAgICAgcmV0dXJuIChiLnN0b2NrIHx8IDApIC0gKGEuc3RvY2sgfHwgMCk7CiAgICAgICAgfSk7CiAgICAgIH0KICAgICAgYnJlYWs7CiAgICB9CiAgICAvLyBGSVgtMDYrMTM6ICJwb3B1bGFyaXR5IiBlcmEgbWFwZWFkbyBubyB2b2ljZSBhZ2VudCBtYXMgbmFvIHRpbmhhIGNhc2UgYXF1aS4KICAgIC8vIEFkaWNpb25hZG8gYWxpYXMgcGFyYSBiZXN0LXNlbGxlci1wcm9tbyAoc2VtYW50aWNhbWVudGUgZXF1aXZhbGVudGUpLgogICAgY2FzZSAiYmVzdC1zZWxsZXItcHJvbW8iOgogICAgY2FzZSAicG9wdWxhcml0eSI6CiAgICAgIHByb2R1Y3RzLnNvcnQoKGEsIGIpID0+IHsKICAgICAgICBjb25zdCBtYXAgPSBvcHRpb25zPy5wcm9tb1NhbGVzTWFwOwogICAgICAgIGNvbnN0IGFDb3VudCA9IG1hcD8uZ2V0KGEuaWQpIHx8IDA7CiAgICAgICAgY29uc3QgYkNvdW50ID0gbWFwPy5nZXQoYi5pZCkgfHwgMDsKICAgICAgICBpZiAoYkNvdW50ICE9PSBhQ291bnQpIHJldHVybiBiQ291bnQgLSBhQ291bnQ7CiAgICAgICAgcmV0dXJuIGEubmFtZS5sb2NhbGVDb21wYXJlKGIubmFtZSk7CiAgICAgIH0pOwogICAgICBicmVhazsKICB9CgogIHJldHVybiBwcm9kdWN0czsKfQo=
+import { type Product, type SupplierSalesEntry } from "@/hooks/products";
+
+/**
+ * Centralized product sorting logic.
+ * Used by both the Catalog (Index) and Super Filter (FiltersPage).
+ */
+export function sortProducts(
+  products: Product[],
+  sortBy: string,
+  options?: {
+    promoSalesMap?: Map<string, number>;
+    supplierSalesMap?: Map<string, SupplierSalesEntry>;
+    skipSort?: boolean;
+  }
+): Product[] {
+  if (options?.skipSort) return products;
+
+  switch (sortBy) {
+    case "relevance":
+      // In relevance mode, we preserve the search ranking order
+      // (rankProductSearchResults already handles the hierarchy)
+      break;
+    case "name":
+      products.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case "price-asc":
+      products.sort((a, b) => a.price - b.price);
+      break;
+    case "price-desc":
+      products.sort((a, b) => b.price - a.price);
+      break;
+    case "stock":
+      products.sort((a, b) => (b.stock || 0) - (a.stock || 0));
+      break;
+    case "newest":
+      products.sort((a, b) =>
+        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+      );
+      break;
+    case "best-seller-supplier": {
+      const sMap = options?.supplierSalesMap;
+      if (sMap && sMap.size > 0) {
+        // Real data from external DB (mv_product_intelligence)
+        products.sort((a, b) => {
+          const aEntry = sMap.get(a.id);
+          const bEntry = sMap.get(b.id);
+          const aScore = aEntry?.turnoverScore ?? 0;
+          const bScore = bEntry?.turnoverScore ?? 0;
+          if (bScore !== aScore) return bScore - aScore;
+          // Desempate: velocidade de saida 7d
+          const aVel = aEntry?.velocity7d ?? 0;
+          const bVel = bEntry?.velocity7d ?? 0;
+          if (bVel !== aVel) return bVel - aVel;
+          return a.name.localeCompare(b.name);
+        });
+      } else {
+        // Fallback: flags do produto (quando MV nao populada)
+        products.sort((a, b) => {
+          const aScore = (a.featured ? 2 : 0) + (a.newArrival ? 1 : 0);
+          const bScore = (b.featured ? 2 : 0) + (b.newArrival ? 1 : 0);
+          if (bScore !== aScore) return bScore - aScore;
+          return (b.stock || 0) - (a.stock || 0);
+        });
+      }
+      break;
+    }
+    // FIX-06+13: "popularity" era mapeado no voice agent mas nao tinha case aqui.
+    // Adicionado alias para best-seller-promo (semanticamente equivalente).
+    case "best-seller-promo":
+    case "popularity":
+      products.sort((a, b) => {
+        const map = options?.promoSalesMap;
+        const aCount = map?.get(a.id) || 0;
+        const bCount = map?.get(b.id) || 0;
+        if (bCount !== aCount) return bCount - aCount;
+        return a.name.localeCompare(b.name);
+      });
+      break;
+  }
+
+  return products;
+}
