@@ -29,7 +29,7 @@ Deno.test("PRODUCTION READINESS: health-check should be healthy", async () => {
 
 Deno.test("PRODUCTION READINESS: CORS headers should be present", async () => {
   const res = await invoke("health-check", "OPTIONS");
-  assertEquals(res.status, 200 || 204);
+  assert(res.status === 200 || res.status === 204, `Unexpected status: ${res.status}`);
   assert(res.headers.get("access-control-allow-origin"), "Missing CORS origin");
   assert(res.headers.get("access-control-allow-methods"), "Missing CORS methods");
   // Consume any body if present
