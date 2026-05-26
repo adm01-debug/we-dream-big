@@ -9,6 +9,7 @@ const MaterialsRequestSchema = z.object({
   materialId: z.string().uuid().optional(),
   productId: z.string().uuid().optional(),
   materialTypeIds: z.array(z.string().uuid()).max(200).optional(),
+  materialTypeSlugs: z.array(z.string().max(100)).max(200).optional(),
   materialGroupSlugs: z.array(z.string().max(100)).max(50).optional(),
   limit: z.number().int().min(1).max(500).default(100),
   search: z.string().max(200).optional(),
