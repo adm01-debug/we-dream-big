@@ -174,7 +174,7 @@ export default function VisualSearchPage() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Sidebar Area */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-20 lg:h-fit">
             {/* Upload & Preview */}
             <Card className="overflow-hidden border-2 border-dashed border-muted-foreground/20 bg-muted/5 transition-all hover:border-primary/30">
               <CardContent className="p-0">
