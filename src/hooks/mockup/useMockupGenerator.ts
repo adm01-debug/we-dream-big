@@ -5,6 +5,14 @@
  * - Lazy initialization of techniques and history.
  * - Memoized computed values (historyClients, productLocations).
  * - Debounced position history persistence.
+ *
+ * Fixes (audit 26/05/2026):
+ * T1: 7 async handlers wrapped in useCallback → useMemo output is now truly stable.
+ * T2: Correct dependency arrays eliminate stale-closure bugs.
+ * T3: historyPushTimeout and draftNoticeTimeoutRef cleaned up on unmount (no memory leaks).
+ * T5: Batch DB saves parallelised with Promise.allSettled (was sequential waterfall).
+ * T6: deleteMockupFromDb receives userId → owner-scoped DELETE.
+ * T9: URL param cleanup only removes processed keys, preserves unrelated params.
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -104,6 +112,10 @@ export function useMockupGenerator() {
   const [showDraftRestoredNotice, setShowDraftRestoredNotice] = useState(false);
   const isRestoringDraft = useRef(false);
 
+  // T3 FIX: refs for debounced timeouts — cleaned up on unmount to prevent memory leaks.
+  const historyPushTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const draftNoticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Tab & positioning
   const [activeTab, setActiveTab] = useState<'generator' | 'history'>('generator');
   const [hasUserInteractedPosition, setHasUserInteractedPosition] = useState(false);
@@ -125,6 +137,20 @@ export function useMockupGenerator() {
       toast.info(positionHistory.canRedo ? '↩️ Desfeito' : '↪️ Refeito', { duration: 1000 });
     });
   }, [activeAreaId, positionHistory]);
+
+  // T3 FIX: cleanup historyPushTimeout on unmount.
+  useEffect(() => {
+    return () => {
+      if (historyPushTimeout.current) clearTimeout(historyPushTimeout.current);
+    };
+  }, []);
+
+  // T3 FIX: cleanup draftNoticeTimeoutRef on unmount.
+  useEffect(() => {
+    return () => {
+      if (draftNoticeTimeoutRef.current) clearTimeout(draftNoticeTimeoutRef.current);
+    };
+  }, []);
 
   // ─── Derived state ──────────────────────────────────────────────────
 
@@ -281,7 +307,12 @@ export function useMockupGenerator() {
             setActiveAreaId(draft.personalizationAreas[0].id);
           }
           setShowDraftRestoredNotice(true);
-          setTimeout(() => setShowDraftRestoredNotice(false), 5000);
+          // T3 FIX: cancel any previous timer before scheduling a new one.
+          if (draftNoticeTimeoutRef.current) clearTimeout(draftNoticeTimeoutRef.current);
+          draftNoticeTimeoutRef.current = setTimeout(
+            () => setShowDraftRestoredNotice(false),
+            5000,
+          );
         }
       } catch (err) {
         console.error('Erro ao restaurar rascunho:', err);
@@ -315,7 +346,16 @@ export function useMockupGenerator() {
       );
       if (technique) setSelectedTechnique(technique);
     }
-    window.history.replaceState({}, '', window.location.pathname);
+    // T9 FIX: only remove the params we processed — preserve everything else.
+    const newParams = new URLSearchParams(window.location.search);
+    newParams.delete('product_id');
+    newParams.delete('technique');
+    const newSearch = newParams.toString();
+    window.history.replaceState(
+      {},
+      '',
+      window.location.pathname + (newSearch ? `?${newSearch}` : ''),
+    );
   }, [isLoadingData, hasDraftRestored, techniques, getProductById]);
 
   // Auto-save with debounce to prevent UI lag during logo dragging/resizing
@@ -403,8 +443,6 @@ export function useMockupGenerator() {
   }, [user?.id]);
 
   // ─── Handlers ───────────────────────────────────────────────────────
-
-  const historyPushTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updateActiveArea = useCallback(
     (updates: Partial<PersonalizationArea>) => {
@@ -505,27 +543,41 @@ export function useMockupGenerator() {
     return selectedProduct?.images?.[0] || null;
   }, [productSelection, selectedProduct]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const saveMockupToHistory = async (
-    mockupUrl: string,
-    area: PersonalizationArea,
-    extra?: { layoutUrl?: string; locationName?: string; colorsCount?: number },
-  ): Promise<string | null> => {
-    if (!user || !selectedProduct || !selectedTechnique || !area.logoPreview) return null;
-    return saveMockupToDb({
-      userId: user.id,
-      product: selectedProduct,
-      technique: selectedTechnique,
-      client: selectedClient,
-      area,
-      mockupUrl,
-      annotations: mockupAnnotations,
-      extra,
-    });
-  };
+  // T1/T2 FIX: wrapped in useCallback with correct deps — eliminates stale closures.
+  const saveMockupToHistory = useCallback(
+    async (
+      mockupUrl: string,
+      area: PersonalizationArea,
+      extra?: { layoutUrl?: string; locationName?: string; colorsCount?: number },
+    ): Promise<string | null> => {
+      if (!user || !selectedProduct || !selectedTechnique || !area.logoPreview) return null;
+      return saveMockupToDb({
+        userId: user.id,
+        product: selectedProduct,
+        technique: selectedTechnique,
+        client: selectedClient,
+        area,
+        mockupUrl,
+        annotations: mockupAnnotations,
+        extra,
+      });
+    },
+    [user, selectedProduct, selectedTechnique, selectedClient, mockupAnnotations],
+  );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const generateMockup = async () => {
+  // T1/T2 FIX: wrapped in useCallback. Declared before generateMockup (which closes over it).
+  const downloadMockup = useCallback(
+    async (url?: string) => {
+      const mockupUrl = url || generatedMockup;
+      if (!mockupUrl) return;
+      await downloadMockupAsPdf(mockupUrl, selectedProduct?.sku, selectedTechnique?.name);
+    },
+    [generatedMockup, selectedProduct, selectedTechnique],
+  );
+
+  // T1/T2 FIX: wrapped in useCallback.
+  // T5 FIX: batch DB saves parallelised with Promise.allSettled (was sequential for-await).
+  const generateMockup = useCallback(async () => {
     const areasWithLogos = personalizationAreas.filter((a) => a.logoPreview);
     if (!selectedClient || !productSelection || !selectedTechnique || areasWithLogos.length === 0) {
       toast.error('Selecione empresa, produto, técnica e faça upload de pelo menos um logo');
@@ -567,15 +619,28 @@ export function useMockupGenerator() {
           onDownload: () => downloadMockup(result.singleUrl ?? undefined),
         });
       } else {
-        for (let i = 0; i < result.batchResults.length; i++) {
-          const r = result.batchResults[i];
-          const area = areasWithLogos.find((a) => a.name === r.areaName) || areasWithLogos[i];
-          const recordId = await saveMockupToHistory(r.url, area);
-          if (recordId && i === result.batchResults.length - 1) {
-            setLastSavedMockupUrl(r.url);
-            setLastSavedLayoutMode('ai');
-            setLastSavedRecordId(recordId);
-          }
+        // T5 FIX: parallel DB writes instead of sequential waterfall.
+        const batchSaveResults = await Promise.allSettled(
+          result.batchResults.map((r, i) => {
+            const area = areasWithLogos.find((a) => a.name === r.areaName) || areasWithLogos[i];
+            return saveMockupToHistory(r.url, area).then((recordId) => ({ recordId, r }));
+          }),
+        );
+        // Pick the last fulfilled result to update lastSaved* state.
+        const lastFulfilled = batchSaveResults
+          .filter(
+            (
+              res,
+            ): res is PromiseFulfilledResult<{
+              recordId: string | null;
+              r: { areaName: string; url: string };
+            }> => res.status === 'fulfilled',
+          )
+          .pop();
+        if (lastFulfilled?.value.recordId) {
+          setLastSavedMockupUrl(lastFulfilled.value.r.url);
+          setLastSavedLayoutMode('ai');
+          setLastSavedRecordId(lastFulfilled.value.recordId);
         }
         setGeneratedMockup(result.batchResults[0]?.url || result.singleUrl);
         setGeneratedBatchMockups(result.batchResults);
@@ -589,20 +654,22 @@ export function useMockupGenerator() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [
+    selectedClient,
+    productSelection,
+    selectedTechnique,
+    personalizationAreas,
+    getProductImage,
+    saveMockupToHistory,
+    selectedProduct,
+    downloadMockup,
+  ]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const downloadMockup = async (url?: string) => {
-    const mockupUrl = url || generatedMockup;
-    if (!mockupUrl) return;
-    await downloadMockupAsPdf(mockupUrl, selectedProduct?.sku, selectedTechnique?.name);
-  };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const deleteMockup = async () => {
+  // T1/T2/T6 FIX: wrapped in useCallback; passes user?.id for owner-scoped DELETE.
+  const deleteMockup = useCallback(async () => {
     if (!mockupToDelete) return;
     try {
-      await deleteMockupFromDb(mockupToDelete);
+      await deleteMockupFromDb(mockupToDelete, user?.id);
       setMockupHistory((prev) => prev.filter((m) => m.id !== mockupToDelete));
       toast.success('Mockup excluído');
     } catch (error) {
@@ -612,10 +679,10 @@ export function useMockupGenerator() {
       setDeleteDialogOpen(false);
       setMockupToDelete(null);
     }
-  };
+  }, [mockupToDelete, user]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const resetForm = () => {
+  // T1/T2 FIX: wrapped in useCallback.
+  const resetForm = useCallback(() => {
     setProductSelection(null);
     setSelectedTechnique(null);
     setSelectedClient(null);
@@ -635,57 +702,60 @@ export function useMockupGenerator() {
     positionHistory.clear();
     clearDraft();
     logoColorAnalysis.clearAnalysis();
-  };
+  }, [positionHistory, clearDraft, logoColorAnalysis]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleShareMockup = (mockup: GeneratedMockup) => {
+  // T1/T2 FIX: wrapped in useCallback — pure function over its argument, no state deps.
+  const handleShareMockup = useCallback((mockup: GeneratedMockup) => {
     const text = `Confira o mockup: ${mockup.product_name} com ${mockup.technique_name}`;
     window.open(
       `https://wa.me/?text=${encodeURIComponent(text + '\n' + mockup.mockup_url)}`,
       '_blank',
     );
-  };
+  }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const loadFromHistory = (mockup: GeneratedMockup) => {
-    const product = mockup.product_id ? getProductById(mockup.product_id) : null;
-    const technique = mockup.technique_id
-      ? techniques.find((t) => t.id === mockup.technique_id)
-      : null;
-    if (product)
-      setProductSelection({
-        product,
-        variant: null,
-        imageUrl: product.images?.[0] || '/placeholder.svg',
-      });
-    else setProductSelection(null);
-    setSelectedTechnique(technique || null);
-    setSelectedClient(
-      mockup.client_id ? { id: mockup.client_id, name: mockup.client_name || 'Cliente' } : null,
-    );
-    const restoredArea: PersonalizationArea = {
-      id: crypto.randomUUID(),
-      name: 'Frente',
-      positionX: mockup.position_x ?? 50,
-      positionY: mockup.position_y ?? 50,
-      logoWidth: mockup.logo_width_cm ?? 5,
-      logoHeight: mockup.logo_height_cm ?? 3,
-      logoRotation: 0,
-      logoScale: 100,
-      logoPreview: mockup.logo_url,
-    };
-    setPersonalizationAreas([restoredArea]);
-    setActiveAreaId(restoredArea.id);
-    setGeneratedMockup(null);
-    setHasUserInteractedPosition(true);
-    positionHistory.clear();
-    setActiveTab('generator');
-    if (mockup.logo_url) logoColorAnalysis.analyzeImage(mockup.logo_url);
-    // BUG-04 FIX: clear stale draft so the auto-save effect does not overwrite the just-loaded
-    // history configuration ~1 second after this function returns.
-    clearDraft();
-    toast.success('Configurações carregadas!');
-  };
+  // T1/T2 FIX: wrapped in useCallback with correct deps including techniques & getProductById.
+  const loadFromHistory = useCallback(
+    (mockup: GeneratedMockup) => {
+      const product = mockup.product_id ? getProductById(mockup.product_id) : null;
+      const technique = mockup.technique_id
+        ? techniques.find((t) => t.id === mockup.technique_id)
+        : null;
+      if (product)
+        setProductSelection({
+          product,
+          variant: null,
+          imageUrl: product.images?.[0] || '/placeholder.svg',
+        });
+      else setProductSelection(null);
+      setSelectedTechnique(technique || null);
+      setSelectedClient(
+        mockup.client_id ? { id: mockup.client_id, name: mockup.client_name || 'Cliente' } : null,
+      );
+      const restoredArea: PersonalizationArea = {
+        id: crypto.randomUUID(),
+        name: 'Frente',
+        positionX: mockup.position_x ?? 50,
+        positionY: mockup.position_y ?? 50,
+        logoWidth: mockup.logo_width_cm ?? 5,
+        logoHeight: mockup.logo_height_cm ?? 3,
+        logoRotation: 0,
+        logoScale: 100,
+        logoPreview: mockup.logo_url,
+      };
+      setPersonalizationAreas([restoredArea]);
+      setActiveAreaId(restoredArea.id);
+      setGeneratedMockup(null);
+      setHasUserInteractedPosition(true);
+      positionHistory.clear();
+      setActiveTab('generator');
+      if (mockup.logo_url) logoColorAnalysis.analyzeImage(mockup.logo_url);
+      // BUG-04 FIX: clear stale draft so the auto-save effect does not overwrite the just-loaded
+      // history configuration ~1 second after this function returns.
+      clearDraft();
+      toast.success('Configurações carregadas!');
+    },
+    [techniques, getProductById, logoColorAnalysis, clearDraft, positionHistory],
+  );
 
   const wizardStep = getMockupWizardStep({
     hasClient: !!selectedClient,
