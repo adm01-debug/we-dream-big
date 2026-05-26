@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-25T22:39:29.287Z",
-  "totalErrors": 127,
+  "generatedAt": "2026-05-26T01:42:07.277Z",
+  "totalErrors": 124,
   "counts": {
     "src/components/access/DevAccessDeniedPage.tsx": {
       "react-hooks/exhaustive-deps": 1
@@ -353,9 +353,6 @@
     "src/components/search/VoiceSearchOverlayConnected.tsx": {
       "react-hooks/exhaustive-deps": 1
     },
-    "src/components/search/useGlobalSearch.ts": {
-      "@typescript-eslint/no-explicit-any": 3
-    },
     "src/components/search/voice/VoiceOverlaySections.tsx": {
       "@typescript-eslint/no-unused-vars": 3
     },
@@ -450,9 +447,6 @@
     "src/hooks/products/useProductsByColor.ts": {
       "react-hooks/exhaustive-deps": 1
     },
-    "src/hooks/products/useSellerCarts.ts": {
-      "@typescript-eslint/naming-convention": 1
-    },
     "src/hooks/products/useSupplierComparison.ts": {
       "react-hooks/exhaustive-deps": 1
     },
@@ -483,9 +477,6 @@
     },
     "src/lib/feature-flags.ts": {
       "@typescript-eslint/no-non-null-assertion": 1
-    },
-    "src/lib/logger.ts": {
-      "no-console": 3
     },
     "src/lib/personalization/adapters/raw-row.adapter.ts": {
       "@typescript-eslint/naming-convention": 1
@@ -563,6 +554,9 @@
     },
     "src/pages/tools/AdvancedPriceSearchPage.tsx": {
       "@typescript-eslint/naming-convention": 2
+    },
+    "src/pages/tools/CoverageInsightsDashboardPage.tsx": {
+      "@typescript-eslint/no-non-null-assertion": 1
     },
     "src/pages/tools/DropboxBrowserPage.tsx": {
       "react-hooks/exhaustive-deps": 1
