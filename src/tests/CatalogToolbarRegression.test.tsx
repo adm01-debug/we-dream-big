@@ -1,14 +1,19 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { CatalogToolbar } from '../components/catalog/CatalogToolbar';
 import { TooltipProvider } from '../components/ui/tooltip';
 import { vi, describe, it, expect } from 'vitest';
-import type { FilterState } from '../components/filters/FilterPanel';
 import { defaultFilters } from '../components/filters/FilterPanel';
+import '@testing-library/jest-dom';
 
 describe('CatalogToolbar Regression', () => {
   it('SelectTrigger should receive click events despite being inside a Tooltip', async () => {
-    // Mock scrollIntoView for Radix Select compatibility in JSDOM
+    const user = userEvent.setup();
+    // Mock scrollIntoView and Pointer Events for Radix Select compatibility in JSDOM
     window.HTMLElement.prototype.scrollIntoView = vi.fn();
+    window.HTMLElement.prototype.hasPointerCapture = vi.fn();
+    window.HTMLElement.prototype.setPointerCapture = vi.fn();
+    window.HTMLElement.prototype.releasePointerCapture = vi.fn();
 
     const setSortBy = vi.fn();
     const mockProps = {
@@ -37,15 +42,29 @@ describe('CatalogToolbar Regression', () => {
 
     // Find the select trigger
     const trigger = screen.getByLabelText(/ordenar por/i);
-    expect(trigger).toBeDefined();
+    expect(trigger).toBeInTheDocument();
 
-    // Click the trigger to open the dropdown
-    fireEvent.click(trigger);
+    // 1. Verify Tooltip works
+    await user.hover(trigger);
+    
+    // Tooltip content: "Ordenar produtos (relevância, preço, novidades…)"
+    await waitFor(() => {
+      expect(screen.getByRole('tooltip')).toHaveTextContent(/Ordenar produtos/i);
+    });
 
-    // Wait for options to be rendered
+    // 2. Click the trigger to open the dropdown while tooltip is likely visible
+    await user.click(trigger);
+
+    // 3. Confirm the menu is open
     await waitFor(() => {
       // Find one of the options to confirm the menu is open
-      expect(screen.getByText(/Menor Preço/i)).toBeDefined();
+      expect(screen.getByText(/Menor Preço/i)).toBeInTheDocument();
     });
+
+    // 4. Select an option to ensure the event reaches the handler
+    const option = screen.getByText(/Menor Preço/i);
+    await user.click(option);
+
+    expect(setSortBy).toHaveBeenCalledWith('price-asc');
   });
 });
