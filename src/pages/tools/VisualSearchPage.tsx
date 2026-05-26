@@ -992,6 +992,13 @@ export default function VisualSearchPage() {
                                 </motion.div>
                               </div>
                             </div>
+                            <div className="mt-3 flex items-center justify-between text-[8px] font-bold text-white/20 font-mono uppercase tracking-widest">
+                              <div className="flex items-center gap-1">
+                                <TrendingUp className="h-2 w-2 text-emerald-500" />
+                                <span>15 Consultas / Sem</span>
+                              </div>
+                              <span>Terminal ID: {product.sku.split('-')[0] || 'AI-X'}</span>
+                            </div>
                           </CardContent>
                         </Card>
                       </motion.div>
