@@ -131,7 +131,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             aria-label="Conteúdo principal"
             aria-labelledby="main-heading"
           >
-            <Suspense fallback={<div>{children || <Outlet />}</div>}>
+            <Suspense fallback={getFallback(location.pathname)}>
               <PageTransition variant="fade-slide" duration={0.6}>
                 {children || <Outlet />}
               </PageTransition>
