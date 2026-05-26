@@ -100,15 +100,6 @@ export async function authorize(
       supabaseAdmin: createClient(SUPABASE_URL, SERVICE_KEY),
     };
   }
-    return {
-      ok: true,
-      user: { id: "system", email: "system@lovable.local" },
-      role: "dev",
-      token,
-      supabaseUser: createClient(SUPABASE_URL, SERVICE_KEY),
-      supabaseAdmin: createClient(SUPABASE_URL, SERVICE_KEY),
-    };
-  }
   if (!token) {
     return {
       ok: false,
