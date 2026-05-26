@@ -2,13 +2,18 @@
  * useProductsManager — Business logic hook for ProductsManager.
  * Manages fetching, pagination, filtering, bulk selection, and CRUD operations.
  *
- * Fixes applied (audit 26/05/2026):
+ * Sprint 2 fixes (audit 26/05/2026):
  *   BUG-08: galeria completa preservada; imageUrl apenas como fallback
  *   BUG-09: Promise.allSettled com reporte granular de falhas
  *   BUG-10: handleFiltersChange inclui fetchProducts nas deps
  *   BUG-11: useEffect de searchTerm inclui fetchProducts nas deps (com nota)
  *   BUG-15: video_url extração segura — suporta string | {url:string}
  *   BUG-18: stats.isPageLevel sinaliza que os números são da página atual
+ *
+ * Sprint 3 fixes (26/05/2026):
+ *   BUG-26: selectedOnPageLabel exposto no return para UX comunicar seleção por página
+ *   BUG-27: handlePageChange passa advancedFilters explicitamente (não depende de closure)
+ *   BUG-29: comentário no useEffect inicial com [] documenta a intencionalidade
  */
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -302,8 +307,9 @@ export function useProductsManager() {
     [currentPage, pageSize, advancedFilters],
   );
 
-  // BUG-29 note: empty deps intentional for single mount fetch; pageSize/searchTerm are
-  // initial values (50/'') so stale-closure risk is negligible here.
+  // BUG-29: empty deps intentional — this runs once on mount to load the initial page.
+  // pageSize=50 and searchTerm='' are initial values; stale-closure risk is negligible
+  // since any subsequent user interaction will call fetchProducts with explicit args.
   useEffect(() => {
     fetchProducts(1, pageSize, searchTerm);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -344,11 +350,14 @@ export function useProductsManager() {
     return filtered;
   }, [products, advancedFilters.price_min, advancedFilters.price_max, advancedFilters.is_kit]);
 
+  // BUG-27 FIX: pass advancedFilters explicitly so active filters persist when changing pages.
+  // Previously relied on closure which could be stale if filters had just been set.
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     setSelectedIds(new Set());
-    fetchProducts(page, pageSize, searchTerm);
+    fetchProducts(page, pageSize, searchTerm, advancedFilters);
   };
+
   const handlePageSizeChange = (newSize: string) => {
     const size = parseInt(newSize, 10);
     setPageSize(size);
@@ -397,8 +406,7 @@ export function useProductsManager() {
   }, []);
 
   const toggleSelectAll = useCallback(() => {
-    // BUG-26 note: selects only the current page. UI should display a label
-    // like "N selected on this page" to avoid confusion with full-catalog selection.
+    // BUG-26: selects only the current page — selectedOnPageLabel in return communicates this to UI
     setSelectedIds((prev) =>
       prev.size === displayedProducts.length
         ? new Set()
@@ -483,6 +491,11 @@ export function useProductsManager() {
     setIsImportOpen,
     selectedProduct,
     stats,
+    // BUG-26 FIX: label for UX — surface to the UI that selection is page-scoped only
+    selectedOnPageLabel:
+      selectedIds.size > 0
+        ? `${selectedIds.size} de ${displayedProducts.length} selecionado(s) nesta página`
+        : null,
     openCreateForm,
     openEditForm,
     openDeleteDialog,
