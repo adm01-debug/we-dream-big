@@ -190,8 +190,6 @@ for (const table of TECHNICAL_TABLES) {
 // ============================================================
 Deno.test({
   name: "[regressão] query_telemetry NÃO deve mais ter policy is_admin",
-  sanitizeOps: false,
-  sanitizeResources: false,
   ignore: !pool,
   fn: async () => {
     const policies = await getPolicies("query_telemetry");
