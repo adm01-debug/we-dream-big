@@ -86,9 +86,14 @@ Deno.serve(async (req) => {
   const requestId = getOrCreateRequestId(req);
   const log = createStructuredLogger({ fn: "health-check", requestId, req });
 
-  // Handle CORS
+  // Handle CORS (Public endpoint but with security headers)
   const preflight = handleCorsPreflight(req, { public: true });
   if (preflight) return preflight;
+
+  const corsHeaders = {
+    ...buildPublicCorsHeaders(),
+    "Content-Type": "application/json"
+  };
 
   const start = Date.now();
   const checkers: HealthChecker[] = [
@@ -124,11 +129,6 @@ Deno.serve(async (req) => {
   };
 
   log.info(overall === "healthy" ? "health_ok" : "health_degraded", responseBody);
-
-  const corsHeaders = {
-    ...getCorsHeaders(req),
-    "Content-Type": "application/json"
-  };
 
   return log.respond(
     new Response(JSON.stringify(responseBody), {
