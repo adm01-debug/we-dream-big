@@ -188,7 +188,7 @@ export function ProductList({
     ? Array.from({ length: 8 }).map((_, i) => ({ id: `skeleton-${i}`, isSkeleton: true } as any))
     : products;
 
-  const skeletonVariant = "compact";
+  
 
 
   // Get first selected product for collection modal
