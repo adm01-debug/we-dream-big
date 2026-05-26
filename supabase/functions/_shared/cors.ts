@@ -215,10 +215,7 @@ export function buildPublicCorsHeaders(opts: PublicCorsOptions = {}): Record<str
     'Access-Control-Allow-Headers': Array.from(merged).join(', '),
     'Access-Control-Allow-Methods': opts.allowMethods ?? CORS_HEADERS_BASE['Access-Control-Allow-Methods'],
     'Access-Control-Expose-Headers': 'x-request-id',
-    'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
-    'Strict-Transport-Security': CORS_HEADERS_BASE['Strict-Transport-Security'],
-    'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; sandbox; upgrade-insecure-requests;",
+    ...SECURITY_HEADERS,
   };
 }
 
