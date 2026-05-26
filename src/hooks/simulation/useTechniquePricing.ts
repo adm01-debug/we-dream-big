@@ -43,75 +43,94 @@ export function useTechniquePricing(techniqueCode: string | null) {
       return;
     }
 
+    // BUG-12 FIX: Added isMounted flag to prevent setState after unmount.
+    // Previously fetchPriceOptions had no cleanup: if techniqueCode changed
+    // quickly (user navigating between techniques), the previous request would
+    // resolve and call setPriceOptions/setError/setIsLoading on an
+    // already-unmounted or stale component instance.
+    let isMounted = true;
+
     const fetchPriceOptions = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        // Buscar todas as tabelas que contêm o código da técnica
-        const { data, error: invokeError } = await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'customization_price_tables',
-            operation: 'select',
-            select: 'id,table_code,table_code_option,table_fullcode,customization_type_name,max_colors,max_area_width_cm,max_area_height_cm,price_by_color,price_by_area,setup_price,handling_price',
-            filters: { is_active: true },
-            limit: 100,
+        const { data, error: invokeError } = await supabase.functions.invoke(
+          'external-db-bridge',
+          {
+            body: {
+              table: 'customization_price_tables',
+              operation: 'select',
+              select:
+                'id,table_code,table_code_option,table_fullcode,customization_type_name,max_colors,max_area_width_cm,max_area_height_cm,price_by_color,price_by_area,setup_price,handling_price',
+              filters: { is_active: true },
+              limit: 100,
+            },
           },
-        });
+        );
 
         if (invokeError) throw new Error(invokeError.message);
         if (!data.success) throw new Error(data.error || 'Erro ao buscar tabelas de preço');
 
         const records = data.data.records || [];
-        
+
         // Filtrar tabelas que correspondem ao código da técnica
         const matchingTables = records.filter((t: Record<string, unknown>) => {
           const code = techniqueCode.toLowerCase();
           const tableCode = ((t.table_code as string) || '').toLowerCase();
           const fullCode = ((t.table_fullcode as string) || '').toLowerCase();
-          
-          return tableCode.includes(code) || 
-                 code.includes(tableCode) ||
-                 fullCode.includes(code);
+
+          return (
+            tableCode.includes(code) || code.includes(tableCode) || fullCode.includes(code)
+          );
         });
 
-        const options: TechniquePriceOption[] = matchingTables.map((t: Record<string, unknown>) => ({
-          id: t.id,
-          tableCode: t.table_code,
-          tableCodeOption: t.table_code_option,
-          tableFullcode: t.table_fullcode,
-          techniqueName: t.customization_type_name,
-          maxColors: t.max_colors || 1,
-          maxAreaWidth: t.max_area_width_cm || 0,
-          maxAreaHeight: t.max_area_height_cm || 0,
-          areaCm2: (t.max_area_width_cm || 0) * (t.max_area_height_cm || 0),
-          priceByColor: t.price_by_color || false,
-          priceByArea: t.price_by_area || false,
-          setupPrice: t.setup_price || 0,
-          handlingPrice: t.handling_price || 0,
-        }));
+        const options: TechniquePriceOption[] = matchingTables.map(
+          (t: Record<string, unknown>) => ({
+            id: t.id as string,
+            tableCode: t.table_code as string,
+            tableCodeOption: t.table_code_option as string | null,
+            tableFullcode: t.table_fullcode as string | null,
+            techniqueName: t.customization_type_name as string,
+            maxColors: (t.max_colors as number) || 1,
+            maxAreaWidth: (t.max_area_width_cm as number) || 0,
+            maxAreaHeight: (t.max_area_height_cm as number) || 0,
+            areaCm2:
+              ((t.max_area_width_cm as number) || 0) * ((t.max_area_height_cm as number) || 0),
+            priceByColor: (t.price_by_color as boolean) || false,
+            priceByArea: (t.price_by_area as boolean) || false,
+            setupPrice: (t.setup_price as number) || 0,
+            handlingPrice: (t.handling_price as number) || 0,
+          }),
+        );
 
-        setPriceOptions(options);
+        if (isMounted) setPriceOptions(options);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Erro desconhecido';
-        setError(message);
-        console.error('Erro ao buscar opções de preço:', err);
+        if (isMounted) {
+          setError(message);
+          console.error('Erro ao buscar opções de preço:', err);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     fetchPriceOptions();
+
+    return () => {
+      isMounted = false;
+    };
   }, [techniqueCode]);
 
   // Verificar se a técnica usa preço por cor
   const hasPriceByColor = useMemo(() => {
-    return priceOptions.some(opt => opt.priceByColor);
+    return priceOptions.some((opt) => opt.priceByColor);
   }, [priceOptions]);
 
   // Verificar se a técnica usa preço por área
   const hasPriceByArea = useMemo(() => {
-    return priceOptions.some(opt => opt.priceByArea);
+    return priceOptions.some((opt) => opt.priceByArea);
   }, [priceOptions]);
 
   // Opções de cores disponíveis (baseado em max_colors das tabelas)
@@ -119,8 +138,8 @@ export function useTechniquePricing(techniqueCode: string | null) {
     if (!hasPriceByColor || priceOptions.length === 0) return [];
 
     // Pegar todos os max_colors únicos e ordenar
-    const uniqueColors = [...new Set(priceOptions.map(opt => opt.maxColors))]
-      .filter(c => c > 0)
+    const uniqueColors = [...new Set(priceOptions.map((opt) => opt.maxColors))]
+      .filter((c) => c > 0)
       .sort((a, b) => a - b);
 
     // Se não há variação, criar opções de 1 até o máximo
@@ -133,7 +152,7 @@ export function useTechniquePricing(techniqueCode: string | null) {
     }
 
     // Se há variação, usar os valores disponíveis
-    return uniqueColors.map(c => ({
+    return uniqueColors.map((c) => ({
       value: c,
       label: `${c} ${c === 1 ? 'cor' : 'cores'}`,
     }));
@@ -145,8 +164,8 @@ export function useTechniquePricing(techniqueCode: string | null) {
 
     // Agrupar por área e pegar valores únicos
     const uniqueAreas = new Map<string, SizeOption>();
-    
-    priceOptions.forEach(opt => {
+
+    priceOptions.forEach((opt) => {
       if (opt.maxAreaWidth > 0 && opt.maxAreaHeight > 0) {
         const key = `${opt.maxAreaWidth}x${opt.maxAreaHeight}`;
         if (!uniqueAreas.has(key)) {
@@ -167,26 +186,30 @@ export function useTechniquePricing(techniqueCode: string | null) {
   }, [priceOptions]);
 
   // Encontrar a tabela correta para uma combinação de cores e tamanho
-  const findMatchingTable = useCallback((colors: number, sizeValue: string): TechniquePriceOption | null => {
-    if (priceOptions.length === 0) return null;
+  const findMatchingTable = useCallback(
+    (colors: number, sizeValue: string): TechniquePriceOption | null => {
+      if (priceOptions.length === 0) return null;
 
-    // Extrair dimensões do sizeValue
-    const [width, height] = sizeValue.split('x').map(Number);
+      // Extrair dimensões do sizeValue
+      const [width, height] = sizeValue.split('x').map(Number);
 
-    // Encontrar tabela que corresponde às opções
-    const matching = priceOptions.find(opt => {
-      const colorMatch = !hasPriceByColor || opt.maxColors >= colors;
-      const sizeMatch = !sizeValue || (opt.maxAreaWidth === width && opt.maxAreaHeight === height);
-      return colorMatch && sizeMatch;
-    });
+      // Encontrar tabela que corresponde às opções
+      const matching = priceOptions.find((opt) => {
+        const colorMatch = !hasPriceByColor || opt.maxColors >= colors;
+        const sizeMatch =
+          !sizeValue || (opt.maxAreaWidth === width && opt.maxAreaHeight === height);
+        return colorMatch && sizeMatch;
+      });
 
-    // Se não encontrou exata, pegar a primeira que suporta as cores
-    if (!matching && hasPriceByColor) {
-      return priceOptions.find(opt => opt.maxColors >= colors) || priceOptions[0];
-    }
+      // Se não encontrou exata, pegar a primeira que suporta as cores
+      if (!matching && hasPriceByColor) {
+        return priceOptions.find((opt) => opt.maxColors >= colors) || priceOptions[0];
+      }
 
-    return matching || priceOptions[0];
-  }, [priceOptions, hasPriceByColor]);
+      return matching || priceOptions[0];
+    },
+    [priceOptions, hasPriceByColor],
+  );
 
   return {
     priceOptions,
