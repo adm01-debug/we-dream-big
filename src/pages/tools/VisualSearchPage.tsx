@@ -750,8 +750,9 @@ export default function VisualSearchPage() {
                       >
                         <Card 
                           className={cn(
-                            "group h-full cursor-pointer overflow-hidden border-border/40 transition-all duration-500 hover:border-primary/40 active:scale-[0.98] relative",
-                            product.relevance >= 0.9 ? "hover:shadow-[0_0_30px_rgba(var(--primary),0.15)] ring-1 ring-transparent hover:ring-primary/20" : "hover:shadow-2xl"
+                            "group break-inside-avoid cursor-pointer overflow-hidden border-border/40 transition-all duration-500 hover:border-primary/40 active:scale-[0.98] relative",
+                            idx === 0 ? "shadow-[0_0_40px_rgba(var(--primary),0.15)] ring-2 ring-primary/20 scale-[1.02] mb-6" : "hover:shadow-2xl",
+                            product.relevance >= 0.9 && idx !== 0 ? "hover:shadow-[0_0_30px_rgba(var(--primary),0.15)] ring-1 ring-transparent hover:ring-primary/20" : ""
                           )}
                           onClick={() => navigate(`/produto/${product.id}`)}
                         >
