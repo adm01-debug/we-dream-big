@@ -117,7 +117,8 @@ export function useCatalogFiltering({
       );
     }
 
-    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 500) {
+    // BUG-21 FIX: era < 500, deve ser < 9999 para ativar filtro no range completo [0, 9999].
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 9999) {
       const [min, max] = filters.priceRange;
       result = result.filter((p) => p.price >= min && p.price <= max);
     }
