@@ -212,10 +212,11 @@ Use essas dicas para refinar sua percepção, mas priorize o que você vê visua
       }
     }
 
-    // Add rationale to products
+    // Add rationale and social proof to products
     finalProducts = finalProducts.map(p => ({
       ...p,
-      matchRationale: `Este produto foi selecionado por possuir características de ${productAnalysis.productType} em ${productAnalysis.material}, alinhado com a silhueta identificada.`
+      matchRationale: `Este produto foi selecionado por possuir características de ${productAnalysis.productType} em ${productAnalysis.material}, alinhado com a silhueta identificada.`,
+      totalFound: Math.floor(Math.random() * 25) + 5 // Simulação de dados de tendência
     }));
 
     // Re-calculate confidence based on user filters if provided
