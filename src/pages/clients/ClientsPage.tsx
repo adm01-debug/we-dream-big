@@ -198,11 +198,7 @@ export default function ClientsPage() {
               </CardContent>
             </Card>
           ) : isLoading ? (
-            <div className="grid gap-3">
-              {[0, 1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
-              ))}
-            </div>
+            <ClientsSkeleton className="p-0" />
           ) : filtered.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-16 text-center">
