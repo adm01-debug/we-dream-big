@@ -20,7 +20,7 @@ import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { useDebounce } from '@/hooks/common';
-import { MockupHistorySkeleton } from '@/components/mockup/MockupSkeleton';
+import { MockupHistorySkeleton } from '@/components/loading/ModernSkeletons';
 import { DiagnosticProfiler } from '@/components/dev/DiagnosticProfiler';
 
 interface GeneratedMockup {

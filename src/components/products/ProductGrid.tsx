@@ -206,7 +206,12 @@ export function ProductGrid({
     >
       {displayProducts.map((product, index) => (
         (product as any).isSkeleton ? (
-          <ProductCardSkeleton key={product.id} variant="default" />
+          <ProductCardSkeleton 
+            key={product.id} 
+            variant="default" 
+            selectionMode={selectionMode}
+            hideCategoryBadges={hideCategoryBadges}
+          />
         ) : (
           <ProductCardWrapper
             key={product.id}
