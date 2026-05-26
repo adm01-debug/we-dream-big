@@ -93,13 +93,13 @@ export default function VisualSearchPage() {
   const processImage = async (base64: string) => {
     setIsSearching(true);
     setResults(null);
-    
+
     try {
       const { data, error } = await supabase.functions.invoke('visual-search', {
-        body: { 
+        body: {
           imageBase64: base64.split(',')[1],
-          category: selectedCategory !== "all" ? selectedCategory : undefined,
-          color: selectedColor !== "all" ? selectedColor : undefined
+          category: selectedCategoryNames.length ? selectedCategoryNames.join(', ') : undefined,
+          color: selectedColorNames.length ? selectedColorNames.join(', ') : undefined,
         }
       });
 
@@ -120,8 +120,8 @@ export default function VisualSearchPage() {
     setPreviewUrl(null);
     setResults(null);
     setIsSearching(false);
-    setSelectedCategory("all");
-    setSelectedColor("all");
+    setSelectedCategoryIds([]);
+    setColorSelection({ groups: [], variations: [], nuances: [] });
   };
 
   return (
