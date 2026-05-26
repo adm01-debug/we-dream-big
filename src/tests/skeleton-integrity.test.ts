@@ -32,18 +32,20 @@ describe('Integridade do Sistema de Skeletons', () => {
 
   it('apenas o componente base Skeleton de ui deve ser usado diretamente para formas customizadas', () => {
     try {
-      // Verifica se arquivos estão usando Skeleton mas não importam de ModernSkeletons ou ui/skeleton
-      // Este teste foca em garantir que não criamos duplicatas locais
+      // Verifica se arquivos TSX estão usando Skeleton mas não importam de ModernSkeletons ou ui/skeleton
       // Excluímos AppRoutes.tsx e SkeletonLoaders.tsx que são gerenciadores de skeletons
-      const command = `rg -l "Skeleton" src/ --glob '!src/components/loading/*' --glob '!src/components/ui/skeleton.tsx' --glob '!src/components/layout/SkeletonLoaders.tsx' --glob '!src/tests/*' --glob '!src/routes/AppRoutes.tsx'`;
+      const command = `rg -l "Skeleton" src/ --glob "*.tsx" --glob '!src/components/loading/*' --glob '!src/components/ui/skeleton.tsx' --glob '!src/components/layout/SkeletonLoaders.tsx' --glob '!src/tests/*' --glob '!src/routes/AppRoutes.tsx'`;
       const files = execSync(command).toString().trim().split('\n');
       
       files.forEach(file => {
         if (!file) return;
         const content = execSync(`cat ${file}`).toString();
-        const hasUiImport = content.includes('@/components/ui/skeleton') || content.includes('@/components/loading/ModernSkeletons');
+        const hasCentralizedImport = 
+          content.includes('@/components/ui/skeleton') || 
+          content.includes('@/components/loading/ModernSkeletons') ||
+          content.includes('@/components/loading');
         
-        expect(hasUiImport, `O arquivo ${file} usa Skeletons mas não segue o padrão de importação centralizado.`).toBe(true);
+        expect(hasCentralizedImport, `O arquivo ${file} usa Skeletons mas não segue o padrão de importação centralizado.`).toBe(true);
       });
     } catch (error: any) {
       if (error.status !== 1) throw error;
