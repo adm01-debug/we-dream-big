@@ -6,34 +6,66 @@ export interface ProductCardSkeletonProps {
   className?: string;
   animate?: boolean;
   hideCategoryBadges?: boolean;
+  selectionMode?: boolean;
 }
 
 export function ProductCardSkeleton({ 
   variant = "default", 
   className, 
   animate = true,
-  hideCategoryBadges = false 
+  hideCategoryBadges = false,
+  selectionMode = false
 }: ProductCardSkeletonProps) {
   if (variant === "compact") {
     return (
-      <div className={cn("flex items-center gap-3 p-3 rounded-lg bg-card border border-border/40 overflow-hidden", className)}>
-        <Skeleton className="h-16 w-16 rounded-lg shrink-0" animate={animate} />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-3/4" animate={animate} />
-          <Skeleton className="h-3 w-1/2" animate={animate} />
-          <Skeleton className="h-4 w-16" animate={animate} />
+      <div className={cn("flex items-center gap-2", selectionMode && "pl-1")}>
+        {selectionMode && (
+          <div className="flex-shrink-0">
+            <Skeleton className="h-5 w-5 rounded" animate={animate} />
+          </div>
+        )}
+        <div className={cn("flex-1 flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-card border border-border/40 overflow-hidden h-[80px] sm:h-[96px]", className)}>
+          <Skeleton className="h-14 w-14 sm:h-[72px] sm:w-[72px] rounded-lg shrink-0" animate={animate} />
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Skeleton className="h-3 w-16" animate={animate} />
+              <Skeleton className="h-3 w-12" animate={animate} />
+            </div>
+            <Skeleton className="h-5 w-3/4" animate={animate} />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-3.5 w-24" animate={animate} />
+              <Skeleton className="h-3.5 w-16 hidden sm:block" animate={animate} />
+            </div>
+          </div>
+          <div className="shrink-0 text-right min-w-[80px] sm:min-w-[100px] space-y-1">
+            <Skeleton className="h-6 w-16 ml-auto" animate={animate} />
+            <Skeleton className="h-3 w-12 ml-auto" animate={animate} />
+          </div>
+          <div className="shrink-0 flex items-center gap-1">
+            <Skeleton className="h-8 w-8 rounded-full" animate={animate} />
+            <Skeleton className="h-8 w-8 rounded-full hidden sm:block" animate={animate} />
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={cn("group relative flex flex-col rounded-xl sm:rounded-2xl border border-border bg-card overflow-hidden h-full", className)}>
+    <div className={cn(
+      "group relative flex flex-col rounded-xl sm:rounded-2xl border border-border/40 bg-card overflow-hidden h-full", 
+      className
+    )}>
+      {selectionMode && (
+        <div className="absolute top-2 left-2 z-20">
+          <Skeleton className="h-5 w-5 rounded" animate={animate} />
+        </div>
+      )}
+      
       {/* Image Section - Matches ProductCardImage aspect ratio */}
       <Skeleton className="aspect-square w-full rounded-none" animate={animate} />
       
       {/* Info Section - Synchronized with ProductCard.tsx */}
-      <div className="relative space-y-2.5 p-3 sm:space-y-4 sm:p-5 flex-1 flex flex-col">
+      <div className="relative space-y-2.5 p-3 sm:space-y-4 sm:p-5 flex-1 flex flex-col bg-background">
         {/* Category badge */}
         {!hideCategoryBadges && (
           <Skeleton className="h-5 w-20 rounded-full" animate={animate} />
