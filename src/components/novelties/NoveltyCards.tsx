@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, Building2, FolderTree, Sparkles } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { NoveltyBadge } from "@/components/products/NoveltyBadge";
 import { ProductSparkline } from "@/components/products/ProductSparkline";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
