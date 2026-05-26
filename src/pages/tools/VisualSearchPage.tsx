@@ -1,25 +1,19 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Upload, Search, Camera, Image as ImageIcon, Zap, ArrowRight, Loader2, RefreshCcw, Filter } from 'lucide-react';
+import { Search, Camera, Image as ImageIcon, Zap, ArrowRight, Loader2, RefreshCcw, Filter, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { ExternalCategoryFilter } from '@/components/filters/ExternalCategoryFilter';
+import { ColorSwatchBar, type ColorFilterSelection } from '@/components/filters/ColorGroupFilter';
+import { useExternalCategoriesQuery, useColorSystem } from '@/hooks/products';
 
 interface VisualSearchResult {
   analysis: {
@@ -44,36 +38,39 @@ interface VisualSearchResult {
 
 export default function VisualSearchPage() {
   const navigate = useNavigate();
-  const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [results, setResults] = useState<VisualSearchResult | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedColor, setSelectedColor] = useState<string>("all");
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [colorSelection, setColorSelection] = useState<ColorFilterSelection>({
+    groups: [],
+    variations: [],
+    nuances: [],
+  });
 
-  const categories = [
-    { value: "all", label: "Todas as Categorias" },
-    { value: "Escritório", label: "Escritório" },
-    { value: "Tecnologia", label: "Tecnologia" },
-    { value: "Cozinha", label: "Cozinha" },
-    { value: "Esporte", label: "Esporte" },
-    { value: "Vestuário", label: "Vestuário" },
-    { value: "Ferramentas", label: "Ferramentas" },
-    { value: "Bem-estar", label: "Bem-estar" },
-    { value: "Lazer", label: "Lazer" },
-  ];
+  const { data: categories = [] } = useExternalCategoriesQuery();
+  const { data: colorData } = useColorSystem();
 
-  const colors = [
-    { value: "all", label: "Todas as Cores" },
-    { value: "Preto", label: "Preto" },
-    { value: "Branco", label: "Branco" },
-    { value: "Azul", label: "Azul" },
-    { value: "Vermelho", label: "Vermelho" },
-    { value: "Verde", label: "Verde" },
-    { value: "Amarelo", label: "Amarelo" },
-    { value: "Prata", label: "Prata" },
-    { value: "Dourado", label: "Dourado" },
-  ];
+  // Resolve nomes selecionados para passar à IA
+  const selectedCategoryNames = useMemo(() => {
+    if (!selectedCategoryIds.length) return [];
+    const map = new Map(categories.map((c) => [c.id, c.name]));
+    return selectedCategoryIds.map((id) => map.get(id)).filter(Boolean) as string[];
+  }, [selectedCategoryIds, categories]);
+
+  const selectedColorNames = useMemo(() => {
+    if (!colorData) return [];
+    const names: string[] = [];
+    colorData.groups.forEach((g) => {
+      if (colorSelection.groups.includes(g.slug)) names.push(g.name);
+      g.variations.forEach((v) => {
+        if (colorSelection.variations.includes(v.slug)) names.push(v.name);
+      });
+    });
+    return names;
+  }, [colorSelection, colorData]);
+
+  const hasRefinements = selectedCategoryIds.length > 0 || selectedColorNames.length > 0;
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -96,13 +93,13 @@ export default function VisualSearchPage() {
   const processImage = async (base64: string) => {
     setIsSearching(true);
     setResults(null);
-    
+
     try {
       const { data, error } = await supabase.functions.invoke('visual-search', {
-        body: { 
+        body: {
           imageBase64: base64.split(',')[1],
-          category: selectedCategory !== "all" ? selectedCategory : undefined,
-          color: selectedColor !== "all" ? selectedColor : undefined
+          category: selectedCategoryNames.length ? selectedCategoryNames.join(', ') : undefined,
+          color: selectedColorNames.length ? selectedColorNames.join(', ') : undefined,
         }
       });
 
@@ -123,8 +120,8 @@ export default function VisualSearchPage() {
     setPreviewUrl(null);
     setResults(null);
     setIsSearching(false);
-    setSelectedCategory("all");
-    setSelectedColor("all");
+    setSelectedCategoryIds([]);
+    setColorSelection({ groups: [], variations: [], nuances: [] });
   };
 
   return (
@@ -191,48 +188,78 @@ export default function VisualSearchPage() {
                   <Filter className="h-4 w-4" /> Refinar Busca
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Forneça detalhes extras para ajudar a IA
+                  Selecione categorias e cores reais do catálogo para ajudar a IA
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5">
+                {/* Categoria (banco externo, hierárquica) */}
                 <div className="space-y-2">
-                  <Label htmlFor="category" className="text-xs font-semibold">Categoria Estimada</Label>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger id="category" className="h-9">
-                      <SelectValue placeholder="Selecione a categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.value} value={cat.value}>
-                          {cat.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold">
+                      Categoria Estimada
+                      {selectedCategoryIds.length > 0 && (
+                        <Badge variant="secondary" className="ml-2 text-[10px]">
+                          {selectedCategoryIds.length}
+                        </Badge>
+                      )}
+                    </Label>
+                    {selectedCategoryIds.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                        onClick={() => setSelectedCategoryIds([])}
+                      >
+                        <X className="h-3 w-3 mr-1" /> Limpar
+                      </Button>
+                    )}
+                  </div>
+                  <div className="rounded-md border border-border/60 bg-background/50 p-1">
+                    <ExternalCategoryFilter
+                      selectedCategories={selectedCategoryIds}
+                      onCategoriesChange={setSelectedCategoryIds}
+                      compact
+                    />
+                  </div>
                 </div>
 
+                {/* Cor (color_groups do banco externo) */}
                 <div className="space-y-2">
-                  <Label htmlFor="color" className="text-xs font-semibold">Cor do Produto</Label>
-                  <Select value={selectedColor} onValueChange={setSelectedColor}>
-                    <SelectTrigger id="color" className="h-9">
-                      <SelectValue placeholder="Selecione a cor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {colors.map((color) => (
-                        <SelectItem key={color.value} value={color.value}>
-                          {color.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold">
+                      Cor do Produto
+                      {selectedColorNames.length > 0 && (
+                        <Badge variant="secondary" className="ml-2 text-[10px]">
+                          {selectedColorNames.length}
+                        </Badge>
+                      )}
+                    </Label>
+                    {selectedColorNames.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                        onClick={() => setColorSelection({ groups: [], variations: [], nuances: [] })}
+                      >
+                        <X className="h-3 w-3 mr-1" /> Limpar
+                      </Button>
+                    )}
+                  </div>
+                  <ColorSwatchBar selection={colorSelection} onChange={setColorSelection} />
+                  {selectedColorNames.length > 0 && (
+                    <p className="text-[11px] text-muted-foreground">
+                      {selectedColorNames.join(', ')}
+                    </p>
+                  )}
                 </div>
 
-                {previewUrl && !isSearching && !results && (
-                  <Button 
-                    className="w-full gap-2" 
+                {previewUrl && !isSearching && (
+                  <Button
+                    className="w-full gap-2"
                     onClick={() => processImage(previewUrl)}
                   >
-                    <Search className="h-4 w-4" /> Analisar Imagem
+                    <Search className="h-4 w-4" />
+                    {results ? 'Refinar análise' : 'Analisar Imagem'}
                   </Button>
                 )}
               </CardContent>
