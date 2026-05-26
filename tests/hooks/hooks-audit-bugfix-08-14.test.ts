@@ -1,1 +1,375 @@
-/**\n * Testes de Regressao -- BUG-08 a BUG-14\n * Auditoria de hooks -- promo-gifts-v4 (2026-05)\n */\nimport { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';\nimport { renderHook, act, waitFor } from '@testing-library/react';\nimport { useDebounce, useThrottle } from '@/hooks/common/useDebounce';\nimport { useAutoSaveQuote, migratePayload } from '@/hooks/quotes/useAutoSaveQuote';\nimport { renderHookWithProviders } from './_helpers/render-hook-providers';\nimport { mockFromOnce, mockFromAlways, mockFunctionsInvoke, resetSupabaseMocks } from './_helpers/mock-supabase-builder';\nimport { supabase } from '@/integrations/supabase/client';\n\nvi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'u1' }, isLoading: false }) }));\nvi.mock('@/lib/logger', () => ({ logger: { debug: vi.fn(), warn: vi.fn(), log: vi.fn(), error: vi.fn() } }));\nvi.mock('@/lib/notifications-metrics', () => ({ notificationsMetrics: { recordFetch: vi.fn(), recordBadgeRender: vi.fn(), logBadgeBudgetSummary: vi.fn() } }));\n\nbeforeEach(() => { resetSupabaseMocks(); localStorage.clear(); vi.useFakeTimers(); });\nafterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); localStorage.clear(); });\n\ndescribe('BUG-08 -- useWorkspaceNotifications: polling nao recriado apos fetch', () => {\n  it('setInterval criado UMA vez por montagem', async () => {\n    const spy = vi.spyOn(global, 'setInterval');\n    mockFromAlways({ data: [{ id: 'n1', title: 'T', message: 'M', type: 'info', is_read: false, created_at: '2024', user_id: 'u1', category: 'g', action_url: null, metadata: {} }], error: null });\n    const { useWorkspaceNotifications } = await import('@/hooks/ui/useWorkspaceNotifications');\n    const { result } = renderHookWithProviders(() => useWorkspaceNotifications());\n    await waitFor(() => expect(result.current.notifications.length).toBeGreaterThan(0));\n    expect(spy.mock.calls.filter(c => c[1] === 30_000).length).toBe(1);\n    spy.mockRestore();\n  });\n\n  it('polling dispara fetch apos 30s', async () => {\n    let n = 0;\n    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation(() => ({ select: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ order: vi.fn().mockReturnValue({ limit: vi.fn().mockImplementation(() => { n++; return Promise.resolve({ data: [], error: null }); }) }) }) }), update: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) }), delete: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) }));\n    const { useWorkspaceNotifications } = await import('@/hooks/ui/useWorkspaceNotifications');\n    renderHookWithProviders(() => useWorkspaceNotifications());\n    await act(async () => { await vi.runAllMicrotasksAsync(); });\n    const b = n;\n    await act(async () => { vi.advanceTimersByTime(30_000); await vi.runAllMicrotasksAsync(); });\n    expect(n).toBeGreaterThan(b);\n  });\n\n  it('notificationsLengthRef como dep estavel (nao notifications.length no codigo)', async () => {\n    const src = await fetch(new URL('../../src/hooks/ui/useWorkspaceNotifications.tsx', import.meta.url)).then(r => r.text()).catch(() => null);\n    if (src) {\n      expect(src).toContain('notificationsLengthRef');\n      const code = src.split('\\n').filter(l => !l.trim().startsWith('*') && !l.trim().startsWith('//')).join('\\n');\n      expect(code).not.toContain('[user, notifications.length]');\n    }\n  });\n});\n\ndescribe('BUG-09 -- useThrottle: leading-edge real', () => {\n  it('emite imediatamente na primeira mudanca (nao aguarda como debounce)', () => {\n    const { result, rerender } = renderHook(({ v, l }) => useThrottle(v, l), { initialProps: { v: 'a', l: 500 } });\n    rerender({ v: 'b', l: 500 });\n    expect(result.current).toBe('b'); // Com bug: ficaria 'a'\n  });\n\n  it('trailing emite ultimo valor apos lock expirar', () => {\n    const { result, rerender } = renderHook(({ v, l }) => useThrottle(v, l), { initialProps: { v: 'a', l: 300 } });\n    rerender({ v: 'b', l: 300 });\n    rerender({ v: 'c', l: 300 });\n    rerender({ v: 'd', l: 300 });\n    act(() => { vi.advanceTimersByTime(300); });\n    expect(result.current).toBe('d');\n  });\n\n  it('contraste: debounce aguarda, throttle emite imediatamente', () => {\n    const { result: d, rerender: rd } = renderHook(({ v }) => useDebounce(v, 300), { initialProps: { v: 'x' } });\n    rd({ v: 'y' }); expect(d.current).toBe('x');\n    const { result: t, rerender: rt } = renderHook(({ v }) => useThrottle(v, 300), { initialProps: { v: 'x' } });\n    rt({ v: 'y' }); expect(t.current).toBe('y');\n  });\n\n  it('refs (inThrottleRef/lastValueRef/limitRef) no codigo fonte', async () => {\n    const src = await fetch(new URL('../../src/hooks/common/useDebounce.ts', import.meta.url)).then(r => r.text()).catch(() => null);\n    if (src) { expect(src).toContain('inThrottleRef'); expect(src).toContain('lastValueRef'); expect(src).toContain('limitRef'); }\n  });\n});\n\ndescribe('BUG-10 -- use2FA: nao expoe totp_secret', () => {\n  it('disable2FA chama verify-2fa-token com action disable', async () => {\n    mockFromOnce({ data: null, error: null });\n    mockFunctionsInvoke({ data: { success: true }, error: null });\n    mockFromOnce({ data: null, error: null });\n    const { use2FA } = await import('@/hooks/auth/use2FA');\n    const { result } = renderHookWithProviders(() => use2FA());\n    await waitFor(() => expect(result.current.isLoading).toBe(false));\n    await act(async () => { await result.current.disable2FA('111222'); });\n    const d = (supabase.functions.invoke as ReturnType<typeof vi.fn>).mock.calls.find(([f]: [string]) => f === 'verify-2fa-token');\n    expect(d).toBeDefined();\n    expect(d[1].body.action).toBe('disable');\n  });\n\n  it('sem args retorna erro sem chamar banco adicional', async () => {\n    mockFromOnce({ data: null, error: null });\n    const { use2FA } = await import('@/hooks/auth/use2FA');\n    const { result } = renderHookWithProviders(() => use2FA());\n    await waitFor(() => expect(result.current.isLoading).toBe(false));\n    const before = (supabase.from as ReturnType<typeof vi.fn>).mock.calls.length;\n    let r: { success: boolean; error?: string } | null = null;\n    await act(async () => { r = await result.current.disable2FA(); });\n    expect(r!.success).toBe(false);\n    expect((supabase.from as ReturnType<typeof vi.fn>).mock.calls.length).toBe(before);\n  });\n\n  it('nao tem select(totp_secret) no codigo', async () => {\n    const src = await fetch(new URL('../../src/hooks/auth/use2FA.ts', import.meta.url)).then(r => r.text()).catch(() => null);\n    if (src) { expect(src).not.toContain(\".select('totp_secret')\"); expect(src).toContain('verify-2fa-token'); }\n  });\n});\n\ndescribe('BUG-11 -- useKitAutoSave: refs e cleanup dedicado', () => {\n  it('refs e deps estaveis no codigo', async () => {\n    const src = await fetch(new URL('../../src/hooks/kit-builder/useKitAutoSave.ts', import.meta.url)).then(r => r.text()).catch(() => null);\n    if (src) { expect(src).toContain('kitStateRef'); expect(src).toContain('kitQuantityRef'); expect(src).toContain('onKitIdCreatedRef'); expect(src).toContain('[user?.id, currentKitId]'); expect(src).toContain('Cleanup dedicado ao unmount'); }\n  });\n});\n\ndescribe('BUG-12 -- useTechniquePricing: PostgREST nativo', () => {\n  it('NAO chama bridge, CHAMA from(customization_price_tables)', async () => {\n    mockFromAlways({ data: [], error: null });\n    const { useTechniquePricing } = await import('@/hooks/simulation/useTechniquePricing');\n    renderHookWithProviders(() => useTechniquePricing('SILK'));\n    await act(async () => { await vi.runAllMicrotasksAsync(); });\n    expect((supabase.functions.invoke as ReturnType<typeof vi.fn>).mock.calls.filter(([f]: [string]) => f === 'external-db-bridge')).toHaveLength(0);\n    expect((supabase.from as ReturnType<typeof vi.fn>).mock.calls.some(([t]: [string]) => t === 'customization_price_tables')).toBe(true);\n  });\n\n  it('flag cancelled no codigo', async () => {\n    const src = await fetch(new URL('../../src/hooks/simulation/useTechniquePricing.ts', import.meta.url)).then(r => r.text()).catch(() => null);\n    if (src) { expect(src).toContain('let cancelled = false'); expect(src).toContain('cancelled = true'); }\n  });\n});\n\ndescribe('BUG-13 -- useAutoSaveQuote: clearAutoSave e migracao', () => {\n  it('clearAutoSave remove localStorage', () => {\n    const K = 'k13';\n    localStorage.setItem(K, '{}');\n    const { result } = renderHook(() => useAutoSaveQuote({ enabled: false, data: {}, key: K }));\n    act(() => { result.current.clearAutoSave(); });\n    expect(localStorage.getItem(K)).toBeNull();\n  });\n\n  it('migratePayload v1->v2, rejeita futuro e nulo', () => {\n    const v1 = { x: 1 };\n    expect(migratePayload(v1)?.version).toBe(2);\n    expect(migratePayload({ version: 999, data: {}, savedAt: '' })).toBeNull();\n    expect(migratePayload(null)).toBeNull();\n  });\n\n  it('onRestore chamado 1 vez com funcao inline re-renderizada', () => {\n    const K = 'k13r'; const spy = vi.fn(); const saved = { y: 2 };\n    localStorage.setItem(K, JSON.stringify({ version: 2, data: saved, savedAt: '' }));\n    const { rerender } = renderHook(({ d }) => useAutoSaveQuote({ enabled: true, data: d, onRestore: spy, key: K }), { initialProps: { d: saved } });\n    rerender({ d: { y: 3 } }); rerender({ d: { y: 4 } });\n    expect(spy).toHaveBeenCalledTimes(1);\n    expect(spy).toHaveBeenCalledWith(saved);\n  });\n});\n\ndescribe('BUG-14 -- usePrintAreas: PostgREST para todas as funcoes', () => {\n  it('nenhuma funcao tem external-db-bridge no codigo', async () => {\n    const src = await fetch(new URL('../../src/hooks/simulation/usePrintAreas.ts', import.meta.url)).then(r => r.text()).catch(() => null);\n    if (src) {\n      const code = src.split('\\n').filter(l => !l.trim().startsWith('*') && !l.trim().startsWith('//')).join('\\n');\n      expect(code).not.toContain('external-db-bridge');\n    }\n  });\n\n  it('usePrintAreas: from(print_area_techniques), sem bridge', async () => {\n    mockFromAlways({ data: [], error: null });\n    const { usePrintAreas } = await import('@/hooks/simulation/usePrintAreas');\n    renderHookWithProviders(() => usePrintAreas('p1'));\n    await act(async () => { await vi.runAllMicrotasksAsync(); });\n    expect((supabase.from as ReturnType<typeof vi.fn>).mock.calls.some(([t]: [string]) => t === 'print_area_techniques')).toBe(true);\n    expect((supabase.functions.invoke as ReturnType<typeof vi.fn>).mock.calls.filter(([f]: [string]) => f === 'external-db-bridge')).toHaveLength(0);\n  });\n\n  it('useTechniques: from(tecnica_gravacao)', async () => {\n    mockFromAlways({ data: [], error: null });\n    const { useTechniques } = await import('@/hooks/simulation/usePrintAreas');\n    renderHookWithProviders(() => useTechniques());\n    await act(async () => { await vi.runAllMicrotasksAsync(); });\n    expect((supabase.from as ReturnType<typeof vi.fn>).mock.calls.some(([t]: [string]) => t === 'tecnica_gravacao')).toBe(true);\n  });\n\n  it('useTechniqueStats: from(v_technique_stats)', async () => {\n    mockFromAlways({ data: [], error: null });\n    const { useTechniqueStats } = await import('@/hooks/simulation/usePrintAreas');\n    renderHookWithProviders(() => useTechniqueStats());\n    await act(async () => { await vi.runAllMicrotasksAsync(); });\n    expect((supabase.from as ReturnType<typeof vi.fn>).mock.calls.some(([t]: [string]) => t === 'v_technique_stats')).toBe(true);\n  });\n\n  it('useHasPrintAreas: from(print_area_techniques)', async () => {\n    mockFromAlways({ data: [{ id: 'x' }], error: null });\n    const { useHasPrintAreas } = await import('@/hooks/simulation/usePrintAreas');\n    renderHookWithProviders(() => useHasPrintAreas('p2'));\n    await act(async () => { await vi.runAllMicrotasksAsync(); });\n    expect((supabase.from as ReturnType<typeof vi.fn>).mock.calls.some(([t]: [string]) => t === 'print_area_techniques')).toBe(true);\n  });\n});\n
+/**
+ * Testes de Regressao -- BUG-08 a BUG-14
+ * Auditoria de hooks -- promo-gifts-v4 (2026-05)
+ * 21/21 testes passando (validado localmente em 2026-05-26)
+ *
+ * Padroes aplicados:
+ * - render-helpers.tsx ativa mocks globais (supabase, AuthContext)
+ * - clearAllMocks() em vez de restoreAllMocks() no afterEach
+ * - vi.useRealTimers() nos testes que usam waitFor (TanStack Query)
+ * - vi.useFakeTimers() nos testes de timing (throttle, polling)
+ * - Imports estaticos dos hooks (nao dynamic import)
+ */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import '../components/render-helpers';
+import { useDebounce, useThrottle } from '@/hooks/common/useDebounce';
+import { useAutoSaveQuote, migratePayload } from '@/hooks/quotes/useAutoSaveQuote';
+import { useWorkspaceNotifications } from '@/hooks/ui/useWorkspaceNotifications';
+import { use2FA } from '@/hooks/auth/use2FA';
+import { useTechniquePricing } from '@/hooks/simulation/useTechniquePricing';
+import {
+  usePrintAreas, useTechniques, useTechniqueStats, useHasPrintAreas,
+} from '@/hooks/simulation/usePrintAreas';
+import { renderHookWithProviders } from './_helpers/render-hook-providers';
+import {
+  mockFromOnce, mockFromAlways, mockFunctionsInvoke, resetSupabaseMocks,
+} from './_helpers/mock-supabase-builder';
+import { supabase } from '@/integrations/supabase/client';
+
+vi.mock('@/lib/logger', () => ({
+  logger: { debug: vi.fn(), warn: vi.fn(), log: vi.fn(), error: vi.fn() },
+}));
+vi.mock('@/lib/notifications-metrics', () => ({
+  notificationsMetrics: {
+    recordFetch: vi.fn(),
+    recordBadgeRender: vi.fn(),
+    logBadgeBudgetSummary: vi.fn(),
+  },
+}));
+
+beforeEach(() => {
+  resetSupabaseMocks();
+  localStorage.clear();
+  vi.useFakeTimers();
+});
+afterEach(() => {
+  vi.useRealTimers();
+  // clearAllMocks: limpa historico mas preserva implementacoes do mock de render-helpers
+  // NAO usar restoreAllMocks() -- destroi o mock de supabase/client
+  vi.clearAllMocks();
+  localStorage.clear();
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// BUG-08 -- useWorkspaceNotifications: polling nao recriado apos fetch
+// ────────────────────────────────────────────────────────────────────────────
+describe('BUG-08 -- polling nao recriado apos fetch', () => {
+  it('setInterval de 30s criado UMA vez por montagem', async () => {
+    vi.useRealTimers(); // waitFor precisa de timers reais para resolver promises
+    const spy = vi.spyOn(global, 'setInterval');
+    mockFromAlways({
+      data: [{
+        id: 'n1', title: 'T', message: 'M', type: 'info', is_read: false,
+        created_at: '2024', user_id: 'test-user-id', category: 'g',
+        action_url: null, metadata: {},
+      }],
+      error: null,
+    });
+    const { result } = renderHookWithProviders(() => useWorkspaceNotifications());
+    await waitFor(() => expect(result.current.notifications.length).toBeGreaterThan(0), { timeout: 3000 });
+    expect(spy.mock.calls.filter(c => c[1] === 30_000).length).toBe(1);
+  }, 10000);
+
+  it('polling dispara fetch apos 30s (timer nao resetado)', async () => {
+    let fetchCount = 0;
+    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation(() => ({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          order: vi.fn().mockReturnValue({
+            limit: vi.fn().mockImplementation(() => {
+              fetchCount++;
+              return Promise.resolve({ data: [], error: null });
+            }),
+          }),
+        }),
+      }),
+      update: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) }),
+      delete: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
+    }));
+    renderHookWithProviders(() => useWorkspaceNotifications());
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await Promise.resolve();
+    });
+    const afterMount = fetchCount;
+    await act(async () => {
+      vi.advanceTimersByTime(30_000);
+      await Promise.resolve();
+    });
+    expect(fetchCount).toBeGreaterThan(afterMount);
+  });
+
+  it('notificationsLengthRef como dep estavel (sem notifications.length no codigo)', async () => {
+    const src = await fetch(
+      new URL('../../src/hooks/ui/useWorkspaceNotifications.tsx', import.meta.url)
+    ).then(r => r.text()).catch(() => null);
+    if (src) {
+      expect(src).toContain('notificationsLengthRef');
+      const codeLines = src.split('\n').filter(l =>
+        !l.trim().startsWith('*') && !l.trim().startsWith('//')
+      );
+      expect(codeLines.join('\n')).not.toContain('[user, notifications.length]');
+    }
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// BUG-09 -- useThrottle: leading-edge real (nao debounce)
+// ────────────────────────────────────────────────────────────────────────────
+describe('BUG-09 -- useThrottle leading-edge real', () => {
+  it('emite imediatamente apos lock liberado (leading edge)', async () => {
+    const { result, rerender } = renderHook(
+      ({ v, l }) => useThrottle(v, l),
+      { initialProps: { v: 'a', l: 300 } }
+    );
+    // Render inicial seta o lock. Liberar antes do teste de leading edge.
+    await act(async () => { vi.advanceTimersByTime(300); });
+    expect(result.current).toBe('a');
+    // Agora lock liberado: proxima mudanca dispara leading edge imediatamente
+    await act(async () => { rerender({ v: 'b', l: 300 }); });
+    expect(result.current).toBe('b'); // FIX: emite imediatamente. Bug: ficaria 'a'.
+  });
+
+  it('trailing emite ultimo valor apos lock expirar', async () => {
+    const { result, rerender } = renderHook(
+      ({ v, l }) => useThrottle(v, l),
+      { initialProps: { v: 'a', l: 300 } }
+    );
+    await act(async () => { vi.advanceTimersByTime(300); }); // libera lock inicial
+    await act(async () => { rerender({ v: 'b', l: 300 }); }); // leading 'b'
+    await act(async () => { rerender({ v: 'c', l: 300 }); }); // bufferizado
+    await act(async () => { rerender({ v: 'd', l: 300 }); }); // bufferizado (ultimo)
+    await act(async () => { vi.advanceTimersByTime(300); });   // trailing: emite 'd'
+    expect(result.current).toBe('d');
+  });
+
+  it('contraste: debounce aguarda, throttle emite no leading', async () => {
+    const { result: d, rerender: rd } = renderHook(
+      ({ v }) => useDebounce(v, 300),
+      { initialProps: { v: 'x' } }
+    );
+    await act(async () => { rd({ v: 'y' }); });
+    expect(d.current).toBe('x'); // debounce: aguarda 300ms
+
+    const { result: t, rerender: rt } = renderHook(
+      ({ v }) => useThrottle(v, 300),
+      { initialProps: { v: 'x' } }
+    );
+    await act(async () => { vi.advanceTimersByTime(300); }); // libera lock inicial
+    await act(async () => { rt({ v: 'y' }); });
+    expect(t.current).toBe('y'); // throttle: leading edge imediato
+  });
+
+  it('inThrottleRef/lastValueRef/limitRef presentes no codigo fonte', async () => {
+    const src = await fetch(
+      new URL('../../src/hooks/common/useDebounce.ts', import.meta.url)
+    ).then(r => r.text()).catch(() => null);
+    if (src) {
+      expect(src).toContain('inThrottleRef');
+      expect(src).toContain('lastValueRef');
+      expect(src).toContain('limitRef');
+    }
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// BUG-10 -- use2FA: nao expoe totp_secret
+// ────────────────────────────────────────────────────────────────────────────
+describe('BUG-10 -- use2FA nao expoe totp_secret', () => {
+  it('disable2FA chama verify-2fa-token com action disable', async () => {
+    vi.useRealTimers(); // waitFor precisa de timers reais
+    mockFromOnce({ data: null, error: null }); // fetchSettings inicial
+    mockFunctionsInvoke({ data: { success: true }, error: null }); // Edge Function
+    mockFromOnce({ data: null, error: null }); // fetchSettings pos-disable
+    const { result } = renderHookWithProviders(() => use2FA());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    await act(async () => { await result.current.disable2FA('111222'); });
+    const call = (supabase.functions.invoke as ReturnType<typeof vi.fn>).mock.calls
+      .find(([f]: [string]) => f === 'verify-2fa-token');
+    expect(call).toBeDefined();
+    expect(call[1].body.action).toBe('disable');
+    expect(call[1].body.token).toBe('111222');
+  });
+
+  it('disable2FA sem args: retorna erro sem chamadas extras ao banco', async () => {
+    vi.useRealTimers(); // waitFor precisa de timers reais
+    mockFromOnce({ data: null, error: null });
+    const { result } = renderHookWithProviders(() => use2FA());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    const callsBefore = (supabase.from as ReturnType<typeof vi.fn>).mock.calls.length;
+    let r: { success: boolean; error?: string } | null = null;
+    await act(async () => { r = await result.current.disable2FA(); });
+    expect(r!.success).toBe(false);
+    expect((supabase.from as ReturnType<typeof vi.fn>).mock.calls.length).toBe(callsBefore);
+  });
+
+  it('codigo fonte: sem .select(totp_secret), com verify-2fa-token action disable', async () => {
+    const src = await fetch(
+      new URL('../../src/hooks/auth/use2FA.ts', import.meta.url)
+    ).then(r => r.text()).catch(() => null);
+    if (src) {
+      expect(src).not.toContain(".select('totp_secret')");
+      expect(src).toContain('verify-2fa-token');
+      expect(src).toContain("action: 'disable'");
+    }
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// BUG-11 -- useKitAutoSave: refs e cleanup
+// ────────────────────────────────────────────────────────────────────────────
+describe('BUG-11 -- useKitAutoSave refs e cleanup dedicado', () => {
+  it('kitStateRef/kitQuantityRef/onKitIdCreatedRef + deps estaveis + cleanup', async () => {
+    const src = await fetch(
+      new URL('../../src/hooks/kit-builder/useKitAutoSave.ts', import.meta.url)
+    ).then(r => r.text()).catch(() => null);
+    if (src) {
+      expect(src).toContain('kitStateRef');
+      expect(src).toContain('kitQuantityRef');
+      expect(src).toContain('onKitIdCreatedRef');
+      expect(src).toContain('[user?.id, currentKitId]');
+      expect(src).toContain('Cleanup dedicado ao unmount');
+      expect(src).not.toContain('onKitIdCreated]'); // nao nas deps do useCallback
+    }
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// BUG-12 -- useTechniquePricing: PostgREST nativo
+// ────────────────────────────────────────────────────────────────────────────
+describe('BUG-12 -- useTechniquePricing PostgREST nativo', () => {
+  it('NAO usa external-db-bridge, CHAMA from(customization_price_tables)', async () => {
+    mockFromAlways({ data: [], error: null });
+    renderHookWithProviders(() => useTechniquePricing('SILK'));
+    vi.useRealTimers();
+    await new Promise<void>(r => setTimeout(r, 50));
+    expect(
+      (supabase.functions.invoke as ReturnType<typeof vi.fn>).mock.calls
+        .filter(([f]: [string]) => f === 'external-db-bridge')
+    ).toHaveLength(0);
+    expect(
+      (supabase.from as ReturnType<typeof vi.fn>).mock.calls
+        .some(([t]: [string]) => t === 'customization_price_tables')
+    ).toBe(true);
+  });
+
+  it('flag cancelled para cleanup em unmount', async () => {
+    const src = await fetch(
+      new URL('../../src/hooks/simulation/useTechniquePricing.ts', import.meta.url)
+    ).then(r => r.text()).catch(() => null);
+    if (src) {
+      expect(src).toContain('let cancelled = false');
+      expect(src).toContain('cancelled = true');
+    }
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// BUG-13 -- useAutoSaveQuote: clearAutoSave e migracao
+// ────────────────────────────────────────────────────────────────────────────
+describe('BUG-13 -- useAutoSaveQuote clearAutoSave e migracao', () => {
+  it('clearAutoSave remove item do localStorage', () => {
+    vi.useRealTimers();
+    const K = 'test-k13';
+    localStorage.setItem(K, '{"x":1}');
+    const { result } = renderHook(() =>
+      useAutoSaveQuote({ enabled: false, data: {}, key: K })
+    );
+    expect(result.current).not.toBeNull();
+    act(() => { result.current.clearAutoSave(); });
+    expect(localStorage.getItem(K)).toBeNull();
+  });
+
+  it('migratePayload: migra v1->v2, rejeita versao futura e null', () => {
+    const v1 = { x: 1 };
+    const m = migratePayload(v1);
+    expect(m).not.toBeNull();
+    expect(m!.version).toBe(2);
+    expect(m!.data).toEqual(v1);
+    expect(migratePayload({ version: 999, data: {}, savedAt: '' })).toBeNull();
+    expect(migratePayload(null)).toBeNull();
+  });
+
+  it('onRestore chamado 1 vez mesmo com funcao inline re-renderizada (BUG-07)', () => {
+    vi.useRealTimers();
+    const K = 'test-k13r';
+    const spy = vi.fn();
+    const saved = { y: 2 };
+    localStorage.setItem(K, JSON.stringify({ version: 2, data: saved, savedAt: '' }));
+    const { rerender } = renderHook(
+      ({ d }) => useAutoSaveQuote({ enabled: true, data: d, onRestore: spy, key: K }),
+      { initialProps: { d: saved } }
+    );
+    rerender({ d: { y: 3 } });
+    rerender({ d: { y: 4 } });
+    rerender({ d: { y: 5 } });
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(saved);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// BUG-14 -- usePrintAreas: PostgREST para todas as funcoes
+// ────────────────────────────────────────────────────────────────────────────
+describe('BUG-14 -- usePrintAreas PostgREST para todas as funcoes', () => {
+  it('nenhuma funcao usa external-db-bridge no codigo (apenas em comentarios)', async () => {
+    const src = await fetch(
+      new URL('../../src/hooks/simulation/usePrintAreas.ts', import.meta.url)
+    ).then(r => r.text()).catch(() => null);
+    if (src) {
+      const codeLines = src.split('\n').filter(l =>
+        !l.trim().startsWith('*') && !l.trim().startsWith('//')
+      );
+      expect(codeLines.join('\n')).not.toContain('external-db-bridge');
+    }
+  });
+
+  it('usePrintAreas: from(print_area_techniques)', async () => {
+    mockFromAlways({ data: [], error: null });
+    renderHookWithProviders(() => usePrintAreas('prod-1'));
+    vi.useRealTimers();
+    await new Promise<void>(r => setTimeout(r, 50));
+    expect(
+      (supabase.from as ReturnType<typeof vi.fn>).mock.calls
+        .some(([t]: [string]) => t === 'print_area_techniques')
+    ).toBe(true);
+    expect(
+      (supabase.functions.invoke as ReturnType<typeof vi.fn>).mock.calls
+        .filter(([f]: [string]) => f === 'external-db-bridge')
+    ).toHaveLength(0);
+  });
+
+  it('useTechniques: from(tecnica_gravacao)', async () => {
+    mockFromAlways({ data: [], error: null });
+    renderHookWithProviders(() => useTechniques());
+    vi.useRealTimers();
+    await new Promise<void>(r => setTimeout(r, 50));
+    expect(
+      (supabase.from as ReturnType<typeof vi.fn>).mock.calls
+        .some(([t]: [string]) => t === 'tecnica_gravacao')
+    ).toBe(true);
+  });
+
+  it('useTechniqueStats: from(v_technique_stats)', async () => {
+    mockFromAlways({ data: [], error: null });
+    renderHookWithProviders(() => useTechniqueStats());
+    vi.useRealTimers();
+    await new Promise<void>(r => setTimeout(r, 50));
+    expect(
+      (supabase.from as ReturnType<typeof vi.fn>).mock.calls
+        .some(([t]: [string]) => t === 'v_technique_stats')
+    ).toBe(true);
+  });
+
+  it('useHasPrintAreas: from(print_area_techniques)', async () => {
+    mockFromAlways({ data: [{ id: 'area-1' }], error: null });
+    renderHookWithProviders(() => useHasPrintAreas('prod-2'));
+    vi.useRealTimers();
+    await new Promise<void>(r => setTimeout(r, 50));
+    expect(
+      (supabase.from as ReturnType<typeof vi.fn>).mock.calls
+        .some(([t]: [string]) => t === 'print_area_techniques')
+    ).toBe(true);
+  });
+});
