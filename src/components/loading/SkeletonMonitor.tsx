@@ -28,6 +28,8 @@ export function SkeletonMonitor({
   useEffect(() => {
     console.log(`[Skeleton-Trace] Rendering: ${name} (Path: ${window.location.pathname})`);
   }, [name]);
+
+  useEffect(() => {
     // Only track if we are in the browser
     if (typeof window === 'undefined') return;
 
