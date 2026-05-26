@@ -1,17 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { type createClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-
-// 'security_settings' table not yet in generated schema — bypass type checking via raw client cast
-const db = supabase as unknown as ReturnType<typeof createClient>;
 
 interface AllowedCountry {
   id: string;
   country_code: string;
   country_name: string;
-  is_active: boolean;
-  created_at: string;
+  is_active: boolean | null;
+  created_at: string | null;
 }
 
 interface GeoBlockingSettings {
@@ -45,8 +41,15 @@ export function useGeoBlocking() {
   const fetchData = useCallback(async () => {
     try {
       const [countriesRes, settingsRes] = await Promise.all([
-        supabase.from('geo_allowed_countries').select('id, country_code, country_name, is_active, created_at').order('country_name'),
-        db.from('security_settings').select('id, setting_key, setting_value').eq('setting_key', 'geo_blocking').single(),
+        supabase
+          .from('geo_allowed_countries')
+          .select('id, country_code, country_name, is_active, created_at')
+          .order('country_name'),
+        supabase
+          .from('security_settings')
+          .select('setting_key, setting_value')
+          .eq('setting_key', 'geo_blocking')
+          .single(),
       ]);
 
       if (countriesRes.error) throw countriesRes.error;
@@ -74,7 +77,7 @@ export function useGeoBlocking() {
     async (enabled: boolean): Promise<{ success: boolean; error?: string }> => {
       try {
         const newSettings = { ...settings, enabled };
-        const { error } = await db
+        const { error } = await supabase
           .from('security_settings')
           .update({
             setting_value: newSettings,

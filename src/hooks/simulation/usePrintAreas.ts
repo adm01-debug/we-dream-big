@@ -1,13 +1,13 @@
 /**
  * Hooks: Áreas de Gravação (Print Areas)
- * 
+ *
  * FONTE ÚNICA: tabela 'print_area_techniques' no BD externo.
  * Técnicas resolvidas via lookup em 'tabela_preco_gravacao_oficial'.
  */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { PrintAreaWithTechniques, TecnicaGravacao } from '@/types/gravacao';
-import { logger } from "@/lib/logger";
+import type { AreaShape, PrintAreaWithTechniques, TecnicaGravacao } from '@/types/gravacao';
+import { logger } from '@/lib/logger';
 import {
   adaptPrintAreaTechniqueRows,
   adaptTabelaPrecoRows,
@@ -19,6 +19,19 @@ import {
 // ============================================
 // FUNÇÕES AUXILIARES
 // ============================================
+
+const VALID_AREA_SHAPES: readonly AreaShape[] = [
+  'rectangle',
+  'circle',
+  'oval',
+  'triangle',
+  'custom',
+];
+
+/** Normaliza um shape vindo como string livre para o union AreaShape. */
+function normalizeAreaShape(shape: string | null | undefined): AreaShape {
+  return VALID_AREA_SHAPES.includes(shape as AreaShape) ? (shape as AreaShape) : 'rectangle';
+}
 
 /**
  * Busca áreas de gravação de um produto via print_area_techniques.
@@ -36,7 +49,10 @@ async function fetchProductPrintAreas(productId: string): Promise<PrintAreaTechn
     });
 
     if (error || !data?.success) {
-      logger.warn('[usePrintAreas] Erro ao buscar print_area_techniques:', error?.message || data?.error);
+      logger.warn(
+        '[usePrintAreas] Erro ao buscar print_area_techniques:',
+        error?.message || data?.error,
+      );
       return [];
     }
 
@@ -71,20 +87,23 @@ export function usePrintAreas(productId: string | null) {
       }
 
       // Buscar técnicas ativas
-      const { data: techData, error: techError } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'tabela_preco_gravacao_oficial',
-          operation: 'select',
-          filters: { ativo: true },
-          limit: 100,
+      const { data: techData, error: techError } = await supabase.functions.invoke(
+        'external-db-bridge',
+        {
+          body: {
+            table: 'tabela_preco_gravacao_oficial',
+            operation: 'select',
+            filters: { ativo: true },
+            limit: 100,
+          },
         },
-      });
+      );
 
       if (techError) throw new Error(techError.message);
       if (!techData?.success) throw new Error(techData?.error || 'Erro ao buscar técnicas');
 
       const allTechs: TabelaPrecoCanonical[] = adaptTabelaPrecoRows(techData.data?.records || []);
-      const techById = new Map(allTechs.map(t => [t.id, t]));
+      const techById = new Map(allTechs.map((t) => [t.id, t]));
 
       return areas.map((area, idx) => {
         const techId = area.price_table_id ?? area.tabela_preco_id ?? null;
@@ -93,7 +112,8 @@ export function usePrintAreas(productId: string | null) {
 
         if (tech) {
           const techNome = tech.name ?? tech.nome ?? '';
-          const techCodigo = tech.codigo_curto ?? tech.codigo_tabela ?? tech.code ?? tech.codigo ?? '';
+          const techCodigo =
+            tech.codigo_curto ?? tech.codigo_tabela ?? tech.code ?? tech.codigo ?? '';
           techniques.push({
             id: tech.id,
             nome: techNome,
@@ -109,14 +129,16 @@ export function usePrintAreas(productId: string | null) {
           area_id: area.id,
           area_code: locationCode,
           area_name: locationName
-            ? (techNomeForLabel ? `${locationName} — ${techNomeForLabel}` : locationName)
+            ? techNomeForLabel
+              ? `${locationName} — ${techNomeForLabel}`
+              : locationName
             : `Área ${idx + 1}`,
           component_name: null,
           location_name: locationName,
           max_width: area.max_width ?? area.largura_max ?? 0,
           max_height: area.max_height ?? area.altura_max ?? 0,
           unit: 'cm',
-          shape: area.shape || 'rectangle',
+          shape: normalizeAreaShape(area.shape),
           is_curved: area.is_curved ?? false,
           is_primary: idx === 0,
           display_order: area.technique_order ?? idx,

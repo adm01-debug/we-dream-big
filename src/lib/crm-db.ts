@@ -8,7 +8,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { maskSensitiveText } from '@/lib/sensitive-masking';
-import { recordBridgeCall, estimatePayloadBytes } from '@/lib/telemetry/bridgeCallMetrics';
+import {
+  recordBridgeCall,
+  estimatePayloadBytes,
+  type BridgeOperation,
+} from '@/lib/telemetry/bridgeCallMetrics';
 import { newRequestId, REQUEST_ID_HEADER } from '@/lib/telemetry/requestId';
 
 export interface CrmQuery {
@@ -64,7 +68,7 @@ function activateRateLimitCooldown(): void {
   rateLimitedUntil = Date.now() + RATE_LIMIT_COOLDOWN_MS;
   logger.warn(
     `[CRM-DB] 429 detectado — circuit breaker ativo por ${RATE_LIMIT_COOLDOWN_MS / 1000}s. ` +
-    `Próxima chamada liberada às ${new Date(rateLimitedUntil).toISOString()}`,
+      `Próxima chamada liberada às ${new Date(rateLimitedUntil).toISOString()}`,
   );
 }
 
@@ -110,8 +114,12 @@ export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatch
   // Circuit breaker: bloqueia se em cooldown de 429
   if (isRateLimited()) {
     const remainMs = rateLimitedUntil - Date.now();
-    logger.warn(`[CRM-DB] Batch bloqueado pelo circuit breaker (${Math.ceil(remainMs / 1000)}s restantes)`);
-    throw new Error(`CRM rate-limit: aguarde ${Math.ceil(remainMs / 1000)}s antes de tentar novamente`);
+    logger.warn(
+      `[CRM-DB] Batch bloqueado pelo circuit breaker (${Math.ceil(remainMs / 1000)}s restantes)`,
+    );
+    throw new Error(
+      `CRM rate-limit: aguarde ${Math.ceil(remainMs / 1000)}s antes de tentar novamente`,
+    );
   }
 
   const startedAt = performance.now();
@@ -210,7 +218,7 @@ const NON_RETRYABLE_PATTERNS = [
 function isRetryableCrmError(msg: string): boolean {
   const lower = msg.toLowerCase();
   // Qualquer padrão definitivo bloqueia retry
-  if (NON_RETRYABLE_PATTERNS.some(p => lower.includes(p.toLowerCase()))) return false;
+  if (NON_RETRYABLE_PATTERNS.some((p) => lower.includes(p.toLowerCase()))) return false;
   return RETRYABLE_PATTERNS.some((p) => lower.includes(p.toLowerCase()));
 }
 
@@ -253,13 +261,18 @@ export async function invokeCrmDb<T>(query: CrmQuery): Promise<CrmResponse<T>> {
   // Circuit breaker: bloqueia se em cooldown de 429
   if (isRateLimited()) {
     const remainMs = rateLimitedUntil - Date.now();
-    logger.warn(`[CRM-DB] Chamada bloqueada pelo circuit breaker (${Math.ceil(remainMs / 1000)}s restantes)`);
-    throw new Error(`CRM rate-limit: aguarde ${Math.ceil(remainMs / 1000)}s antes de tentar novamente`);
+    logger.warn(
+      `[CRM-DB] Chamada bloqueada pelo circuit breaker (${Math.ceil(remainMs / 1000)}s restantes)`,
+    );
+    throw new Error(
+      `CRM rate-limit: aguarde ${Math.ceil(remainMs / 1000)}s antes de tentar novamente`,
+    );
   }
 
   const startedAt = performance.now();
   const reqBytes = estimatePayloadBytes(query);
-  const opLabel = query.operation || 'invoke';
+  // 'search' is a CRM-specific read op; map it to 'select' for bridge telemetry.
+  const opLabel: BridgeOperation = query.operation === 'search' ? 'select' : query.operation;
   const requestId = newRequestId();
 
   const record = (ok: boolean, data: unknown, errMsg?: string) => {

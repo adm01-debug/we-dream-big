@@ -1,11 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { type createClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import * as OTPAuth from 'otpauth';
-
-// Tables not yet in generated schema — bypass type checking via raw client cast
-const db = supabase as unknown as ReturnType<typeof createClient>;
 
 interface TwoFactorSettings {
   id: string;
@@ -39,7 +35,7 @@ export function use2FA(targetUserId?: string) {
     }
 
     try {
-      const { data, error } = await db
+      const { data, error } = await supabase
         .from('user_2fa_settings')
         .select('id, user_id, is_enabled, enabled_at, created_at')
         .eq('user_id', effectiveUserId)
@@ -110,7 +106,7 @@ export function use2FA(targetUserId?: string) {
           Math.random().toString(36).substring(2, 10).toUpperCase(),
         );
 
-        const { error } = await db.from('user_2fa_settings').upsert({
+        const { error } = await supabase.from('user_2fa_settings').upsert({
           user_id: effectiveUserId,
           totp_secret: pendingSecret,
           is_enabled: true,
@@ -142,7 +138,7 @@ export function use2FA(targetUserId?: string) {
 
       try {
         // Buscar secret atual
-        const { data: currentSettings } = await db
+        const { data: currentSettings } = await supabase
           .from('user_2fa_settings')
           .select('totp_secret')
           .eq('user_id', effectiveUserId)
@@ -162,7 +158,7 @@ export function use2FA(targetUserId?: string) {
           return { success: false, error: 'Código necessário' };
         }
 
-        const { error } = await db
+        const { error } = await supabase
           .from('user_2fa_settings')
           .update({
             is_enabled: false,
