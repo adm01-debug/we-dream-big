@@ -182,7 +182,7 @@ export default function MockupGenerator() {
 
 
         {mg.activeTab !== "history" && (
-          <div className="sticky top-0 z-[40] bg-background/80 backdrop-blur-md py-1 -mx-2 px-2 rounded-xl transition-all duration-300 border border-transparent hover:border-border/40">
+          <div className="sticky top-0 z-[40] bg-background/80 backdrop-blur-md pt-0 pb-1.5 -mx-2 px-2 rounded-xl transition-all duration-300 border border-transparent hover:border-border/40">
             <Suspense fallback={null}>
               <MockupWizard
                 currentStep={mg.wizardStep}
@@ -221,7 +221,7 @@ export default function MockupGenerator() {
         )}
 
         <Tabs value={mg.activeTab} onValueChange={(v) => mg.setActiveTab(v as "generator" | "history")} className="w-full">
-          <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center justify-between gap-2 mb-2">
             <TabsList>
               <TabsTrigger value="generator" className="flex items-center gap-2"><Wand2 className="h-4 w-4" /> Gerar Mockup</TabsTrigger>
               <TabsTrigger value="history" className="flex items-center gap-2"><History className="h-4 w-4" /> Histórico ({mg.mockupHistory.length})</TabsTrigger>
@@ -239,7 +239,7 @@ export default function MockupGenerator() {
 
           <TabsContent value="generator">
             <Suspense fallback={<div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <MockupConfigPanel
                   techniques={mg.techniques}
                   productSelection={mg.productSelection}
