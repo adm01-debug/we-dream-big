@@ -998,13 +998,21 @@ export default function VisualSearchPage() {
                             )}
                             
                             <div className="flex items-center justify-between border-t border-border/50 pt-4 mt-auto">
-                              <div className="flex flex-col">
-                                <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">Preço Sugerido</span>
+                              <div className="flex flex-col flex-1 gap-1">
+                                <div className="flex items-center justify-between pr-4">
+                                  <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">Preço Sugerido</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={cn("text-[9px] font-bold uppercase", (product.stock || 0) > 0 ? "text-emerald-500" : "text-rose-500")}>
+                                      {product.stock && product.stock > 0 ? `${product.stock} un.` : 'Indisponível'}
+                                    </span>
+                                  </div>
+                                </div>
                                 <span className="text-xl font-black tracking-tighter text-foreground">
                                   {formatCurrency(product.price)}
                                 </span>
+                                <Progress value={product.stock ? Math.min(100, (product.stock / 500) * 100) : 0} className="h-1 bg-muted/30" />
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 pl-4">
                                 {idx === 0 && (
                                   <Button 
                                     size="sm" 
