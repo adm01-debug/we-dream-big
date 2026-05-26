@@ -21,45 +21,55 @@ export function ProductCardSkeleton({ variant = "default", className }: ProductC
   }
 
   return (
-    <div className={cn("group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden", className)}>
-      {/* Image */}
+    <div className={cn("group relative flex flex-col rounded-xl sm:rounded-2xl border border-border bg-card overflow-hidden h-full", className)}>
+      {/* Image Section - Matches ProductCardImage aspect ratio */}
       <Skeleton className="aspect-square w-full rounded-none" />
       
-      {/* Content */}
-      <div className="p-4 space-y-3">
+      {/* Info Section - Synchronized with ProductCard.tsx */}
+      <div className="relative space-y-2.5 p-3 sm:space-y-4 sm:p-5 flex-1 flex flex-col">
         {/* Category badge */}
         <Skeleton className="h-5 w-20 rounded-full" />
         
-        {/* Title */}
-        <div className="space-y-1.5">
-          <Skeleton className="h-5 w-full" />
-          <Skeleton className="h-5 w-3/4" />
+        {/* SKU & Meta Row */}
+        <div className="flex items-center justify-between gap-2">
+          <Skeleton className="h-3 w-16" />
+          <div className="flex items-center gap-1.5">
+            <Skeleton className="h-5 w-8 rounded-md" />
+            <Skeleton className="h-5 w-24 rounded-lg" />
+          </div>
         </div>
         
-        {/* SKU */}
-        <Skeleton className="h-4 w-24" />
+        {/* Title - Fixed min-height to prevent layout shift */}
+        <div className="min-h-[2.25rem] sm:min-h-[2.75rem] space-y-1.5">
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-2/3" />
+        </div>
         
-        {/* Price */}
-        <div className="flex items-center justify-between pt-2">
-          <Skeleton className="h-6 w-20" />
-          {variant === "detailed" ? (
-            <div className="flex gap-1">
-              <Skeleton className="h-8 w-8 rounded-full" />
-              <Skeleton className="h-8 w-8 rounded-full" />
-            </div>
-          ) : (
-            <Skeleton className="h-8 w-8 rounded-full" />
-          )}
+        {/* Footer: Price & Actions */}
+        <div className="flex items-center justify-between pt-2 mt-auto">
+          <div className="space-y-1">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+          <Skeleton className="h-10 w-10 rounded-full" />
         </div>
       </div>
     </div>
   );
 }
 
+const gridColumnClasses: Record<number, string> = {
+  3: "grid-cols-2 sm:grid-cols-3",
+  4: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
+  5: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
+  6: "grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6",
+  8: "grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8",
+};
+
 export function ProductGridSkeleton({ 
-  count = 8, 
+  count = 15, 
   variant = "default",
-  columns = 4,
+  columns = 5,
   className
 }: { 
   count?: number; 
@@ -67,14 +77,17 @@ export function ProductGridSkeleton({
   columns?: number;
   className?: string;
 }) {
-  const gridCols = columns === 5 
-    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-    : columns === 4
-    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-    : `grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(columns, 3)} xl:grid-cols-${columns}`;
+  // Use the exact same gap logic as ProductGrid.tsx for layout stability
+  const gapClass = columns >= 8 
+    ? "gap-x-4 gap-y-8" 
+    : columns >= 6 
+    ? "gap-x-6 gap-y-8" 
+    : "gap-x-4 sm:gap-x-6 lg:gap-x-8 gap-y-8";
+
+  const gridCols = gridColumnClasses[columns] || gridColumnClasses[5];
 
   return (
-    <div className={cn("grid gap-4", gridCols, className)}>
+    <div className={cn("grid", gridCols, gapClass, className)}>
       {Array.from({ length: count }).map((_, i) => (
         <ProductCardSkeleton key={i} variant={variant} />
       ))}
@@ -300,50 +313,61 @@ export function ProductListSkeleton({ count = 8 }: { count?: number }) {
 
 export function ProductTableSkeleton({ rows = 10, className }: { rows?: number; className?: string }) {
   return (
-    <div className={cn("w-full border border-border/40 rounded-xl overflow-hidden bg-card", className)}>
-      <div className="flex items-center px-4 py-2.5 bg-muted/40 border-b border-border/50">
+    <div className={cn("w-full border border-border/40 rounded-xl overflow-hidden bg-card/50 backdrop-blur-sm", className)}>
+      {/* Table Header Skeleton - Matches ProductTableView.tsx sticky header */}
+      <div className="flex items-center px-4 py-2.5 bg-muted/90 border-b border-border/50">
         <div className="w-12 px-2"><Skeleton className="h-4 w-4" /></div>
-        <div className="flex-1 px-3"><Skeleton className="h-3 w-16" /></div>
+        <div className="flex-1 px-3"><Skeleton className="h-3 w-20" /></div>
         <div className="w-32 px-3 hidden md:block"><Skeleton className="h-3 w-12" /></div>
-        <div className="w-40 px-3 hidden lg:block"><Skeleton className="h-3 w-20" /></div>
-        <div className="w-32 px-3 hidden sm:block"><Skeleton className="h-3 w-12" /></div>
+        <div className="w-40 px-3 hidden lg:block"><Skeleton className="h-3 w-24" /></div>
+        <div className="w-32 px-3 hidden sm:block"><Skeleton className="h-3 w-16" /></div>
         <div className="w-32 px-3 text-right"><Skeleton className="h-3 w-12 ml-auto" /></div>
         <div className="w-32 px-3 text-right"><Skeleton className="h-3 w-10 ml-auto" /></div>
-        <div className="w-48 px-3"><Skeleton className="h-3 w-16 mx-auto" /></div>
+        <div className="w-48 px-3 text-center"><Skeleton className="h-3 w-16 mx-auto" /></div>
       </div>
-      <div className="divide-y divide-border/30">
+      
+      {/* Table Rows - Exact height match (h-14 / 56px) */}
+      <div className="divide-y divide-border/20">
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="flex items-center px-4 h-14 relative overflow-hidden">
+          <div key={i} className="flex items-center px-4 h-14 relative overflow-hidden bg-card/30">
+            {/* Image thumb */}
             <div className="w-12 px-2">
               <Skeleton className="w-10 h-10 rounded-md" />
             </div>
-            <div className="flex-1 px-3 space-y-2">
+            {/* Info */}
+            <div className="flex-1 px-3 space-y-1.5">
               <Skeleton className="h-4 w-48" />
               <div className="flex gap-2">
-                 <Skeleton className="h-3 w-16 md:hidden" />
-                 <Skeleton className="h-3 w-12" />
+                 <Skeleton className="h-3 w-12 md:hidden" />
+                 <Skeleton className="h-3 w-24" />
               </div>
             </div>
+            {/* SKU */}
             <div className="w-32 px-3 hidden md:block">
               <Skeleton className="h-3 w-20" />
             </div>
+            {/* Supplier */}
             <div className="w-40 px-3 hidden lg:block">
-              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-3 w-28" />
             </div>
+            {/* Colors */}
             <div className="w-32 px-3 hidden sm:flex gap-1">
               {[1, 2, 3].map(j => (
                 <Skeleton key={j} className="w-3.5 h-3.5 rounded-full" />
               ))}
             </div>
+            {/* Price */}
             <div className="w-32 px-3 text-right">
-              <Skeleton className="h-4 w-16 ml-auto" />
+              <Skeleton className="h-4 w-20 ml-auto" />
             </div>
+            {/* Stock */}
             <div className="w-32 px-3 text-right">
               <Skeleton className="h-4 w-12 ml-auto" />
             </div>
+            {/* Actions */}
             <div className="w-48 px-3 flex justify-center gap-2">
-              {[1, 2, 3, 4].map(j => (
-                <Skeleton key={j} className="w-8 h-8 rounded-full" />
+              {[1, 2, 3].map(j => (
+                <Skeleton key={j} className="h-8 w-8 rounded-full" />
               ))}
             </div>
           </div>
