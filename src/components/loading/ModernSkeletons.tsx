@@ -56,12 +56,37 @@ export function ProductCardSkeleton({ variant = "default", className }: ProductC
   );
 }
 
-export function ProductGridSkeleton({ count = 12 }: { count?: number }) {
+export function ProductGridSkeleton({ 
+  count = 12, 
+  variant = "default",
+  columns = 5 
+}: { 
+  count?: number; 
+  variant?: "default" | "compact" | "detailed";
+  columns?: number;
+}) {
+  const gridCols = columns === 5 
+    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+    : `grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(columns, 4)} xl:grid-cols-${columns}`;
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+    <div className={cn("grid gap-6", gridCols)}>
       {Array.from({ length: count }).map((_, i) => (
-        <ProductCardSkeleton key={i} />
+        <ProductCardSkeleton key={i} variant={variant} />
       ))}
+    </div>
+  );
+}
+
+export function ProductCardInlineSkeleton() {
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/40 overflow-hidden">
+      <Skeleton className="h-16 w-16 rounded-lg shrink-0" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="h-4 w-16" />
+      </div>
     </div>
   );
 }
