@@ -357,8 +357,8 @@ export default function VisualSearchPage() {
                   </CardContent>
                 </Card>
 
-                {results && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+{results && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                     <Card className="border-emerald-500/20 bg-emerald-500/5 backdrop-blur-xl shadow-[0_0_50px_rgba(52,211,153,0.1)]">
                       <CardHeader className="pb-4 border-b border-white/5">
                         <div className="flex items-center justify-between">
@@ -372,14 +372,27 @@ export default function VisualSearchPage() {
                             <Info className="h-3 w-3" />
                             <span className="text-[9px] font-bold uppercase font-mono">Cálculo de Score</span>
                           </div>
-                          <p className="text-[10px] text-white/40 leading-relaxed font-mono">Análise de Vetores (80%) + Refinamento Manual (20%). A precisão aumenta com filtros ativos.</p>
+                          <p className="text-[10px] text-white/40 leading-relaxed font-mono">{results.analysis.rationale}</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <span className="text-[8px] font-bold text-white/20 uppercase font-mono">Produto ID</span>
-                            <p className="text-xs font-bold text-emerald-400 truncate">{results.analysis.productType}</p>
-                          </div>
-                          <div className="space-y-1">
+                      </CardContent>
+                    </Card>
+
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-black uppercase text-white/40 tracking-widest font-mono">Evidências Técnicas</h3>
+                      <div className="grid grid-cols-1 gap-3">
+                         {results.analysis.visualEvidence && Object.entries(results.analysis.visualEvidence).map(([key, val]) => (
+                           <div key={key} className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
+                              <div className="h-1.5 w-1.5 mt-1.5 rounded-full bg-blue-400" />
+                              <div>
+                                <p className="text-[9px] font-bold uppercase text-white/40">{key}</p>
+                                <p className="text-xs text-white/80">{val}</p>
+                              </div>
+                           </div>
+                         ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
                             <span className="text-[8px] font-bold text-white/20 uppercase font-mono">Material Base</span>
                             <p className="text-xs font-bold text-emerald-400 truncate">{results.analysis.material}</p>
                           </div>
