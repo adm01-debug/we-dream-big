@@ -4,17 +4,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 export interface ProductCardSkeletonProps {
   variant?: "default" | "compact" | "detailed";
   className?: string;
+  animate?: boolean;
 }
 
-export function ProductCardSkeleton({ variant = "default", className }: ProductCardSkeletonProps) {
+export function ProductCardSkeleton({ variant = "default", className, animate = true }: ProductCardSkeletonProps) {
   if (variant === "compact") {
     return (
       <div className={cn("flex items-center gap-3 p-3 rounded-lg bg-card border border-border/40 overflow-hidden", className)}>
-        <Skeleton className="h-16 w-16 rounded-lg shrink-0" />
+        <Skeleton className="h-16 w-16 rounded-lg shrink-0" animate={animate} />
         <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-3 w-1/2" />
-          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-3/4" animate={animate} />
+          <Skeleton className="h-3 w-1/2" animate={animate} />
+          <Skeleton className="h-4 w-16" animate={animate} />
         </div>
       </div>
     );
@@ -23,35 +24,35 @@ export function ProductCardSkeleton({ variant = "default", className }: ProductC
   return (
     <div className={cn("group relative flex flex-col rounded-xl sm:rounded-2xl border border-border bg-card overflow-hidden h-full", className)}>
       {/* Image Section - Matches ProductCardImage aspect ratio */}
-      <Skeleton className="aspect-square w-full rounded-none" />
+      <Skeleton className="aspect-square w-full rounded-none" animate={animate} />
       
       {/* Info Section - Synchronized with ProductCard.tsx */}
       <div className="relative space-y-2.5 p-3 sm:space-y-4 sm:p-5 flex-1 flex flex-col">
         {/* Category badge */}
-        <Skeleton className="h-5 w-20 rounded-full" />
+        <Skeleton className="h-5 w-20 rounded-full" animate={animate} />
         
         {/* SKU & Meta Row */}
         <div className="flex items-center justify-between gap-2">
-          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-16" animate={animate} />
           <div className="flex items-center gap-1.5">
-            <Skeleton className="h-5 w-8 rounded-md" />
-            <Skeleton className="h-5 w-24 rounded-lg" />
+            <Skeleton className="h-5 w-8 rounded-md" animate={animate} />
+            <Skeleton className="h-5 w-24 rounded-lg" animate={animate} />
           </div>
         </div>
         
         {/* Title - Fixed min-height to prevent layout shift */}
         <div className="min-h-[2.25rem] sm:min-h-[2.75rem] space-y-1.5">
-          <Skeleton className="h-5 w-full" />
-          <Skeleton className="h-5 w-2/3" />
+          <Skeleton className="h-5 w-full" animate={animate} />
+          <Skeleton className="h-5 w-2/3" animate={animate} />
         </div>
         
         {/* Footer: Price & Actions */}
         <div className="flex items-center justify-between pt-2 mt-auto">
           <div className="space-y-1">
-            <Skeleton className="h-6 w-24" />
-            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-6 w-24" animate={animate} />
+            <Skeleton className="h-3 w-16" animate={animate} />
           </div>
-          <Skeleton className="h-10 w-10 rounded-full" />
+          <Skeleton className="h-10 w-10 rounded-full" animate={animate} />
         </div>
       </div>
     </div>
