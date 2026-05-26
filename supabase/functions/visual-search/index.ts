@@ -74,16 +74,24 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Você é um especialista em identificação de produtos promocionais/brindes corporativos.
-Analise a imagem e extraia características para busca de produtos similares.
+            content: `Você é um Especialista Sênior em Identificação de Produtos e Estrategista de Merchandising.
+Sua missão é analisar imagens de brindes corporativos e extrair metadados precisos para busca técnica em catálogo.
+
+Ao analisar, considere:
+1. Forma e Silhueta: É cilíndrico, retangular, curvo?
+2. Detalhes Técnicos: Possui tampa de bambu? Clip de metal? Costura reforçada? Acabamento fosco ou brilhante?
+3. Materialidade: Identifique se é ABS, Alumínio, Couro Sintético, Kraft, etc.
+
 Responda APENAS em JSON com este formato:
 {
-  "productType": "tipo do produto (ex: caneca, squeeze, caderno, bolsa, camiseta)",
-  "material": "material principal (ex: plástico, metal, vidro, tecido, papel)",
-  "colors": ["cores principais identificadas"],
-  "category": "categoria (ex: escritório, cozinha, esporte, tecnologia, vestuário)",
-  "keywords": ["palavras-chave para busca"],
-  "description": "descrição curta do produto"
+  "productType": "tipo específico (ex: Caneta Esferográfica, Squeeze Térmico, Mochila Notebook)",
+  "material": "material predominante e detalhes (ex: Aço Inox com detalhe em Bambu)",
+  "colors": ["Lista de cores identificadas (nomes padrão como Azul Marinho, Prata, Preto)"],
+  "category": "categoria de mercado (Escritório, Gourmet, Tech, etc.)",
+  "keywords": ["5-7 termos técnicos de busca concatenados (ex: 'squeeze metal tampa madeira 500ml')"],
+  "description": "Descrição técnica sumária (20 palavras)",
+  "confidence": 0.0 a 1.0 (seu nível de certeza),
+  "rationale": "Breve explicação do porquê desta classificação"
 }`
           },
           {
@@ -91,10 +99,10 @@ Responda APENAS em JSON com este formato:
             content: [
               {
                 type: "text",
-                text: `Analise esta imagem de produto e extraia as características para encontrar produtos similares no catálogo de brindes promocionais.
-${category ? `Dica do usuário - Categoria: ${category}.` : ""}
-${color ? `Dica do usuário - Cor predominante: ${color}.` : ""}
-Foque na identificação precisa considerando estas dicas se fornecidas.`
+                text: `Analise profundamente esta imagem. 
+${category ? `O usuário sugeriu a categoria: ${category}.` : ""}
+${color ? `O usuário sugeriu a cor: ${color}.` : ""}
+Use essas dicas para refinar sua percepção, mas priorize o que você vê visualmente.`
               },
               {
                 type: "image_url",
@@ -130,9 +138,8 @@ Foque na identificação precisa considerando estas dicas se fornecidas.`
 
     const analysisData = await analysisResponse.json();
     const analysisContent = analysisData.choices?.[0]?.message?.content || "";
-    const hasAnalysisContent = analysisContent.length > 0;
     
-    console.log("AI analysis completed:", { hasContent: hasAnalysisContent });
+    console.log("AI analysis completed");
 
     // Parse JSON from response
     let productAnalysis;
@@ -146,12 +153,14 @@ Foque na identificação precisa considerando estas dicas se fornecidas.`
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError);
       productAnalysis = {
-        productType: "",
-        material: "",
+        productType: "Produto",
+        material: "Não identificado",
         colors: [],
         category: "",
-        keywords: analysisContent.split(/\s+/).slice(0, 10),
-        description: analysisContent.slice(0, 200)
+        keywords: [analysisContent.slice(0, 50)],
+        description: "Análise visual parcial.",
+        confidence: 0.5,
+        rationale: "Erro no processamento da estrutura de dados da IA."
       };
     }
 
@@ -161,7 +170,6 @@ Foque na identificação precisa considerando estas dicas se fornecidas.`
     const searchTerms = [
       productAnalysis.productType,
       productAnalysis.material,
-      productAnalysis.category,
       ...(productAnalysis.keywords || [])
     ].filter(Boolean).join(" ");
 
@@ -170,7 +178,7 @@ Foque na identificação precisa considerando estas dicas se fornecidas.`
     const { data: products, error: searchError } = await supabase
       .rpc("search_products_semantic", {
         search_query: searchTerms,
-        max_results: 20
+        max_results: 24
       });
 
     if (searchError) {
@@ -182,20 +190,20 @@ Foque na identificação precisa considerando estas dicas se fornecidas.`
     
     if (finalProducts.length === 0) {
       console.log("No semantic results, trying direct query...");
-      
       const { data: directProducts, error: directError } = await supabase
         .from("products")
         .select("id, name, sku, category_name, subcategory, description, price, colors, materials, tags, images")
         .eq("is_active", true)
         .or(`name.ilike.%${productAnalysis.productType}%,category_name.ilike.%${productAnalysis.category}%`)
-        .limit(20);
+        .limit(24);
 
       if (!directError && directProducts) {
-        finalProducts = directProducts.map(p => ({ ...p, relevance: 0.5 }));
+        finalProducts = directProducts.map(p => ({ ...p, relevance: 0.4 }));
       }
     }
 
-    console.log(`Found ${finalProducts.length} similar products`);
+    // Sort by relevance (some might be from RPC, some from fallback)
+    finalProducts.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
 
     return new Response(
       JSON.stringify({
