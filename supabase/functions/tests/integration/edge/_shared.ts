@@ -35,6 +35,9 @@ export function registerCase(businessCase: BusinessCase) {
     try {
       await run();
       current.passed += 1;
+    } catch (e) {
+      console.error(`FAILED: ${functionName} :: ${caseId} :: ${testName}`);
+      throw e;
     } finally {
       summary.set(functionName, current);
     }
