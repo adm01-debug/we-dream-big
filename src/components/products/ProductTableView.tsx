@@ -9,6 +9,7 @@
  */
 import { memo, useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown, Package, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { TableRowActions } from "./table-view/TableRowActions";
 import { resolveColorImage, resolveColorStock, getActiveColorName, type ActiveColorFilter } from "@/utils/color-image-resolver";
