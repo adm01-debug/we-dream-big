@@ -950,7 +950,7 @@ export default function VisualSearchPage() {
                                     {/* Original Texture Snippet */}
                                     <div className="flex-1 flex flex-col items-center gap-2">
                                       <div className="h-24 w-24 rounded-full border-2 border-white/50 overflow-hidden shadow-2xl bg-black">
-                                        <img src={previewUrl!} className="h-full w-full object-cover scale-[2.5]" alt="Original Texture" />
+                                        <img src={previewUrl || '/placeholder.svg'} className="h-full w-full object-cover scale-[2.5]" alt="Original Texture" />
                                       </div>
                                       <span className="text-[8px] font-black text-white uppercase tracking-widest bg-black/40 px-2 py-0.5 rounded">Sua Foto</span>
                                     </div>
