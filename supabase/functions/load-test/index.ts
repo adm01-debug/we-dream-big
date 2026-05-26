@@ -11,76 +11,111 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const { 
+      concurrency = 10, 
+      totalRequests = 100, 
+      targetEndpoint = "/health-check",
+      method = "GET",
+      body = null,
+      headers = {}
+    } = await req.json().catch(() => ({}));
 
-    const { concurrency = 10, totalRequests = 100, targetEndpoint = "/health-check" } = await req.json().catch(() => ({}));
     const baseUrl = Deno.env.get("SUPABASE_URL")!.replace(".supabase.co", ".supabase.co/functions/v1");
-    const targetUrl = `${baseUrl}${targetEndpoint}`;
+    const targetUrl = targetEndpoint.startsWith("http") ? targetEndpoint : `${baseUrl}${targetEndpoint}`;
 
-    console.log(`Starting load test: ${totalRequests} requests to ${targetEndpoint} with concurrency ${concurrency}`);
+    console.log(`[load-test] Starting: ${totalRequests} ${method} requests to ${targetUrl} (concurrency: ${concurrency})`);
 
     let successCount = 0;
     let errorCount = 0;
     const latencies: number[] = [];
-    const errors: any[] = [];
+    const errorsByStatus: Record<string, number> = {};
+    const errorDetails: any[] = [];
 
     const runBatch = async (batchSize: number) => {
       const promises = Array.from({ length: batchSize }).map(async () => {
-        const start = Date.now();
+        const start = performance.now();
+        const requestId = crypto.randomUUID();
         try {
-          const res = await fetch(targetUrl, {
-            method: "GET",
+          const fetchOptions: RequestInit = {
+            method,
             headers: {
               "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
-              "X-Request-Id": crypto.randomUUID(),
-            }
-          });
-          
-          const end = Date.now();
+              "Content-Type": "application/json",
+              "X-Request-Id": requestId,
+              ...headers,
+            },
+          };
+
+          if (method !== "GET" && method !== "HEAD" && body) {
+            fetchOptions.body = typeof body === "string" ? body : JSON.stringify(body);
+          }
+
+          const res = await fetch(targetUrl, fetchOptions);
+          const end = performance.now();
           latencies.push(end - start);
 
           if (res.ok) {
             successCount++;
           } else {
             errorCount++;
-            errors.push({ status: res.status, text: await res.text() });
+            const status = res.status.toString();
+            errorsByStatus[status] = (errorsByStatus[status] || 0) + 1;
+            if (errorDetails.length < 10) {
+              errorDetails.push({ 
+                requestId, 
+                status: res.status, 
+                text: await res.text().catch(() => "N/A") 
+              });
+            }
           }
         } catch (e) {
           errorCount++;
-          errors.push({ error: (e as Error).message });
+          const errMsg = (e as Error).message;
+          errorsByStatus["EXCEPTION"] = (errorsByStatus["EXCEPTION"] || 0) + 1;
+          if (errorDetails.length < 10) {
+            errorDetails.push({ requestId, error: errMsg });
+          }
         }
       });
       await Promise.all(promises);
     };
 
+    // Sequential batches to respect concurrency
     for (let i = 0; i < totalRequests; i += concurrency) {
       const batchSize = Math.min(concurrency, totalRequests - i);
       await runBatch(batchSize);
     }
 
-    const avgLatency = latencies.reduce((a, b) => a + b, 0) / latencies.length;
-    const p95Latency = latencies.sort((a, b) => a - b)[Math.floor(latencies.length * 0.95)];
+    const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0;
+    const sortedLatencies = [...latencies].sort((a, b) => a - b);
+    const p95Latency = sortedLatencies.length > 0 ? sortedLatencies[Math.floor(sortedLatencies.length * 0.95)] : 0;
+    const p99Latency = sortedLatencies.length > 0 ? sortedLatencies[Math.floor(sortedLatencies.length * 0.99)] : 0;
 
     const results = {
-      totalRequests,
-      successCount,
-      errorCount,
-      successRate: `${(successCount / totalRequests * 100).toFixed(2)}%`,
-      avgLatencyMs: avgLatency.toFixed(2),
-      p95LatencyMs: p95Latency,
-      topErrors: errors.slice(0, 5),
+      target: { url: targetUrl, method },
+      stats: {
+        totalRequests,
+        successCount,
+        errorCount,
+        successRate: `${((successCount / totalRequests) * 100).toFixed(2)}%`,
+      },
+      performanceMs: {
+        avg: avgLatency.toFixed(2),
+        p95: p95Latency.toFixed(2),
+        p99: p99Latency.toFixed(2),
+      },
+      errorsByStatus,
+      sampleErrors: errorDetails,
     };
 
-    console.log("Load test complete:", results);
+    console.log(`[load-test] Completed: ${successCount} OK, ${errorCount} ERR. Avg: ${avgLatency.toFixed(2)}ms`);
 
     return new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
 
   } catch (error) {
+    console.error(`[load-test] Fatal error:`, error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }

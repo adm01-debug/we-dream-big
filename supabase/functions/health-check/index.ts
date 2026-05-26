@@ -92,7 +92,8 @@ Deno.serve(async (req) => {
 
   const corsHeaders = {
     ...buildPublicCorsHeaders(),
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "X-Health-Version": "1.1.0"
   };
 
   const start = Date.now();
