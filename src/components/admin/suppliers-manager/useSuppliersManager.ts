@@ -6,10 +6,11 @@ import {
   invokeExternalDbDelete,
 } from '@/lib/external-db';
 import { searchCrm } from '@/lib/crm-db';
-// T-02 FIX: Import the CRM Supabase client (pgxfvjmuubtbowutlide) for supplier logos,
-// NOT the Products client (doufsxqlfjyuvxuezpln) that was incorrectly used before.
-// supabaseCrm points to the Empresas database where supplier data belongs.
-import { supabaseCrm } from '@/lib/crm-db';
+// Suppliers live in doufsxqlfjyuvxuezpln (Products DB).
+// The supabase client from @/integrations/supabase/client points to this DB,
+// so it IS the correct client for logo uploads to the supplier-logos bucket.
+// T-02 was a false positive — the original code was already correct.
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { validateCnpj, maskCep } from '@/utils/masks';
 import { fetchAddressByCep } from '@/utils/viacep';
@@ -634,12 +635,9 @@ export function useSuppliersManager() {
   };
 
   /**
-   * T-02 FIX: Use supabaseCrm (pgxfvjmuubtbowutlide) for supplier logos,
-   * not the Products DB (doufsxqlfjyuvxuezpln).
-   * T-27 FIX: For NEW suppliers, upload with temp path and rename after save.
-   * Current implementation uses supplierId which is undefined for new — fixed to use
-   * a temp path tagged with timestamp; caller must re-upload or rename after insert.
-   * TODO: Move logo upload to AFTER supplier creation to get real UUID path.
+   * Logo upload uses the Products DB (doufsxqlfjyuvxuezpln) supabase client
+   * because suppliers and their assets belong to that DB.
+   * T-27 FIX: For NEW suppliers, uses temp path; TODO rename after insert to get real UUID path.
    */
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -658,15 +656,11 @@ export function useSuppliersManager() {
       const supplierId = editingSupplier?.id || `tmp-${Date.now()}`;
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
       const filePath = `suppliers/${supplierId}.${ext}`;
-
-      // T-02 FIX: use supabaseCrm (Empresas DB), NOT supabase (Produtos DB)
-      const { error } = await supabaseCrm.storage
+      const { error } = await supabase.storage
         .from('supplier-logos')
         .upload(filePath, file, { upsert: true });
       if (error) throw error;
-      const { data: urlData } = supabaseCrm.storage
-        .from('supplier-logos')
-        .getPublicUrl(filePath);
+      const { data: urlData } = supabase.storage.from('supplier-logos').getPublicUrl(filePath);
       updateField('logo_url', urlData.publicUrl);
       toast.success('Logo enviada com sucesso');
     } catch (err: unknown) {
