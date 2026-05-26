@@ -142,21 +142,21 @@ Deno.serve(async (req) => {
     const sourceIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
 
     // Log event in DB
-    const { data: inserted, error: insertError } = await retrySupabaseCall(() => 
-      supabase.from('inbound_webhook_events').insert({
-        endpoint_id: endpoint.id,
-        event_type: eventType,
-        payload: payloadParsed,
-        signature_valid: signatureValid,
-        processed: signatureValid,
-        ip_address: sourceIp,
-        error_message: signatureValid ? null : 'HMAC inválido ou ausente',
-        contract_version: version,
-        idempotency_key: idempotencyKey,
-      }).select().single()
-    );
-
-    if (insertError) {
+    try {
+      await retrySupabaseCall(() => 
+        supabase.from('inbound_webhook_events').insert({
+          endpoint_id: endpoint.id,
+          event_type: eventType,
+          payload: payloadParsed,
+          signature_valid: signatureValid,
+          processed: signatureValid,
+          ip_address: sourceIp,
+          error_message: signatureValid ? null : 'HMAC inválido ou ausente',
+          contract_version: version,
+          idempotency_key: idempotencyKey,
+        }).select().single()
+      );
+    } catch (insertError: any) {
       // If it's a duplicate key error, we treat it as already processed (idempotency)
       if (insertError.code === '23505') { // PostgreSQL unique_violation
         log.info('webhook_duplicate_race_skipped', { idempotencyKey });
@@ -169,12 +169,17 @@ Deno.serve(async (req) => {
     }
 
     // Update endpoint stats
-    await retrySupabaseCall(() => 
-      supabase.rpc('increment_webhook_stats', { 
-        p_endpoint_id: endpoint.id, 
-        p_is_invalid: !signatureValid 
-      })
-    );
+    try {
+      await retrySupabaseCall(() => 
+        supabase.rpc('increment_webhook_stats', { 
+          p_endpoint_id: endpoint.id, 
+          p_is_invalid: !signatureValid 
+        })
+      );
+    } catch (statsError) {
+      log.warn('stats_update_failed', { error: statsError });
+      // Non-critical, continue
+    }
 
     log.info('webhook_received', { slug, eventType, signatureValid });
 
