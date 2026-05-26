@@ -184,7 +184,13 @@ export function useFiltersPageState() {
   const [activePresetId, setActivePresetId] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
   const [selectionMode, setSelectionMode] = useState(false);
-  const [gridColumns, setGridColumns] = useState<ColumnCount>(getDefaultColumns);
+  const [gridColumns, setGridColumnsState] = useState<ColumnCount>(getDefaultColumns);
+  const setGridColumns = useCallback((cols: ColumnCount) => {
+    setGridColumnsState(cols);
+    try {
+      localStorage.setItem(GRID_COLS_KEY, String(cols));
+    } catch { /* empty */ }
+  }, []);
 
   // Responsive clamp: force appropriate columns on small screens
   useEffect(() => {
