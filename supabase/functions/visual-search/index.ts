@@ -35,6 +35,8 @@ Deno.serve(async (req) => {
 
     const ImageSchema = z.object({
       imageBase64: z.string().min(10, 'Image is required').max(10_000_000, 'Image too large'),
+      category: z.string().optional(),
+      color: z.string().optional(),
     });
 
     let rawBody: unknown;
@@ -51,7 +53,7 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    const { imageBase64 } = parsed.data;
+    const { imageBase64, category, color } = parsed.data;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -89,7 +91,10 @@ Responda APENAS em JSON com este formato:
             content: [
               {
                 type: "text",
-                text: "Analise esta imagem de produto e extraia as características para encontrar produtos similares no catálogo de brindes promocionais."
+                text: `Analise esta imagem de produto e extraia as características para encontrar produtos similares no catálogo de brindes promocionais.
+${category ? `Dica do usuário - Categoria: ${category}.` : ""}
+${color ? `Dica do usuário - Cor predominante: ${color}.` : ""}
+Foque na identificação precisa considerando estas dicas se fornecidas.`
               },
               {
                 type: "image_url",
