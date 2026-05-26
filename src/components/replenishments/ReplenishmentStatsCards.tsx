@@ -88,12 +88,10 @@ function StatsLoadingSkeleton() {
         <Card key={i} className="border-border/50">
           <CardContent className="p-3 sm:p-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg bg-muted/50 flex items-center justify-center" aria-hidden="true">
-                <div className="w-4 h-4 border-2 border-primary/40 border-t-transparent rounded-full animate-spin" />
-              </div>
-              <div className="space-y-1.5">
-                <div className="text-lg font-bold tabular-nums text-muted-foreground/40">--</div>
-                <div className="text-[10px] text-muted-foreground/30">carregando...</div>
+              <Skeleton className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg shrink-0" />
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-3 w-24" />
               </div>
             </div>
           </CardContent>
