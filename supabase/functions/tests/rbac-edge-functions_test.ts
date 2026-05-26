@@ -152,8 +152,7 @@ const TECHNICAL_TABLES = [
 for (const table of TECHNICAL_TABLES) {
   Deno.test({
     name: `[rls] ${table}: SELECT/ALL para authenticated exige is_dev`,
-    sanitizeOps: false,
-    sanitizeResources: false,
+    fn: async () => {
     ignore: !pool,
     fn: async () => {
       const policies = await getPolicies(table);
