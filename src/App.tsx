@@ -150,6 +150,9 @@ const App = () => {
                         <OptionalDevOnlyBridgeOverlay />
                         <RouteScrollReset />
                         <RoutePrefetcher />
+                        <Suspense fallback={null}>
+                          <SkeletonDevTools />
+                        </Suspense>
                         <AppRoutes />
                       </EnhancedErrorBoundary>
                     </AppBootstrap>
