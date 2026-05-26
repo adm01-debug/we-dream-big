@@ -111,11 +111,8 @@ export default function VisualSearchPage() {
   // Automatic re-analysis when filters change
   useEffect(() => {
     if (previewUrl && !isSearching && results) {
-      // Small debounce to avoid multiple calls if multiple filters change at once
-      const timer = setTimeout(() => {
-        processImage(previewUrl);
-      }, 500);
-      return () => clearTimeout(timer);
+      // Automatic re-analysis when filters change
+      processImage(previewUrl);
     }
   }, [selectedCategoryIds, colorSelection]);
 
@@ -165,7 +162,8 @@ export default function VisualSearchPage() {
 
   const processImage = async (base64: string, manualKeywords?: string) => {
     setIsSearching(true);
-    setResults(null);
+    // When re-analyzing, we don't clear results immediately to show the "Reanalyzing" state
+    if (!results) setResults(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('visual-search', {
@@ -648,6 +646,12 @@ export default function VisualSearchPage() {
 
             {isSearching && (
               <div className="space-y-6">
+                {results && (
+                  <div className="flex items-center gap-2 rounded-lg bg-primary/10 p-3 border border-primary/20 animate-pulse mb-4">
+                    <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">Recalculando matches com novos filtros...</span>
+                  </div>
+                )}
                 <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 p-8">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(var(--primary),0.1),transparent)]" />
                   <div className="relative flex flex-col items-center gap-6 text-center">
