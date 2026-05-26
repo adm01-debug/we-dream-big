@@ -995,12 +995,15 @@ export default function VisualSearchPage() {
                                 </motion.div>
                               </div>
                             </div>
-                            <div className="mt-3 flex items-center justify-between text-[8px] font-bold text-white/20 font-mono uppercase tracking-widest">
-                              <div className="flex items-center gap-1">
-                                <TrendingUp className="h-2 w-2 text-emerald-500" />
-                                <span>15 Consultas / Sem</span>
+                            <div className="mt-3 flex items-center justify-between text-[8px] font-bold text-white/20 font-mono uppercase tracking-[0.2em]">
+                              <div className="flex items-center gap-1.5">
+                                <TrendingUp className="h-2.5 w-2.5 text-emerald-500 animate-pulse" />
+                                <span>High Demand / AI Pick</span>
                               </div>
-                              <span>Terminal ID: {product.sku.split('-')[0] || 'AI-X'}</span>
+                              <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                                <Clock className="h-2 w-2" />
+                                <span>LATENCY: 142MS</span>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
