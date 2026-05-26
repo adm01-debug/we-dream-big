@@ -101,6 +101,7 @@ export default function VisualSearchPage() {
 
   const [isListening, setIsListening] = useState(false);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const [analysisError, setAnalysisError] = useState<{ message: string; tip: string } | null>(null);
 
   const { data: categories = [] } = useExternalCategoriesQuery();
   const { data: colorData } = useColorSystem();
@@ -234,6 +235,7 @@ export default function VisualSearchPage() {
 
   const processImage = async (base64: string, manualKeywords?: string) => {
     setIsSearching(true);
+    setAnalysisError(null);
     // When re-analyzing, we don't clear results immediately to show the "Reanalyzing" state
     if (!results) setResults(null);
 
@@ -253,6 +255,23 @@ export default function VisualSearchPage() {
       toast.success('Análise concluída com sucesso!');
     } catch (err: any) {
       console.error('Visual search error:', err);
+      
+      let friendlyMessage = 'Ocorreu um problema na análise da imagem.';
+      let tip = 'Tente novamente com outra foto ou verifique sua conexão.';
+      
+      if (err.message?.includes('400') || err.message?.includes('payload too large')) {
+        friendlyMessage = 'A imagem é muito grande ou pesada para processar.';
+        tip = 'Dica: Tente usar uma foto com resolução menor ou em formato JPG/PNG.';
+      } else if (err.message?.includes('500') || err.status === 500) {
+        friendlyMessage = 'Nossos servidores de IA estão temporariamente ocupados.';
+        tip = 'Dica: Aguarde alguns segundos e clique em "Tentar Novamente". Verifique se o produto está bem centralizado.';
+      } else if (err.message?.includes('network') || err.name === 'TypeError') {
+        friendlyMessage = 'Houve uma falha de conexão.';
+        tip = 'Dica: Verifique seu sinal de internet e tente reenviar a foto.';
+      }
+
+      setAnalysisError({ message: friendlyMessage, tip });
+      
       toast.error('Erro ao analisar imagem', {
         description: err.message || 'Tente novamente com outra imagem.'
       });
@@ -265,6 +284,7 @@ export default function VisualSearchPage() {
     setPreviewUrl(null);
     setResults(null);
     setIsSearching(false);
+    setAnalysisError(null);
     // Preserving filters can be useful for re-analysis, but let's clear on hard reset
     setSelectedCategoryIds([]);
     setColorSelection({ groups: [], variations: [], nuances: [] });
@@ -713,7 +733,7 @@ export default function VisualSearchPage() {
 
           {/* Results Area */}
           <div className="lg:col-span-8 space-y-4">
-            {!previewUrl && !isSearching && (
+            {!previewUrl && !isSearching && !analysisError && (
               <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/5 p-12 text-center group">
                 <div className="relative mb-6">
                   <div className="absolute inset-0 scale-150 animate-pulse bg-primary/10 blur-2xl rounded-full" />
@@ -741,6 +761,40 @@ export default function VisualSearchPage() {
                   <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest block w-full">ou arraste um arquivo aqui</p>
                 </div>
               </div>
+            )}
+
+            {analysisError && !isSearching && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-rose-500/30 bg-rose-500/5 p-12 text-center"
+              >
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 scale-150 bg-rose-500/10 blur-2xl rounded-full" />
+                  <div className="relative rounded-full bg-rose-500/10 p-10 shadow-xl border border-rose-500/20">
+                    <AlertCircle className="h-20 w-20 text-rose-500" />
+                  </div>
+                </div>
+                <h3 className="mb-2 font-display text-2xl font-bold tracking-tight text-rose-600">{analysisError.message}</h3>
+                <p className="mx-auto max-w-sm text-sm text-muted-foreground leading-relaxed font-medium">
+                  {analysisError.tip}
+                </p>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row items-center">
+                  <Button 
+                    onClick={() => previewUrl && processImage(previewUrl)}
+                    className="gap-2 px-8 bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-200"
+                  >
+                    <RefreshCcw className="h-4 w-4" /> Tentar Novamente
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={reset}
+                    className="gap-2 px-8"
+                  >
+                    <X className="h-4 w-4" /> Cancelar
+                  </Button>
+                </div>
+              </motion.div>
             )}
 
             {isSearching && (
@@ -853,7 +907,7 @@ export default function VisualSearchPage() {
               </div>
             )}
 
-            {results && (
+            {results && !analysisError && (
               <div className="space-y-5">
                 <div className="flex items-end justify-between px-1">
                   <div className="space-y-1">
