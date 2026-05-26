@@ -3,7 +3,10 @@ import { authenticateRequest, requireRole, authErrorResponse } from "../_shared/
 /// <reference lib="deno.ns" />
 // BUG-010 FIX: Aligned SDK version from @2.49.1 to @2.49.4 (standard for all edge functions).
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
-import { z } from "https://esm.sh/zod@3.23.8";
+// BUG-010 FIX: Changed from "https://esm.sh/zod@3.23.8" to npm: direct — removes import_map
+// dependency for deployment. The import_map in deno.json still covers local dev/deno check;
+// production deploy (supabase functions deploy) no longer requires --import-map flag for zod.
+import { z } from "npm:zod@3.23.8";
 import { parseBodyWithSchema } from "../_shared/zod-validate.ts";
 import { resolveCredential } from "../_shared/credentials.ts";
 
