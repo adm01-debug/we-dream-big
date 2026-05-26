@@ -267,9 +267,9 @@ export default function VisualSearchPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 relative">
           {/* Sidebar Area */}
-          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-20 lg:h-fit">
+          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-20 lg:h-[calc(100vh-120px)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/10 hover:scrollbar-thumb-primary/20">
             {/* Upload & Preview */}
             <Card className={cn(
               "relative overflow-hidden border-2 border-dashed transition-all duration-300",
