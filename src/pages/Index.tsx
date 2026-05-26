@@ -63,10 +63,30 @@ export default function Index() {
         path="/"
         jsonLd={structuredData}
       />
+  if (catalog.shouldShowCatalogSkeleton && catalog.filteredProducts.length === 0) {
+    return (
+      <div className="mx-auto w-full max-w-[1920px] animate-fade-in space-y-4 px-3 py-3 sm:px-4 sm:py-4 lg:px-6 xl:px-8">
+        <CatalogSkeleton />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <PageSEO
+        title={catalog.searchQuery ? `Busca: ${catalog.searchQuery}` : 'Catálogo de Produtos'}
+        description={
+          catalog.searchQuery
+            ? `Resultados de busca para ${catalog.searchQuery} em Brindes Promocionais. Melhores preços e variedades.`
+            : 'Explore nosso catálogo com mais de 15.000 brindes promocionais. Filtre por categoria, cor e preço.'
+        }
+        path="/"
+        jsonLd={structuredData}
+      />
       <div className="mx-auto w-full max-w-[1920px] animate-fade-in space-y-4 px-3 py-3 sm:px-4 sm:py-4 lg:px-6 xl:px-8">
         {/* Header: Title + Search */}
         <CatalogHeader
-          shouldShowCatalogSkeleton={catalog.shouldShowCatalogSkeleton}
+          shouldShowCatalogSkeleton={false}
           totalEstimate={catalog.totalEstimate}
           filteredCount={catalog.filteredProducts.length}
           hasNextPage={catalog.hasNextPage}
@@ -88,9 +108,7 @@ export default function Index() {
           }}
         />
 
-        {/* Toolbar: Filters + Sort + Stats + Layout — sticky abaixo do Header global.
-                Usa --header-h + --breadcrumb-h (definidos por Header/MainLayout) para
-                acompanhar a altura dinâmica em qualquer rota. */}
+        {/* Toolbar: Filters + Sort + Stats + Layout */}
         <div className="sticky top-[calc(var(--header-h,56px)+var(--breadcrumb-h,0px))] z-20 -mx-4 border-b border-transparent bg-background/95 px-4 py-2 backdrop-blur-md sm:-mx-6 sm:px-6 [&:not(:first-child)]:border-border/30">
           <CatalogToolbar
             filters={catalog.filters}
