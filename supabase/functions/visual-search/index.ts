@@ -125,8 +125,14 @@ Use essas dicas para refinar sua percepção, mas priorize o que você vê visua
     });
 
     if (!analysisResponse.ok) {
-      await analysisResponse.text();
-      console.error("AI analysis error:", { status: analysisResponse.status });
+      const errorText = await analysisResponse.text();
+      console.error("AI analysis error:", { 
+        status: analysisResponse.status,
+        statusText: analysisResponse.statusText,
+        error: errorText,
+        requested_model: model,
+        headers: Object.fromEntries(analysisResponse.headers.entries())
+      });
       
       if (analysisResponse.status === 429) {
         return new Response(
@@ -141,10 +147,20 @@ Use essas dicas para refinar sua percepção, mas priorize o que você vê visua
         );
       }
       
-      throw new Error(`AI analysis failed: ${analysisResponse.status}`);
+      throw new Error(`AI analysis failed: ${analysisResponse.status} - ${errorText.slice(0, 200)}`);
     }
 
     const analysisData = await analysisResponse.json();
+    console.log("AI analysis response debug:", {
+      model: analysisData.model,
+      usage: analysisData.usage,
+      router_info: {
+        provider: analysisData.usage?._x_router_used_provider,
+        model: analysisData.usage?._x_router_used_model,
+        attempts: analysisData.usage?._x_router_attempts,
+        fallback: analysisData.usage?._x_router_fallback_used
+      }
+    });
     const analysisContent = analysisData.choices?.[0]?.message?.content || "";
     
     console.log("AI analysis completed");
