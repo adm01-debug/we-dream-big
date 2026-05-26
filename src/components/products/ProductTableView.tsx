@@ -235,7 +235,7 @@ export const ProductTableView = memo(function ProductTableView({
                   style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${vr.start}px)` }}
                   className="flex items-center px-4 border-b border-border/30 h-14"
                 >
-                  {selectionMode && <div className="w-10 px-2 flex justify-center"><div className="w-4 h-4 rounded bg-muted/40 animate-pulse" /></div>}
+                  {selectionMode && <div className="w-10 px-2 flex justify-center"><Skeleton className="h-4 w-4 rounded" /></div>}
                   <div className="w-12 px-2"><Skeleton className="w-10 h-10 rounded-md" /></div>
                   <div className="flex-1 px-3 space-y-2">
                     <Skeleton className="h-4 w-48" />
