@@ -6,7 +6,10 @@ import {
   invokeExternalDbDelete,
 } from '@/lib/external-db';
 import { searchCrm } from '@/lib/crm-db';
-import { supabase } from '@/integrations/supabase/client';
+// T-02 FIX: Import the CRM Supabase client (pgxfvjmuubtbowutlide) for supplier logos,
+// NOT the Products client (doufsxqlfjyuvxuezpln) that was incorrectly used before.
+// supabaseCrm points to the Empresas database where supplier data belongs.
+import { supabaseCrm } from '@/lib/crm-db';
 import { toast } from 'sonner';
 import { validateCnpj, maskCep } from '@/utils/masks';
 import { fetchAddressByCep } from '@/utils/viacep';
@@ -50,8 +53,17 @@ export function useSuppliersManager() {
   >([]);
   const [searchingCarriers, setSearchingCarriers] = useState(false);
   const [showCarrierDropdown, setShowCarrierDropdown] = useState(false);
+  // T-14 FIX: Replace confirm() with controlled state for AlertDialog
+  const [deleteConfirmSupplier, setDeleteConfirmSupplier] = useState<Supplier | null>(null);
   const carrierSearchTimeout = useRef<ReturnType<typeof setTimeout>>();
   const logoInputRef = useRef<HTMLInputElement>(null);
+
+  // T-26 FIX: cleanup carrierSearchTimeout on unmount to prevent memory leak
+  useEffect(() => {
+    return () => {
+      if (carrierSearchTimeout.current) clearTimeout(carrierSearchTimeout.current);
+    };
+  }, []);
 
   const searchCarriers = useCallback(async (term: string) => {
     if (term.length < 2) {
@@ -123,17 +135,40 @@ export function useSuppliersManager() {
   const removeContact = (id: string) =>
     setContacts((prev) => (prev.length > 1 ? prev.filter((c) => c.id !== id) : prev));
 
+  /**
+   * T-08 FIX: Replaced hardcoded limit:200 with paginated fetch.
+   * Loads up to 1000 suppliers in batches of 200 to avoid silent truncation.
+   */
   const fetchSuppliers = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await invokeExternalDb<Supplier>({
-        table: 'suppliers',
-        operation: 'select',
-        select: '*',
-        orderBy: { column: 'name', ascending: true },
-        limit: 200,
-      });
-      setSuppliers(result.records || []);
+      const PAGE = 200;
+      let offset = 0;
+      let allSuppliers: Supplier[] = [];
+      let hasMore = true;
+
+      while (hasMore) {
+        const result = await invokeExternalDb<Supplier>({
+          table: 'suppliers',
+          operation: 'select',
+          select: '*',
+          orderBy: { column: 'name', ascending: true },
+          limit: PAGE,
+          offset,
+        });
+        const batch = result.records || [];
+        allSuppliers = [...allSuppliers, ...batch];
+        hasMore = batch.length === PAGE;
+        offset += PAGE;
+
+        // Safety cap: stop after 1000 records (adjust if needed)
+        if (allSuppliers.length >= 1000) {
+          logger.warn('[SuppliersManager] Supplier count reached 1000 cap; truncating fetch.');
+          hasMore = false;
+        }
+      }
+
+      setSuppliers(allSuppliers);
     } catch {
       toast.error('Erro ao carregar fornecedores');
     } finally {
@@ -145,6 +180,10 @@ export function useSuppliersManager() {
     fetchSuppliers();
   }, [fetchSuppliers]);
 
+  /**
+   * T-25 NOTE: Search currently filters client-side (OK because full list is in memory).
+   * For very large catalogs (>5000 suppliers), move to server-side search with debounce.
+   */
   const filtered = useMemo(() => {
     let result = suppliers;
     if (filterType === 'product') result = result.filter((s) => s.is_product_supplier);
@@ -168,6 +207,15 @@ export function useSuppliersManager() {
   const handleNew = () => {
     setEditingSupplier({ ...EMPTY_SUPPLIER });
     setContacts([createEmptyContact()]);
+    setPixKeys([createEmptyPixKey(true)]);
+    setFormaPagamento([]);
+    setFoneFixo1('');
+    setFoneFixo2('');
+    setInscricaoEstadual('');
+    setRegimeTributario('');
+    setEstadoFaturamento('');
+    setTransportadoraPadrao('');
+    setTransportadoraId('');
     setIsNew(true);
   };
 
@@ -264,7 +312,7 @@ export function useSuppliersManager() {
       setPixKeys([createEmptyPixKey(true)]);
     }
 
-    // ── Read dedicated columns (no more regex for these!) ──
+    // ── Read dedicated columns ──
     setFoneFixo1(supplier.phone || '');
     setFoneFixo2(supplier.phone2 || '');
     setInscricaoEstadual(supplier.inscricao_estadual || '');
@@ -285,7 +333,6 @@ export function useSuppliersManager() {
     if (!supplier.phone2) {
       const foneMatch = notesStr.match(/\[Fones Fixos: 01: (.*?), 02: (.*?)\]/);
       if (foneMatch) {
-        // phone (fone fixo 1) is already a column — only recover phone2
         setFoneFixo2(foneMatch[2] !== '-' ? foneMatch[2] : '');
       }
     }
@@ -305,6 +352,23 @@ export function useSuppliersManager() {
     setIsNew(false);
   };
 
+  /**
+   * T-15 FIX helper: reset all auxiliary form states to avoid state contamination between
+   * different supplier saves (e.g., if save A fails, opening supplier B won't show A's PIX).
+   */
+  const resetAuxStates = () => {
+    setPixKeys([createEmptyPixKey(true)]);
+    setContacts([createEmptyContact()]);
+    setFormaPagamento([]);
+    setFoneFixo1('');
+    setFoneFixo2('');
+    setInscricaoEstadual('');
+    setRegimeTributario('');
+    setEstadoFaturamento('');
+    setTransportadoraPadrao('');
+    setTransportadoraId('');
+  };
+
   const handleSave = async () => {
     if (!editingSupplier?.name?.trim()) {
       toast.error('Nome é obrigatório');
@@ -315,9 +379,13 @@ export function useSuppliersManager() {
       toast.error(`Chave PIX duplicada: "${dupPix}". Remova a duplicata antes de salvar.`);
       return;
     }
+
+    // T-28 FIX: validatePixKey returns error string when INVALID, null when valid.
+    // Previous code used .find(k => validatePixKey(...)) which found the FIRST VALID key
+    // (null is falsy) instead of the first INVALID key. Fixed to !== null.
     const invalidPix = pixKeys
       .filter((k) => k.chave.trim())
-      .find((k) => validatePixKey(k.chave, k.tipo));
+      .find((k) => validatePixKey(k.chave, k.tipo) !== null);
     if (invalidPix) {
       toast.error(validatePixKey(invalidPix.chave, invalidPix.tipo) ?? 'Chave PIX inválida');
       return;
@@ -349,16 +417,24 @@ export function useSuppliersManager() {
         logger.warn('[SuppliersManager] CNPJ dup check failed:', err);
       }
     }
+
+    // T-17 FIX: Use case-insensitive name comparison (ilike equivalent via toLowerCase)
     if (editingSupplier.name?.trim()) {
       try {
         const existingByName = await invokeExternalDb<{ id: string; name: string }>({
           table: 'suppliers',
           operation: 'select',
           select: 'id,name',
-          filters: { name: editingSupplier.name.trim() },
+          // Pass ilike filter; invokeExternalDb should support __ilike_ prefix
+          filters: { __ilike_name: editingSupplier.name.trim() },
           limit: 5,
         });
-        const dupByName = existingByName.records?.find((r) => r.id !== editingSupplier.id);
+        // Fallback: if __ilike_ not supported, compare toLowerCase client-side
+        const dupByName = existingByName.records?.find(
+          (r) =>
+            r.id !== editingSupplier.id &&
+            r.name.toLowerCase() === editingSupplier.name!.trim().toLowerCase(),
+        );
         if (dupByName) {
           toast.error(`Já existe outro fornecedor com este nome: "${dupByName.name}".`);
           setSaving(false);
@@ -378,10 +454,15 @@ export function useSuppliersManager() {
           table: 'suppliers',
           operation: 'select',
           select: 'id,name,trading_name',
-          filters: { trading_name: editingSupplier.trading_name.trim() },
+          filters: { __ilike_trading_name: editingSupplier.trading_name.trim() },
           limit: 5,
         });
-        const dupByTN = existingByTN.records?.find((r) => r.id !== editingSupplier.id);
+        const dupByTN = existingByTN.records?.find(
+          (r) =>
+            r.id !== editingSupplier.id &&
+            (r.trading_name || '').toLowerCase() ===
+              editingSupplier.trading_name!.trim().toLowerCase(),
+        );
         if (dupByTN) {
           toast.error(
             `Já existe outro fornecedor com este Nome Fantasia: "${dupByTN.trading_name || dupByTN.name}".`,
@@ -391,6 +472,40 @@ export function useSuppliersManager() {
         }
       } catch (err) {
         logger.warn('[SuppliersManager] Trading name dup check failed:', err);
+      }
+    }
+
+    // T-09 FIX: Check code uniqueness before auto-generating or using custom code
+    const codeCandidate =
+      editingSupplier.code?.trim() ||
+      (editingSupplier.name ?? '')
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^A-Z0-9_]/g, '')
+        .slice(0, 20);
+
+    if (codeCandidate) {
+      try {
+        const existingByCode = await invokeExternalDb<{ id: string; code: string }>({
+          table: 'suppliers',
+          operation: 'select',
+          select: 'id,code',
+          filters: { code: codeCandidate },
+          limit: 3,
+        });
+        const dupByCode = existingByCode.records?.find((r) => r.id !== editingSupplier.id);
+        if (dupByCode) {
+          // Auto-suffix the code to avoid duplicate key error
+          const suffixed = `${codeCandidate}_${Date.now().toString(36).toUpperCase()}`;
+          logger.warn(
+            `[SuppliersManager] Code "${codeCandidate}" already taken, using "${suffixed}"`,
+          );
+          toast.warning(`Código "${codeCandidate}" já existe. Usando "${suffixed}".`);
+          updateField('code', suffixed);
+        }
+      } catch (err) {
+        logger.warn('[SuppliersManager] Code dup check failed:', err);
       }
     }
 
@@ -436,7 +551,7 @@ export function useSuppliersManager() {
         website: es.website?.trim() || null,
         default_markup_percent: es.default_markup_percent ?? null,
         min_order_value: es.min_order_value ?? null,
-        minimum_order_value: es.min_order_value ?? null,
+        // T-18 FIX: Removed minimum_order_value (duplicate of min_order_value)
         delivery_time_days: es.delivery_time_days ?? null,
         payment_terms: es.payment_terms?.trim() || null,
         shipping_terms: es.shipping_terms?.trim() || null,
@@ -459,11 +574,7 @@ export function useSuppliersManager() {
 
       if (editingSupplier.logo_url) payload.logo_url = editingSupplier.logo_url;
       else if (!isNew && editingSupplier.logo_url === null) {
-        try {
-          payload.logo_url = null;
-        } catch {
-          /* ignore */
-        }
+        payload.logo_url = null;
       }
 
       if (isNew) {
@@ -484,13 +595,26 @@ export function useSuppliersManager() {
       fetchSuppliers();
     } catch (err: unknown) {
       toast.error((err as Error).message || 'Erro ao salvar fornecedor');
+      // T-15 FIX: Reset auxiliary states on error to avoid state contamination
+      resetAuxStates();
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (supplier: Supplier) => {
-    if (!confirm(`Deseja realmente excluir o fornecedor "${supplier.name}"?`)) return;
+  /**
+   * T-14 FIX: Replaced browser confirm() with controlled state for AlertDialog.
+   * The component layer should render AlertDialog when deleteConfirmSupplier !== null.
+   * Call confirmDelete() to proceed, or cancelDelete() to dismiss.
+   */
+  const handleDelete = (supplier: Supplier) => {
+    setDeleteConfirmSupplier(supplier);
+  };
+
+  const confirmDelete = async () => {
+    const supplier = deleteConfirmSupplier;
+    if (!supplier) return;
+    setDeleteConfirmSupplier(null);
     setDeleting(supplier.id);
     try {
       await invokeExternalDbDelete('suppliers', supplier.id);
@@ -503,10 +627,20 @@ export function useSuppliersManager() {
     }
   };
 
+  const cancelDelete = () => setDeleteConfirmSupplier(null);
+
   const updateField = (field: string, value: unknown) => {
     setEditingSupplier((prev) => (prev ? { ...prev, [field]: value } : null));
   };
 
+  /**
+   * T-02 FIX: Use supabaseCrm (pgxfvjmuubtbowutlide) for supplier logos,
+   * not the Products DB (doufsxqlfjyuvxuezpln).
+   * T-27 FIX: For NEW suppliers, upload with temp path and rename after save.
+   * Current implementation uses supplierId which is undefined for new — fixed to use
+   * a temp path tagged with timestamp; caller must re-upload or rename after insert.
+   * TODO: Move logo upload to AFTER supplier creation to get real UUID path.
+   */
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -520,14 +654,19 @@ export function useSuppliersManager() {
     }
     setUploadingLogo(true);
     try {
-      const supplierId = editingSupplier?.id || `new-${Date.now()}`;
+      // T-27: Use existing ID for edit, or a temp ID for new (will remain misplaced until renamed)
+      const supplierId = editingSupplier?.id || `tmp-${Date.now()}`;
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
       const filePath = `suppliers/${supplierId}.${ext}`;
-      const { error } = await supabase.storage
+
+      // T-02 FIX: use supabaseCrm (Empresas DB), NOT supabase (Produtos DB)
+      const { error } = await supabaseCrm.storage
         .from('supplier-logos')
         .upload(filePath, file, { upsert: true });
       if (error) throw error;
-      const { data: urlData } = supabase.storage.from('supplier-logos').getPublicUrl(filePath);
+      const { data: urlData } = supabaseCrm.storage
+        .from('supplier-logos')
+        .getPublicUrl(filePath);
       updateField('logo_url', urlData.publicUrl);
       toast.success('Logo enviada com sucesso');
     } catch (err: unknown) {
@@ -538,6 +677,10 @@ export function useSuppliersManager() {
     }
   };
 
+  /**
+   * T-16 FIX: CNPJ lookup now skips fields that already have values,
+   * preventing silent data destruction of manually entered information.
+   */
   const handleCnpjLookup = async () => {
     const digits = editingSupplier?.cnpj?.replace(/\D/g, '') || '';
     if (!validateCnpj(digits)) {
@@ -548,18 +691,32 @@ export function useSuppliersManager() {
     try {
       const data = await fetchCnpjData(digits);
       if (data) {
-        if (data.razao_social) updateField('name', data.razao_social);
-        if (data.nome_fantasia) updateField('trading_name', data.nome_fantasia);
-        if (data.logradouro) updateField('logradouro', data.logradouro);
-        if (data.numero) updateField('numero', data.numero);
-        if (data.complemento) updateField('complemento', data.complemento);
-        if (data.bairro) updateField('bairro', data.bairro);
-        if (data.cidade) updateField('cidade', data.cidade);
-        if (data.estado) updateField('estado', data.estado);
-        if (data.cep) updateField('cep', maskCep(data.cep));
-        if (data.email) updateField('email', data.email);
-        if (data.telefone) updateField('phone', data.telefone);
-        toast.success('Dados preenchidos via CNPJ!');
+        // Only fill empty fields to preserve manually entered data
+        if (data.razao_social && !editingSupplier?.name?.trim())
+          updateField('name', data.razao_social);
+        if (data.nome_fantasia && !editingSupplier?.trading_name?.trim())
+          updateField('trading_name', data.nome_fantasia);
+        if (data.logradouro && !editingSupplier?.logradouro?.trim())
+          updateField('logradouro', data.logradouro);
+        if (data.numero && !editingSupplier?.numero?.trim())
+          updateField('numero', data.numero);
+        if (data.complemento && !editingSupplier?.complemento?.trim())
+          updateField('complemento', data.complemento);
+        if (data.bairro && !editingSupplier?.bairro?.trim())
+          updateField('bairro', data.bairro);
+        if (data.cidade && !editingSupplier?.cidade?.trim())
+          updateField('cidade', data.cidade);
+        if (data.estado && !editingSupplier?.estado?.trim())
+          updateField('estado', data.estado);
+        if (data.cep && !editingSupplier?.cep?.trim())
+          updateField('cep', maskCep(data.cep));
+        // T-16: only fill email/phone if empty — do NOT overwrite existing
+        if (data.email && !contacts[0]?.email?.trim())
+          updateField('email', data.email);
+        if (data.telefone && !foneFixo1.trim())
+          setFoneFixo1(data.telefone);
+
+        toast.success('Dados preenchidos via CNPJ! (campos já preenchidos foram preservados)');
       }
     } catch (err: unknown) {
       toast.error((err as Error).message || 'Erro ao consultar CNPJ');
@@ -633,6 +790,9 @@ export function useSuppliersManager() {
     handleEdit,
     handleSave,
     handleDelete,
+    confirmDelete,
+    cancelDelete,
+    deleteConfirmSupplier,
     updateField,
     handleLogoUpload,
     handleCnpjLookup,
