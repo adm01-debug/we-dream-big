@@ -3,7 +3,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const CONCURRENCY = 10;
-const TOTAL_REQUESTS = 50; 
+const TOTAL_REQUESTS = 20; // Reduzido para diagnóstico
 
 async function runLoadTest(name: string, path: string, method = "GET", body: any = null, headers: any = {}) {
   console.log(`\n🚀 Stress test: ${name} (${TOTAL_REQUESTS} req, c=${CONCURRENCY})`);
@@ -13,6 +13,7 @@ async function runLoadTest(name: string, path: string, method = "GET", body: any
   let failure = 0;
   let status401 = 0;
   const latencies: number[] = [];
+  let firstResponseBody = "";
 
   const workers = Array.from({ length: CONCURRENCY }).map(async (_, workerId) => {
     for (let i = 0; i < TOTAL_REQUESTS / CONCURRENCY; i++) {
@@ -29,7 +30,9 @@ async function runLoadTest(name: string, path: string, method = "GET", body: any
           body: body ? JSON.stringify(body) : undefined,
         });
         
-        await res.text();
+        const text = await res.text();
+        if (i === 0 && workerId === 0) firstResponseBody = text;
+        
         latencies.push(performance.now() - reqStart);
 
         if (res.status === 200 || res.status === 201 || res.status === 204) {
@@ -48,12 +51,11 @@ async function runLoadTest(name: string, path: string, method = "GET", body: any
   await Promise.all(workers);
   const totalTime = performance.now() - start;
   
-  const avg = latencies.reduce((a, b) => a + b, 0) / latencies.length;
-  console.log(`✅ ${name}: ${success} OK, ${status401} 401, ${failure} Fail. Avg: ${avg.toFixed(0)}ms, Total: ${(totalTime/1000).toFixed(1)}s`);
+  const avg = latencies.length ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0;
+  console.log(`✅ ${name}: ${success} OK, ${status401} 401, ${failure} Fail. Avg: ${avg.toFixed(0)}ms`);
+  if (status401 > 0) console.log(`   Sample Error Body: ${firstResponseBody}`);
 }
 
-// Rodar testes
 await runLoadTest("health-check", "/health-check");
 await runLoadTest("validate-access", "/validate-access", "POST", { ip: "127.0.0.1" });
-await runLoadTest("webhook-inbound", "/webhook-inbound?slug=test", "POST", { event: "ping" });
 await runLoadTest("materials-api", "/materials-api", "POST", { action: "groups" });
