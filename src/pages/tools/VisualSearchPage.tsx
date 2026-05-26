@@ -879,8 +879,21 @@ export default function VisualSearchPage() {
                             <img 
                               src={product.images?.[0] || '/placeholder.svg'} 
                               alt={product.name}
-                              className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-md"
+                              className={cn(
+                                "h-full w-full object-contain transition-transform duration-700 drop-shadow-md",
+                                hoveredProduct === product.id ? "scale-[1.6] origin-center z-10" : "group-hover:scale-110"
+                              )}
                             />
+                            
+                            {/* Material Magnifier Overlay (Hover) */}
+                            {hoveredProduct === product.id && (
+                              <div className="absolute inset-0 pointer-events-none z-20 bg-black/5 flex items-center justify-center">
+                                <div className="bg-background/90 backdrop-blur-md border border-primary/20 px-3 py-1.5 rounded-full shadow-2xl flex items-center gap-2 animate-in fade-in zoom-in duration-300">
+                                  <Eye className="h-3 w-3 text-primary" />
+                                  <span className="text-[10px] font-black uppercase tracking-tighter">Comparando Textura</span>
+                                </div>
+                              </div>
+                            )}
                             
                             {/* Match Overlay */}
                             <div className="absolute top-4 right-4 flex flex-col items-end gap-1.5">
