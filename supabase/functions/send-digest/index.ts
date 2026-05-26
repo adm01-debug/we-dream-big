@@ -6,7 +6,8 @@
 // BUG-NOTIF-008 FIXED:
 //   - Digest não enviava nada; agora chama a RPC send_digest_notification
 //     que encaminha para os canais configurados (in-app, futuramente email).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+// BULK-SDK-FIX: Changed from esm.sh URL to npm: direct — removes import_map dependency.
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { buildPublicCorsHeaders } from "../_shared/cors.ts";
 import { authorizeCron } from "../_shared/dispatcher-auth.ts";
 import { safeErrorResponse } from "../_shared/error-response.ts";

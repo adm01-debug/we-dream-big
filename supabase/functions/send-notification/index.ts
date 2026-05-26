@@ -5,7 +5,8 @@
 //   is_dnd_active, evitando dependência de auth.uid() que é NULL quando a função
 //   é chamada com service_role_key (sem JWT de usuário autenticado).
 import { getCorsHeaders } from '../_shared/cors.ts';
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+// BULK-SDK-FIX: Changed from esm.sh URL to npm: direct — removes import_map dependency.
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { z } from "npm:zod@3.23.8";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
 import { authorizeCron } from "../_shared/dispatcher-auth.ts";
