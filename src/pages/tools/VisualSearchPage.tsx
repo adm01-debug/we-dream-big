@@ -720,33 +720,37 @@ export default function VisualSearchPage() {
           </div>
 
           {/* Results Area */}
-          <div className="lg:col-span-8 space-y-4">
+          <div className={cn(
+            "space-y-6 transition-all duration-500",
+            showFocusMode ? "lg:col-span-12" : "lg:col-span-8"
+          )}>
             {!previewUrl && !isSearching && (
-              <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/5 p-12 text-center group">
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 scale-150 animate-pulse bg-primary/10 blur-2xl rounded-full" />
+              <div className="flex h-full min-h-[600px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-white/5 bg-black/40 p-12 text-center group relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(52,211,153,0.05),transparent)] animate-pulse" />
+                <div className="relative mb-8">
+                  <div className="absolute inset-0 scale-150 animate-pulse bg-emerald-500/10 blur-3xl rounded-full" />
                   <motion.div 
                     whileHover={{ rotate: 5, scale: 1.05 }}
-                    className="relative rounded-full bg-background p-10 shadow-2xl border border-border/50"
+                    className="relative rounded-3xl bg-black/60 p-12 shadow-2xl border border-white/10"
                   >
-                    <ImageIcon className="h-20 w-20 text-muted-foreground/20" />
-                    <div className="absolute -right-2 -top-2 rounded-full bg-primary p-2 shadow-lg">
-                      <Zap className="h-5 w-5 text-primary-foreground" />
+                    <ImageIcon className="h-24 w-20 text-white/10" />
+                    <div className="absolute -right-3 -top-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-blue-500 p-3 shadow-xl shadow-emerald-500/20">
+                      <Zap className="h-6 w-6 text-white" />
                     </div>
                   </motion.div>
                 </div>
-                <h3 className="mb-2 font-display text-3xl font-bold tracking-tight">O futuro da busca de brindes</h3>
-                <p className="mx-auto max-w-sm text-sm text-muted-foreground leading-relaxed">
-                  Poupe horas de catálogo. Nossa IA exclusiva digitaliza fotos enviadas por clientes e localiza correspondências exatas em segundos.
+                <h3 className="mb-4 font-display text-4xl font-bold tracking-tight text-white/90">Inicie o Diagnóstico Visual</h3>
+                <p className="mx-auto max-w-lg text-base text-white/40 leading-relaxed font-light">
+                  Mapeie características técnicas de brindes físicos e localize correspondências exatas no ecossistema global.
                 </p>
-                <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+                <div className="mt-12 flex flex-col items-center gap-4">
                   <Button 
                     onClick={() => fileInputRef.current?.click()}
-                    className="gap-2 px-10 h-12 text-base shadow-xl shadow-primary/20"
+                    className="gap-3 px-12 h-14 text-lg bg-emerald-500 text-black font-black hover:bg-emerald-400 shadow-[0_0_40px_rgba(52,211,153,0.3)] transition-all active:scale-95 rounded-2xl"
                   >
-                    <Camera className="h-5 w-5" /> Iniciar Scanner
+                    <Camera className="h-6 w-6" /> CAPTURAR AMOSTRA
                   </Button>
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest block w-full">ou arraste um arquivo aqui</p>
+                  <p className="text-[10px] uppercase font-bold text-white/20 tracking-[0.3em] font-mono">ou arraste o arquivo fonte aqui</p>
                 </div>
               </div>
             )}
