@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-05-23T20:45:26.686Z",
+  "generated_at": "2026-05-26T13:36:36.501Z",
   "total": 82,
   "counts": {
-    "shared": 82,
+    "shared": 81,
     "inline": 0,
-    "none": 0
+    "none": 1
   },
   "functions": [
     {
@@ -273,7 +273,7 @@
     },
     {
       "name": "generate-mockup",
-      "mode": "shared",
+      "mode": "none",
       "allowHeaders": [],
       "exposeHeaders": [],
       "allowMethods": null,
