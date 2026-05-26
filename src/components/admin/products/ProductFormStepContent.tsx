@@ -1,5 +1,8 @@
 /**
  * ProductFormStepContent — Renderiza o conteúdo de cada etapa do formulário
+ *
+ * Sprint 3 (26/05/2026):
+ *   BUG-03: pass engravingFlushRef down to ProductEngravingSection
  */
 import React, { Suspense } from 'react';
 import { Card } from '@/components/ui/card';
@@ -81,6 +84,8 @@ interface StepContentProps {
   expirations: Record<string, string | null>;
   generateSeoAI: () => void;
   isSeoGenerating: boolean;
+  /** BUG-03: ref populated by ProductEngravingSection with flushLocalAreas */
+  engravingFlushRef?: React.MutableRefObject<((id: string) => Promise<void>) | null>;
 }
 
 export function ProductFormStepContent({
@@ -108,6 +113,7 @@ export function ProductFormStepContent({
   expirations,
   generateSeoAI,
   isSeoGenerating,
+  engravingFlushRef,
 }: StepContentProps) {
   const { register, setValue, errors } = formProps;
 
@@ -201,7 +207,12 @@ export function ProductFormStepContent({
     case 'engraving':
       return (
         <Suspense fallback={<SectionSkeleton />}>
-          <ProductEngravingSection productId={productId} isEdit={isEdit} />
+          {/* BUG-03: pass engravingFlushRef so AdminProductFormPage can flush local areas after creation */}
+          <ProductEngravingSection
+            productId={productId}
+            isEdit={isEdit}
+            engravingFlushRef={engravingFlushRef}
+          />
         </Suspense>
       );
     case 'classification':
