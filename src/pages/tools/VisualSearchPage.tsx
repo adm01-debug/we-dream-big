@@ -796,38 +796,10 @@ export default function VisualSearchPage() {
                 </div>
               </motion.div>
             )}
-              <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/5 p-12 text-center group">
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 scale-150 animate-pulse bg-primary/10 blur-2xl rounded-full" />
-                  <motion.div 
-                    whileHover={{ rotate: 5, scale: 1.05 }}
-                    className="relative rounded-full bg-background p-10 shadow-2xl border border-border/50"
-                  >
-                    <ImageIcon className="h-20 w-20 text-muted-foreground/20" />
-                    <div className="absolute -right-2 -top-2 rounded-full bg-primary p-2 shadow-lg">
-                      <Zap className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                  </motion.div>
-                </div>
-                <h3 className="mb-2 font-display text-3xl font-bold tracking-tight">O futuro da busca de brindes</h3>
-                <p className="mx-auto max-w-sm text-sm text-muted-foreground leading-relaxed">
-                  Poupe horas de catálogo. Nossa IA exclusiva digitaliza fotos enviadas por clientes e localiza correspondências exatas em segundos.
-                </p>
-                <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-                  <Button 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="gap-2 px-10 h-12 text-base shadow-xl shadow-primary/20"
-                  >
-                    <Camera className="h-5 w-5" /> Iniciar Scanner
-                  </Button>
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest block w-full">ou arraste um arquivo aqui</p>
-                </div>
-              </div>
-            )}
 
             {isSearching && (
               <div className="space-y-6">
-            {results && !analysisError && (
+                {results && (
                   <div className="flex items-center gap-2 rounded-lg bg-primary/10 p-3 border border-primary/20 animate-pulse mb-4">
                     <Loader2 className="h-4 w-4 text-primary animate-spin" />
                     <span className="text-xs font-bold text-primary uppercase tracking-wider">Recalculando matches com novos filtros...</span>
