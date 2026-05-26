@@ -1,6 +1,8 @@
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SORT_OPTIONS } from "@/hooks/products";
+// FIX-07: era importado de "@/hooks/products" — lista potencialmente diferente da exibida no header.
+// Fonte única de verdade: @/constants/filters (mesmo arquivo usado por FiltersPage.tsx).
+import { SORT_OPTIONS } from "@/constants/filters";
 import { InlineColorGroupFilter } from "./InlineColorGroupFilter";
 import { ExternalCategoryFilter } from "./ExternalCategoryFilter";
 import { DebouncedPriceInput } from "./DebouncedPriceInput";
