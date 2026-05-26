@@ -146,7 +146,12 @@ export default function VisualSearchPage() {
       processImage(previewUrl!, "alumínio");
     } else if (command.includes('90') || command.includes('noventa')) {
       toast.success("Mostrando apenas alta confiança...");
-      // Logic would be in frontend filtering if results exist
+      setResults(prev => prev ? {
+        ...prev,
+        products: prev.products.filter(p => p.relevance >= 0.9)
+      } : null);
+    } else if (command.includes('reset') || command.includes('limpar')) {
+      reset();
     } else {
       toast.info(`Comando não reconhecido: "${command}"`);
     }
