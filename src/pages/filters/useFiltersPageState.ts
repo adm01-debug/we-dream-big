@@ -196,14 +196,20 @@ export function useFiltersPageState() {
   useEffect(() => {
     const handleResize = () => {
       const w = window.innerWidth;
-      if (w < 768 && gridColumns > 3) {
-        setGridColumns(3);
+      let maxCols: ColumnCount = 3;
+      if (w >= 1536) maxCols = 8;
+      else if (w >= 1280) maxCols = 6;
+      else if (w >= 1024) maxCols = 5;
+      else if (w >= 768) maxCols = 4;
+      
+      if (gridColumns > maxCols) {
+        setGridColumns(maxCols);
       }
     };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [gridColumns]);
+  }, [gridColumns, setGridColumns]);
   const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
   const [commandAction, setCommandAction] = useState<string | null>(null);
   const [appliedFilters, setAppliedFilters] = useState<
