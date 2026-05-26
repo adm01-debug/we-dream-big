@@ -2,11 +2,23 @@
  * SuppliersManager — Orchestrator component.
  * Logic extracted to useSuppliersManager hook.
  * UI split into SupplierListHeader, SupplierTable, SupplierFormDialog.
+ *
+ * BUG-04 FIX: AlertDialog for delete confirmation (replaced native confirm())
  */
 import { useSuppliersManager } from './useSuppliersManager';
 import { SupplierListHeader } from './SupplierListHeader';
 import { SupplierTable } from './SupplierTable';
 import { SupplierFormDialog } from './SupplierFormDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export function SuppliersManager() {
   const m = useSuppliersManager();
@@ -81,6 +93,32 @@ export function SuppliersManager() {
         addPixKey={m.addPixKey}
         removePixKey={m.removePixKey}
       />
+
+      {/* BUG-04 FIX: state-driven AlertDialog instead of native confirm() */}
+      <AlertDialog
+        open={!!m.deleteConfirmSupplier}
+        onOpenChange={(open) => { if (!open) m.cancelDelete(); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir fornecedor</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja realmente excluir o fornecedor{' '}
+              <strong>&quot;{m.deleteConfirmSupplier?.name}&quot;</strong>?
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={m.cancelDelete}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={m.confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
