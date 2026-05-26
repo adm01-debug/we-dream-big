@@ -22,7 +22,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useNoveltiesSelectionMode, useNoveltiesWithDetails } from '@/hooks/products';
-import { ProductCardSkeleton } from '@/components/products/ProductCardSkeleton';
+import { ProductCardSkeleton } from '@/components/loading/ModernSkeletons';
 import { LayoutPopover } from '@/components/products/LayoutPopover';
 import { getDefaultColumns, type ColumnCount } from '@/components/products/ColumnSelector';
 import { BulkActionBar } from '@/components/products/BulkActionBar';
