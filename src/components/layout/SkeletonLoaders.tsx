@@ -1,12 +1,13 @@
 import * as React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProductGridSkeleton } from "@/components/products/ProductCardSkeleton";
+import { ProductGridSkeleton } from "@/components/loading/ModernSkeletons";
 import { 
   TableSkeleton, 
   StatsCardSkeleton, 
   ChartSkeleton, 
   PageHeaderSkeleton 
 } from "@/components/loading/SkeletonShimmer";
+import { DashboardSkeleton as ModernDashboardSkeleton } from "@/components/loading/ModernSkeletons";
 import { SkeletonMonitor } from "@/components/loading/SkeletonMonitor";
 
 /**
