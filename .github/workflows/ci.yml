@@ -432,11 +432,32 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Gate bloqueante (sem segredos): toda edge function precisa de um teste
+      # de integração LIVE em tests/edge-functions/live/<fn>.test.ts.
+      - name: Gate — cobertura LIVE de edge functions
+        run: npm run check:edge-live-coverage
+
       # Testes de integração mocked para todas as edge functions críticas.
       # Cobre: health-check, cnpj-lookup, webhook-inbound, secure-upload,
       # send-notification, validate-access, generate-mockup, quote-sync.
       - name: Run Edge Function Integration Tests (mocked)
         run: npx vitest run tests/edge-functions/integration/ --reporter=verbose
+
+      # Testes de integração LIVE contra as funções deployadas. Sem segredos,
+      # describeLive faz skip silencioso (suíte verde). Com VITE_SUPABASE_URL +
+      # VITE_SUPABASE_PUBLISHABLE_KEY presentes, roda de fato (fronteira de auth,
+      # validação, CORS, sem-crash). Happy-paths exigem contas E2E_* (skip sem).
+      - name: Run Edge Function Integration Tests (LIVE)
+        run: npm run test:edge:live
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
+          E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
 
       - name: Run Fuzz Testing (Massive — dry-run sem credenciais)
         run: npm run test:fuzz:full
