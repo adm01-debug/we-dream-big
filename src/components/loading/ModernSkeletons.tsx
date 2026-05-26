@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface ProductCardSkeletonProps {
+export interface ProductCardSkeletonProps {
   variant?: "default" | "compact" | "detailed";
   className?: string;
 }
