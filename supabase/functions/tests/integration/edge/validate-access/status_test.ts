@@ -8,6 +8,7 @@ registerCase({
   testName: "status code esperado",
   run: async () => {
     const res = await invokeFunction("validate-access", {});
+    const _body = await res.text(); // Consume to avoid leaks
     assert(res.status === 400 || res.status === 401, `Status inesperado: ${res.status}`);
   },
 });
