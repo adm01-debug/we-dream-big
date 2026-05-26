@@ -44,8 +44,6 @@ describe('Integridade do Sistema de Skeletons', () => {
         'src/pages/kit-builder/KitLibraryPage.tsx',
         'src/components/bi/*',
         'src/components/common/LoadingOverlay.tsx',
-        'src/components/**/*.test.tsx',
-        'src/components/**/*.test.ts',
       ]
         .map((e) => `--glob '!${e}'`)
         .join(' ');
