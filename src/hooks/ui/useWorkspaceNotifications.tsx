@@ -84,6 +84,14 @@ export function useWorkspaceNotifications() {
   const markAllInFlightRef = useRef(false);
   const clearAllInFlightRef = useRef(false);
 
+  // BUG-10 FIX: notifications.length was in fetchNotifications deps.
+  // Every markAsRead call changed notifications → recreated fetchNotifications
+  // → polling useEffect re-ran → 30s interval cleared and restarted, resetting
+  // the polling timer. Fix: track length via ref updated each render; remove
+  // notifications.length from fetchNotifications deps entirely.
+  const notificationsLengthRef = useRef(0);
+  notificationsLengthRef.current = notifications.length;
+
   // Hydrate from sessionStorage immediately on user change
   useEffect(() => {
     if (!user) {
@@ -127,7 +135,8 @@ export function useWorkspaceNotifications() {
   const fetchNotifications = useCallback(
     async (opts: { silent?: boolean; source?: FetchSource } = {}) => {
       if (!user) return;
-      const hasData = notifications.length > 0;
+      // Read from ref to avoid stale closure without notifications.length in deps
+      const hasData = notificationsLengthRef.current > 0;
       const silent = opts.silent ?? hasData;
 
       if (silent) setIsRefetching(true);
@@ -190,7 +199,8 @@ export function useWorkspaceNotifications() {
         else setIsLoading(false);
       }
     },
-    [user, notifications.length]
+    // notifications.length intentionally OMITTED — accessed via ref instead
+    [user]
   );
 
   // Initial fetch (always, but in background if cache hydrated)
@@ -208,9 +218,7 @@ export function useWorkspaceNotifications() {
     return () => clearInterval(interval);
   }, [user, fetchNotifications]);
 
-  // Final summary on unmount: emits ONE consolidated `[notifications-metrics:badge-budget-summary]`
-  // line with hits/misses/hitRate so QA can eyeball the bell's <16ms budget without
-  // scrolling through every individual badge-render log. No-op if debug is OFF.
+  // Final summary on unmount
   useEffect(() => {
     return () => {
       notificationsMetrics.logBadgeBudgetSummary("hook-unmount");
