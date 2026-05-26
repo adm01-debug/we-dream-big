@@ -10,12 +10,19 @@ async function invoke(name: string, method = "POST", body: any = {}, headers: an
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${SERVICE_ROLE_KEY}`,
+      "User-Agent": "Lovable-Production-Readiness-Test/1.0",
       ...headers,
     },
-    body: method === "GET" ? undefined : JSON.stringify(body),
+    body: method === "GET" || method === "OPTIONS" ? undefined : JSON.stringify(body),
   });
   return res;
 }
+
+Deno.test("PRODUCTION READINESS: Environment check", () => {
+  assert(SUPABASE_URL, "SUPABASE_URL must be set");
+  assert(SERVICE_ROLE_KEY, "SERVICE_ROLE_KEY must be set");
+  console.log(`Testing against: ${SUPABASE_URL}`);
+});
 
 Deno.test("PRODUCTION READINESS: health-check should be healthy", async () => {
   const res = await invoke("health-check", "GET");
