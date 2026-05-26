@@ -169,8 +169,17 @@ export type UseSimulatorWizardReturn = ReturnType<typeof useSimulatorWizard>;
 // v6 MAPPER
 function mapV6LocationsToWizard(locations: GravacaoLocation[]): EngravingLocation[] {
   return locations.sort((a, b) => a.location_order - b.location_order).map((loc) => {
-    const maxWidth = Math.max(...loc.options.map(t => t.efetiva_largura_max || t.max_width || 0));
-    const maxHeight = Math.max(...loc.options.map(t => t.efetiva_altura_max || t.max_height || 0));
+    /**
+     * BUG-19 FIX: Math.max(...[]) returns -Infinity when the spread argument is
+     * an empty array. Guard with a ternary so dimensions default to 0 when
+     * loc.options is empty (e.g. newly-created product with no techniques yet).
+     * Without this fix, maxWidth and maxHeight propagate as -Infinity to downstream
+     * dimension validations in the simulator wizard.
+     */
+    const widths = loc.options.map(t => t.efetiva_largura_max || t.max_width || 0);
+    const heights = loc.options.map(t => t.efetiva_altura_max || t.max_height || 0);
+    const maxWidth = widths.length > 0 ? Math.max(...widths) : 0;
+    const maxHeight = heights.length > 0 ? Math.max(...heights) : 0;
     const availableTechniques: AvailableTechnique[] = loc.options.map((t) => ({
       id: t.technique_id, printAreaId: t.technique_id, techniqueId: t.technique_id,
       techniqueName: t.tecnica_nome, techniqueCode: t.codigo_tabela,
