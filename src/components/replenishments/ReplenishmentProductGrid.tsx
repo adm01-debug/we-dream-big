@@ -8,7 +8,7 @@ import {
   useReplenishmentsSelectionMode,
   useReplenishmentsWithDetails,
 } from '@/hooks/products';
-import { getDefaultColumns, type ColumnCount } from '@/components/products/ColumnSelector';
+import { STORAGE_KEY as GRID_COLS_KEY, getDefaultColumns, type ColumnCount } from '@/components/products/ColumnSelector';
 import { BulkActionBar } from '@/components/products/BulkActionBar';
 import { BulkVariantWizard } from '@/components/catalog/BulkVariantWizard';
 import { BulkAddToCartModal } from '@/components/catalog/BulkAddToCartModal';
