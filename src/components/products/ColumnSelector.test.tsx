@@ -67,43 +67,23 @@ describe("ColumnSelector", () => {
     expect(screen.getByRole("radio", { name: "8 colunas" })).toHaveAttribute("aria-checked", "true");
   });
 
-  it("filters options based on screen width", () => {
-    // Tablet size
-    setScreenWidth(800); 
-    const { rerender } = renderSelector(3);
-    
-    // At 800px, only 3 and 4 columns should be available (minWidth: 0 and 768)
-    expect(screen.getByRole("radio", { name: "3 colunas" })).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "4 colunas" })).toBeInTheDocument();
-    expect(screen.queryByRole("radio", { name: "5 colunas" })).not.toBeInTheDocument();
-
-    // Mobile size
+  it("always shows all 5 column options regardless of screen width", () => {
+    // Mobile
     setScreenWidth(375);
+    const { rerender } = renderSelector(3);
+    [3, 4, 5, 6, 8].forEach(cols => {
+      expect(screen.getByRole("radio", { name: `${cols} colunas` })).toBeInTheDocument();
+    });
+
+    // Tablet
+    setScreenWidth(800);
     rerender(
       <TooltipProvider>
         <ColumnSelector value={3} onChange={vi.fn()} />
       </TooltipProvider>
     );
-    
-    // Only 1 option available (3 columns) -> should return null
-    expect(screen.queryByRole("radiogroup")).not.toBeInTheDocument();
-  });
-
-  it("automatically clamps value if screen size shrinks", async () => {
-    const onChange = vi.fn();
-    const { rerender } = renderSelector(8, onChange);
-
-    // Shrink to tablet (max 4 columns)
-    setScreenWidth(800);
-    
-    rerender(
-      <TooltipProvider>
-        <ColumnSelector value={8} onChange={onChange} />
-      </TooltipProvider>
-    );
-
-    await waitFor(() => {
-      expect(onChange).toHaveBeenCalledWith(4);
+    [3, 4, 5, 6, 8].forEach(cols => {
+      expect(screen.getByRole("radio", { name: `${cols} colunas` })).toBeInTheDocument();
     });
   });
 
