@@ -1,6 +1,7 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
+import { supabase } from '@/integrations/supabase/client';
 import { registerServiceWorker } from '@/lib/sw-register';
 import { installGlobalErrorHandlers } from '@/lib/error-reporter';
 import { initSentry } from '@/lib/sentry';
