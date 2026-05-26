@@ -21,7 +21,7 @@ import { ReplenishmentToolbar } from './ReplenishmentToolbar';
 import { getGridColsClass, getGridGapClass } from './grid-layout';
 import { VirtualizedReplenishmentGrid } from './VirtualizedReplenishmentGrid';
 import { VirtualizedReplenishmentList } from './VirtualizedReplenishmentList';
-import { ProductCardSkeleton } from '@/components/products/ProductCardSkeleton';
+import { ProductCardSkeleton } from '@/components/loading/ModernSkeletons';
 
 type ViewMode = 'grid' | 'list' | 'table';
 type SortMode = 'name' | 'price-asc' | 'price-desc' | 'newest' | 'stock';
