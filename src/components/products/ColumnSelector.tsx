@@ -43,18 +43,14 @@ interface ColumnOption {
   minWidth: number;
 }
 
-// Breakpoints alinhados com responsividade do grid de produtos:
-// - 3 colunas: sempre disponível (mobile-first)
-// - 4 colunas: ≥768px (md tailwind)
-// - 5 colunas: ≥1024px (lg tailwind)
-// - 6 colunas: ≥1280px (xl tailwind)
-// - 8 colunas: ≥1536px (2xl tailwind)
+// Breakpoints reduzidos para garantir que TODAS as 5 opções (3/4/5/6/8)
+// fiquem disponíveis em telas comuns de desktop (≥1280px largura útil).
 const columnOptions: ColumnOption[] = [
   { value: 3, label: "3 colunas", cols: 3, rows: 2, minWidth: 0 },
-  { value: 4, label: "4 colunas", cols: 4, rows: 2, minWidth: 768 },
-  { value: 5, label: "5 colunas", cols: 5, rows: 2, minWidth: 1024 },
-  { value: 6, label: "6 colunas", cols: 3, rows: 3, minWidth: 1280 },
-  { value: 8, label: "8 colunas", cols: 4, rows: 3, minWidth: 1536 },
+  { value: 4, label: "4 colunas", cols: 4, rows: 2, minWidth: 640 },
+  { value: 5, label: "5 colunas", cols: 5, rows: 2, minWidth: 900 },
+  { value: 6, label: "6 colunas", cols: 3, rows: 3, minWidth: 1100 },
+  { value: 8, label: "8 colunas", cols: 4, rows: 3, minWidth: 1280 },
 ];
 
 function getAvailableOptions(screenWidth: number): ColumnOption[] {
