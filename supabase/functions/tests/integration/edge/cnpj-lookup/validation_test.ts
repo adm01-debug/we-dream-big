@@ -8,6 +8,7 @@ registerCase({
   testName: "validação de entrada inválida",
   run: async () => {
     const res = await invokeFunction("cnpj-lookup", { cnpj: "invalid" });
+    const data = await res.json();
     assertEquals(res.status, 400);
     const data = await res.json();
     assert(data.error || data.message);
