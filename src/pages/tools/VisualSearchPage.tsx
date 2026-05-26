@@ -675,7 +675,22 @@ export default function VisualSearchPage() {
           {/* Results Area */}
           <div className="lg:col-span-8 space-y-4">
             {!previewUrl && !isSearching && !analysisError && (
-              <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/5 p-12 text-center group">
+              <div 
+                onDragEnter={() => setIsDragging(true)}
+                onDragLeave={() => setIsDragging(false)}
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  const file = e.dataTransfer.files?.[0];
+                  if (file) handleFileUpload({ target: { files: [file] } } as any);
+                }}
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  "relative flex h-full min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center group cursor-pointer transition-all duration-300",
+                  isDragging ? "border-primary bg-primary/5 scale-[1.01]" : "border-border bg-muted/5 hover:border-primary/40"
+                )}
+              >
                 <div className="relative mb-6">
                   <div className="absolute inset-0 scale-150 animate-pulse bg-primary/10 blur-2xl rounded-full" />
                   <motion.div 
@@ -694,15 +709,25 @@ export default function VisualSearchPage() {
                 </p>
                 <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
                   <Button 
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
                     className="gap-2 px-10 h-12 text-base shadow-xl shadow-primary/20"
                   >
                     <Camera className="h-5 w-5" /> Iniciar Scanner
                   </Button>
                   <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest block w-full">ou arraste um arquivo aqui</p>
                 </div>
+
+                {isDragging && (
+                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/20 backdrop-blur-[2px] rounded-2xl pointer-events-none">
+                    <div className="flex flex-col items-center gap-2 rounded-2xl bg-background/90 p-8 shadow-2xl border border-primary/50">
+                      <ImageIcon className="h-12 w-12 text-primary animate-bounce" />
+                      <p className="font-bold text-primary">Solte para analisar!</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
+
 
             {analysisError && !isSearching && (
               <motion.div 
