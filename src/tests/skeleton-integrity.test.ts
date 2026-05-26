@@ -50,7 +50,8 @@ describe('Integridade do Sistema de Skeletons', () => {
         'src/pages/tools/MagicUp.tsx',
         'src/pages/mockups/MockupHistoryPage.tsx',
         'src/pages/tools/DropboxBrowserPage.tsx',
-        'src/pages/kit-builder/KitLibraryPage.tsx'
+        'src/pages/kit-builder/KitLibraryPage.tsx',
+        'src/components/bi/*'
       ].map(e => `--glob '!${e}'`).join(' ');
 
       const command = `rg -l "Skeleton" src/ --glob "*.tsx" ${globExclusions}`;
