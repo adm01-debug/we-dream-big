@@ -659,3 +659,22 @@ export function MockupHistorySkeleton({ count = 8 }: { count?: number }) {
   );
 }
 
+export function MockupPageSkeleton() {
+  return (
+    <div className="space-y-6 p-4">
+      <MockupSkeleton variant="wizard" delay={0} />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-4">
+          <MockupSkeleton variant="config" delay={100} />
+        </div>
+        <div className="lg:col-span-4">
+          <MockupSkeleton variant="editor" delay={200} />
+        </div>
+        <div className="lg:col-span-4">
+          <MockupSkeleton variant="result" delay={300} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
