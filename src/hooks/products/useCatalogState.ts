@@ -251,7 +251,8 @@ export function useCatalogState() {
     if (filters.materialGroups?.length) count += filters.materialGroups.length;
     if (filters.materialTypes?.length) count += filters.materialTypes.length;
     if (filters.materiais.length) count += filters.materiais.length;
-    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 500) count += 1;
+    // BUG-22 FIX: era < 500, deve ser < 9999 para contar filtro de preço corretamente.
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 9999) count += 1;
     if (filters.inStock) count += 1;
     if (filters.isKit) count += 1;
     if (filters.featured) count += 1;
