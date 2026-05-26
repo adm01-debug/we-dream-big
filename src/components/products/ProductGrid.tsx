@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { useReducedMotion } from "@/hooks/ui/useReducedMotion";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
 import { cn } from "@/lib/utils";
+import { COLUMN_CLASSES, type ColumnCount } from "./ColumnSelector";
 import { ProductCardSkeleton } from "./ProductCardSkeleton";
 
 export interface ProductGridProps {
