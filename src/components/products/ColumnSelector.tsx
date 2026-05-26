@@ -51,16 +51,19 @@ interface ColumnOption {
   minWidth: number;
 }
 
+// Todas as 5 opções sempre disponíveis. O grid se adapta responsivamente
+// via Tailwind classes (COLUMN_CLASSES), então não há necessidade de esconder
+// opções por largura de tela.
 const columnOptions: ColumnOption[] = [
   { value: 3, label: "3 colunas", cols: 3, rows: 2, minWidth: 0 },
-  { value: 4, label: "4 colunas", cols: 4, rows: 2, minWidth: 768 },
-  { value: 5, label: "5 colunas", cols: 5, rows: 2, minWidth: 1024 },
-  { value: 6, label: "6 colunas", cols: 3, rows: 3, minWidth: 1280 },
-  { value: 8, label: "8 colunas", cols: 4, rows: 3, minWidth: 1536 },
+  { value: 4, label: "4 colunas", cols: 4, rows: 2, minWidth: 0 },
+  { value: 5, label: "5 colunas", cols: 5, rows: 2, minWidth: 0 },
+  { value: 6, label: "6 colunas", cols: 3, rows: 3, minWidth: 0 },
+  { value: 8, label: "8 colunas", cols: 4, rows: 3, minWidth: 0 },
 ];
 
-function getAvailableOptions(screenWidth: number): ColumnOption[] {
-  return columnOptions.filter((opt) => screenWidth >= opt.minWidth);
+function getAvailableOptions(_screenWidth: number): ColumnOption[] {
+  return columnOptions;
 }
 
 export function getDefaultColumns(): ColumnCount {
