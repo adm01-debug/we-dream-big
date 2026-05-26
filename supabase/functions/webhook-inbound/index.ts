@@ -82,14 +82,13 @@ Deno.serve(async (req) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "never-match";
   const isServiceRole = authHeader.includes(serviceKey) || authHeader.slice(7).trim() === serviceKey;
 
-  if (isInternal && isServiceRole) {
-    console.log("Bypassing bot protection for internal service call");
-  } else {
+  // For load testing and internal orchestration, we bypass the bot protection/rate limit.
+  if (!(isInternal && isServiceRole)) {
     const protection = await runBotProtection(
       req,
       {
         endpoint: 'webhook-inbound',
-        maxRequests: 60,
+        maxRequests: 500, // Increased from 60 to handle bursts
         windowSeconds: 60,
         blockSeconds: 1800,
         allowSearchBots: false,
