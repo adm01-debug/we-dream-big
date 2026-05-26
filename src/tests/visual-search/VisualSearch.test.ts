@@ -100,8 +100,8 @@ describe('Módulo Raio X - Validação Funcional', () => {
         return Math.min(1, rel);
       };
 
-      expect(calculateRelevance(true, true)).toBe(0.9);
-      expect(calculateRelevance(true, false)).toBe(0.7);
+      expect(calculateRelevance(true, true)).toBeCloseTo(0.9);
+      expect(calculateRelevance(true, false)).toBeCloseTo(0.7);
     });
   });
 
