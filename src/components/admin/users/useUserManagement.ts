@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { type AppRole, type UserWithRole } from './types';
+import { isDuplicateAccountError } from '@/lib/auth/is-duplicate-account-error';
 
 export function useUserManagement() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
@@ -115,10 +116,7 @@ export function useUserManagement() {
       return true;
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : String(error);
-      if (
-        msg.toLowerCase().includes('already been registered') ||
-        msg.toLowerCase().includes('already exists')
-      ) {
+      if (isDuplicateAccountError(msg)) {
         toast.error('Este e-mail já está cadastrado', {
           description: 'Já existe um usuário com este e-mail no sistema.',
         });
