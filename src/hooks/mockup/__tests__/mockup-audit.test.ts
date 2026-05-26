@@ -21,19 +21,19 @@ function readSrc(relativePath: string) {
 // ─── T7: getTechniquePrompt — testável como função pura ──────────────────────
 
 const TECHNIQUE_PROMPTS: Record<string, string> = {
-  bordado:      'as professional machine embroidery with visible thread stitch texture',
-  silk:         'as screen printed with flat solid colors, matte finish',
-  dtf:          'as DTF printed transfer with vibrant colors, slight glossy finish',
-  laser:        'as laser engraved, etched into the material surface, monochromatic',
-  laser_co2:    'as CO2 laser engraved with precise etching on organic materials',
-  laser_fibra:  'as fiber laser marked on metal with high-contrast permanent mark',
-  sublimacao:   'as sublimation printed, colors absorbed seamlessly into the material',
-  tampografia:  'as pad printed with slightly glossy ink, precise small details',
+  bordado: 'as professional machine embroidery with visible thread stitch texture',
+  silk: 'as screen printed with flat solid colors, matte finish',
+  dtf: 'as DTF printed transfer with vibrant colors, slight glossy finish',
+  laser: 'as laser engraved, etched into the material surface, monochromatic',
+  laser_co2: 'as CO2 laser engraved with precise etching on organic materials',
+  laser_fibra: 'as fiber laser marked on metal with high-contrast permanent mark',
+  sublimacao: 'as sublimation printed, colors absorbed seamlessly into the material',
+  tampografia: 'as pad printed with slightly glossy ink, precise small details',
   hot_stamping: 'as hot stamped with metallic foil finish, shiny reflective surface',
-  adesivo:      'as vinyl sticker/decal applied to surface',
-  uv:           'as UV printed with raised ink texture, vibrant colors',
-  transfer:     'as heat transfer vinyl, smooth finish with slight sheen',
-  default:      'as professionally printed/applied logo',
+  adesivo: 'as vinyl sticker/decal applied to surface',
+  uv: 'as UV printed with raised ink texture, vibrant colors',
+  transfer: 'as heat transfer vinyl, smooth finish with slight sheen',
+  default: 'as professionally printed/applied logo',
 };
 
 type TechniqueInput = { id: string; name: string; code: string | null };
@@ -101,13 +101,15 @@ describe('T7 — getTechniquePrompt: "default" nao deve ser matchado no loop', (
   });
 
   it('uv -> retorna prompt de UV', () => {
-    expect(getTechniquePromptFixed({ id: '6', name: 'UV Digital', code: 'uv' }))
-      .toBe(TECHNIQUE_PROMPTS.uv);
+    expect(getTechniquePromptFixed({ id: '6', name: 'UV Digital', code: 'uv' })).toBe(
+      TECHNIQUE_PROMPTS.uv,
+    );
   });
 
   it('sublimacao -> retorna prompt de sublimacao', () => {
-    expect(getTechniquePromptFixed({ id: '7', name: 'Sublimacao', code: 'sublimacao' }))
-      .toBe(TECHNIQUE_PROMPTS.sublimacao);
+    expect(getTechniquePromptFixed({ id: '7', name: 'Sublimacao', code: 'sublimacao' })).toBe(
+      TECHNIQUE_PROMPTS.sublimacao,
+    );
   });
 });
 
@@ -195,14 +197,16 @@ describe('Analise estatica — useMockupGenerator.ts', () => {
       'loadFromHistory',
     ] as const;
 
-    handlers.forEach(fn => {
+    handlers.forEach((fn) => {
       it(`${fn} usa useCallback`, () => {
         expect(src).toMatch(new RegExp(`const\\s+${fn}\\s*=\\s*useCallback`));
       });
     });
 
     it('saveMockupToHistory: array de deps inclui todas as closures criticas', () => {
-      expect(src).toContain('[user, selectedProduct, selectedTechnique, selectedClient, mockupAnnotations]');
+      expect(src).toContain(
+        '[user, selectedProduct, selectedTechnique, selectedClient, mockupAnnotations]',
+      );
     });
 
     it('deleteMockup: deps incluem mockupToDelete e user', () => {
@@ -211,7 +215,9 @@ describe('Analise estatica — useMockupGenerator.ts', () => {
 
     it('eslint-disable comments removidos (NAO mais necessarios)', () => {
       // eslint-disable-next-line era necessario na versao buggy sem useCallback
-      expect(src).not.toMatch(/eslint-disable-next-line react-hooks\/exhaustive-deps\s*\nconst\s+(saveMockupToHistory|generateMockup|downloadMockup|deleteMockup|resetForm|handleShareMockup|loadFromHistory)/);
+      expect(src).not.toMatch(
+        /eslint-disable-next-line react-hooks\/exhaustive-deps\s*\nconst\s+(saveMockupToHistory|generateMockup|downloadMockup|deleteMockup|resetForm|handleShareMockup|loadFromHistory)/,
+      );
     });
   });
 
