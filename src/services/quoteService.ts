@@ -13,6 +13,7 @@ import {
   round2,
 } from '@/hooks/quotes/quoteHelpers';
 import { invokeExternalDb } from '@/lib/external-db';
+import { sanitizeMessage } from '@/lib/security/sanitize-message';
 
 export const quoteService = {
   async fetchQuotes(userId: string, scope: string) {
@@ -53,7 +54,7 @@ export const quoteService = {
     if (iErr) throw iErr;
 
     const itemIds = (itemsData || []).map((i) => i.id);
-    let allPersonalizations: Array<{ quote_item_id: string }> = [];
+    let allPersonalizations: Array<Record<string, unknown>> = [];
     if (itemIds.length > 0) {
       const { data: persData, error: pErr } = await supabase
         .from('quote_item_personalizations')
@@ -98,36 +99,38 @@ export const quoteService = {
   async updateQuote(quoteId: string, quote: Partial<Quote>, items: QuoteItem[]): Promise<Quote> {
     const totals = calculateQuoteTotals(quote, items);
     const updatePayload = buildUpdatePayload(quote, totals);
+    const itemsPayload = buildItemsInsertPayload(items, quoteId).map((item, index) => ({
+      ...item,
+      product_name: item.product_name?.trim().slice(0, 255),
+      unit_price: round2(item.unit_price),
+      notes: item.notes?.trim().slice(0, 1000),
+      personalizations: buildPersonalizationsInsertPayload(
+        items[index]?.personalizations || [],
+        quoteId,
+      ),
+    }));
 
-    const { data: updated, error: updErr } = await supabase
-      // rls-allow: UPDATE por id; RLS (can_access_quote) valida ownership
-      .from('quotes')
-      .update(updatePayload)
-      .eq('id', quoteId)
-      .select('*')
-      .single();
+    const { data: updated, error } = await supabase.rpc(
+      'update_quote_transactional' as never,
+      {
+        _quote_id: quoteId,
+        _quote_patch: updatePayload,
+        _items: itemsPayload,
+      } as never,
+    );
 
-    if (updErr) throw updErr;
-
-    // Delete existing items and personalizations (Cascade delete should handle this, but for safety...)
-    const { data: oldItems } = await supabase
-      .from('quote_items')
-      .select('id')
-      .eq('quote_id', quoteId);
-    if (oldItems?.length) {
-      await supabase
-        .from('quote_item_personalizations')
-        .delete()
-        .in(
-          'quote_item_id',
-          oldItems.map((i) => i.id),
-        );
-      await supabase.from('quote_items').delete().eq('quote_id', quoteId);
+    if (error) {
+      const message = sanitizeMessage(error, {
+        fallback: 'Não foi possível atualizar o orçamento. Tente novamente.',
+      });
+      throw new Error(message);
     }
 
-    await this.insertItemsWithPersonalizations(items, quoteId);
+    if (!updated) {
+      throw new Error('Não foi possível atualizar o orçamento: nenhum dado retornado.');
+    }
 
-    return { ...updated, items } as unknown as Quote;
+    return { ...(updated as Quote), items } as Quote;
   },
 
   async insertItemsWithPersonalizations(items: QuoteItem[], quoteId: string) {
@@ -199,12 +202,7 @@ export const quoteService = {
     userId: string,
     action: string,
     description: string,
-    options?: {
-      fieldChanged?: string | null;
-      oldValue?: string | null;
-      newValue?: string | null;
-      metadata?: Record<string, unknown>;
-    },
+    options?: Record<string, unknown>,
   ) {
     await supabase.from('quote_history').insert({
       quote_id: quoteId,
