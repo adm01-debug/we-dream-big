@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Upload, Search, Camera, Image as ImageIcon, Zap, ArrowRight, Loader2, RefreshCcw } from 'lucide-react';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Upload, Search, Camera, Image as ImageIcon, Zap, ArrowRight, Loader2, RefreshCcw, Filter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -40,6 +48,32 @@ export default function VisualSearchPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [results, setResults] = useState<VisualSearchResult | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedColor, setSelectedColor] = useState<string>("all");
+
+  const categories = [
+    { value: "all", label: "Todas as Categorias" },
+    { value: "Escritório", label: "Escritório" },
+    { value: "Tecnologia", label: "Tecnologia" },
+    { value: "Cozinha", label: "Cozinha" },
+    { value: "Esporte", label: "Esporte" },
+    { value: "Vestuário", label: "Vestuário" },
+    { value: "Ferramentas", label: "Ferramentas" },
+    { value: "Bem-estar", label: "Bem-estar" },
+    { value: "Lazer", label: "Lazer" },
+  ];
+
+  const colors = [
+    { value: "all", label: "Todas as Cores" },
+    { value: "Preto", label: "Preto" },
+    { value: "Branco", label: "Branco" },
+    { value: "Azul", label: "Azul" },
+    { value: "Vermelho", label: "Vermelho" },
+    { value: "Verde", label: "Verde" },
+    { value: "Amarelo", label: "Amarelo" },
+    { value: "Prata", label: "Prata" },
+    { value: "Dourado", label: "Dourado" },
+  ];
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -65,7 +99,11 @@ export default function VisualSearchPage() {
     
     try {
       const { data, error } = await supabase.functions.invoke('visual-search', {
-        body: { imageBase64: base64.split(',')[1] }
+        body: { 
+          imageBase64: base64.split(',')[1],
+          category: selectedCategory !== "all" ? selectedCategory : undefined,
+          color: selectedColor !== "all" ? selectedColor : undefined
+        }
       });
 
       if (error) throw error;
@@ -85,6 +123,8 @@ export default function VisualSearchPage() {
     setPreviewUrl(null);
     setResults(null);
     setIsSearching(false);
+    setSelectedCategory("all");
+    setSelectedColor("all");
   };
 
   return (
@@ -141,6 +181,59 @@ export default function VisualSearchPage() {
                     </div>
                     <input id="visual-search-input" type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
                   </label>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                  <Filter className="h-4 w-4" /> Refinar Busca
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Forneça detalhes extras para ajudar a IA
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category" className="text-xs font-semibold">Categoria Estimada</Label>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger id="category" className="h-9">
+                      <SelectValue placeholder="Selecione a categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="color" className="text-xs font-semibold">Cor do Produto</Label>
+                  <Select value={selectedColor} onValueChange={setSelectedColor}>
+                    <SelectTrigger id="color" className="h-9">
+                      <SelectValue placeholder="Selecione a cor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {colors.map((color) => (
+                        <SelectItem key={color.value} value={color.value}>
+                          {color.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {previewUrl && !isSearching && !results && (
+                  <Button 
+                    className="w-full gap-2" 
+                    onClick={() => processImage(previewUrl)}
+                  >
+                    <Search className="h-4 w-4" /> Analisar Imagem
+                  </Button>
                 )}
               </CardContent>
             </Card>
