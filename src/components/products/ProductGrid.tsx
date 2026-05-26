@@ -102,7 +102,7 @@ function ProductCardWrapper({
         }`,
         "relative",
         // Placeholder mantém footprint visual (altura ~card) enquanto não monta
-        !inView && "min-h-[360px]",
+        !inView && "min-h-[480px] sm:min-h-[520px]",
         isSelected && "ring-2 ring-primary/40 rounded-xl"
       )}
       style={reducedMotion ? undefined : {
@@ -130,9 +130,8 @@ function ProductCardWrapper({
           onClick={selectionMode ? () => onToggleSelect?.(product.id) : restProps.onClick}
         />
       ) : (
-        /* Placeholder leve: mantém o slot sem custar React tree.
-           Não usamos ProductCardSkeleton aqui pois ele anima — caro em 100+ slots. */
-        <div aria-hidden="true" className="h-[360px] rounded-xl bg-muted/30" />
+        /* Placeholder leve que espelha exatamente a estrutura do card real para evitar saltos (CLS) */
+        <ProductCardSkeleton variant="default" animate={false} />
       )}
     </div>
   );
