@@ -8,6 +8,7 @@ import {
   PageHeaderSkeleton,
   DashboardSkeleton as ModernDashboardSkeleton
 } from "@/components/loading/ModernSkeletons";
+import { ProductDetailSkeleton as ModernProductDetailSkeleton } from "@/components/products/ProductDetailSkeleton";
 import { SkeletonMonitor } from "@/components/loading/SkeletonMonitor";
 
 /**
