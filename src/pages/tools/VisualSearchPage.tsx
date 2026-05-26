@@ -1045,17 +1045,24 @@ export default function VisualSearchPage() {
                             <div className="flex items-center justify-between border-t border-border/50 pt-4 mt-auto">
                               <div className="flex flex-col flex-1 gap-1">
                                 <div className="flex items-center justify-between pr-4">
-                                  <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">Preço Sugerido</span>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className={cn("text-[9px] font-bold uppercase", (product.stock || 0) > 0 ? "text-emerald-500" : "text-rose-500")}>
-                                      {product.stock && product.stock > 0 ? `${product.stock} un.` : 'Indisponível'}
+                                  <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest text-left">Preço Sugerido</span>
+                                  <div className="flex items-center gap-1.5 bg-muted/30 px-2 py-0.5 rounded">
+                                    <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", (product.stock || 0) > 0 ? "bg-emerald-500" : "bg-rose-500")} />
+                                    <span className={cn("text-[9px] font-black uppercase tracking-tighter", (product.stock || 0) > 0 ? "text-emerald-500" : "text-rose-500")}>
+                                      {product.stock && product.stock > 0 ? `${product.stock} em estoque` : 'Esgotado'}
                                     </span>
                                   </div>
                                 </div>
-                                <span className="text-xl font-black tracking-tighter text-foreground">
+                                <span className="text-xl font-black tracking-tighter text-foreground text-left">
                                   {formatCurrency(product.price)}
                                 </span>
-                                <Progress value={product.stock ? Math.min(100, (product.stock / 500) * 100) : 0} className="h-1 bg-muted/30" />
+                                <div className="space-y-1 mt-1">
+                                  <div className="flex justify-between text-[7px] font-black text-muted-foreground/40 uppercase">
+                                    <span>Nível de Disponibilidade</span>
+                                    <span>{Math.min(100, Math.round(((product.stock || 0) / 500) * 100))}%</span>
+                                  </div>
+                                  <Progress value={product.stock ? Math.min(100, (product.stock / 500) * 100) : 0} className="h-1 bg-muted/30" />
+                                </div>
                               </div>
                               <div className="flex items-center gap-2 pl-4">
                                 {idx === 0 && (
