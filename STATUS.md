@@ -106,6 +106,110 @@ Refatoração dos 5 arquivos com mais erros no `.tsc-baseline.json` — **235 er
 
 ---
 
+
+## 🌊 Plano de implementação em ondas (P0 primeiro)
+
+> Horizonte sugerido: **4 semanas corridas** a partir de **2026-05-25**.
+> Regra de execução: **não iniciar P1 sem concluir critérios de prontidão de P0**.
+
+### Onda P0 (Semana 1 — 2026-05-25 a 2026-05-31)
+**Objetivo:** eliminar riscos bloqueantes de operação/segurança e estabilizar trilha de validação.
+
+**Escopo foco**
+- Fechar pendências classificadas como bloqueantes no runbook de colapso e auditorias recentes.
+- Garantir smoke tests e gates mínimos de CI verdes no fluxo principal.
+- Confirmar observabilidade mínima para detectar regressão imediatamente após deploy.
+
+**Marcos semanais (milestones)**
+- **M1 (até 2026-05-27):** inventário final de bloqueadores aberto/fechado, com owner por item.
+- **M2 (até 2026-05-29):** validação técnica dos fixes de bloqueadores em ambiente controlado.
+- **M3 (até 2026-05-31):** checklist de produção assinado (go/no-go) para liberar P1.
+
+**Critérios de prontidão (DoR/DoD da etapa)**
+- 100% dos bloqueadores P0 classificados como “fechado” ou com rollback seguro documentado.
+- `fn_run_smoke_tests()` sem falhas (baseline da sessão anterior: 14/14).
+- Gates críticos do CI (typecheck/testes essenciais) sem regressão em relação ao baseline atual.
+- Runbook de incidente atualizado com passos de rollback e owner de plantão.
+
+### Onda P1 (Semana 2 — 2026-06-01 a 2026-06-07)
+**Objetivo:** reduzir dívida técnica que gera risco de regressão funcional e de qualidade.
+
+**Escopo foco**
+- Executar etapas 14-16 (redução de warnings ESLint em arquivos prioritários).
+- Atacar warnings com maior potencial de bug latente (tipagem frouxa, imports ambíguos, fluxos nulos).
+
+**Marcos semanais (milestones)**
+- **M4 (até 2026-06-03):** Etapa 14 concluída + diff de warnings publicado.
+- **M5 (até 2026-06-05):** Etapa 15 concluída + validação de regressão local/CI.
+- **M6 (até 2026-06-07):** Etapa 16 concluída + baseline recalibrado (se aplicável).
+
+**Critérios de prontidão**
+- Etapas 14-16 concluídas com evidência (commits + output de checks).
+- Nenhum aumento líquido nos baselines de ESLint/TSC.
+- Componentes tocados sem TODO bloqueante aberto.
+
+### Onda P2 (Semana 3 — 2026-06-08 a 2026-06-14)
+**Objetivo:** consolidar confiabilidade operacional e preparar escala de manutenção.
+
+**Escopo foco**
+- Fechar itens médios de qualidade runner/coverage (plano 10/10 #3 e #4).
+- Tratar flakiness remanescente de teardown async/helmet/event listeners.
+
+**Marcos semanais (milestones)**
+- **M7 (até 2026-06-10):** estratégia de coverage acordada e aplicada no pipeline.
+- **M8 (até 2026-06-12):** correções de flakiness aplicadas com repetição de testes.
+- **M9 (até 2026-06-14):** estabilidade de suíte validada em execuções consecutivas.
+
+**Critérios de prontidão**
+- Redução perceptível de intermitência de testes (registro em sessão).
+- Pipeline de qualidade executável sem bypass manual.
+- Checklists de troubleshooting atualizados para time de manutenção.
+
+### Onda P3 (Semana 4 — 2026-06-15 a 2026-06-21)
+**Objetivo:** finalizar pendências não-bloqueantes e formalizar estado estável do redeploy.
+
+**Escopo foco**
+- Pendências baixas (ex.: Issue 3 CRM depende de sponsor/chaves).
+- Documentação final de operação contínua e “steady state”.
+
+**Marcos semanais (milestones)**
+- **M10 (até 2026-06-17):** decisão explícita sobre itens dependentes de terceiros.
+- **M11 (até 2026-06-19):** handoff técnico consolidado.
+- **M12 (até 2026-06-21):** STATUS simplificado para modo manutenção (se elegível).
+
+**Critérios de prontidão**
+- Backlog sem item crítico/médio sem owner.
+- Dependências externas com SLA/data alvo registrada.
+- Projeto apto a operar sem “onda de hardening” ativa.
+
+## 🛡️ Plano de mitigação para gaps bloqueantes
+
+### 1) Identificação e classificação rápida (até 24h)
+- Classificar cada gap em: **bloqueante**, **alto não-bloqueante**, **monitorável**.
+- Atribuir owner técnico + owner de negócio por gap.
+- Registrar impacto (segurança, disponibilidade, compliance, dados).
+
+### 2) Contenção imediata (fail-safe)
+- Aplicar feature flag/kill-switch quando houver risco de impacto em produção.
+- Se não houver correção segura no mesmo ciclo, ativar rollback para último estado estável.
+- Congelar mudanças não essenciais no mesmo domínio até estabilização.
+
+### 3) Remediação com janela controlada
+- Corrigir primeiro causa-raiz (não apenas sintoma).
+- Exigir evidência mínima: teste automatizado ou smoke reproduzindo o cenário do gap.
+- Executar validação pós-fix em duas camadas: técnica (CI/smoke) + operacional (runbook).
+
+### 4) Governança e comunicação
+- Abrir registro de incidente interno para todo gap bloqueante.
+- Publicar status diário curto enquanto houver bloqueador aberto.
+- Declarar explicitamente critério de saída: quando o gap deixa de ser bloqueante.
+
+### 5) Prevenção de recorrência
+- Transformar o aprendizado em guard-rail (lint, teste, policy, monitor, alerta).
+- Atualizar documentação de arquitetura/operação na mesma PR do fix.
+- Revisar se há outros pontos homólogos com a mesma vulnerabilidade estrutural.
+
+
 ## 📅 Backlog priorizado (atualizado)
 
 | Prioridade | Item | Origem | Cutoff |
