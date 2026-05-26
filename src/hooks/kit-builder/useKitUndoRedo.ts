@@ -1,26 +1,33 @@
 /**
  * Kit Undo/Redo Hook
  * Maintains a history stack of kit state snapshots.
+ *
+ * O snapshot guarda o estado COMPLETO e restaurável do kit (caixa, itens,
+ * personalização, etc.) — não uma versão lossy (boxId/keys) que não permitia
+ * restaurar fielmente. `useKitBuilder.restoreKitSnapshot` consome este shape.
  */
 
 import { useState, useCallback, useRef } from 'react';
+import type { KitBox, KitItem, KitType, KitIdentity, KitPersonalization } from '@/lib/kit-builder';
 
-interface UndoRedoSnapshot {
-  boxId: string | null;
-  items: Array<{ id: string; quantity: number; sku: string }>;
-  personalizationKeys: string[];
+export interface KitSnapshot {
   name: string;
+  kitType: KitType;
+  box: KitBox | null;
+  items: KitItem[];
+  personalization: KitPersonalization;
   kitQuantity: number;
+  identity?: KitIdentity;
 }
 
 const MAX_HISTORY = 30;
 
 export function useKitUndoRedo() {
-  const [history, setHistory] = useState<UndoRedoSnapshot[]>([]);
-  const [future, setFuture] = useState<UndoRedoSnapshot[]>([]);
+  const [history, setHistory] = useState<KitSnapshot[]>([]);
+  const [future, setFuture] = useState<KitSnapshot[]>([]);
   const isRestoringRef = useRef(false);
 
-  const pushSnapshot = useCallback((snapshot: UndoRedoSnapshot) => {
+  const pushSnapshot = useCallback((snapshot: KitSnapshot) => {
     if (isRestoringRef.current) return;
     setHistory((prev) => {
       const last = prev[prev.length - 1];
@@ -35,7 +42,7 @@ export function useKitUndoRedo() {
   const canUndo = history.length > 1;
   const canRedo = future.length > 0;
 
-  const undo = useCallback((): UndoRedoSnapshot | null => {
+  const undo = useCallback((): KitSnapshot | null => {
     if (history.length <= 1) return null;
     isRestoringRef.current = true;
     const newHistory = [...history];
@@ -53,7 +60,7 @@ export function useKitUndoRedo() {
     return prev;
   }, [history]);
 
-  const redo = useCallback((): UndoRedoSnapshot | null => {
+  const redo = useCallback((): KitSnapshot | null => {
     if (future.length === 0) return null;
     isRestoringRef.current = true;
     const [next, ...rest] = future;
