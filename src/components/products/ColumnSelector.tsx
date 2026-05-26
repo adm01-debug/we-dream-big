@@ -112,10 +112,14 @@ export function ColumnSelector({ value, onChange, className }: ColumnSelectorPro
   if (available.length <= 1) return null;
 
   return (
-    <div className={cn(
-      "inline-flex items-center gap-0.5 p-1 rounded-xl bg-muted/60 border border-border/40",
-      className
-    )}>
+    <div 
+      role="radiogroup" 
+      aria-label="Número de colunas"
+      className={cn(
+        "inline-flex items-center gap-0.5 p-1 rounded-xl bg-muted/60 border border-border/40",
+        className
+      )}
+    >
       {available.map((opt) => {
         const isActive = value === opt.value;
         return (
@@ -123,14 +127,22 @@ export function ColumnSelector({ value, onChange, className }: ColumnSelectorPro
             <TooltipTrigger asChild>
               <button
                 type="button"
+                role="radio"
                 aria-label={opt.label}
-                aria-pressed={isActive}
+                aria-checked={isActive}
                 className={cn(
-                  "relative flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 cursor-pointer",
+                  "relative flex items-center justify-center h-9 w-9 rounded-lg transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background",
                   isActive
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onChange(opt.value);
+                    try { localStorage.setItem(STORAGE_KEY, String(opt.value)); } catch { /* empty */ }
+                  }
+                }}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
