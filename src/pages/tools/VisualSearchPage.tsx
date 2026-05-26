@@ -123,7 +123,15 @@ export default function VisualSearchPage() {
                     </div>
                   </div>
                 ) : (
-                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-4 p-6 text-center">
+                  <label 
+                    className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-4 p-6 text-center"
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) handleFileUpload({ target: { files: [file] } } as any);
+                    }}
+                  >
                     <div className="rounded-full bg-primary/10 p-4">
                       <Camera className="h-10 w-10 text-primary" />
                     </div>
