@@ -101,6 +101,7 @@ export default function VisualSearchPage() {
 
   const [isListening, setIsListening] = useState(false);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const [analysisError, setAnalysisError] = useState<{ message: string; tip: string } | null>(null);
 
   const { data: categories = [] } = useExternalCategoriesQuery();
   const { data: colorData } = useColorSystem();
