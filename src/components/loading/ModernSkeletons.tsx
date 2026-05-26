@@ -1,9 +1,27 @@
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function ProductCardSkeleton() {
+interface ProductCardSkeletonProps {
+  variant?: "default" | "compact" | "detailed";
+  className?: string;
+}
+
+export function ProductCardSkeleton({ variant = "default", className }: ProductCardSkeletonProps) {
+  if (variant === "compact") {
+    return (
+      <div className={cn("flex items-center gap-3 p-3 rounded-lg bg-card border border-border/40 overflow-hidden", className)}>
+        <Skeleton className="h-16 w-16 rounded-lg shrink-0" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-3 w-1/2" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden">
+    <div className={cn("group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden", className)}>
       {/* Image */}
       <Skeleton className="aspect-square w-full rounded-none" />
       
@@ -24,7 +42,14 @@ export function ProductCardSkeleton() {
         {/* Price */}
         <div className="flex items-center justify-between pt-2">
           <Skeleton className="h-6 w-20" />
-          <Skeleton className="h-8 w-8 rounded-full" />
+          {variant === "detailed" ? (
+            <div className="flex gap-1">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-8 w-8 rounded-full" />
+            </div>
+          ) : (
+            <Skeleton className="h-8 w-8 rounded-full" />
+          )}
         </div>
       </div>
     </div>
