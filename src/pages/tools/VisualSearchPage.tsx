@@ -704,7 +704,7 @@ export default function VisualSearchPage() {
                             />
                             
                             {/* Match Overlay */}
-                            <div className="absolute top-4 right-4">
+                            <div className="absolute top-4 right-4 flex flex-col items-end gap-1.5">
                               <div className={cn(
                                 "flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black shadow-lg backdrop-blur-md transition-all group-hover:scale-110",
                                 product.relevance >= 0.9 ? "bg-emerald-500 text-white" : "bg-white/95 text-foreground border border-border"
@@ -712,6 +712,10 @@ export default function VisualSearchPage() {
                                 {product.relevance >= 0.9 && <CheckCircle2 className="h-3 w-3" />}
                                 {Math.round(product.relevance * 100)}% Match
                               </div>
+                              <Progress 
+                                value={product.relevance * 100} 
+                                className="h-1 w-16 bg-white/40 overflow-hidden" 
+                              />
                             </div>
 
                             {/* Ranking Badge for Top 3 */}
