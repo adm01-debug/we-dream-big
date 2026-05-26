@@ -53,7 +53,18 @@ Deno.serve(async (req: Request) => {
 
     // Autenticar o usuário
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+
+    if (token === serviceKey) {
+      // System/Service bypass
+      return new Response(
+        JSON.stringify({ allowed: true, reason: "service_role_bypass" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (!token) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },

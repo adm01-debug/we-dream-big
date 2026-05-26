@@ -70,8 +70,17 @@ Deno.test("PRODUCTION READINESS: validate-access security check", async () => {
 
 Deno.test("PRODUCTION READINESS: webhook-inbound HMAC validation", async () => {
   // Should reject without signature
-  const res = await invoke("webhook-inbound", "POST", { test: true });
-  assertEquals(res.status, 401);
-  const data = await res.json();
+  const res = await invoke("webhook-inbound", "POST", { test: true }, { "slug": "test" });
+  // Add slug to query if needed or path
+  const resWithSlug = await fetch(`${SUPABASE_URL}/functions/v1/webhook-inbound?slug=test`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${SERVICE_ROLE_KEY}`,
+    },
+    body: JSON.stringify({ event: "test" })
+  });
+  assertEquals(resWithSlug.status, 401);
+  const data = await resWithSlug.json();
   assert(data.error.includes("assinatura") || data.error.includes("HMAC"));
 });
