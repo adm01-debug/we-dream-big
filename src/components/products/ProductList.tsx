@@ -188,7 +188,7 @@ export function ProductList({
     ? Array.from({ length: 8 }).map((_, i) => ({ id: `skeleton-${i}`, isSkeleton: true } as any))
     : products;
 
-  const skeletonVariant = "compact";
+  
 
 
   // Get first selected product for collection modal
@@ -200,7 +200,7 @@ export function ProductList({
       <div className="flex flex-col gap-2">
         {displayProducts.map((product, index) => (
           (product as any).isSkeleton ? (
-            <ProductCardSkeleton key={product.id} variant={skeletonVariant} />
+            <ProductCardSkeleton key={product.id} variant="compact" />
           ) : (
             <ProductListItemWrapper
               key={product.id}

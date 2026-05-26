@@ -123,7 +123,7 @@ export const CatalogContent = memo(function CatalogContent({
             className="duration-300 animate-in fade-in"
             style={{ animationDelay: `${i * 40}ms` }}
           >
-            <ProductCardSkeleton />
+            <ProductCardSkeleton variant="default" />
           </div>
         ))}
       </div>
