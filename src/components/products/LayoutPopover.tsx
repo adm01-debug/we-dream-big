@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Separator } from "@/components/ui/separator";
 import { ColumnSelector, type ColumnCount } from "@/components/products/ColumnSelector";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+
 
 const viewModes = [
   { value: "grid" as const, label: "Grid", icon: LayoutGrid },
