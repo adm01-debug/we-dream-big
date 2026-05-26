@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface UseSpeechRecognitionOptions {
   onResult?: (transcript: string) => void;
@@ -28,16 +28,6 @@ export function useSpeechRecognition({
   const isSupported =
     typeof window !== 'undefined' &&
     ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
-
-  // BUG-VOICE-01 FIX: onResult e onError eram passados diretamente nas deps do useEffect.
-  // Se o caller nao memoizar esses callbacks, o useEffect recria a instancia de
-  // SpeechRecognition a cada render — destruindo sessoes ativas e vazando listeners.
-  // Solucao: capturar em refs para que os callbacks sejam sempre os mais recentes
-  // sem triggerar recriacao da instancia.
-  const onResultRef = useRef(onResult);
-  const onErrorRef = useRef(onError);
-  useEffect(() => { onResultRef.current = onResult; }, [onResult]);
-  useEffect(() => { onErrorRef.current = onError; }, [onError]);
 
   useEffect(() => {
     if (!isSupported) return;
@@ -71,24 +61,22 @@ export function useSpeechRecognition({
       setTranscript(currentTranscript);
 
       if (finalTranscript) {
-        // BUG-VOICE-01 FIX: chama via ref — nao causa re-criacao da instancia
-        onResultRef.current?.(finalTranscript.trim());
+        onResult?.(finalTranscript.trim());
       }
     };
 
     recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
       const errorMessages: Record<string, string> = {
-        'not-allowed': 'Permissao de microfone negada',
+        'not-allowed': 'Permissão de microfone negada',
         'no-speech': 'Nenhuma fala detectada',
-        'audio-capture': 'Nao foi possivel capturar audio',
+        'audio-capture': 'Não foi possível capturar áudio',
         network: 'Erro de rede',
         aborted: 'Reconhecimento cancelado',
       };
 
       const message = errorMessages[event.error] || `Erro: ${event.error}`;
       setError(message);
-      // BUG-VOICE-01 FIX: chama via ref
-      onErrorRef.current?.(message);
+      onError?.(message);
       setIsListening(false);
     };
 
@@ -101,9 +89,7 @@ export function useSpeechRecognition({
     return () => {
       recognitionInstance.abort();
     };
-  // BUG-VOICE-01 FIX: onResult e onError removidos das deps — agora usam refs.
-  // O efeito so recria a instancia quando isSupported ou language mudam.
-  }, [isSupported, language]);
+  }, [isSupported, language, onResult, onError]);
 
   const startListening = useCallback(() => {
     if (recognition && !isListening) {
