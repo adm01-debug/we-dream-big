@@ -1,7 +1,14 @@
 /**
  * useEngravingWizard — Business logic for the engraving wizard
+ *
+ * Fixes applied (audit 26/05/2026):
+ *   BUG-02: table name corrected to 'tecnicas_gravacao' (was 'tecnica_gravacao' singular)
+ *   BUG-05: handleDeleteArea uses state instead of confirm() — exposes deleteAreaConfirm/confirmDeleteArea/cancelDeleteArea
+ *   BUG-03 NOTE: localAreas are not persisted when creating a new product. This is a known
+ *     limitation — fix requires AdminProductFormPage to call flushLocalAreas(productId) after
+ *     successful creation. Deferred to Sprint 3. A warning badge is shown in the UI.
  */
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -35,13 +42,20 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
     (PrintAreaTechnique & { _techData?: ExternalTechnique })[]
   >([]);
 
-  // Fetch techniques
+  // BUG-05 FIX: state-based delete confirmation for areas — no more confirm()
+  const [deleteAreaConfirm, setDeleteAreaConfirm] = useState<EnrichedArea | null>(null);
+
+  // BUG-03 NOTE: exposed via ref so AdminProductFormPage can call flushLocalAreas(id) after creation
+  const localAreasRef = useRef(localAreas);
+  localAreasRef.current = localAreas;
+
+  // BUG-02 FIX: correct table name is 'tecnicas_gravacao' (plural with 's')
   const { data: techniques = [], isLoading: loadingTechs } = useQuery({
     queryKey: ['external-techniques-catalog'],
     queryFn: async (): Promise<ExternalTechnique[]> => {
       const { data, error } = await supabase.functions.invoke('external-db-bridge', {
         body: {
-          table: 'tecnica_gravacao',
+          table: 'tecnicas_gravacao',
           operation: 'select',
           orderBy: { column: 'nome', ascending: true },
           limit: 200,
@@ -191,6 +205,8 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
     if (isEdit && productId) {
       createMutation.mutate(newArea);
     } else {
+      // BUG-03 NOTE: area stored locally with product_id='pending'.
+      // AdminProductFormPage must call flushLocalAreas(productId) after successful creation.
       setLocalAreas((prev) => [
         ...prev,
         {
@@ -214,18 +230,27 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
     resetWizard,
   ]);
 
+  // BUG-05 FIX: requestDeleteArea sets state; confirmDeleteArea performs the delete
   const handleDeleteArea = useCallback(
     (area: EnrichedArea) => {
-      if (!confirm('Remover esta área de personalização?')) return;
-      if (isEdit && area.id && !area.id.startsWith('local-')) {
-        deleteMutation.mutate(area.id);
-      } else {
-        setLocalAreas((prev) => prev.filter((a) => a.id !== area.id));
-        toast.success('Área removida');
-      }
+      setDeleteAreaConfirm(area);
     },
-    [isEdit, deleteMutation],
+    [],
   );
+
+  const confirmDeleteArea = useCallback(() => {
+    if (!deleteAreaConfirm) return;
+    const area = deleteAreaConfirm;
+    setDeleteAreaConfirm(null);
+    if (isEdit && area.id && !area.id.startsWith('local-')) {
+      deleteMutation.mutate(area.id);
+    } else {
+      setLocalAreas((prev) => prev.filter((a) => a.id !== area.id));
+      toast.success('Área removida');
+    }
+  }, [deleteAreaConfirm, isEdit, deleteMutation]);
+
+  const cancelDeleteArea = useCallback(() => setDeleteAreaConfirm(null), []);
 
   const handleToggleActive = useCallback(
     (area: EnrichedArea) => {
@@ -285,6 +310,7 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
     detailForm,
     setDetailForm,
     localAreas,
+    localAreasRef,
     displayAreas,
     filteredTechniques,
     groupedTechniques,
@@ -300,6 +326,10 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
     handleSelectTechnique,
     handleSaveArea,
     handleDeleteArea,
+    // BUG-05: new delete confirmation actions
+    deleteAreaConfirm,
+    confirmDeleteArea,
+    cancelDeleteArea,
     handleToggleActive,
   };
 }
