@@ -1,25 +1,19 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Upload, Search, Camera, Image as ImageIcon, Zap, ArrowRight, Loader2, RefreshCcw, Filter } from 'lucide-react';
+import { Search, Camera, Image as ImageIcon, Zap, ArrowRight, Loader2, RefreshCcw, Filter, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { ExternalCategoryFilter } from '@/components/filters/ExternalCategoryFilter';
+import { ColorSwatchBar, type ColorFilterSelection } from '@/components/filters/ColorGroupFilter';
+import { useExternalCategoriesQuery, useColorSystem } from '@/hooks/products';
 
 interface VisualSearchResult {
   analysis: {
