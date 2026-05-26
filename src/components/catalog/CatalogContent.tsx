@@ -100,33 +100,12 @@ export const CatalogContent = memo(function CatalogContent({
       return <ProductTableSkeleton rows={10} />;
     }
     return (
-      <div
-        className={cn(
-          'grid',
-          {
-            'grid-cols-2 sm:grid-cols-3': gridColumns === 3,
-            'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4': gridColumns === 4,
-            'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5': gridColumns === 5,
-            'grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6': gridColumns === 6,
-            'grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8': gridColumns === 8,
-          },
-          gridColumns >= 8
-            ? 'gap-x-4 gap-y-8'
-            : gridColumns >= 6
-              ? 'gap-x-6 gap-y-8'
-              : 'gap-x-4 gap-y-8 sm:gap-x-6 lg:gap-x-8',
-        )}
-      >
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div
-            key={i}
-            className="duration-300 animate-in fade-in"
-            style={{ animationDelay: `${i * 40}ms` }}
-          >
-            <ProductCardSkeleton variant="default" />
-          </div>
-        ))}
-      </div>
+      <ProductGridSkeleton 
+        count={12} 
+        columns={gridColumns} 
+        variant="default" 
+        hideCategoryBadges={hideCategoryBadges}
+      />
     );
   }
 
