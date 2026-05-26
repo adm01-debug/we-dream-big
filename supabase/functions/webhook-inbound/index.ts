@@ -21,7 +21,7 @@ import { WebhookInboundSchemas } from '../_shared/contracts/schemas/webhook-inbo
 import { runBotProtection } from '../_shared/bot-protection.ts';
 import { createStructuredLogger } from '../_shared/structured-logger.ts';
 import { getOrCreateRequestId } from '../_shared/request-id.ts';
-import { withRetry } from '../_shared/retry-backoff.ts';
+import { retrySupabaseCall } from '../_shared/retry-backoff.ts';
 
 const corsHeaders = buildPublicCorsHeaders({
   extraAllowHeaders: ['x-signature-256', 'x-event', 'accept-version', 'x-idempotency-key'],
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: endpoint } = await withRetry(() => 
+    const { data: endpoint } = await retrySupabaseCall(() => 
       supabase.from('inbound_webhook_endpoints').select('*').eq('slug', slug).eq('is_active', true).maybeSingle()
     );
 
@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const secretRes = await withRetry(() => 
+    const secretRes = await retrySupabaseCall(() => 
       supabase.from('integration_credentials').select('secret_value').eq('secret_name', endpoint.hmac_secret_ref).maybeSingle()
     );
     const secret = secretRes.data?.secret_value || Deno.env.get(endpoint.hmac_secret_ref);
@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
     const sourceIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
 
     // Log event in DB
-    const { error: insertError } = await withRetry(() => 
+    const { data: inserted, error: insertError } = await retrySupabaseCall(() => 
       supabase.from('inbound_webhook_events').insert({
         endpoint_id: endpoint.id,
         event_type: eventType,
@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
         error_message: signatureValid ? null : 'HMAC inválido ou ausente',
         contract_version: version,
         idempotency_key: idempotencyKey,
-      })
+      }).select().single()
     );
 
     if (insertError) {
@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
     }
 
     // Update endpoint stats
-    await withRetry(() => 
+    await retrySupabaseCall(() => 
       supabase.rpc('increment_webhook_stats', { 
         p_endpoint_id: endpoint.id, 
         p_is_invalid: !signatureValid 
