@@ -196,7 +196,7 @@ export function ProductGrid({
   }
 
   const displayProducts = isLoading && products.length === 0 
-    ? Array.from({ length: 12 }).map((_, i) => ({ id: `skeleton-${i}`, isSkeleton: true } as any))
+    ? Array.from({ length: 15 }).map((_, i) => ({ id: `skeleton-${i}`, isSkeleton: true } as any))
     : products;
 
 
