@@ -61,44 +61,7 @@ export const CatalogSkeleton = makeSkeleton(
 /** Product detail page skeleton */
 export const ProductDetailSkeleton = makeSkeleton(
   "ProductDetail",
-  () => (
-    <div className="space-y-8">
-      <div className="flex items-center gap-2">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-4 w-32" />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Left: Image & Thumbnails */}
-        <div className="space-y-4">
-          <Skeleton className="aspect-square w-full rounded-2xl" />
-          <div className="flex gap-3">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-20 w-20 rounded-lg" />
-            ))}
-          </div>
-        </div>
-        {/* Right: Info */}
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Skeleton className="h-10 w-3/4" />
-            <Skeleton className="h-4 w-1/4" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-6 w-20 rounded-full" />
-            <Skeleton className="h-6 w-20 rounded-full" />
-          </div>
-          <Skeleton className="h-24 w-full rounded-xl" />
-          <div className="space-y-4 pt-4 border-t border-border/60">
-            <Skeleton className="h-12 w-full rounded-lg" />
-            <div className="flex gap-4">
-              <Skeleton className="h-14 flex-1 rounded-xl" />
-              <Skeleton className="h-14 flex-1 rounded-xl" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  ),
+  () => <ModernProductDetailSkeleton />,
   "p-3 sm:p-4 lg:p-6",
 );
 
