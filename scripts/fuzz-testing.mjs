@@ -260,6 +260,51 @@ function generateExternalDbBridgePayloads() {
 }
 
 // ---------------------------------------------------------------------------
+// Gerador genérico dirigido a campos: aplica todos os corpora adversariais a
+// cada campo string de um payload válido. Usado para cobrir dezenas de funções
+// orientadas a campo sem duplicar lógica.
+// ---------------------------------------------------------------------------
+
+function fieldFuzz(valid, stringFields) {
+  const p = [valid];
+  for (const field of stringFields) {
+    for (const sql of SQL_INJECTIONS.slice(0, 4)) p.push({ ...valid, [field]: sql });
+    for (const xss of XSS_PAYLOADS.slice(0, 4)) p.push({ ...valid, [field]: xss });
+    for (const path of PATH_TRAVERSALS.slice(0, 3)) p.push({ ...valid, [field]: path });
+    for (const huge of HUGE_STRINGS.slice(0, 2)) p.push({ ...valid, [field]: huge });
+    for (const t of TYPE_CONFUSIONS) p.push({ ...valid, [field]: t });
+  }
+  // Campos ausentes / objeto vazio.
+  p.push({}, ...stringFields.map((f) => {
+    const clone = { ...valid };
+    delete clone[f];
+    return clone;
+  }));
+  return p;
+}
+
+function generateSemanticSearchPayloads() { return fieldFuzz({ query: "caneca personalizada" }, ["query"]); }
+function generateCategoriesApiPayloads() { return fieldFuzz({ action: "list" }, ["action"]); }
+function generateMaterialsApiPayloads() { return fieldFuzz({ action: "groups" }, ["action", "search", "groupId"]); }
+function generateProductSeoPayloads() { return fieldFuzz({ product_id: "prod-001", name: "Caneca" }, ["product_id", "name"]); }
+function generateKitAiBuilderPayloads() { return fieldFuzz({ brief: "kit boas-vindas", budget: 100 }, ["brief"]); }
+function generateMagicUpScorePayloads() { return fieldFuzz({ text: "slogan", product_id: "p1" }, ["text", "product_id"]); }
+function generateRateLimitCheckPayloads() { return fieldFuzz({ action: "check", key: "user:1" }, ["action", "key"]); }
+function generateLogLoginAttemptPayloads() { return fieldFuzz({ email: "x@example.com", success: false }, ["email"]); }
+function generateExpertChatPayloads() { return fieldFuzz({ message: "olá" }, ["message"]); }
+function generateVisualSearchPayloads() { return fieldFuzz({ image_url: "https://cdn.example.com/x.png" }, ["image_url"]); }
+
+function generateWebhookDispatcherPayloads() {
+  const valid = { event: "order.created", payload: { id: "1" } };
+  const p = fieldFuzz(valid, ["event"]);
+  for (const date of INVALID_DATES) p.push({ ...valid, occurred_at: date });
+  return p;
+}
+function generateSimulationOrchestratorPayloads() {
+  return fieldFuzz({ action: "simulate", scenario_id: "s1" }, ["action", "scenario_id"]);
+}
+
+// ---------------------------------------------------------------------------
 // Specs de funções alvo
 // ---------------------------------------------------------------------------
 
@@ -272,6 +317,20 @@ const FUNCTION_SPECS = [
   { name: "validate-access",   endpoint: "validate-access",                  authRequired: true,  gen: generateValidateAccessPayloads },
   { name: "generate-mockup",   endpoint: "generate-mockup",                  authRequired: true,  gen: generateGenerateMockupPayloads },
   { name: "external-db-bridge",endpoint: "external-db-bridge",               authRequired: true,  gen: generateExternalDbBridgePayloads },
+  // --- Expansão: funções orientadas a campo (catálogo, busca, IA) ---
+  { name: "semantic-search",   endpoint: "semantic-search",                  authRequired: true,  gen: generateSemanticSearchPayloads },
+  { name: "categories-api",    endpoint: "categories-api",                   authRequired: true,  gen: generateCategoriesApiPayloads },
+  { name: "materials-api",     endpoint: "materials-api",                    authRequired: true,  gen: generateMaterialsApiPayloads },
+  { name: "generate-product-seo", endpoint: "generate-product-seo",          authRequired: true,  gen: generateProductSeoPayloads },
+  { name: "kit-ai-builder",    endpoint: "kit-ai-builder",                   authRequired: true,  gen: generateKitAiBuilderPayloads },
+  { name: "magic-up-score",    endpoint: "magic-up-score",                   authRequired: true,  gen: generateMagicUpScorePayloads },
+  { name: "rate-limit-check",  endpoint: "rate-limit-check",                 authRequired: true,  gen: generateRateLimitCheckPayloads },
+  { name: "log-login-attempt", endpoint: "log-login-attempt",                authRequired: true,  gen: generateLogLoginAttemptPayloads },
+  { name: "expert-chat",       endpoint: "expert-chat",                      authRequired: true,  gen: generateExpertChatPayloads },
+  { name: "visual-search",     endpoint: "visual-search",                    authRequired: true,  gen: generateVisualSearchPayloads },
+  // --- Expansão: webhooks / orquestradores ---
+  { name: "webhook-dispatcher", endpoint: "webhook-dispatcher",              authRequired: false, gen: generateWebhookDispatcherPayloads },
+  { name: "simulation-orchestrator", endpoint: "simulation-orchestrator",    authRequired: false, gen: generateSimulationOrchestratorPayloads },
 ];
 
 // ---------------------------------------------------------------------------

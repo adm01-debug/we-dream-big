@@ -263,8 +263,49 @@ const totalStats = {
   statements: pct(totalEntry.statements?.covered ?? 0, totalEntry.statements?.total ?? 0),
 };
 
+// ---------------------------------------------------------------------------
+// Cobertura de TESTE por Edge Function (presença de teste live/integração).
+// As edge functions são Deno (fora de src/), então o coverage v8 não as mede.
+// Aqui reportamos quais funções têm teste de integração LIVE e/ou mockado.
+// ---------------------------------------------------------------------------
+const OUT_EDGE_JSON = path.resolve("coverage/edge-coverage-report.json");
+function buildEdgeCoverage() {
+  const fnsDir = path.resolve("supabase/functions");
+  const liveDir = path.resolve("tests/edge-functions/live");
+  const integDir = path.resolve("tests/edge-functions/integration");
+  const exclude = new Set(["_shared", "tests"]);
+  if (!fs.existsSync(fnsDir)) return null;
+  const fns = fs
+    .readdirSync(fnsDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && !exclude.has(d.name))
+    .filter((d) => fs.existsSync(path.join(fnsDir, d.name, "index.ts")))
+    .map((d) => d.name)
+    .sort();
+  const rows = fns.map((fn) => ({
+    fn,
+    live: fs.existsSync(path.join(liveDir, `${fn}.test.ts`)),
+    integration: fs.existsSync(path.join(integDir, `${fn}.test.ts`)),
+  }));
+  const liveCount = rows.filter((r) => r.live).length;
+  const integCount = rows.filter((r) => r.integration).length;
+  return {
+    total: fns.length,
+    live_covered: liveCount,
+    integration_covered: integCount,
+    live_pct: pct(liveCount, fns.length),
+    functions: rows,
+  };
+}
+const edgeCoverage = buildEdgeCoverage();
+
 // Write outputs
 fs.mkdirSync("coverage", { recursive: true });
+if (edgeCoverage) {
+  fs.writeFileSync(
+    OUT_EDGE_JSON,
+    JSON.stringify({ generated_at: new Date().toISOString(), ...edgeCoverage }, null, 2),
+  );
+}
 fs.writeFileSync(OUT_MODULE_JSON, JSON.stringify({ generated_at: new Date().toISOString(), total: totalStats, modules: moduleSummary }, null, 2));
 fs.writeFileSync(OUT_ROUTE_JSON, JSON.stringify({ generated_at: new Date().toISOString(), routes: routeSummary }, null, 2));
 fs.writeFileSync(OUT_MD, buildMarkdown(moduleSummary, routeSummary, lowCoverageFiles, totalStats));
@@ -291,10 +332,22 @@ if (lowCoverageFiles.length > 0) {
   }
 }
 
+if (edgeCoverage) {
+  console.log("\n📊 Cobertura de Teste por Edge Function (integração)");
+  console.log("=".repeat(60));
+  const icon = edgeCoverage.live_pct >= 100 ? "✅" : edgeCoverage.live_pct >= 80 ? "⚠️" : "❌";
+  console.log(
+    `${icon}  LIVE: ${edgeCoverage.live_covered}/${edgeCoverage.total} (${edgeCoverage.live_pct}%) | mockado: ${edgeCoverage.integration_covered}/${edgeCoverage.total}`,
+  );
+  const noLive = edgeCoverage.functions.filter((r) => !r.live).map((r) => r.fn);
+  if (noLive.length > 0) console.log(`   sem teste LIVE: ${noLive.join(", ")}`);
+}
+
 console.log(`\n✅ Relatórios gerados:`);
 console.log(`   ${OUT_MODULE_JSON}`);
 console.log(`   ${OUT_ROUTE_JSON}`);
 console.log(`   ${OUT_MD}`);
+if (edgeCoverage) console.log(`   ${OUT_EDGE_JSON}`);
 
 if (CHECK_MODE && lowCoverageFiles.length > 0) {
   console.error(`\n❌ --check falhou: ${lowCoverageFiles.length} arquivo(s) abaixo do threshold.`);

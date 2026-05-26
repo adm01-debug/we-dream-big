@@ -309,6 +309,10 @@ async function runUnicodeFuzz() {
   const endpoints = [
     { path: "/functions/v1/semantic-search", field: "query", base: {} },
     { path: "/functions/v1/ai-recommendations", field: "context", base: { limit: 1 } },
+    // Funções de processamento de imagem — URL/campo adversarial (SSRF/XSS).
+    { path: "/functions/v1/analyze-logo-colors", field: "logo_url", base: {} },
+    { path: "/functions/v1/visual-search", field: "image_url", base: {} },
+    { path: "/functions/v1/generate-mockup", field: "logo_url", base: { product_id: "p1" } },
   ];
 
   for (const { path, field, base } of endpoints) {
