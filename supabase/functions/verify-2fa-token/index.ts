@@ -63,7 +63,12 @@ Deno.serve(async (req: Request) => {
   // Parse body
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const parsed = await req.json();
+    // Guard against non-object bodies (null, array, string, number) — any of
+    // these would throw when we do `body.action` below.
+    body = (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed))
+      ? (parsed as Record<string, unknown>)
+      : {};
   } catch {
     return json({ success: false, error: 'Body JSON invalido' }, 400);
   }

@@ -184,8 +184,15 @@ Deno.serve(async (req) => {
   }
 
   let body: GenerateMockupBody;
-  try { body = await req.json(); }
-  catch { return validationError("Request body must be valid JSON", corsHeaders); }
+  try {
+    const parsed = await req.json();
+    // Guard: null / array / primitive bodies would throw when we access
+    // body.productImageUrl below — treat them as an empty object so the
+    // validation error path fires cleanly instead of a 500.
+    body = (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed))
+      ? (parsed as GenerateMockupBody)
+      : ({} as GenerateMockupBody);
+  } catch { return validationError("Request body must be valid JSON", corsHeaders); }
 
   if (!isValidHttpUrl(body.productImageUrl))
     return validationError("productImageUrl is required and must be a valid HTTPS URL", corsHeaders);
