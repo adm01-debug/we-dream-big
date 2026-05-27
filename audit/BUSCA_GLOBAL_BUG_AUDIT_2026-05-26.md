@@ -267,14 +267,14 @@ As buscas salvas ao clicar em resultados da `EmptySearchState` nunca aparecem no
 |---|---|
 | `src/components/search/HighlightMatch.tsx` | GS-01, GS-15 |
 | `src/components/search/GlobalSearchPalette.tsx` | GS-02, GS-07, GS-12 |
-| `src/components/search/useGlobalSearch.ts` | GS-03, GS-06, GS-07, GS-14, GS-18, GS-19 |
+| `src/components/search/useGlobalSearch.ts` | GS-03, GS-06, GS-07, GS-10, GS-14, GS-18, GS-19 |
 | `src/components/search/AdvancedSearch.tsx` | GS-04 |
 | `src/components/search/EmptySearchState.tsx` | GS-05 |
 | `src/components/search/SmartSuggestions.tsx` | GS-09 (deletado) |
 | `src/components/search/GlobalSearch.tsx` | GS-08, GS-13 |
 | `src/components/search/SearchWithSuggestions.tsx` | GS-11 |
 | `src/components/search/__tests__/HighlightMatch.test.tsx` | GS-15 (novo) |
-| `src/components/search/__tests__/searchStates.test.tsx` | GS-16 (novo) |
+| `src/components/search/__tests__/searchStates.test.ts` | GS-16 (novo) |
 | `src/components/search/__tests__/searchCache.test.ts` | GS-17 (novo) |
 | `CHANGELOG.md` | GS-20 |
 | `STATUS.md` | GS-20 |
