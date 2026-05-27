@@ -17,7 +17,6 @@ import './styles/missing-root-tokens.css';
 // Initialize Sentry FIRST (no-op if VITE_SENTRY_DSN is unset)
 initSentry();
 
-// Silencia warnings conhecidos e poluição do preview
 
 
 // Install global error handlers for unhandled errors/rejections
