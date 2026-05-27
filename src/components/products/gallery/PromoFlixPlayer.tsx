@@ -838,25 +838,30 @@ export function PromoFlixPlayer({
           <div className="group/vol flex items-center">
             <button
               onClick={toggleMute}
-              className="rounded-full p-2 transition-colors hover:bg-white/15"
+              className="rounded-full p-2 transition-all hover:bg-white/15 hover:scale-110 active:scale-95"
               aria-label={isMuted ? 'Ativar som' : 'Mutar'}
             >
               {volumeIcon}
             </button>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.05}
-              value={isMuted ? 0 : volume}
-              onChange={(e) => setVol(Number(e.target.value))}
-              aria-label="Volume"
-              className="w-0 cursor-pointer accent-primary transition-all group-hover/vol:ml-1 group-hover/vol:w-20"
-            />
+            <div className="overflow-hidden">
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={isMuted ? 0 : volume}
+                onChange={(e) => setVol(Number(e.target.value))}
+                aria-label="Volume"
+                className="w-0 cursor-pointer accent-primary transition-all duration-300 group-hover/vol:ml-2 group-hover/vol:w-24"
+              />
+            </div>
           </div>
 
-          <div className="ml-1 text-sm font-medium tabular-nums text-white/90">
-            {formatTime(currentTime)} <span className="text-white/50">/ {formatTime(duration)}</span>
+          {/* Time */}
+          <div className="ml-3 flex items-baseline gap-1.5 font-mono text-[13px] tabular-nums">
+            <span className="font-semibold text-white">{formatTime(currentTime)}</span>
+            <span className="text-white/30">/</span>
+            <span className="text-white/50">{formatTime(duration)}</span>
           </div>
 
           <div className="flex-1" />
