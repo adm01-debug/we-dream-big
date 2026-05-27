@@ -144,13 +144,17 @@ export function PromoFlixPlayer({
               }));
               setQualities(levels);
               
-              const savedQuality = localStorage.getItem('promoflix_quality');
-              if (savedQuality !== null && hlsInstance) {
-                const q = parseInt(savedQuality, 10);
-                if (q >= -1 && q < data.levels.length) {
-                  hlsInstance.currentLevel = q;
-                  setCurrentQuality(q);
+              try {
+                const savedQuality = localStorage.getItem('promoflix_quality');
+                if (savedQuality !== null && hlsInstance) {
+                  const q = parseInt(savedQuality, 10);
+                  if (!isNaN(q) && q >= -1 && q < data.levels.length) {
+                    hlsInstance.currentLevel = q;
+                    setCurrentQuality(q);
+                  }
                 }
+              } catch (err) {
+                console.warn('Falha ao carregar preferência de qualidade:', err);
               }
             });
 
@@ -159,11 +163,12 @@ export function PromoFlixPlayer({
                 setCurrentQuality(-1);
               }
             });
-          } else {
+          } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
             videoRef.current.src = src;
           }
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error('HLS loading error:', err);
           if (videoRef.current) videoRef.current.src = src;
         });
     }
