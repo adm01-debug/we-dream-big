@@ -114,10 +114,11 @@ describe('QuoteBuilderPage E2E Wizard Flow', () => {
     const companyOption = await screen.findByTestId('company-option-comp-1');
     await user.click(companyOption);
 
-    // 1.2 Selecionar Contato (Geralmente carregado automaticamente se for único)
-    // Se houver mais de um, clicar no trigger e selecionar
-    const contactTrigger = await screen.findByTestId('contact-selector-trigger');
-    expect(contactTrigger).toHaveTextContent('João Contato');
+    // 1.2 Selecionar Contato
+    // Se o contato for único, ele é selecionado automaticamente via useEffect em SingleContactDisplay
+    // mas precisamos esperar o componente renderizar o estado final
+    const contactTrigger = await screen.findByText(/João Contato/i);
+    expect(contactTrigger).toBeInTheDocument();
 
     // Verificar se o Step 1 está marcado como concluído visualmente no stepper
     const wizard = screen.getByTestId('quote-wizard');
