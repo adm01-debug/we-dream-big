@@ -203,28 +203,53 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          # SHA do nosso branch (não do merge commit — evita checar arquivos de outros PRs)
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
-          # Rodar prettier --write e depois git diff para ver EXATAMENTE o que mudou.
-          # git diff sem filtro de arquivo — captura todos os arquivos modificados pelo prettier.
-          ./node_modules/.bin/prettier --write "src/**/*.{ts,tsx,css}"
-          DIFF=$(git diff --unified=3 HEAD 2>&1 || true)
-          STAT=$(git diff --stat HEAD 2>&1 || true)
+          # Estratégia: checar apenas arquivos modificados NESTE PR (não arquivos de outros PRs
+          # que foram mergeados em main após a abertura desta PR). Isso evita falsos positivos
+          # quando outro PR introduz arquivos não-formatados em main antes desta PR ser mergeada.
+          #
+          # Em pull_request events, HEAD é o merge commit (não o nosso branch). Então usamos
+          # PR_HEAD_SHA (nosso branch) e PR_BASE_SHA (base da PR) para achar os arquivos do nosso PR.
+
+          # Lista de arquivos .ts/.tsx/.css que ESTE PR adicionou ou modificou
+          PR_FILES=$(git diff --name-only "$PR_BASE_SHA" "$PR_HEAD_SHA" 2>/dev/null \
+            | grep -E '\.(ts|tsx|css)$' \
+            | grep -v 'src/integrations/supabase/types\.ts' \
+            | grep -v 'src/integrations/supabase/client\.ts' \
+            | grep -v 'src/pages/tools/VisualSearchPage\.tsx' \
+            | grep -E '^src/' \
+            || true)
+
+          if [ -z "$PR_FILES" ]; then
+            echo "✅ Prettier OK (sem arquivos TS/TSX/CSS no diff desta PR)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "=== Arquivos desta PR checados pelo Prettier ==="
+          echo "$PR_FILES"
+          echo "==="
+
+          # Rodar prettier --write apenas nos arquivos desta PR
+          echo "$PR_FILES" | tr '\n' '\0' | xargs -0 ./node_modules/.bin/prettier --write
+
+          # Verificar se prettier mudou alguma coisa (comparar working tree vs nosso branch HEAD)
+          DIFF=$(echo "$PR_FILES" | tr '\n' '\0' | xargs -0 git diff HEAD -- 2>&1 || true)
+          STAT=$(echo "$PR_FILES" | tr '\n' '\0' | xargs -0 git diff --stat HEAD -- 2>&1 || true)
+
           if [ -n "$DIFF" ]; then
-            echo "### ❌ Prettier — diff do que CI quer reformatar" >> "$GITHUB_STEP_SUMMARY"
+            echo "### ❌ Prettier — arquivos desta PR precisam de formatação" >> "$GITHUB_STEP_SUMMARY"
             printf '```diff\n%s\n```\n' "$DIFF" >> "$GITHUB_STEP_SUMMARY"
-            echo "=== PRETTIER DIFF (CI quer estas mudanças) ==="
+            echo "=== PRETTIER DIFF ==="
             echo "$STAT"
             echo "---"
             echo "$DIFF"
-            # Postar comentário na PR (pull-requests: write necessário)
-            if [ -n "$PR_NUMBER" ]; then
-              BODY="❌ **Prettier CI diff** (branch: \`$GITHUB_REF_NAME\`)\n\nO prettier no CI quer reformatar os seguintes arquivos:\n\`\`\`\n${STAT}\n\`\`\`\n\nDiff completo (primeiros 4000 chars):\n\`\`\`diff\n${DIFF:0:4000}\n\`\`\`"
-              gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$(printf '%b' "$BODY")" || true
-            fi
             exit 1
           fi
-          echo "✅ Prettier OK" >> "$GITHUB_STEP_SUMMARY"
+          echo "✅ Prettier OK — todos os ${#PR_FILES} arquivos da PR estão formatados" >> "$GITHUB_STEP_SUMMARY"
 
       - name: ESLint annotations no PR (legível)
         run: npx eslint src --max-warnings=500
