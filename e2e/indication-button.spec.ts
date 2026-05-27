@@ -5,7 +5,7 @@ test.describe('Botão Indicação - Produto com Tags', () => {
 
   test('deve abrir o modal e exibir tags agrupadas corretamente', async ({ page }) => {
     // Acessa a página do produto
-    await page.goto(`/produto/${PRODUCT_WITH_TAGS_ID}`);
+    await page.goto(`/produto/${PRODUCT_WITH_TAGS_ID}?bypass_auth=true`);
 
     // Verifica se o botão está habilitado
     const indicationButton = page.getByRole('button', { name: 'Indicação' });
@@ -37,7 +37,7 @@ test.describe('Botão Indicação - Produto sem Tags', () => {
 
   test('deve estar desabilitado e exibir tooltip correto', async ({ page }) => {
     // Acessa a página do produto
-    await page.goto(`/produto/${PRODUCT_WITHOUT_TAGS_ID}`);
+    await page.goto(`/produto/${PRODUCT_WITHOUT_TAGS_ID}?bypass_auth=true`);
 
     // Verifica se o botão está desabilitado
     const indicationButton = page.getByRole('button', { name: 'Indicação' });
