@@ -216,7 +216,8 @@ jobs:
           # PR_HEAD_SHA (nosso branch) e PR_BASE_SHA (base da PR) para achar os arquivos do nosso PR.
 
           # Lista de arquivos .ts/.tsx/.css que ESTE PR adicionou ou modificou
-          PR_FILES=$(git diff --name-only "$PR_BASE_SHA" "$PR_HEAD_SHA" 2>/dev/null \
+          # --diff-filter=d exclui arquivos DELETADOS (prettier falha em arquivos que não existem)
+          PR_FILES=$(git diff --name-only --diff-filter=d "$PR_BASE_SHA" "$PR_HEAD_SHA" 2>/dev/null \
             | grep -E '\.(ts|tsx|css)$' \
             | grep -v 'src/integrations/supabase/types\.ts' \
             | grep -v 'src/integrations/supabase/client\.ts' \
