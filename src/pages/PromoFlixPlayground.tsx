@@ -44,6 +44,7 @@ export default function PromoFlixPlayground() {
                 <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">P</kbd>: Picture-in-Picture</li>
                 <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">S</kbd>: Screenshot (Print)</li>
                 <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">&lt;</kbd> / <kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">&gt;</kbd>: Velocidade (0.5x a 2x)</li>
+                <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">X</kbd>: Ativar/Desativar Raio-X</li>
               </ul>
             </div>
           </div>
@@ -66,6 +67,10 @@ export default function PromoFlixPlayground() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400">Screenshot Tool</span>
+                  <span className="text-green-500 text-sm font-bold uppercase">OK</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-zinc-400">Raio-X (AI Scan)</span>
                   <span className="text-green-500 text-sm font-bold uppercase">OK</span>
                 </div>
               </div>
