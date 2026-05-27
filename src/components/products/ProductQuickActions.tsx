@@ -31,6 +31,8 @@ interface ProductQuickActionsProps {
   hasErrorTags?: boolean;
   isLoadingNiches?: boolean;
   hasErrorNiches?: boolean;
+  onRetryTags?: () => void;
+  onRetryNiches?: () => void;
   selectedVariant?: {
     variantName?: string | null;
     colorHex?: string | null;
