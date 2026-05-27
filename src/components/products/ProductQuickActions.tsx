@@ -94,8 +94,15 @@ export function ProductQuickActions({
   );
 
   const isActionDisabled = (key: ActionKey) => {
-    if (key === 'indicacao') return displayTagSections.length === 0;
-    if (key === 'nicho') return displayNiches.length === 0;
+    if (key === 'indicacao') {
+      // Permitir abrir se estiver carregando ou se houver erro (para mostrar feedback no modal)
+      if (isLoadingTags || hasErrorTags) return false;
+      return displayTagSections.length === 0;
+    }
+    if (key === 'nicho') {
+      if (isLoadingNiches || hasErrorNiches) return false;
+      return displayNiches.length === 0;
+    }
     return false;
   };
 
