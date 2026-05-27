@@ -137,13 +137,13 @@ export function PromoFlixPlayer({
   }, []);
 
   // Setup HLS or native
-  useEffect(() => {
+  const initPlayer = useCallback(() => {
     const video = videoRef.current;
     if (!video || !src) return;
 
-    let cancelled = false;
-
     setIsLoading(true);
+    setHlsError(null);
+    setIsReconnecting(false);
 
     const useNative =
       !isHls ||
@@ -152,12 +152,26 @@ export function PromoFlixPlayer({
 
     if (useNative) {
       video.src = src;
+      // Initialize with saved volume
+      video.volume = volume;
+      video.muted = isMuted;
+      if (isPlaying || autoPlay) {
+        video.play().catch(() => setIsPlaying(false));
+      }
     } else {
       import('hls.js')
         .then(({ default: Hls }) => {
-          if (cancelled || !videoRef.current) return;
+          if (!videoRef.current) return;
           if (Hls.isSupported()) {
-            const hlsInstance = new Hls({ maxBufferLength: 30 });
+            if (hlsRef.current) {
+              hlsRef.current.destroy();
+            }
+            const hlsInstance = new Hls({ 
+              maxBufferLength: 30,
+              enableWorker: true,
+              lowLatencyMode: true,
+              backBufferLength: 90
+            });
             hlsRef.current = hlsInstance;
             hlsInstance.loadSource(src);
             hlsInstance.attachMedia(videoRef.current);
@@ -181,6 +195,36 @@ export function PromoFlixPlayer({
               } catch (err) {
                 console.warn('Falha ao carregar preferência de qualidade:', err);
               }
+
+              // Apply saved volume/mute
+              if (videoRef.current) {
+                videoRef.current.volume = volume;
+                videoRef.current.muted = isMuted;
+                if (isPlaying || autoPlay) {
+                  videoRef.current.play().catch(() => setIsPlaying(false));
+                }
+              }
+            });
+
+            hlsInstance.on(Hls.Events.ERROR, (_, data) => {
+              if (data.fatal) {
+                switch (data.type) {
+                  case Hls.ErrorTypes.NETWORK_ERROR:
+                    console.error('HLS Network Error:', data);
+                    setIsReconnecting(true);
+                    hlsInstance.startLoad();
+                    break;
+                  case Hls.ErrorTypes.MEDIA_ERROR:
+                    console.error('HLS Media Error:', data);
+                    hlsInstance.recoverMediaError();
+                    break;
+                  default:
+                    console.error('HLS Fatal Error:', data);
+                    setHlsError('Falha ao carregar o vídeo. Verifique sua conexão.');
+                    hlsInstance.destroy();
+                    break;
+                }
+              }
             });
 
             hlsInstance.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
@@ -190,22 +234,27 @@ export function PromoFlixPlayer({
             });
           } else if (videoRef.current?.canPlayType('application/vnd.apple.mpegurl')) {
             videoRef.current.src = src;
+            videoRef.current.volume = volume;
+            videoRef.current.muted = isMuted;
           }
         })
         .catch((err) => {
           console.error('HLS loading error:', err);
+          setHlsError('Erro crítico no player.');
           if (videoRef.current) videoRef.current.src = src;
         });
     }
+  }, [src, isHls, volume, isMuted, isPlaying, autoPlay]);
 
+  useEffect(() => {
+    initPlayer();
     return () => {
-      cancelled = true;
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
     };
-  }, [src, isHls]);
+  }, [src, isHls]); // Only re-init on src change to avoid loop with persistence states
 
   const setQuality = useCallback((index: number) => {
     const hls = hlsRef.current;
