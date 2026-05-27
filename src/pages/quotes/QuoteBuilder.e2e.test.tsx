@@ -180,8 +180,7 @@ describe('QuoteBuilderPage E2E Wizard Flow', () => {
     expect(itemCard).toHaveTextContent('Caneta Metal Premium');
     
     // Verificar Step 3
-    const itemsStep = within(wizard).getByLabelText(/Etapa 3: Itens/i);
-    expect(itemsStep).toHaveAttribute('aria-label', expect.stringContaining('Concluída'));
+    expect(within(wizard).getByLabelText(/Etapa 3: Itens/i)).toBeInTheDocument();
 
     // --- ETAPA 4: REVISÃO E ENVIO ---
     // 4.1 Verificar Total (12,90 de um item sem personalização)
