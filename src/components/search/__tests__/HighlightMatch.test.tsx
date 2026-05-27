@@ -9,7 +9,7 @@
  * These tests verify that ALL matching segments are highlighted regardless of
  * their position in the string, and that diacritic-insensitive matching works.
  */
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { HighlightMatch } from '../HighlightMatch';
 
@@ -104,9 +104,7 @@ describe('HighlightMatch', () => {
   // No match
   // ──────────────────────────────────────────────────────
   it('renders plain text when there is no match', () => {
-    const { container } = render(
-      <HighlightMatch text="Caneta Personalizada" query="borracha" />,
-    );
+    const { container } = render(<HighlightMatch text="Caneta Personalizada" query="borracha" />);
     expect(container.querySelectorAll('mark')).toHaveLength(0);
     expect(container.textContent).toBe('Caneta Personalizada');
   });
