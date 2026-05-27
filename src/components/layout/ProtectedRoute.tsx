@@ -24,7 +24,6 @@ export function ProtectedRoute({
   const { user, roles, currentAAL, isLoading } = useAuth();
   const location = useLocation();
 
-  // Redireciona para o login se não houver usuário.
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-sidebar transition-colors duration-500">
