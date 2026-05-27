@@ -28,7 +28,8 @@ import {
   Search,
   Target,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -80,6 +81,7 @@ export function PromoFlixPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<number | null>(null);
+  const hlsRef = useRef<import('hls.js').default | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -98,6 +100,8 @@ export function PromoFlixPlayer({
   const [showRaioXPanel, setShowRaioXPanel] = useState(false);
   const [selectedHotspot, setSelectedHotspot] = useState<number | null>(null);
   const [hoverSeekPct, setHoverSeekPct] = useState<number | null>(null);
+  const [qualities, setQualities] = useState<{ id: number, label: string }[]>([]);
+  const [currentQuality, setCurrentQuality] = useState<number>(-1); // -1 = Auto
 
   // Mock hotspots based on video aspect ratio (for visual simulation)
   const hotspots = useMemo(() => [
@@ -128,26 +132,65 @@ export function PromoFlixPlayer({
         .then(({ default: Hls }) => {
           if (cancelled || !videoRef.current) return;
           if (Hls.isSupported()) {
-            hls = new Hls({ maxBufferLength: 30 });
-            hls.loadSource(src);
-            hls.attachMedia(videoRef.current);
-          } else {
+            const hlsInstance = new Hls({ maxBufferLength: 30 });
+            hlsRef.current = hlsInstance;
+            hlsInstance.loadSource(src);
+            hlsInstance.attachMedia(videoRef.current);
+
+            hlsInstance.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+              const levels = data.levels.map((level, index) => ({
+                id: index,
+                label: level.height ? `${level.height}p` : `Qualidade ${index + 1}`
+              }));
+              setQualities(levels);
+              
+              try {
+                const savedQuality = localStorage.getItem('promoflix_quality');
+                if (savedQuality !== null && hlsInstance) {
+                  const q = parseInt(savedQuality, 10);
+                  if (!isNaN(q) && q >= -1 && q < data.levels.length) {
+                    hlsInstance.currentLevel = q;
+                    setCurrentQuality(q);
+                  }
+                }
+              } catch (err) {
+                console.warn('Falha ao carregar preferência de qualidade:', err);
+              }
+            });
+
+            hlsInstance.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
+              if (hlsInstance && hlsInstance.autoLevelEnabled) {
+                setCurrentQuality(-1);
+              }
+            });
+          } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
             videoRef.current.src = src;
           }
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error('HLS loading error:', err);
           if (videoRef.current) videoRef.current.src = src;
         });
     }
 
     return () => {
       cancelled = true;
-      if (hls) {
-        hls.destroy();
-        hls = null;
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
       }
     };
   }, [src, isHls]);
+
+  const setQuality = useCallback((index: number) => {
+    const hls = hlsRef.current;
+    if (!hls) return;
+    hls.currentLevel = index;
+    setCurrentQuality(index);
+    localStorage.setItem('promoflix_quality', index.toString());
+    const label = index === -1 ? 'Auto' : qualities.find(q => q.id === index)?.label || 'Qualidade';
+    flash(label);
+  }, [qualities, flash]);
 
   // Bind video events
   useEffect(() => {
@@ -897,6 +940,43 @@ export function PromoFlixPlayer({
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Quality Selector (HLS only) */}
+            {qualities.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="flex items-center gap-1 rounded-full px-3 py-3 text-sm font-medium transition-colors hover:bg-white/15 md:px-2.5 md:py-2"
+                    aria-label="Qualidade"
+                    title="Qualidade do Vídeo"
+                  >
+                    <Settings className="h-6 w-6 md:h-5 md:w-5" />
+                    <span className="hidden sm:inline">
+                      {currentQuality === -1 ? 'Auto' : qualities.find(q => q.id === currentQuality)?.label}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-32">
+                  <DropdownMenuLabel>Qualidade</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setQuality(-1)}
+                    className={cn(currentQuality === -1 && 'font-bold text-primary', "py-2.5")}
+                  >
+                    Auto
+                  </DropdownMenuItem>
+                  {qualities.map((q) => (
+                    <DropdownMenuItem
+                      key={q.id}
+                      onClick={() => setQuality(q.id)}
+                      className={cn(currentQuality === q.id && 'font-bold text-primary', "py-2.5")}
+                    >
+                      {q.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
 
             {/* PiP - Hidden on smallest mobile if space is tight */}
             <button
