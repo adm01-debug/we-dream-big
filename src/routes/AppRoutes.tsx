@@ -75,6 +75,7 @@ export function AppRoutes() {
     <RouteSuspense>
       <Routes>
         {publicRoutes}
+        <Route path="/promoflix-playground" element={<PromoFlixPlayground />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<ProtectedAppLayout />}>
