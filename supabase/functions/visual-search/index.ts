@@ -74,11 +74,11 @@ Deno.serve(async (req) => {
     }
     const { imageBase64, category, color } = parsed.data;
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    const HF_ACCESS_TOKEN = Deno.env.get("HF_ACCESS_TOKEN");
+    const AI_LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const AI_HF_ACCESS_TOKEN = Deno.env.get("HF_ACCESS_TOKEN");
 
     console.log("Analyzing image with AI...");
-    console.log(`Config status: HF_TOKEN=${!!HF_ACCESS_TOKEN}, LOVABLE_KEY=${!!LOVABLE_API_KEY}`);
+    console.log(`Config status: HF_TOKEN=${!!AI_HF_ACCESS_TOKEN}, LOVABLE_KEY=${!!AI_LOVABLE_API_KEY}`);
 
     const requestBody = {
       messages: [
@@ -137,7 +137,7 @@ Use essas dicas para refinar sua percepção, mas priorize o que você vê visua
     let usedProvider = "none";
 
     // Attempt Hugging Face if token is present
-    if (HF_ACCESS_TOKEN) {
+    if (AI_HF_ACCESS_TOKEN) {
       try {
         console.log("Using Hugging Face for analysis...");
         const hfModel = "meta-llama/Llama-3.2-11B-Vision-Instruct";
@@ -145,7 +145,7 @@ Use essas dicas para refinar sua percepção, mas priorize o que você vê visua
           `https://api-inference.huggingface.co/models/${hfModel}/v1/chat/completions`,
           {
             headers: {
-              Authorization: `Bearer ${HF_ACCESS_TOKEN}`,
+              Authorization: `Bearer ${AI_HF_ACCESS_TOKEN}`,
               "Content-Type": "application/json",
             },
             method: "POST",
@@ -172,14 +172,14 @@ Use essas dicas para refinar sua percepção, mas priorize o que você vê visua
     }
 
     // Fallback to Lovable AI Gateway if HF failed or no token
-    if (!analysisContent && LOVABLE_API_KEY) {
+    if (!analysisContent && AI_LOVABLE_API_KEY) {
       console.log("Falling back to Lovable AI Gateway...");
       const model = "google/gemini-2.5-flash";
       const analysisResponse = await callAiWithTracking({
         userId: user.id,
         functionName: "visual-search",
         model,
-        apiKey: LOVABLE_API_KEY,
+        apiKey: AI_LOVABLE_API_KEY,
         requestBody,
       });
 
