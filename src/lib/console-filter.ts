@@ -36,19 +36,20 @@
     } catch (e) {
       // Fallback
     }
-    originalWarn.apply(console, args);
+    return originalWarn.apply(console, args);
   };
 
   console.error = (...args: any[]) => {
     try {
-      const msg = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
+      const firstArg = args[0];
+      const msg = typeof firstArg === 'string' ? firstArg : JSON.stringify(firstArg);
       if (SILENCED_ERRORS.some(pattern => msg && msg.includes(pattern))) {
         return;
       }
     } catch (e) {
-      // Fallback if stringify fails
+      // Fallback
     }
-    originalError.apply(console, args);
+    return originalError.apply(console, args);
   };
 })();
 
