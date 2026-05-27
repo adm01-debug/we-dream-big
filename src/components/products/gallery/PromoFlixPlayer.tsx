@@ -83,16 +83,37 @@ export function PromoFlixPlayer({
   const controlsTimeoutRef = useRef<number | null>(null);
   const hlsRef = useRef<import('hls.js').default | null>(null);
 
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(() => {
+    try {
+      return localStorage.getItem('promoflix_playing') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(() => {
+    try {
+      const saved = localStorage.getItem('promoflix_volume');
+      return saved !== null ? parseFloat(saved) : 1;
+    } catch {
+      return 1;
+    }
+  });
+  const [isMuted, setIsMuted] = useState(() => {
+    try {
+      return localStorage.getItem('promoflix_muted') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const [hlsError, setHlsError] = useState<string | null>(null);
   const [flashLabel, setFlashLabel] = useState<string | null>(null);
   const [isRaioXActive, setIsRaioXActive] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
