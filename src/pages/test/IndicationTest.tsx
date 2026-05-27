@@ -19,6 +19,10 @@ export default function IndicationTest() {
     supplier: { id: 'supplier-id', name: 'Fornecedor Teste' },
     stockStatus: 'in-stock',
     stock: 1000,
+    colors: [
+      { name: 'Azul', hex: '#0000FF' },
+      { name: 'Vermelho', hex: '#FF0000' }
+    ],
     tags: {
       publicoAlvo: mockTags['Público-Alvo'],
       datasComemorativas: mockTags['Datas Comemorativas'],
@@ -26,6 +30,7 @@ export default function IndicationTest() {
       nicho: mockNiches
     }
   } as any;
+
 
   return (
     <div className="p-10 bg-background min-h-screen">
