@@ -145,6 +145,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: smoke
     timeout-minutes: 90
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v5
@@ -201,24 +204,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          set +e
-          # Usar o binário local (não npx) para garantir consistência com npm run
-          OUTPUT=$(./node_modules/.bin/prettier --list-different "src/**/*.{ts,tsx,css}" 2>&1)
-          EXIT_CODE=$?
-          # Também capturar a saída de --check para ter [warn] lines
-          CHECK_OUTPUT=$(./node_modules/.bin/prettier --check "src/**/*.{ts,tsx,css}" 2>&1)
-          CHECK_EXIT=$?
-          if [ $EXIT_CODE -ne 0 ] || [ -n "$OUTPUT" ] || [ $CHECK_EXIT -ne 0 ]; then
-            echo "### ❌ Prettier — arquivos com formatação diferente" >> "$GITHUB_STEP_SUMMARY"
-            printf '```\n%s\n```\n' "$OUTPUT" >> "$GITHUB_STEP_SUMMARY"
-            printf '```\n%s\n```\n' "$CHECK_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
-            echo "=== PRETTIER LIST-DIFFERENT OUTPUT (exit $EXIT_CODE) ==="
-            echo "$OUTPUT"
-            echo "=== PRETTIER CHECK OUTPUT (exit $CHECK_EXIT) ==="
-            echo "$CHECK_OUTPUT"
-            # Postar comentário na PR para diagnóstico (se for PR event)
+          set -euo pipefail
+          # Rodar prettier --write e depois git diff para ver EXATAMENTE o que mudou.
+          # Abordagem mais diagnóstica que --check: mostra o diff completo.
+          ./node_modules/.bin/prettier --write "src/**/*.{ts,tsx,css}"
+          DIFF=$(git diff --unified=3 HEAD -- "src/**/*.{ts,tsx,css}" 2>&1 || true)
+          STAT=$(git diff --stat HEAD -- "src/**/*.{ts,tsx,css}" 2>&1 || true)
+          if [ -n "$DIFF" ]; then
+            echo "### ❌ Prettier — diff do que CI quer reformatar" >> "$GITHUB_STEP_SUMMARY"
+            printf '```diff\n%s\n```\n' "$DIFF" >> "$GITHUB_STEP_SUMMARY"
+            echo "=== PRETTIER DIFF (CI quer estas mudanças) ==="
+            echo "$STAT"
+            echo "---"
+            echo "$DIFF"
+            # Postar comentário na PR (pull-requests: write necessário)
             if [ -n "$PR_NUMBER" ]; then
-              BODY="❌ **Prettier CI diagnóstico** (branch: $GITHUB_REF_NAME)\n\n**--list-different (exit $EXIT_CODE):**\n\`\`\`\n${OUTPUT}\n\`\`\`\n\n**--check (exit $CHECK_EXIT):**\n\`\`\`\n${CHECK_OUTPUT}\n\`\`\`"
+              BODY="❌ **Prettier CI diff** (branch: \`$GITHUB_REF_NAME\`)\n\nO prettier no CI quer reformatar os seguintes arquivos:\n\`\`\`\n${STAT}\n\`\`\`\n\nDiff completo (primeiros 4000 chars):\n\`\`\`diff\n${DIFF:0:4000}\n\`\`\`"
               gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$(printf '%b' "$BODY")" || true
             fi
             exit 1
