@@ -62,7 +62,13 @@ Deno.serve(async (req) => {
 
   let body: WebhookPayload;
   try {
-    body = await req.json();
+    const parsed = await req.json();
+    // Guard: null / array / primitive bodies would throw when we access
+    // body.source below — treat them as an empty object so the handler
+    // proceeds with safe defaults (source='custom', event='unknown').
+    body = (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed))
+      ? (parsed as WebhookPayload)
+      : ({} as WebhookPayload);
   } catch {
     return new Response(
       JSON.stringify({ error: 'Invalid JSON body' }),
