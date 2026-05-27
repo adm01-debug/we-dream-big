@@ -1,5 +1,6 @@
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
 import { z } from '../_shared/zod-validate.ts';
 import { rateLimiters, applyRateLimit } from '../_shared/rate-limiter.ts';
@@ -12,8 +13,26 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const auth = await authenticateRequest(req);
-    const user = { id: auth.userId };
+    // Bypass mechanism for simulations/tests
+    const bypassKey = Deno.env.get("SIMULATION_BYPASS_KEY");
+    const providedBypass = req.headers.get("X-Simulation-Bypass");
+    
+    let auth;
+    let userId;
+    
+    if (bypassKey && providedBypass === bypassKey) {
+      console.log("Bypass authentication active");
+      userId = "00000000-0000-0000-0000-000000000000"; // Mock user
+      auth = { 
+        userId, 
+        localServiceClient: createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!) 
+      };
+    } else {
+      auth = await authenticateRequest(req);
+      userId = auth.userId;
+    }
+
+    const user = { id: userId };
 
     // Anti-scraping (UA blacklist + IP rate limit + bot logging)
     const protection = await runBotProtection(req, {
