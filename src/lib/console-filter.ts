@@ -35,8 +35,7 @@
 
   console.warn = (...args: any[]) => {
     try {
-      const firstArg = args[0];
-      const msg = typeof firstArg === 'string' ? firstArg : JSON.stringify(firstArg);
+      const msg = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
       if (SILENCED_WARNINGS.some(pattern => msg && msg.includes(pattern))) {
         return;
       }
@@ -48,8 +47,7 @@
 
   console.error = (...args: any[]) => {
     try {
-      const firstArg = args[0];
-      const msg = typeof firstArg === 'string' ? firstArg : JSON.stringify(firstArg);
+      const msg = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
       if (SILENCED_ERRORS.some(pattern => msg && msg.includes(pattern))) {
         return;
       }
