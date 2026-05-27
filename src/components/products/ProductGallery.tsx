@@ -87,7 +87,7 @@ export function ProductGallery({
       ? [video, ...videos]
       : videos;
 
-  const allMedia = [...displayImages, ...displayVideos];
+  const allMedia = useMemo(() => [...displayImages, ...displayVideos], [displayImages, displayVideos]);
   const isVideo = useCallback(
     (index: number) => index >= displayImages.length,
     [displayImages.length],
@@ -306,11 +306,11 @@ export function ProductGallery({
         <GalleryColorVariations
           colors={colors}
           selectedColorIndex={selectedColorIndex}
-          onColorSelect={(index) => {
+          onColorSelect={useCallback((index: number) => {
             setSelectedIndex(0);
             resetZoom();
             onColorSelect?.(index);
-          }}
+          }, [resetZoom, onColorSelect])}
         />
       )}
 
