@@ -1,11 +1,5 @@
 /**
  * Console Filter — Silencia warnings conhecidos e poluição visual no console.
- * 
- * Silencia:
- * - React Router v7 Future Flag warning.
- * - Prewarm skip logs (cold-start bridge).
- * - Erros de manifest.json 401 (comuns na extensão Lovable).
- * - PostMessage origin mismatches (comuns no preview).
  */
 (function installConsoleFilter() {
   if (typeof window === 'undefined') return;
@@ -33,18 +27,27 @@
   ];
 
   console.warn = (...args: any[]) => {
-    const msg = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
-    if (SILENCED_WARNINGS.some(pattern => msg.includes(pattern))) {
-      return;
+    try {
+      const msg = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
+      if (SILENCED_WARNINGS.some(pattern => msg && msg.includes(pattern))) {
+        return;
+      }
+    } catch (e) {
+      // Fallback if stringify fails
     }
     originalWarn.apply(console, args);
   };
 
   console.error = (...args: any[]) => {
-    const msg = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
-    if (SILENCED_ERRORS.some(pattern => msg.includes(pattern))) {
-      return;
+    try {
+      const msg = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
+      if (SILENCED_ERRORS.some(pattern => msg && msg.includes(pattern))) {
+        return;
+      }
+    } catch (e) {
+      // Fallback if stringify fails
     }
     originalError.apply(console, args);
   };
 })();
+
