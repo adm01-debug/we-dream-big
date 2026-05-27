@@ -18,6 +18,7 @@
     'SkeletonMonitor.tsx',
     'threshold: 1500ms',
     'Skeleton-Trace',
+    'aponta para projeto não-canônico',
   ];
 
   const SILENCED_ERRORS = [
