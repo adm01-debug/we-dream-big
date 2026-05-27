@@ -1136,8 +1136,22 @@ export function PromoFlixPlayer({
               )}
             </button>
         </div>
+        </div>
       </div>
-    </div>
+
+      {/* WhatsApp share dialog (sales-first) */}
+      {canShareOnWhatsApp && (
+        <VideoShareWhatsAppDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          productName={productName || ''}
+          videoTitle={title}
+          shareUrl={shareUrl}
+          productPrice={productPrice}
+          productSku={productSku}
+          productMinQuantity={productMinQuantity}
+        />
+      )}
     </div>
   );
 }
