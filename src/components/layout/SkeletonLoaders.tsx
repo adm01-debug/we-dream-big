@@ -2,7 +2,8 @@ import * as React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   ProductGridSkeleton,
-  TableSkeleton,
+  ProductTableSkeleton,
+  ProductListSkeleton,
   StatsCardSkeleton,
   PageHeaderSkeleton,
   DashboardSkeleton as ModernDashboardSkeleton,
@@ -96,13 +97,9 @@ function CatalogSkeletonBody() {
       </div>
 
       {viewMode === 'list' ? (
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: count }).map((_, i) => (
-            <Skeleton key={i} className="h-[80px] w-full rounded-xl sm:h-[96px]" />
-          ))}
-        </div>
+        <ProductListSkeleton count={count} />
       ) : viewMode === 'table' ? (
-        <Skeleton className="h-[560px] w-full rounded-xl" />
+        <ProductTableSkeleton rows={10} />
       ) : (
         <ProductGridSkeleton count={count} columns={columns} />
       )}
