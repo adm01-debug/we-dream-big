@@ -147,7 +147,7 @@ export function PromoFlixPlayer({
               const savedQuality = localStorage.getItem('promoflix_quality');
               if (savedQuality !== null) {
                 const q = parseInt(savedQuality, 10);
-                hls!.currentLevel = q;
+                if (hls) hls.currentLevel = q;
                 setCurrentQuality(q);
               }
             });
