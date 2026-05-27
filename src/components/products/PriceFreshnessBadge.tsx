@@ -335,7 +335,7 @@ export function PriceFreshnessBadge({
     );
   }
 
-  const { ariaLabel, title } = buildAccessibleLabel(freshness, priceUpdatedAt);
+  const { ariaLabel } = buildAccessibleLabel(freshness, priceUpdatedAt);
 
   // Anel de foco visível padronizado para os triggers compactos. Usa o token
   // `--ring` para herdar a cor do tema (light/dark/skins) e respeitar o
@@ -349,7 +349,6 @@ export function PriceFreshnessBadge({
       <span
         role="status"
         aria-label={ariaLabel}
-        title={title}
         tabIndex={0}
         className={cn('inline-flex items-center justify-center', color, focusRing, className)}
       >
@@ -365,7 +364,6 @@ export function PriceFreshnessBadge({
       <span
         role="status"
         aria-label={ariaLabel}
-        title={title}
         tabIndex={0}
         className={cn(
           'inline-flex items-center gap-1 text-xs font-medium',
@@ -394,7 +392,6 @@ export function PriceFreshnessBadge({
         <span
           role="status"
           aria-label={ariaLabel}
-          title={title}
           tabIndex={0}
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50/70 px-2.5 py-0.5 text-[11px] font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300',
@@ -472,7 +469,6 @@ export function PriceFreshnessBadge({
       <span
         role="status"
         aria-label={ariaLabel}
-        title={title}
         className={cn('inline-flex items-center gap-1.5 text-xs font-medium', color, className)}
       >
         <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
