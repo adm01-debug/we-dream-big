@@ -18,6 +18,8 @@
     'v7_startTransition',
     'postMessage',
     'target origin provided',
+    'prewarm skip',
+    'prewarm',
   ];
 
   const SILENCED_ERRORS = [
