@@ -160,8 +160,12 @@ describe('QuoteBuilderPage E2E Wizard Flow', () => {
     // porém o wizard exige a navegação. Vamos clicar no step 3.
     await user.click(within(wizard).getByLabelText(/Etapa 3: Itens/i));
 
+    // 3.1 Abrir busca de produto
+    const addProductBtn = await screen.findByTestId('quote-add-product-button');
+    await user.click(addProductBtn);
+
     // 3.2 Buscar e Selecionar Produto
-    const productSearchInput = screen.getByTestId('product-search-input');
+    const productSearchInput = await screen.findByTestId('product-search-input');
     await user.type(productSearchInput, 'Caneta');
     const productOption = await screen.findByTestId('product-search-option-prod-1');
     await user.click(productOption);
