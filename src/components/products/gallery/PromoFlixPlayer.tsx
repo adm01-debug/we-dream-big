@@ -413,6 +413,11 @@ export function PromoFlixPlayer({
           e.preventDefault();
           stepRate(-1);
           break;
+        case 'x':
+        case 'X':
+          e.preventDefault();
+          toggleRaioX();
+          break;
       }
     };
     window.addEventListener('keydown', onKey);
@@ -426,6 +431,7 @@ export function PromoFlixPlayer({
     togglePip,
     takeScreenshot,
     stepRate,
+    toggleRaioX,
   ]);
 
   // Auto-hide controls
