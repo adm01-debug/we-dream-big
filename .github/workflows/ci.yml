@@ -197,7 +197,20 @@ jobs:
         run: npm run typecheck
 
       - name: Prettier style check
-        run: npm run format:check
+        run: |
+          set +e
+          OUTPUT=$(npx prettier --list-different "src/**/*.{ts,tsx,css}" 2>&1)
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 0 ] || [ -n "$OUTPUT" ]; then
+            echo "### ❌ Prettier — arquivos com formatação diferente" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            echo "$OUTPUT" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            echo "Arquivos não-formatados:"
+            echo "$OUTPUT"
+            exit 1
+          fi
+          echo "✅ Prettier OK" >> "$GITHUB_STEP_SUMMARY"
 
       - name: ESLint annotations no PR (legível)
         run: npx eslint src --max-warnings=500
