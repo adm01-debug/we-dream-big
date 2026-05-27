@@ -131,25 +131,26 @@ describe('QuoteBuilderPage E2E Wizard Flow', () => {
     // 2.1 Forma de Pagamento
     const paymentMethodTrigger = screen.getByTestId('payment-method-select');
     await user.click(paymentMethodTrigger);
-    const pixOption = await screen.findByRole('option', { name: /Transferência Bancária \/ Pix/i });
+    // Radix Select renderiza itens em portais. Vamos tentar encontrar pelo texto e role de forma mais flexível.
+    const pixOption = await screen.findByText(/Transferência Bancária \/ Pix/i);
     await user.click(pixOption);
 
     // 2.2 Prazo de Pagamento
     const paymentTermsTrigger = screen.getByTestId('payment-terms-select');
     await user.click(paymentTermsTrigger);
-    const termsOption = await screen.findByRole('option', { name: /7 dias a partir da entrega/i });
+    const termsOption = await screen.findByText(/7 dias a partir da entrega/i);
     await user.click(termsOption);
 
     // 2.3 Prazo de Entrega
     const deliveryTimeTrigger = screen.getByTestId('delivery-time-select');
     await user.click(deliveryTimeTrigger);
-    const deliveryOption = await screen.findByRole('option', { name: /14 dias | Após aprovação/i });
+    const deliveryOption = await screen.findByText(/14 dias | Após aprovação/i);
     await user.click(deliveryOption);
 
     // 2.4 Frete
     const shippingTrigger = screen.getByTestId('shipping-type-select');
     await user.click(shippingTrigger);
-    const cifOption = await screen.findByRole('option', { name: /CIF | Frete grátis/i });
+    const cifOption = await screen.findByText(/CIF | Frete grátis/i);
     await user.click(cifOption);
 
     // Verificar Step 2
