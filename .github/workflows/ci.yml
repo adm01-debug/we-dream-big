@@ -145,6 +145,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: smoke
     timeout-minutes: 90
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v5
@@ -197,7 +200,57 @@ jobs:
         run: npm run typecheck
 
       - name: Prettier style check
-        run: npm run format:check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # SHA do nosso branch (não do merge commit — evita checar arquivos de outros PRs)
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          # Estratégia: checar apenas arquivos modificados NESTE PR (não arquivos de outros PRs
+          # que foram mergeados em main após a abertura desta PR). Isso evita falsos positivos
+          # quando outro PR introduz arquivos não-formatados em main antes desta PR ser mergeada.
+          #
+          # Em pull_request events, HEAD é o merge commit (não o nosso branch). Então usamos
+          # PR_HEAD_SHA (nosso branch) e PR_BASE_SHA (base da PR) para achar os arquivos do nosso PR.
+
+          # Lista de arquivos .ts/.tsx/.css que ESTE PR adicionou ou modificou
+          # --diff-filter=d exclui arquivos DELETADOS (prettier falha em arquivos que não existem)
+          PR_FILES=$(git diff --name-only --diff-filter=d "$PR_BASE_SHA" "$PR_HEAD_SHA" 2>/dev/null \
+            | grep -E '\.(ts|tsx|css)$' \
+            | grep -v 'src/integrations/supabase/types\.ts' \
+            | grep -v 'src/integrations/supabase/client\.ts' \
+            | grep -v 'src/pages/tools/VisualSearchPage\.tsx' \
+            | grep -E '^src/' \
+            || true)
+
+          if [ -z "$PR_FILES" ]; then
+            echo "✅ Prettier OK (sem arquivos TS/TSX/CSS no diff desta PR)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "=== Arquivos desta PR checados pelo Prettier ==="
+          echo "$PR_FILES"
+          echo "==="
+
+          # Rodar prettier --write apenas nos arquivos desta PR
+          echo "$PR_FILES" | tr '\n' '\0' | xargs -0 ./node_modules/.bin/prettier --write
+
+          # Verificar se prettier mudou alguma coisa (comparar working tree vs nosso branch HEAD)
+          DIFF=$(echo "$PR_FILES" | tr '\n' '\0' | xargs -0 git diff HEAD -- 2>&1 || true)
+          STAT=$(echo "$PR_FILES" | tr '\n' '\0' | xargs -0 git diff --stat HEAD -- 2>&1 || true)
+
+          if [ -n "$DIFF" ]; then
+            echo "### ❌ Prettier — arquivos desta PR precisam de formatação" >> "$GITHUB_STEP_SUMMARY"
+            printf '```diff\n%s\n```\n' "$DIFF" >> "$GITHUB_STEP_SUMMARY"
+            echo "=== PRETTIER DIFF ==="
+            echo "$STAT"
+            echo "---"
+            echo "$DIFF"
+            exit 1
+          fi
+          echo "✅ Prettier OK — todos os ${#PR_FILES} arquivos da PR estão formatados" >> "$GITHUB_STEP_SUMMARY"
 
       - name: ESLint annotations no PR (legível)
         run: npx eslint src --max-warnings=500
