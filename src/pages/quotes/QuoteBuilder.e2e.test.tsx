@@ -54,40 +54,54 @@ describe('QuoteBuilder Full E2E Flow (Logic)', () => {
   it('should show validation errors when mandatory fields are missing', async () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
 
-    // Step 1: Client - Initial empty state
+    // 1. Início: sem empresa/contato
     expect(result.current.isFormValid).toBe(false);
     expect(result.current.validationErrors).toContain('empresa');
     expect(result.current.validationErrors).toContain('contato');
 
-    // Partially fill
-    act(() => {
-      result.current.setClientId('client-1');
-    });
+    // 2. Preencher parcialmente
+    act(() => { result.current.setClientId('client-1'); });
     expect(result.current.validationErrors).not.toContain('empresa');
     expect(result.current.validationErrors).toContain('contato');
 
-    // Fill Step 1
-    act(() => {
-      result.current.setContactId('contact-1');
-    });
+    // 3. Completar Step 1
+    act(() => { result.current.setContactId('contact-1'); });
     expect(result.current.completedSteps).toContain('client');
 
-    // Step 2: Conditions - Initial empty state for this step
+    // 4. Step 2 (Condições) deve estar pendente
     expect(result.current.validationErrors).toContain('forma_pagamento');
     expect(result.current.validationErrors).toContain('prazo_pagamento');
+    expect(result.current.validationErrors).toContain('prazo_entrega');
+    expect(result.current.validationErrors).toContain('frete');
 
+    // 5. Preencher Step 2
     act(() => {
       result.current.setPaymentMethod('boleto');
       result.current.setPaymentTerms('7_dias');
-      result.current.setDeliveryTime('10 dias');
+      result.current.setDeliveryTime('14_dias');
       result.current.setShippingType('cif');
     });
-
-    expect(result.current.validationErrors).not.toContain('forma_pagamento');
     expect(result.current.completedSteps).toContain('conditions');
 
-    // Step 3: Items - Initial empty
+    // 6. Step 3 (Itens) pendente
     expect(result.current.validationErrors).toContain('itens');
+  });
+
+  it('should correctly handle shipping costs in FOB Pre-negotiated mode', () => {
+    const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
+
+    act(() => {
+      result.current.setShippingType('fob_pre');
+    });
+
+    // Se é fob_pre, deve exigir valor_frete se for 0? 
+    // Em useQuoteBuilderState.ts: if (shippingType !== 'fob_pre' || shippingCost > 0) steps.push('conditions');
+    expect(result.current.validationErrors).toContain('valor_frete');
+
+    act(() => {
+      result.current.setShippingCost(150);
+    });
+    expect(result.current.validationErrors).not.toContain('valor_frete');
   });
 
   it('should complete the full wizard flow logically', async () => {
