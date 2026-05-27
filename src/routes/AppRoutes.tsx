@@ -17,6 +17,7 @@ import { PromoFlixPlayground } from './lazy-pages';
 
 
 
+
 // NProgress configuration
 NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.1 });
 
