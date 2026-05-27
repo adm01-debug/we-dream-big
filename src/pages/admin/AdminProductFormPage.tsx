@@ -37,6 +37,20 @@ const AuditHistory = lazyWithRetry(() =>
   import('@/components/audit/AuditHistory').then((m) => ({ default: m.AuditHistory })),
 );
 
+const PRICE_FRESHNESS_THRESHOLD_COLUMN = 'price_freshness_threshold_days';
+
+function isMissingPriceFreshnessThresholdColumn(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /price_freshness_threshold_days|column products\.price_freshness_threshold_days does not exist/i.test(
+    message,
+  );
+}
+
+function withoutPriceFreshnessThreshold(data: Record<string, unknown>): Record<string, unknown> {
+  const { [PRICE_FRESHNESS_THRESHOLD_COLUMN]: _omitted, ...fallbackData } = data;
+  return fallbackData;
+}
+
 export default function AdminProductFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -222,14 +236,25 @@ export default function AdminProductFormPage() {
         productData.primary_image_url = images[0];
       }
 
+      let savedProductData = productData;
+
       if (isEdit && product) {
-        await invokeExternalDbSingle<PromobrindProduct>({
-          table: 'products', operation: 'update', id: product.id, data: productData,
-        });
+        try {
+          await invokeExternalDbSingle<PromobrindProduct>({
+            table: 'products', operation: 'update', id: product.id, data: productData,
+          });
+        } catch (error) {
+          if (!isMissingPriceFreshnessThresholdColumn(error)) throw error;
+          savedProductData = withoutPriceFreshnessThreshold(productData);
+          await invokeExternalDbSingle<PromobrindProduct>({
+            table: 'products', operation: 'update', id: product.id, data: savedProductData,
+          });
+          toast.warning('Produto salvo. A validade do preço usará 60 dias até a coluna existir no banco.');
+        }
 
         const { oldFields, newFields } = getChangedFields(
           { sku: product.sku, name: product.name, description: product.description, sale_price: getProductPrice(product), stock_quantity: getProductStock(product), is_active: product.is_active },
-          productData,
+          savedProductData,
         );
         if (Object.keys(newFields).length > 0) {
           await logAction({ action: 'UPDATE', entityType: 'products', entityId: product.id, oldValues: oldFields, newValues: newFields });
@@ -240,17 +265,29 @@ export default function AdminProductFormPage() {
         if (refreshed) setProduct(refreshed);
 
       } else {
-        const newProduct = await invokeExternalDbSingle<PromobrindProduct>({
-          table: 'products',
-          operation: 'insert',
-          data: { ...productData, created_at: new Date().toISOString() },
-        });
+        let newProduct: PromobrindProduct;
+        try {
+          newProduct = await invokeExternalDbSingle<PromobrindProduct>({
+            table: 'products',
+            operation: 'insert',
+            data: { ...productData, created_at: new Date().toISOString() },
+          });
+        } catch (error) {
+          if (!isMissingPriceFreshnessThresholdColumn(error)) throw error;
+          savedProductData = withoutPriceFreshnessThreshold(productData);
+          newProduct = await invokeExternalDbSingle<PromobrindProduct>({
+            table: 'products',
+            operation: 'insert',
+            data: { ...savedProductData, created_at: new Date().toISOString() },
+          });
+          toast.warning('Produto criado. A validade do preço usará 60 dias até a coluna existir no banco.');
+        }
 
         if (newProduct) {
           await logAction({
             action: 'INSERT', entityType: 'products', entityId: newProduct.id,
             oldValues: null,
-            newValues: { sku: productData.sku, name: productData.name, sale_price: productData.sale_price, is_active: productData.is_active },
+            newValues: { sku: savedProductData.sku, name: savedProductData.name, sale_price: savedProductData.sale_price, is_active: savedProductData.is_active },
           });
 
           // BUG-03 FIX: flush local engraving areas to DB BEFORE navigating to edit mode.
