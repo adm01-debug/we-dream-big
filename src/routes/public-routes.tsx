@@ -7,7 +7,6 @@ import {
   Unauthorized,
   TermsPage,
   PrivacyPage,
-  PromoFlixPlayground,
 } from './lazy-pages';
 
 /**
