@@ -23,6 +23,7 @@
     'SkeletonMonitor',
     'SkeletonMonitor.tsx',
     'threshold: 1500ms',
+    'Skeleton-Trace',
   ];
 
   const SILENCED_ERRORS = [
