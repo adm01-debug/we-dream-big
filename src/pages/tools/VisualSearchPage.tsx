@@ -372,98 +372,140 @@ export default function VisualSearchPage() {
           {/* Sidebar Area */}
           <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-20 lg:h-[calc(100vh-120px)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/10 hover:scrollbar-thumb-primary/20">
             {/* Preview da foto enviada — só aparece após upload */}
-            {previewUrl && (
-              <Card className="relative overflow-hidden border-2 border-dashed border-muted-foreground/20 bg-muted/5 transition-all duration-300">
-                <CardContent className="p-0">
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="relative overflow-hidden group"
-                  >
-                    <img src={previewUrl} alt="Preview" className="aspect-square w-full object-cover" />
-                    
-                    {/* Visual Highlights Overlay */}
-                    {results?.analysis.visualHighlights && !isSearching && showHotspots && (
-                      <div className="absolute inset-0 pointer-events-none" style={{ opacity: hotspotOpacity }}>
-                        {results.analysis.visualHighlights.map((hl, idx) => (
-                          <motion.div
-                            key={idx}
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.5 + idx * 0.1 }}
-                            className="absolute group/hl pointer-events-auto"
-                            style={{ left: `${hl.x}%`, top: `${hl.y}%` }}
-                          >
-                            <div className="relative flex items-center justify-center">
-                              <div className="absolute h-6 w-6 animate-ping rounded-full bg-primary/40" />
-                              <div className="relative h-3 w-3 rounded-full bg-primary border-2 border-white shadow-lg" />
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/hl:opacity-100 transition-opacity whitespace-nowrap bg-background/95 border border-border px-2 py-1 rounded text-[10px] font-medium shadow-xl z-50">
-                                {hl.label}: {hl.description}
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* Scanning Line Animation */}
-                    {isSearching && (
-                      <div className="absolute inset-0 z-10 overflow-hidden pointer-events-none">
-                        <motion.div 
-                          className="absolute left-0 top-0 h-[20%] w-full bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0"
-                          animate={{ top: ['-20%', '100%'] }}
-                          transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-                        />
-                        <motion.div 
-                          className="absolute left-0 top-0 h-1 w-full bg-primary shadow-[0_0_30px_rgba(var(--primary),1)]"
-                          animate={{ top: ['0%', '100%'] }}
-                          transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-                        />
-                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] mix-blend-overlay" />
-                      </div>
-                    )}
-                    
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
-                      <div className="flex flex-col gap-2">
-                        <Button variant="secondary" size="sm" onClick={reset} className="gap-2">
-                          <RefreshCcw className="h-4 w-4" /> Trocar Foto
-                        </Button>
-                        <div className="flex flex-col gap-2 bg-background/90 p-2 rounded-lg border border-border shadow-sm">
-                          <div className="flex items-center justify-between gap-4">
-                            <Label className="text-[10px] font-bold uppercase text-muted-foreground whitespace-nowrap">Exibir Pontos</Label>
-                            <Button 
-                              variant={showHotspots ? "default" : "outline"} 
-                              size="icon" 
-                              className="h-6 w-10" 
-                              onClick={() => setShowHotspots(!showHotspots)}
-                            >
-                              {showHotspots ? "ON" : "OFF"}
-                            </Button>
+            <AnimatePresence mode="wait">
+              {previewUrl ? (
+                <motion.div 
+                  key="sidebar-preview"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card className="relative overflow-hidden border-2 border-dashed border-muted-foreground/20 bg-muted/5 transition-all duration-300">
+                    <CardContent className="p-0">
+                      <div className="relative overflow-hidden group">
+                        <img src={previewUrl} alt="Preview" className="aspect-square w-full object-cover" />
+                        
+                        {/* Visual Highlights Overlay */}
+                        {results?.analysis.visualHighlights && !isSearching && showHotspots && (
+                          <div className="absolute inset-0 pointer-events-none" style={{ opacity: hotspotOpacity }}>
+                            {results.analysis.visualHighlights.map((hl, idx) => (
+                              <motion.div
+                                key={idx}
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: 0.5 + idx * 0.1 }}
+                                className="absolute group/hl pointer-events-auto"
+                                style={{ left: `${hl.x}%`, top: `${hl.y}%` }}
+                              >
+                                <div className="relative flex items-center justify-center">
+                                  <div className="absolute h-6 w-6 animate-ping rounded-full bg-primary/40" />
+                                  <div className="relative h-3 w-3 rounded-full bg-primary border-2 border-white shadow-lg" />
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/hl:opacity-100 transition-opacity whitespace-nowrap bg-background/95 border border-border px-2 py-1 rounded text-[10px] font-medium shadow-xl z-50">
+                                    {hl.label}: {hl.description}
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ))}
                           </div>
-                          {showHotspots && (
-                            <div className="space-y-1">
-                              <div className="flex justify-between text-[9px] font-bold uppercase text-muted-foreground">
-                                <span>Intensidade</span>
-                                <span>{Math.round(hotspotOpacity * 100)}%</span>
+                        )}
+                        
+                        {/* Scanning Line Animation */}
+                        {isSearching && (
+                          <div className="absolute inset-0 z-10 overflow-hidden pointer-events-none">
+                            <motion.div 
+                              className="absolute left-0 top-0 h-[20%] w-full bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0"
+                              animate={{ top: ['-20%', '100%'] }}
+                              transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+                            />
+                            <motion.div 
+                              className="absolute left-0 top-0 h-1 w-full bg-primary shadow-[0_0_30px_rgba(var(--primary),1)]"
+                              animate={{ top: ['0%', '100%'] }}
+                              transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+                            />
+                            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] mix-blend-overlay" />
+                          </div>
+                        )}
+                        
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+                          <div className="flex flex-col gap-2">
+                            <Button variant="secondary" size="sm" onClick={reset} className="gap-2">
+                              <RefreshCcw className="h-4 w-4" /> Trocar Foto
+                            </Button>
+                            <div className="flex flex-col gap-2 bg-background/90 p-2 rounded-lg border border-border shadow-sm">
+                              <div className="flex items-center justify-between gap-4">
+                                <Label className="text-[10px] font-bold uppercase text-muted-foreground whitespace-nowrap">Exibir Pontos</Label>
+                                <Button 
+                                  variant={showHotspots ? "default" : "outline"} 
+                                  size="icon" 
+                                  className="h-6 w-10" 
+                                  onClick={() => setShowHotspots(!showHotspots)}
+                                >
+                                  {showHotspots ? "ON" : "OFF"}
+                                </Button>
                               </div>
-                              <input 
-                                type="range" 
-                                min="0" 
-                                max="1" 
-                                step="0.1" 
-                                value={hotspotOpacity} 
-                                onChange={(e) => setHotspotOpacity(parseFloat(e.target.value))}
-                                className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                              />
+                              {showHotspots && (
+                                <div className="space-y-1">
+                                  <div className="flex justify-between text-[9px] font-bold uppercase text-muted-foreground">
+                                    <span>Intensidade</span>
+                                    <span>{Math.round(hotspotOpacity * 100)}%</span>
+                                  </div>
+                                  <input 
+                                    type="range" 
+                                    min="0" 
+                                    max="1" 
+                                    step="0.1" 
+                                    value={hotspotOpacity} 
+                                    onChange={(e) => setHotspotOpacity(parseFloat(e.target.value))}
+                                    className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                                  />
+                                </div>
+                              )}
                             </div>
-                          )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                </CardContent>
-              </Card>
-            )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="sidebar-upload"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card 
+                    className={cn(
+                      "relative overflow-hidden border-2 border-dashed transition-all duration-300 group cursor-pointer",
+                      isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/20 bg-muted/5 hover:border-primary/40"
+                    )}
+                    onDragEnter={() => setIsDragging(true)}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) handleFileUpload({ target: { files: [file] } } as any);
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+                      <div className="relative mb-3">
+                        <div className="absolute inset-0 scale-150 animate-pulse bg-primary/5 blur-xl rounded-full" />
+                        <div className="relative rounded-full bg-background p-4 shadow-sm border border-border/50 group-hover:border-primary/50 transition-colors">
+                          <Camera className="h-6 w-6 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                        </div>
+                      </div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">Anexar Imagem</p>
+                      <p className="text-[10px] text-muted-foreground/60 mt-1">Clique ou arraste para buscar</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
 
             {/* Refinement Filters */}
