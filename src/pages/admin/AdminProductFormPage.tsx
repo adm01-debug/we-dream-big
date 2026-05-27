@@ -47,7 +47,8 @@ function isMissingPriceFreshnessThresholdColumn(error: unknown): boolean {
 }
 
 function withoutPriceFreshnessThreshold(data: Record<string, unknown>): Record<string, unknown> {
-  const { [PRICE_FRESHNESS_THRESHOLD_COLUMN]: _omitted, ...fallbackData } = data;
+  const fallbackData = { ...data };
+  delete fallbackData[PRICE_FRESHNESS_THRESHOLD_COLUMN];
   return fallbackData;
 }
 
