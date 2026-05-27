@@ -19,6 +19,7 @@
     'threshold: 1500ms',
     'Skeleton-Trace',
     'aponta para projeto não-canônico',
+    '[Performance] Skeleton',
   ];
 
   const SILENCED_ERRORS = [
