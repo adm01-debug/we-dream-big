@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Botão de Indicação no Detalhe do Produto', () => {
-  const PRODUCT_WITH_TAGS_ID = 'fd72b7d7-1d0c-4e86-bb19-12ef4cdfc110';
-  const PRODUCT_WITHOUT_TAGS_ID = '92411869-ad2b-4115-b12f-9bf6a8aebeb6';
+  const PRODUCT_WITH_TAGS_ID = '92411869-ad2b-4115-b12f-9bf6a8aebeb6';
+  const PRODUCT_WITHOUT_TAGS_ID = 'bea8bd6e-14f4-4482-921d-ecc179391166';
 
   test('deve estar desabilitado e mostrar tooltip quando não houver tags', async ({ page }) => {
     // Navega para um produto sem tags
