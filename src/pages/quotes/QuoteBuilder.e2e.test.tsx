@@ -5,6 +5,7 @@ import QuoteBuilderPage from './QuoteBuilderPage';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { HelmetProvider } from 'react-helmet-async';
 import * as React from 'react';
 
 // --- Mocks de Hooks e Serviços ---
