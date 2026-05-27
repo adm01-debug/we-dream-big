@@ -1,0 +1,81 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { useQuoteBuilderState } from './useQuoteBuilderState';
+import { BrowserRouter } from 'react-router-dom';
+import * as React from 'react';
+
+// Mocks
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+    useParams: () => ({ id: undefined }),
+    useSearchParams: () => [new URLSearchParams()],
+  };
+});
+
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({ user: { id: 'test-user-id' } }),
+}));
+
+vi.mock('@/hooks/quotes', async () => {
+  return {
+    useQuotes: () => ({
+      createQuote: vi.fn(),
+      updateQuote: vi.fn(),
+      fetchQuote: vi.fn(),
+      isLoading: false,
+    }),
+    useQuoteTemplates: () => ({ templates: [] }),
+    useSellerDiscountLimits: () => ({ myLimit: 10 }),
+    useDiscountApproval: () => ({ requestApproval: vi.fn() }),
+    useAutoSaveQuote: () => ({ clearAutoSave: vi.fn() }),
+    useQuoteItems: () => ({
+      items: [],
+      setItems: vi.fn(),
+      addProductWithColor: vi.fn(),
+      updateItemQuantity: vi.fn(),
+      updateItemPrice: vi.fn(),
+      removeItem: vi.fn(),
+      handlePersonalizationsChange: vi.fn(),
+      confirmItemPrice: vi.fn(),
+    }),
+  };
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <BrowserRouter>{children}</BrowserRouter>
+);
+
+describe('useQuoteBuilderState E2E Logic', () => {
+  it('should initialize with default state', () => {
+    const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
+    
+    expect(result.current.activeStep).toBe('client');
+    expect(result.current.clientId).toBe('');
+    expect(result.current.items).toEqual([]);
+  });
+
+  it('should validate steps correctly', () => {
+    const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
+
+    // Step 1: Client
+    act(() => {
+      result.current.setClientId('client-1');
+      result.current.setContactId('contact-1');
+    });
+    
+    expect(result.current.completedSteps).toContain('client');
+
+    // Step 2: Conditions (Mocking requirements)
+    act(() => {
+      result.current.setPaymentMethod('boleto');
+      result.current.setPaymentTerms('7_dias');
+      result.current.setDeliveryTime('10 dias');
+      result.current.setShippingType('cif');
+    });
+
+    expect(result.current.completedSteps).toContain('conditions');
+  });
+});
