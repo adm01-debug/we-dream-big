@@ -1001,9 +1001,9 @@ export function PromoFlixPlayer({
                 <Maximize className="h-6 w-6 md:h-5 md:w-5" />
               )}
             </button>
-          </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
