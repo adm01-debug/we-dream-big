@@ -136,13 +136,14 @@ jobs:
         run: |
           npx playwright test \
             e2e/flows/25-quote-full-flow.spec.ts \
+            e2e/flows/30-quote-wizard-validations.spec.ts \
             --project=chromium-authed \
             --reporter=github,list,html,json \
             --pass-with-no-tests
         env:
           E2E_BASE_URL: http://localhost:8080
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results-quote-flow.json
-        continue-on-error: true
+        continue-on-error: false # Alterado para false para falhar o build em caso de regressão
 
       - name: Run Catalog→Kit Flow E2E
         run: |
