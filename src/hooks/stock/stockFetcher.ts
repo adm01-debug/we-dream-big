@@ -172,7 +172,7 @@ function buildFutureEntries(
   for (const { q, d, suffix, status } of pairs) {
     // BUG-STOCK-01 FIX: falsy check `if (q && d)` would skip q=0.
     // Use explicit null/undefined check instead.
-    if (q != null && q > 0 && d) {
+    if (q !== null && q !== undefined && q > 0 && d) {
       entries.push({
         id: `${supplierSource.id}-${suffix}`,
         productId,
