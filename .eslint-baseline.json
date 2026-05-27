@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-26T20:46:36.743Z",
-  "totalErrors": 138,
+  "generatedAt": "2026-05-27T01:35:56.566Z",
+  "totalErrors": 107,
   "counts": {
     "src/components/access/DevAccessDeniedPage.tsx": {
       "react-hooks/exhaustive-deps": 1
@@ -53,14 +53,20 @@
     "src/components/admin/products/kit-components/VolumeValidation.tsx": {
       "@typescript-eslint/no-non-null-assertion": 1
     },
+    "src/components/admin/products/new-supplier/useNewSupplierForm.ts": {
+      "react-hooks/exhaustive-deps": 1
+    },
     "src/components/admin/products/useProductsManager.ts": {
-      "react-hooks/exhaustive-deps": 5
+      "react-hooks/exhaustive-deps": 1
     },
     "src/components/admin/security/HardeningHealthCard.tsx": {
       "react-hooks/exhaustive-deps": 1
     },
     "src/components/admin/security/role-migration/RoleMigrationPanel.tsx": {
       "@typescript-eslint/naming-convention": 1
+    },
+    "src/components/admin/suppliers-manager/useSuppliersManager.ts": {
+      "react-hooks/exhaustive-deps": 1
     },
     "src/components/admin/users/RoleAuditLogPanel.tsx": {
       "react-hooks/exhaustive-deps": 2
@@ -132,7 +138,7 @@
       "@typescript-eslint/naming-convention": 1
     },
     "src/components/filters/filter-panel/useFilterPanelState.ts": {
-      "react-hooks/exhaustive-deps": 3
+      "react-hooks/exhaustive-deps": 2
     },
     "src/components/intelligence/CategoryRanking.tsx": {
       "react-hooks/exhaustive-deps": 1
@@ -157,7 +163,6 @@
       "eqeqeq": 2
     },
     "src/components/loading/SkeletonMonitor.tsx": {
-      "no-console": 1,
       "react-hooks/exhaustive-deps": 1
     },
     "src/components/magic-up/PromptBank.tsx": {
@@ -207,8 +212,7 @@
       "@typescript-eslint/no-unused-expressions": 1
     },
     "src/components/products/ProductGrid.test.tsx": {
-      "@typescript-eslint/no-explicit-any": 7,
-      "@typescript-eslint/no-unused-vars": 1
+      "@typescript-eslint/no-explicit-any": 6
     },
     "src/components/products/ProductInfoBar.tsx": {
       "@typescript-eslint/no-unused-vars": 1
@@ -401,16 +405,15 @@
     "src/hooks/kit-builder/useKitCollaboration.ts": {
       "react-hooks/exhaustive-deps": 1
     },
-    "src/hooks/mockup/mockupGenerationService.ts": {
-      "@typescript-eslint/no-unused-expressions": 1
-    },
-    "src/hooks/products/useAdvancedFilters.ts": {
-      "<no-rule>": 1
+    "src/hooks/mockup/__tests__/mockup-audit.test.ts": {
+      "era necessario na versao buggy sem useCallback": 1,
+      "no-restricted-syntax": 2
     },
     "src/hooks/products/useCatalogFiltering.ts": {
-      "<no-rule>": 1,
-      "@typescript-eslint/no-explicit-any": 2,
       "react-hooks/exhaustive-deps": 3
+    },
+    "src/hooks/products/useCatalogState.ts": {
+      "react-hooks/exhaustive-deps": 2
     },
     "src/hooks/products/useProductBounds.ts": {
       "react-hooks/exhaustive-deps": 1
@@ -441,12 +444,6 @@
     },
     "src/hooks/simulator/useWizardPersistence.ts": {
       "react-hooks/exhaustive-deps": 1
-    },
-    "src/hooks/ui/useGlobalShortcuts.ts": {
-      "@typescript-eslint/no-explicit-any": 1,
-      "@typescript-eslint/no-unused-vars": 1,
-      "react-hooks/exhaustive-deps": 1,
-      "react-hooks/rules-of-hooks": 1
     },
     "src/lib/error-reporter.ts": {
       "@typescript-eslint/naming-convention": 1,
@@ -521,7 +518,6 @@
       "react-hooks/exhaustive-deps": 1
     },
     "src/pages/products/ProductDetail.tsx": {
-      "no-duplicate-imports": 1,
       "react-hooks/exhaustive-deps": 1
     },
     "src/pages/products/seller-carts/useSellerCartsPage.ts": {
@@ -542,10 +538,6 @@
     "src/pages/tools/SimuladorWizard.tsx": {
       "react-hooks/exhaustive-deps": 1
     },
-    "src/pages/tools/VisualSearchPage.tsx": {
-      "@typescript-eslint/no-explicit-any": 1,
-      "@typescript-eslint/no-unused-vars": 25
-    },
     "src/pages/trends/TrendsKpiCards.tsx": {
       "@typescript-eslint/naming-convention": 1
     },
@@ -561,24 +553,10 @@
       "@typescript-eslint/no-explicit-any": 5
     },
     "src/tests/CatalogSortingE2E.test.ts": {
-      "@typescript-eslint/no-explicit-any": 3,
-      "@typescript-eslint/no-unused-vars": 3
-    },
-    "src/tests/CatalogSortingIntegration.test.tsx": {
-      "@typescript-eslint/no-explicit-any": 6,
-      "@typescript-eslint/no-require-imports": 1
-    },
-    "src/tests/CatalogToolbarRegression.test.tsx": {
-      "@typescript-eslint/no-explicit-any": 1
-    },
-    "src/tests/ProductSortingRelevance.test.ts": {
-      "@typescript-eslint/no-explicit-any": 5
+      "@typescript-eslint/no-unused-vars": 1
     },
     "src/tests/SidebarReorganized.test.tsx": {
       "@typescript-eslint/no-explicit-any": 1
-    },
-    "src/tests/visual-search/VisualSearch.test.ts": {
-      "@typescript-eslint/no-explicit-any": 3
     },
     "src/types/jspdf-autotable.d.ts": {
       "@typescript-eslint/naming-convention": 1
