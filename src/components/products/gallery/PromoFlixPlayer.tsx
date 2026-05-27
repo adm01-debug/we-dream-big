@@ -271,12 +271,19 @@ export function PromoFlixPlayer({
     const video = videoRef.current;
     if (!video) return;
 
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
+    const onPlay = () => {
+      setIsPlaying(true);
+      localStorage.setItem('promoflix_playing', 'true');
+    };
+    const onPause = () => {
+      setIsPlaying(false);
+      localStorage.setItem('promoflix_playing', 'false');
+    };
     const onTime = () => setCurrentTime(video.currentTime);
     const onMeta = () => {
       setDuration(video.duration || 0);
       setIsLoading(false);
+      setHlsError(null);
     };
     const onProgress = () => {
       if (video.buffered.length > 0) {
@@ -284,11 +291,16 @@ export function PromoFlixPlayer({
       }
     };
     const onWaiting = () => setIsLoading(true);
-    const onCanPlay = () => setIsLoading(false);
+    const onCanPlay = () => {
+      setIsLoading(false);
+      setIsReconnecting(false);
+    };
     const onRate = () => setPlaybackRate(video.playbackRate);
     const onVolume = () => {
       setVolume(video.volume);
       setIsMuted(video.muted);
+      localStorage.setItem('promoflix_volume', video.volume.toString());
+      localStorage.setItem('promoflix_muted', video.muted.toString());
     };
 
     video.addEventListener('play', onPlay);
