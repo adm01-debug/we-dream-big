@@ -64,6 +64,21 @@
     font-size: 5.4px !important;
     line-height: 1.15;
   }
+
+  /* Protected action button font styles to prevent overrides */
+  .font-action-button {
+    font-family: var(--font-display) !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.15em !important;
+    text-transform: none;
+  }
+  
+  /* Responsive tracking for action buttons if needed in the future */
+  @screen lg {
+    .font-action-button {
+      letter-spacing: 0.15em !important;
+    }
+  }
 }
 
 @keyframes orbitSmooth {
