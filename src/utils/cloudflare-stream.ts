@@ -88,3 +88,16 @@ export function getCloudflareEmbedUrl(
 
   return embedUrl.toString();
 }
+
+export function getCloudflareHlsUrl(url: string | null | undefined) {
+  const streamId = extractCloudflareStreamId(url);
+  if (!streamId) return null;
+  return `https://videodelivery.net/${streamId}/manifest/video.m3u8`;
+}
+
+export function getCloudflareMp4Url(url: string | null | undefined) {
+  const streamId = extractCloudflareStreamId(url);
+  if (!streamId) return null;
+  return `https://videodelivery.net/${streamId}/downloads/default.mp4`;
+}
+
