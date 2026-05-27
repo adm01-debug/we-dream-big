@@ -81,11 +81,13 @@ const queryClient = new QueryClient({
 const renderBuilder = () => {
   return render(
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TooltipProvider>
-          <QuoteBuilderPage />
-        </TooltipProvider>
-      </BrowserRouter>
+      <HelmetProvider>
+        <BrowserRouter>
+          <TooltipProvider>
+            <QuoteBuilderPage />
+          </TooltipProvider>
+        </BrowserRouter>
+      </HelmetProvider>
     </QueryClientProvider>
   );
 };
