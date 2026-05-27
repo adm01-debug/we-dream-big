@@ -1,5 +1,9 @@
 import { ProductDetailHero } from '../products/product-detail/ProductDetailHero';
 import { Product } from '@/hooks/products';
+import { SellerCartProvider } from '@/contexts/SellerCartContext';
+import { OnboardingProvider } from '@/contexts/OnboardingContext';
+import { AppProviders } from '@/components/providers/AppProviders';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default function PDPTest() {
   const mockProduct: Product = {
@@ -27,20 +31,28 @@ export default function PDPTest() {
   };
 
   return (
-    <div className="p-8 bg-background min-h-screen">
-      <ProductDetailHero
-        product={mockProduct}
-        id="test-id"
-        selectedVariation={null}
-        setSelectedVariation={() => {}}
-        isFavorite={false}
-        onToggleFavorite={() => {}}
-        viewCount={123}
-        supplierTrust={null}
-        onOpenPackagingModal={() => {}}
-        onOpenFutureStock={() => {}}
-        onOpenSupplierComparison={() => {}}
-      />
-    </div>
+    <TooltipProvider>
+      <AppProviders>
+        <OnboardingProvider>
+          <SellerCartProvider>
+            <div className="p-8 bg-background min-h-screen">
+              <ProductDetailHero
+                product={mockProduct}
+                id="test-id"
+                selectedVariation={null}
+                setSelectedVariation={() => {}}
+                isFavorite={false}
+                onToggleFavorite={() => {}}
+                viewCount={123}
+                supplierTrust={null}
+                onOpenPackagingModal={() => {}}
+                onOpenFutureStock={() => {}}
+                onOpenSupplierComparison={() => {}}
+              />
+            </div>
+          </SellerCartProvider>
+        </OnboardingProvider>
+      </AppProviders>
+    </TooltipProvider>
   );
 }
