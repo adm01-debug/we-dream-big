@@ -464,6 +464,7 @@ export default function AdminProductFormPage() {
               isSaving={isSaving}
               isEdit={isEdit}
               engravingFlushRef={engravingFlushRef}
+              lastPriceUpdate={lastPriceUpdate}
             />
           ) : (
             isEdit && id && (
