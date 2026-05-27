@@ -86,7 +86,7 @@ export function OptimizedImage({
             onErrorProp?.(e);
           }}
           loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : undefined}
+          {...(priority ? { fetchpriority: 'high' } : {})}
           {...props}
         />
       )}
