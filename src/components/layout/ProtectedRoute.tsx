@@ -26,9 +26,6 @@ export function ProtectedRoute({
 
   // Redireciona para o login se não houver usuário.
   if (isLoading) {
-
-
-  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-sidebar transition-colors duration-500">
         <div className="relative flex items-center justify-center">
