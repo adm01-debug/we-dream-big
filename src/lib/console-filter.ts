@@ -32,16 +32,16 @@
   ];
 
   console.warn = (...args: any[]) => {
-    const msg = args[0];
-    if (typeof msg === 'string' && SILENCED_WARNINGS.some(pattern => msg.includes(pattern))) {
+    const msg = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
+    if (SILENCED_WARNINGS.some(pattern => msg.includes(pattern))) {
       return;
     }
     originalWarn.apply(console, args);
   };
 
   console.error = (...args: any[]) => {
-    const msg = args[0];
-    if (typeof msg === 'string' && SILENCED_ERRORS.some(pattern => msg.includes(pattern))) {
+    const msg = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
+    if (SILENCED_ERRORS.some(pattern => msg.includes(pattern))) {
       return;
     }
     originalError.apply(console, args);
