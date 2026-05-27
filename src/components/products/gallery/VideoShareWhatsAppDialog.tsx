@@ -293,7 +293,7 @@ export function VideoShareWhatsAppDialog({
           <div className="text-[11px] text-muted-foreground">
             {phoneToSend ? (
               <>
-                Enviando para <span className="font-mono text-foreground">{phoneToSend}</span>
+                Enviando para{' '}<span className="font-mono text-foreground">{phoneToSend}</span>
               </>
             ) : (
               'Sem destinatário — você escolhe no WhatsApp'
