@@ -131,8 +131,9 @@ describe('QuoteBuilderPage E2E Wizard Flow', () => {
     // 2.1 Forma de Pagamento
     const paymentMethodTrigger = screen.getByTestId('payment-method-select');
     await user.click(paymentMethodTrigger);
-    // Radix Select renderiza itens em portais. Vamos tentar encontrar pelo texto e role de forma mais flexível.
-    const pixOption = await screen.findByText(/Transferência Bancária \/ Pix/i);
+    // Em testes com JSDOM e Radix, pode ser difícil clicar em elementos de portal.
+    // Vamos simular a seleção diretamente via evento se necessário, ou usar findByRole de forma agressiva.
+    const pixOption = await screen.findByText(/Pix/i);
     await user.click(pixOption);
 
     // 2.2 Prazo de Pagamento
