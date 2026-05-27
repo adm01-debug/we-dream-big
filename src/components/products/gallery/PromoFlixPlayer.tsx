@@ -21,8 +21,17 @@ import {
   RotateCw,
   Volume2,
   VolumeX,
+  Zap,
+  ZapOff,
+  Info,
+  X,
+  Search,
+  Target,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +90,18 @@ export function PromoFlixPlayer({
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [flashLabel, setFlashLabel] = useState<string | null>(null);
+  const [isRaioXActive, setIsRaioXActive] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [showRaioXPanel, setShowRaioXPanel] = useState(false);
+  const [selectedHotspot, setSelectedHotspot] = useState<number | null>(null);
+
+  // Mock hotspots based on video aspect ratio (for visual simulation)
+  const hotspots = useMemo(() => [
+    { id: 1, x: 25, y: 35, label: 'Estrutura Principal', detail: 'Alumínio Escovado Premium', confidence: 98 },
+    { id: 2, x: 65, y: 45, label: 'Lente de Precisão', detail: 'Cristal Safira Anti-Reflexo', confidence: 95 },
+    { id: 3, x: 45, y: 75, label: 'Acabamento Base', detail: 'Polímero de Alta Densidade', confidence: 92 },
+  ], []);
 
   // Setup HLS or native
   useEffect(() => {
@@ -266,6 +287,35 @@ export function PromoFlixPlayer({
     }
   }, []);
 
+  const toggleRaioX = useCallback(() => {
+    setIsRaioXActive(prev => {
+      const next = !prev;
+      if (next) {
+        flash('Raio-X ATIVADO');
+        // Simulate initial scan
+        setIsAnalyzing(true);
+        setScanProgress(0);
+        const interval = window.setInterval(() => {
+          setScanProgress(p => {
+            if (p >= 100) {
+              window.clearInterval(interval);
+              setIsAnalyzing(false);
+              setShowRaioXPanel(true);
+              return 100;
+            }
+            return p + 5;
+          });
+        }, 80);
+      } else {
+        flash('Raio-X DESATIVADO');
+        setShowRaioXPanel(false);
+        setIsAnalyzing(false);
+        setSelectedHotspot(null);
+      }
+      return next;
+    });
+  }, [flash]);
+
   const takeScreenshot = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -437,13 +487,153 @@ export function PromoFlixPlayer({
       )}
 
       {/* Flash feedback */}
-      {flashLabel && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="rounded-full bg-black/70 px-6 py-3 text-2xl font-bold tabular-nums backdrop-blur-md animate-fade-in">
-            {flashLabel}
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {flashLabel && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="pointer-events-none absolute inset-0 flex items-center justify-center z-50"
+          >
+            <div className="rounded-full bg-black/70 px-6 py-3 text-2xl font-bold tabular-nums backdrop-blur-md border border-white/10 shadow-2xl">
+              {flashLabel}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Raio-X Analysis Overlay */}
+      <AnimatePresence>
+        {isRaioXActive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-20 pointer-events-none"
+          >
+            {/* Analysis Grid Background */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(var(--primary-rgb),0.1)_100%)] opacity-30" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
+            
+            {/* Scanning Line */}
+            {isAnalyzing && (
+              <motion.div
+                className="absolute left-0 w-full h-1 bg-primary/60 shadow-[0_0_15px_rgba(var(--primary-rgb),0.8)] z-30"
+                initial={{ top: '0%' }}
+                animate={{ top: '100%' }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              />
+            )}
+
+            {/* Hotspots */}
+            {!isAnalyzing && hotspots.map((spot) => (
+              <motion.button
+                key={spot.id}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: spot.id * 0.2 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedHotspot(spot.id);
+                }}
+                className={cn(
+                  "pointer-events-auto absolute flex items-center justify-center h-8 w-8 rounded-full border-2 border-white shadow-xl transition-all hover:scale-125",
+                  selectedHotspot === spot.id ? "bg-primary scale-125 z-40" : "bg-primary/40 backdrop-blur-sm"
+                )}
+                style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
+              >
+                <div className="absolute h-10 w-10 animate-ping rounded-full bg-primary/20" />
+                <Target className="h-4 w-4 text-white" />
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Raio-X Side Panel (Glassmorphism) */}
+      <AnimatePresence>
+        {showRaioXPanel && isRaioXActive && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            className="absolute right-0 top-0 bottom-0 w-72 z-40 flex flex-col bg-black/40 backdrop-blur-xl border-l border-white/10 p-6 shadow-2xl"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-primary fill-primary/20" />
+                <h3 className="font-display font-bold text-lg tracking-tight">RAIO-X</h3>
+              </div>
+              <button 
+                onClick={() => setShowRaioXPanel(false)}
+                className="rounded-full p-1 hover:bg-white/10 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-6 overflow-y-auto pr-2">
+              <div className="space-y-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Produto em Foco</p>
+                <p className="text-sm font-medium">{productName || title || 'Identificando...'}</p>
+              </div>
+
+              {selectedHotspot ? (
+                (() => {
+                  const spot = hotspots.find(s => s.id === selectedHotspot);
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      key={selectedHotspot}
+                      className="space-y-4"
+                    >
+                      <div className="rounded-lg bg-primary/10 border border-primary/20 p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-primary">Análise de Componente</span>
+                          <Badge variant="outline" className="text-[9px] bg-primary/20 border-primary/30 text-white uppercase">{spot?.confidence}% Precisão</Badge>
+                        </div>
+                        <p className="text-sm font-semibold">{spot?.label}</p>
+                        <p className="text-xs text-white/70 leading-relaxed">{spot?.detail}</p>
+                      </div>
+                      
+                      <div className="space-y-3 pt-2">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-white/50">Materiais</span>
+                          <span className="font-mono">AL+SI+CR</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary" style={{ width: '85%' }} />
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })()
+              ) : (
+                <div className="flex flex-col items-center justify-center h-48 text-center space-y-4 px-4 opacity-60">
+                  <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center">
+                    <Search className="h-6 w-6 text-white/40" />
+                  </div>
+                  <p className="text-xs text-white/60">Selecione um ponto de interesse no vídeo para analisar</p>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-6 border-t border-white/10">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full bg-white/5 border-white/10 hover:bg-white/10 hover:text-white gap-2 group"
+                onClick={() => toast.info('Integrando com Catálogo de Produtos...')}
+              >
+                <Info className="h-4 w-4" />
+                Ver Detalhes Técnicos
+                <ChevronRight className="h-3 w-3 ml-auto transition-transform group-hover:translate-x-1" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Center play overlay */}
       {!isPlaying && !isLoading && (
@@ -462,24 +652,41 @@ export function PromoFlixPlayer({
       <div
         className={cn(
           'pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent p-4 transition-opacity duration-300',
-          showControls ? 'opacity-100' : 'opacity-0',
+          showControls || !isPlaying ? 'opacity-100' : 'opacity-0',
         )}
       >
         <div className="flex items-center gap-2">
-          <span className="rounded bg-primary px-2 py-0.5 text-xs font-black uppercase tracking-widest text-primary-foreground">
-            PromoFlix
-          </span>
+          <div className="relative overflow-hidden rounded bg-primary px-2 py-0.5 shadow-lg shadow-primary/20">
+            <span className="relative z-10 text-[10px] font-black uppercase tracking-[0.2em] text-primary-foreground">
+              PromoFlix
+            </span>
+            <motion.div 
+              className="absolute inset-0 bg-white/20"
+              initial={{ x: '-100%' }}
+              animate={{ x: '100%' }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            />
+          </div>
           {title && (
-            <span className="text-sm font-medium text-white/90 drop-shadow">{title}</span>
+            <span className="text-sm font-semibold text-white/90 drop-shadow-md tracking-tight">{title}</span>
           )}
         </div>
+
+        {isRaioXActive && (
+          <div className="flex items-center gap-2 pointer-events-auto">
+            <div className="flex items-center gap-2 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-full px-3 py-1">
+              <Zap className="h-3.5 w-3.5 text-primary animate-pulse" />
+              <span className="text-[10px] font-bold text-primary tracking-widest uppercase">Modo Raio-X</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bottom controls */}
       <div
         className={cn(
-          'absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-3 transition-opacity duration-300',
-          showControls ? 'opacity-100' : 'opacity-0',
+          'absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black via-black/60 to-transparent p-4 transition-all duration-500 backdrop-blur-[2px]',
+          showControls || !isPlaying ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
         )}
       >
         {/* Seek bar */}
@@ -559,15 +766,38 @@ export function PromoFlixPlayer({
 
           <div className="flex-1" />
 
-          {/* Screenshot */}
-          <button
-            onClick={takeScreenshot}
-            className="flex items-center gap-1 rounded-full p-2 transition-colors hover:bg-white/15"
-            aria-label="Capturar frame"
-            title="Foto do frame (S)"
-          >
-            <Camera className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1.5 px-2 mr-2 border-r border-white/10">
+            {/* Raio-X Toggle */}
+            <button
+              onClick={toggleRaioX}
+              className={cn(
+                "group relative flex items-center justify-center rounded-full p-2 transition-all duration-300",
+                isRaioXActive 
+                  ? "bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" 
+                  : "hover:bg-white/15 text-white/80 hover:text-white"
+              )}
+              aria-label="Ativar Raio-X"
+              title="Raio-X (X)"
+            >
+              {isRaioXActive ? <Zap className="h-5 w-5 fill-current" /> : <ZapOff className="h-5 w-5" />}
+              {isRaioXActive && (
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                </span>
+              )}
+            </button>
+
+            {/* Screenshot */}
+            <button
+              onClick={takeScreenshot}
+              className="flex items-center gap-1 rounded-full p-2 transition-colors hover:bg-white/15 text-white/80 hover:text-white"
+              aria-label="Capturar frame"
+              title="Foto do frame (S)"
+            >
+              <Camera className="h-5 w-5" />
+            </button>
+          </div>
 
           {/* Speed */}
           <DropdownMenu>
