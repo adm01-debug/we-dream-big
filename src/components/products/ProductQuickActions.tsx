@@ -75,9 +75,9 @@ export function ProductQuickActions({
 }: ProductQuickActionsProps) {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
 
-  const displayTagSections = Object.entries(tags ?? {})
+  const displayTagSections = Object.entries((tags && !Array.isArray(tags)) ? tags : {})
     .map(
-      ([category, items]) => [category, items.filter((item) => item?.trim().length > 0)] as const,
+      ([category, items]) => [category, (items || []).filter((item) => item?.trim().length > 0)] as const,
     )
     .filter(([, items]) => items.length > 0);
 
