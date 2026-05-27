@@ -29,6 +29,8 @@ interface ProductQuickActionsProps {
   product?: Product;
   isLoadingTags?: boolean;
   hasErrorTags?: boolean;
+  isLoadingNiches?: boolean;
+  hasErrorNiches?: boolean;
   selectedVariant?: {
     variantName?: string | null;
     colorHex?: string | null;
