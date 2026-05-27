@@ -1,13 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { QuickAddToQuote } from "@/components/products/QuickAddToQuote";
 import { FileText } from "lucide-react";
+import { SellerCartProvider } from "@/contexts/SellerCartContext";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function DebugButtons() {
   return (
-    <div className="p-10 flex flex-col gap-10 bg-background min-h-screen">
-      <h1 className="text-2xl font-bold mb-5">Botões de Ação - Validação Visual</h1>
-      
-      <div className="flex gap-2.5 max-w-md">
+    <SellerCartProvider>
+      <TooltipProvider delayDuration={1800}>
+        <div className="p-10 flex flex-col gap-10 bg-background min-h-screen text-foreground">
+          <h1 className="text-2xl font-bold mb-5">Botões de Ação - Validação Visual</h1>
+          
+          <div className="flex gap-2.5 max-w-md">
         <QuickAddToQuote
           productId="test-id"
           productName="Produto Teste"
@@ -56,7 +60,7 @@ export default function DebugButtons() {
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </TooltipProvider>
+    </SellerCartProvider>
   );
 }
