@@ -134,7 +134,7 @@ export function GlobalSearchPalette() {
           onClick={() => s.setOpen(true)}
           aria-label="Abrir busca global"
           aria-haspopup="dialog"
-          className="group relative flex flex-1 items-center gap-3 overflow-hidden rounded-2xl border border-border/40 bg-muted/40 px-4 py-2.5 text-sm shadow-sm backdrop-blur-md transition-all duration-300 hover:border-primary/40 md:w-full"
+          className="group relative flex flex-1 items-center gap-3 overflow-hidden rounded-2xl border border-border/40 bg-muted/40 px-4 py-[9px] text-sm shadow-sm backdrop-blur-md transition-all duration-300 hover:border-primary/40 md:w-full"
         >
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/[0.05] to-primary/0 transition-all duration-500 group-hover:via-primary/[0.1]" />
           <div className="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-colors duration-300 group-hover:bg-primary/20">
