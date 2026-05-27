@@ -7,8 +7,11 @@ import { getCachedByIds, getFreshFromCacheSafe, putInCacheSafe } from './immutab
 import {
   type PromobrindProduct,
   PRODUCT_SELECT_FIELDS_WITH_SALE,
+  PRODUCT_SELECT_FIELDS_WITH_SALE_NO_THRESHOLD,
   PRODUCT_SELECT_FIELDS_LEGACY,
+  PRODUCT_SELECT_FIELDS_LEGACY_NO_THRESHOLD,
   PRODUCT_SELECT_FIELDS_DETAIL,
+  PRODUCT_SELECT_FIELDS_DETAIL_NO_THRESHOLD,
   shouldFallbackSelect,
 } from './product-types';
 
@@ -18,8 +21,11 @@ async function fetchProductWithRetry(
 ): Promise<InvokeResult<PromobrindProduct>> {
   const selectFields = [
     PRODUCT_SELECT_FIELDS_DETAIL,
+    PRODUCT_SELECT_FIELDS_DETAIL_NO_THRESHOLD,
     PRODUCT_SELECT_FIELDS_WITH_SALE,
+    PRODUCT_SELECT_FIELDS_WITH_SALE_NO_THRESHOLD,
     PRODUCT_SELECT_FIELDS_LEGACY,
+    PRODUCT_SELECT_FIELDS_LEGACY_NO_THRESHOLD,
   ];
   let lastError: unknown;
   for (let selectIdx = 0; selectIdx < selectFields.length; selectIdx++) {
@@ -487,26 +493,29 @@ export async function fetchPromobrindProductById(
 }
 
 export async function fetchPromobrindProductBySku(sku: string): Promise<PromobrindProduct | null> {
-  let result: InvokeResult<PromobrindProduct>;
-  try {
-    result = await invokeExternalDb<PromobrindProduct>({
-      table: 'products',
-      operation: 'select',
-      filters: { sku },
-      select: PRODUCT_SELECT_FIELDS_WITH_SALE,
-      limit: 1,
-    });
-  } catch (err) {
-    if (!shouldFallbackSelect(err)) throw err;
-    result = await invokeExternalDb<PromobrindProduct>({
-      table: 'products',
-      operation: 'select',
-      filters: { sku },
-      select: PRODUCT_SELECT_FIELDS_LEGACY,
-      limit: 1,
-    });
+  const selectFields = [
+    PRODUCT_SELECT_FIELDS_WITH_SALE,
+    PRODUCT_SELECT_FIELDS_WITH_SALE_NO_THRESHOLD,
+    PRODUCT_SELECT_FIELDS_LEGACY,
+    PRODUCT_SELECT_FIELDS_LEGACY_NO_THRESHOLD,
+  ];
+  let lastError: unknown;
+  for (const select of selectFields) {
+    try {
+      const result = await invokeExternalDb<PromobrindProduct>({
+        table: 'products',
+        operation: 'select',
+        filters: { sku },
+        select,
+        limit: 1,
+      });
+      return result.records[0] || null;
+    } catch (err) {
+      lastError = err;
+      if (!shouldFallbackSelect(err)) throw err;
+    }
   }
-  return result.records[0] || null;
+  throw lastError;
 }
 
 export async function fetchPromobrindCategories(): Promise<{ id: string; name: string }[]> {

@@ -12,7 +12,9 @@ import {
 import {
   type PromobrindProduct,
   PRODUCT_SELECT_FIELDS_WITH_SALE,
+  PRODUCT_SELECT_FIELDS_WITH_SALE_NO_THRESHOLD,
   PRODUCT_SELECT_FIELDS_LEGACY,
+  PRODUCT_SELECT_FIELDS_LEGACY_NO_THRESHOLD,
   shouldFallbackSelect,
 } from './product-types';
 
@@ -103,16 +105,30 @@ export async function fetchPromobrindProducts(options?: {
       });
     } catch (err) {
       if (!shouldFallbackSelect(err)) throw err;
-      result = await invokeExternalDb<PromobrindProduct>({
-        table: 'products',
-        operation: 'select',
-        filters,
-        select: PRODUCT_SELECT_FIELDS_LEGACY,
-        orderBy,
-        limit: options.limit,
-        offset: fetchOffset,
-        countMode: shouldRequestCount ? 'planned' : 'none',
-      });
+      try {
+        result = await invokeExternalDb<PromobrindProduct>({
+          table: 'products',
+          operation: 'select',
+          filters,
+          select: PRODUCT_SELECT_FIELDS_WITH_SALE_NO_THRESHOLD,
+          orderBy,
+          limit: options.limit,
+          offset: fetchOffset,
+          countMode: shouldRequestCount ? 'planned' : 'none',
+        });
+      } catch (fallbackErr) {
+        if (!shouldFallbackSelect(fallbackErr)) throw fallbackErr;
+        result = await invokeExternalDb<PromobrindProduct>({
+          table: 'products',
+          operation: 'select',
+          filters,
+          select: PRODUCT_SELECT_FIELDS_LEGACY_NO_THRESHOLD,
+          orderBy,
+          limit: options.limit,
+          offset: fetchOffset,
+          countMode: shouldRequestCount ? 'planned' : 'none',
+        });
+      }
     }
     products = result.records;
     totalCount = result.count;
@@ -177,7 +193,7 @@ export async function fetchPromobrindProducts(options?: {
             table: 'products',
             operation: 'select',
             filters,
-            select: PRODUCT_SELECT_FIELDS_LEGACY,
+            select: PRODUCT_SELECT_FIELDS_WITH_SALE_NO_THRESHOLD,
             orderBy,
             limit: pageSize,
             offset,
@@ -197,7 +213,21 @@ export async function fetchPromobrindProducts(options?: {
             await new Promise((r) => setTimeout(r, 1000 * consecutiveErrors));
             continue;
           }
-          throw fallbackErr;
+          if (shouldFallbackSelect(fallbackErr)) {
+            page = await invokeExternalDb<PromobrindProduct>({
+              table: 'products',
+              operation: 'select',
+              filters,
+              select: PRODUCT_SELECT_FIELDS_LEGACY_NO_THRESHOLD,
+              orderBy,
+              limit: pageSize,
+              offset,
+              countMode,
+            });
+            consecutiveErrors = 0;
+          } else {
+            throw fallbackErr;
+          }
         }
       }
 
