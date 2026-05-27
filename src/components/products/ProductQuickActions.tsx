@@ -318,7 +318,7 @@ export function ProductQuickActions({
                   Não foi possível carregar os nichos.
                 </p>
                 <button
-                  onClick={() => window.location.reload()}
+                  onClick={() => (onRetryNiches ? onRetryNiches() : window.location.reload())}
                   className="rounded-lg bg-destructive px-4 py-2 text-xs font-bold text-destructive-foreground transition-all hover:bg-destructive/90"
                 >
                   Tentar novamente
