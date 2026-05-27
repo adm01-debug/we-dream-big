@@ -19,7 +19,7 @@ import {
   getProductStock,
   type PromobrindProduct,
 } from '@/lib/external-db';
-import { useAuditLog } from '@/hooks/admin';
+import { useAuditLog, fetchAuditHistory } from '@/hooks/admin';
 import { toast } from 'sonner';
 import type { ProductFormData } from '@/components/admin/products/ProductFormSchema';
 import { Loader2, ArrowLeft, History, Pencil, Copy, FileDown } from 'lucide-react';
@@ -62,6 +62,7 @@ export default function AdminProductFormPage() {
   const [isLoading, setIsLoading] = useState(isEdit);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'form' | 'history'>('form');
+  const [lastPriceUpdate, setLastPriceUpdate] = useState<{ date: string; user: string } | null>(null);
 
   // BUG-03 FIX: ref populated by ProductEngravingSection with flushLocalAreas.
   // After product creation, we call this before navigate() so local engraving areas
@@ -100,6 +101,25 @@ export default function AdminProductFormPage() {
       } finally { setIsLoading(false); }
     };
     loadProduct();
+    
+    // Fetch last price freshness update from audit log
+    if (isEdit && id) {
+      const loadHistory = async () => {
+        const logs = await fetchAuditHistory('products', id);
+        const priceLog = logs.find(log => 
+          log.action === 'UPDATE' && 
+          log.new_values && 
+          'price_freshness_threshold_days' in log.new_values
+        );
+        if (priceLog) {
+          setLastPriceUpdate({
+            date: priceLog.created_at,
+            user: priceLog.profiles?.full_name || priceLog.profiles?.email || 'Sistema'
+          });
+        }
+      };
+      loadHistory();
+    }
   }, [id, isEdit, navigate]);
 
   const productToFormData = useCallback((p: PromobrindProduct): Partial<ProductFormData> => {
