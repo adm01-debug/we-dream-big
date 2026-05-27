@@ -153,7 +153,7 @@ export function PromoFlixPlayer({
             });
 
             hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
-              if (hls!.autoLevelEnabled) {
+              if (hls && hls.autoLevelEnabled) {
                 setCurrentQuality(-1);
               }
             });
