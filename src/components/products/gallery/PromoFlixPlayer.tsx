@@ -69,6 +69,13 @@ interface PromoFlixPlayerProps {
   isHls?: boolean;
   autoPlay?: boolean;
   className?: string;
+  /** Dados de venda — habilitam botão "Enviar pelo WhatsApp" */
+  productId?: string | null;
+  productPrice?: number | null;
+  productSku?: string | null;
+  productMinQuantity?: number | null;
+  /** URL pública que o cliente vai abrir (página do produto) */
+  shareUrl?: string | null;
 }
 
 export function PromoFlixPlayer({
@@ -79,7 +86,14 @@ export function PromoFlixPlayer({
   isHls = false,
   autoPlay = true,
   className,
+  productId,
+  productPrice,
+  productSku,
+  productMinQuantity,
+  shareUrl,
 }: PromoFlixPlayerProps) {
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const canShareOnWhatsApp = Boolean(productName);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<number | null>(null);
