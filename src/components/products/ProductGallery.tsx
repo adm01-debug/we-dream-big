@@ -347,6 +347,11 @@ export function ProductGallery({
         productName={productName}
         open={isVideoPlayerOpen}
         onOpenChange={setIsVideoPlayerOpen}
+        productId={productId}
+        productPrice={productPrice}
+        productSku={productSku}
+        productMinQuantity={productMinQuantity}
+        shareUrl={shareUrl}
       />
     </div>
   );
