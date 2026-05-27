@@ -83,16 +83,37 @@ export function PromoFlixPlayer({
   const controlsTimeoutRef = useRef<number | null>(null);
   const hlsRef = useRef<import('hls.js').default | null>(null);
 
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(() => {
+    try {
+      return localStorage.getItem('promoflix_playing') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(() => {
+    try {
+      const saved = localStorage.getItem('promoflix_volume');
+      return saved !== null ? parseFloat(saved) : 1;
+    } catch {
+      return 1;
+    }
+  });
+  const [isMuted, setIsMuted] = useState(() => {
+    try {
+      return localStorage.getItem('promoflix_muted') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const [hlsError, setHlsError] = useState<string | null>(null);
   const [flashLabel, setFlashLabel] = useState<string | null>(null);
   const [isRaioXActive, setIsRaioXActive] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -116,13 +137,13 @@ export function PromoFlixPlayer({
   }, []);
 
   // Setup HLS or native
-  useEffect(() => {
+  const initPlayer = useCallback(() => {
     const video = videoRef.current;
     if (!video || !src) return;
 
-    let cancelled = false;
-
     setIsLoading(true);
+    setHlsError(null);
+    setIsReconnecting(false);
 
     const useNative =
       !isHls ||
@@ -131,12 +152,26 @@ export function PromoFlixPlayer({
 
     if (useNative) {
       video.src = src;
+      // Initialize with saved volume
+      video.volume = volume;
+      video.muted = isMuted;
+      if (isPlaying || autoPlay) {
+        video.play().catch(() => setIsPlaying(false));
+      }
     } else {
       import('hls.js')
         .then(({ default: Hls }) => {
-          if (cancelled || !videoRef.current) return;
+          if (!videoRef.current) return;
           if (Hls.isSupported()) {
-            const hlsInstance = new Hls({ maxBufferLength: 30 });
+            if (hlsRef.current) {
+              hlsRef.current.destroy();
+            }
+            const hlsInstance = new Hls({ 
+              maxBufferLength: 30,
+              enableWorker: true,
+              lowLatencyMode: true,
+              backBufferLength: 90
+            });
             hlsRef.current = hlsInstance;
             hlsInstance.loadSource(src);
             hlsInstance.attachMedia(videoRef.current);
@@ -160,6 +195,36 @@ export function PromoFlixPlayer({
               } catch (err) {
                 console.warn('Falha ao carregar preferência de qualidade:', err);
               }
+
+              // Apply saved volume/mute
+              if (videoRef.current) {
+                videoRef.current.volume = volume;
+                videoRef.current.muted = isMuted;
+                if (isPlaying || autoPlay) {
+                  videoRef.current.play().catch(() => setIsPlaying(false));
+                }
+              }
+            });
+
+            hlsInstance.on(Hls.Events.ERROR, (_, data) => {
+              if (data.fatal) {
+                switch (data.type) {
+                  case Hls.ErrorTypes.NETWORK_ERROR:
+                    console.error('HLS Network Error:', data);
+                    setIsReconnecting(true);
+                    hlsInstance.startLoad();
+                    break;
+                  case Hls.ErrorTypes.MEDIA_ERROR:
+                    console.error('HLS Media Error:', data);
+                    hlsInstance.recoverMediaError();
+                    break;
+                  default:
+                    console.error('HLS Fatal Error:', data);
+                    setHlsError('Falha ao carregar o vídeo. Verifique sua conexão.');
+                    hlsInstance.destroy();
+                    break;
+                }
+              }
             });
 
             hlsInstance.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
@@ -169,22 +234,27 @@ export function PromoFlixPlayer({
             });
           } else if (videoRef.current?.canPlayType('application/vnd.apple.mpegurl')) {
             videoRef.current.src = src;
+            videoRef.current.volume = volume;
+            videoRef.current.muted = isMuted;
           }
         })
         .catch((err) => {
           console.error('HLS loading error:', err);
+          setHlsError('Erro crítico no player.');
           if (videoRef.current) videoRef.current.src = src;
         });
     }
+  }, [src, isHls, volume, isMuted, isPlaying, autoPlay]);
 
+  useEffect(() => {
+    initPlayer();
     return () => {
-      cancelled = true;
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
     };
-  }, [src, isHls]);
+  }, [src, isHls]); // Only re-init on src change to avoid loop with persistence states
 
   const setQuality = useCallback((index: number) => {
     const hls = hlsRef.current;
@@ -201,12 +271,19 @@ export function PromoFlixPlayer({
     const video = videoRef.current;
     if (!video) return;
 
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
+    const onPlay = () => {
+      setIsPlaying(true);
+      localStorage.setItem('promoflix_playing', 'true');
+    };
+    const onPause = () => {
+      setIsPlaying(false);
+      localStorage.setItem('promoflix_playing', 'false');
+    };
     const onTime = () => setCurrentTime(video.currentTime);
     const onMeta = () => {
       setDuration(video.duration || 0);
       setIsLoading(false);
+      setHlsError(null);
     };
     const onProgress = () => {
       if (video.buffered.length > 0) {
@@ -214,11 +291,16 @@ export function PromoFlixPlayer({
       }
     };
     const onWaiting = () => setIsLoading(true);
-    const onCanPlay = () => setIsLoading(false);
+    const onCanPlay = () => {
+      setIsLoading(false);
+      setIsReconnecting(false);
+    };
     const onRate = () => setPlaybackRate(video.playbackRate);
     const onVolume = () => {
       setVolume(video.volume);
       setIsMuted(video.muted);
+      localStorage.setItem('promoflix_volume', video.volume.toString());
+      localStorage.setItem('promoflix_muted', video.muted.toString());
     };
 
     video.addEventListener('play', onPlay);
@@ -535,8 +617,8 @@ export function PromoFlixPlayer({
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.45)_100%)]" />
 
       {/* Loading state — branded */}
-      {isLoading && (
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4">
+      {(isLoading || isReconnecting) && !hlsError && (
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 z-20">
           <div className="relative h-14 w-14">
             <div className="absolute inset-0 rounded-full border-2 border-white/10" />
             <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-primary border-r-primary/60" />
@@ -544,7 +626,28 @@ export function PromoFlixPlayer({
               <Play className="h-4 w-4 fill-primary text-primary" />
             </div>
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60">Carregando</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60">
+            {isReconnecting ? 'Reconectando...' : 'Carregando'}
+          </span>
+        </div>
+      )}
+
+      {/* Error state */}
+      {hlsError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-black/80 backdrop-blur-sm z-50 p-6 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20 text-red-500 ring-1 ring-red-500/40">
+            <ZapOff className="h-8 w-8" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold">Ops! Algo deu errado</h3>
+            <p className="max-w-xs text-sm text-white/60">{hlsError}</p>
+          </div>
+          <Button 
+            onClick={() => initPlayer()} 
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8"
+          >
+            Tentar Novamente
+          </Button>
         </div>
       )}
 
