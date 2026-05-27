@@ -1,5 +1,6 @@
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
 import { z } from '../_shared/zod-validate.ts';
 import { rateLimiters, applyRateLimit } from '../_shared/rate-limiter.ts';
@@ -12,10 +13,28 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const auth = await authenticateRequest(req);
-    const user = { id: auth.userId };
+    // Bypass mechanism for simulations/tests
+    const bypassKey = Deno.env.get("SIMULATION_BYPASS_KEY");
+    const providedBypass = req.headers.get("X-Simulation-Bypass");
+    
+    let auth;
+    let userId;
+    
+    if (bypassKey && providedBypass === bypassKey) {
+      console.log("Bypass authentication active");
+      userId = "00000000-0000-0000-0000-000000000000"; // Mock user
+      auth = { 
+        userId, 
+        localServiceClient: createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!) 
+      };
+    } else {
+      auth = await authenticateRequest(req);
+      userId = auth.userId;
+    }
 
-    // Anti-scraping (UA blacklist + IP rate limit + bot logging)
+    const user = { id: userId };
+
+    // Anti-scraping
     const protection = await runBotProtection(req, {
       endpoint: 'visual-search',
       maxRequests: 20,
@@ -25,7 +44,6 @@ Deno.serve(async (req) => {
     }, corsHeaders);
     if (!protection.allowed) return protection.blockResponse!;
 
-    // Rate limit: 20 req/min por usuário
     const rl = await applyRateLimit(req, rateLimiters.ai, () => user.id);
     if (rl) {
       const headers = new Headers(rl.headers);
@@ -55,59 +73,36 @@ Deno.serve(async (req) => {
     }
     const { imageBase64, category, color } = parsed.data;
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    const HF_ACCESS_TOKEN = Deno.env.get("HF_ACCESS_TOKEN");
+    const AI_LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const AI_HF_ACCESS_TOKEN = Deno.env.get("HF_ACCESS_TOKEN");
 
     console.log("Analyzing image with AI...");
-
+    
     const requestBody = {
       messages: [
         {
           role: "system",
           content: `Você é um Especialista Sênior em Identificação de Produtos e Estrategista de Merchandising.
-Sua missão é analisar imagens de brindes corporativos e extrair metadados precisos para busca técnica em catálogo.
-
-Ao analisar, considere:
-1. Forma e Silhueta: É cilíndrico, retangular, curvo?
-2. Detalhes Técnicos: Possui tampa de bambu? Clip de metal? Costura reforçada? Acabamento fosco ou brilhante?
-3. Materialidade: Identifique se é ABS, Alumínio, Couro Sintético, Kraft, etc.
-
+Analise imagens de brindes corporativos e extraia metadados precisos.
 Responda APENAS em JSON com este formato:
 {
-  "productType": "tipo específico (ex: Caneta Esferográfica, Squeeze Térmico, Mochila Notebook)",
-  "material": "material predominante e detalhes (ex: Aço Inox com detalhe em Bambu)",
-  "colors": ["Lista de cores identificadas (nomes padrão como Azul Marinho, Prata, Preto)"],
-  "category": "categoria de mercado (Escritório, Gourmet, Tech, etc.)",
-  "keywords": ["5-7 termos técnicos de busca concatenados (ex: 'squeeze metal tampa madeira 500ml')"],
+  "productType": "tipo específico",
+  "material": "material predominante",
+  "colors": ["Lista de cores"],
+  "category": "categoria",
+  "keywords": ["5-7 termos de busca"],
   "description": "Descrição técnica sumária (20 palavras)",
-  "confidence": 0.0 a 1.0 (seu nível de certeza),
-  "rationale": "Breve explicação do porquê desta classificação",
-  "visualEvidence": {
-    "material": "trecho curto (5-7 palavras) da evidência visual do material",
-    "silhouette": "trecho curto (5-7 palavras) da evidência visual da forma/silhueta",
-    "finish": "trecho curto (5-7 palavras) da evidência visual do acabamento"
-  },
-  "visualHighlights": [
-    {"label": "nome do ponto", "x": 0-100, "y": 0-100, "description": "descrição curta (3-5 palavras)"}
-  ]
+  "confidence": 0.0 a 1.0,
+  "rationale": "explicação",
+  "visualEvidence": { "material": "...", "silhouette": "...", "finish": "..." },
+  "visualHighlights": [{"label": "...", "x": 0-100, "y": 0-100, "description": "..."}]
 }`
         },
         {
           role: "user",
           content: [
-            {
-              type: "text",
-              text: `Analise profundamente esta imagem. 
-${category ? `O usuário sugeriu a categoria: ${category}.` : ""}
-${color ? `O usuário sugeriu a cor: ${color}.` : ""}
-Use essas dicas para refinar sua percepção, mas priorize o que você vê visualmente.`
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`
-              }
-            }
+            { type: "text", text: "Analise esta imagem." },
+            { type: "image_url", image_url: { url: imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}` } }
           ]
         }
       ]
@@ -116,50 +111,30 @@ Use essas dicas para refinar sua percepção, mas priorize o que você vê visua
     let analysisContent = "";
     let usedProvider = "none";
 
-    // Attempt Hugging Face if token is present
-    if (HF_ACCESS_TOKEN) {
+    if (AI_HF_ACCESS_TOKEN) {
       try {
-        console.log("Using Hugging Face for analysis...");
         const hfModel = "meta-llama/Llama-3.2-11B-Vision-Instruct";
-        const hfResponse = await fetch(
-          `https://api-inference.huggingface.co/models/${hfModel}/v1/chat/completions`,
-          {
-            headers: {
-              Authorization: `Bearer ${HF_ACCESS_TOKEN}`,
-              "Content-Type": "application/json",
-            },
-            method: "POST",
-            body: JSON.stringify({
-              model: hfModel,
-              messages: requestBody.messages,
-              max_tokens: 1024,
-            }),
-          }
-        );
+        const hfResponse = await fetch(`https://api-inference.huggingface.co/models/${hfModel}/v1/chat/completions`, {
+          headers: { Authorization: `Bearer ${AI_HF_ACCESS_TOKEN}`, "Content-Type": "application/json" },
+          method: "POST",
+          body: JSON.stringify({ model: hfModel, messages: requestBody.messages, max_tokens: 1024 }),
+        });
 
         if (hfResponse.ok) {
           const hfData = await hfResponse.json();
           analysisContent = hfData.choices?.[0]?.message?.content || "";
           usedProvider = "huggingface";
-          console.log("Hugging Face analysis successful");
-        } else {
-          const hfError = await hfResponse.text();
-          console.error("Hugging Face error:", hfError);
         }
-      } catch (hfErr) {
-        console.error("Hugging Face fetch failed:", hfErr);
-      }
+      } catch (err) { console.error("HF Error:", err); }
     }
 
-    // Fallback to Lovable AI Gateway if HF failed or no token
-    if (!analysisContent && LOVABLE_API_KEY) {
-      console.log("Falling back to Lovable AI Gateway...");
+    if (!analysisContent && AI_LOVABLE_API_KEY) {
       const model = "google/gemini-2.5-flash";
       const analysisResponse = await callAiWithTracking({
         userId: user.id,
         functionName: "visual-search",
         model,
-        apiKey: LOVABLE_API_KEY,
+        apiKey: AI_LOVABLE_API_KEY,
         requestBody,
       });
 
@@ -167,136 +142,74 @@ Use essas dicas para refinar sua percepção, mas priorize o que você vê visua
         const analysisData = await analysisResponse.json();
         analysisContent = analysisData.choices?.[0]?.message?.content || "";
         usedProvider = "lovable";
-      } else {
-        const errorText = await analysisResponse.text();
-        console.error("AI analysis error (Lovable):", { 
-          status: analysisResponse.status,
-          error: errorText,
-        });
-        
-        if (analysisResponse.status === 429) {
-          return new Response(
-            JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
-            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
       }
     }
 
     if (!analysisContent) {
-      throw new Error("Não foi possível realizar a análise visual. Verifique as configurações de IA (Hugging Face/Lovable).");
+      throw new Error("Análise visual indisponível (Cota IA ou Token HF ausente).");
     }
 
-    console.log(`AI analysis completed via ${usedProvider}`);
-
-    // Parse JSON from response
+    // Parse JSON
     let productAnalysis;
-    try {
-      const jsonMatch = analysisContent.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        productAnalysis = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error("No JSON found in response");
-      }
-    } catch (parseError) {
-      console.error("Failed to parse AI response:", parseError);
-      productAnalysis = {
-        productType: "Produto",
-        material: "Não identificado",
-        colors: [],
-        category: "",
-        keywords: [analysisContent.slice(0, 50)],
-        description: "Análise visual parcial.",
-        confidence: 0.5,
-        rationale: "Erro no processamento da estrutura de dados da IA.",
-        visualEvidence: { material: "", silhouette: "", finish: "" },
-        visualHighlights: []
-      };
+    const jsonMatch = analysisContent.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try { productAnalysis = JSON.parse(jsonMatch[0]); } catch { /* fallback */ }
+    }
+    
+    if (!productAnalysis) {
+      productAnalysis = { productType: "Produto", material: "N/A", colors: [], keywords: [analysisContent.slice(0, 50)], confidence: 0.5 };
     }
 
-    // Step 2: Search products in database using service client from auth
     const supabase = auth.localServiceClient;
 
-    const searchTerms = [
-      productAnalysis.productType,
-      productAnalysis.material,
-      ...(productAnalysis.keywords || [])
-    ].filter(Boolean).join(" ");
+    // Search products
+    const searchTerms = [productAnalysis.productType, ...productAnalysis.keywords].join(" ");
+    console.log("Searching products:", searchTerms);
 
-    console.log("Searching products with terms:", searchTerms);
+    const { data: directProducts, error: directError } = await supabase
+      .from("products")
+      .select("id, name, sku, category_name, description, price, images, colors, tags")
+      .eq("is_active", true)
+      .or(`name.ilike.%${productAnalysis.productType}%,description.ilike.%${productAnalysis.productType}%`)
+      .limit(50);
 
-    const { data: products, error: searchError } = await supabase
-      .rpc("search_products_semantic", {
-        search_query: searchTerms,
-        max_results: 24
-      });
+    let finalProducts = directProducts || [];
 
-    if (searchError) {
-      console.error("Search error:", searchError);
-      throw new Error(`Search failed: ${searchError.message}`);
-    }
+    // Re-rank using semantic function if we have products
+    if (finalProducts.length > 0) {
+      const { data: rankedResults, error: rankError } = await supabase
+        .rpc("search_products_semantic", {
+          _query: searchTerms,
+          _products: finalProducts,
+          _limit: 24
+        });
 
-    let finalProducts = products || [];
-    
-    if (finalProducts.length === 0) {
-      console.log("No semantic results, trying direct query...");
-      const { data: directProducts, error: directError } = await supabase
-        .from("products")
-        .select("id, name, sku, category_name, subcategory, description, price, colors, materials, tags, images")
-        .eq("is_active", true)
-        .or(`name.ilike.%${productAnalysis.productType}%,category_name.ilike.%${productAnalysis.category}%`)
-        .limit(24);
-
-      if (!directError && directProducts) {
-        finalProducts = directProducts.map(p => ({ ...p, relevance: 0.4 }));
+      if (!rankError && rankedResults) {
+        const rankedIds = rankedResults.map(r => r.product_id);
+        finalProducts = finalProducts
+          .filter(p => rankedIds.includes(p.id))
+          .map(p => {
+            const rank = rankedResults.find(r => r.product_id === p.id);
+            return { 
+              ...p, 
+              relevance: rank?.score || 0.4,
+              matchRationale: `Encontrado por similaridade em: ${rank?.matched_field || 'vários campos'}`
+            };
+          })
+          .sort((a, b) => b.relevance - a.relevance);
+      } else {
+        finalProducts = finalProducts.map(p => ({ ...p, relevance: 0.5 }));
       }
     }
 
-    // Add rationale and social proof to products
-    finalProducts = finalProducts.map(p => ({
-      ...p,
-      matchRationale: `Este produto foi selecionado por possuir características de ${productAnalysis.productType} em ${productAnalysis.material}, alinhado com a silhueta identificada.`,
-      totalFound: Math.floor(Math.random() * 25) + 5, // Simulação de dados de tendência
-      stock: Math.floor(Math.random() * 450) + 1 // Simulação de estoque real
-    }));
-
-    // Re-calculate confidence based on user filters if provided
-    if (category || color) {
-      finalProducts = finalProducts.map(p => {
-        let bonus = 0;
-        if (category && p.category_name?.toLowerCase().includes(category.toLowerCase())) bonus += 0.2;
-        if (color && p.colors?.some(c => color.toLowerCase().includes(c.toLowerCase()))) bonus += 0.2;
-        return { ...p, relevance: Math.min(1, (p.relevance || 0) + bonus) };
-      });
-    }
-
-    // Sort by relevance (some might be from RPC, some from fallback)
-    finalProducts.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
-
-    return new Response(
-      JSON.stringify({
-        analysis: productAnalysis,
-        products: finalProducts,
-        searchTerms
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ analysis: productAnalysis, products: finalProducts, searchTerms }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
 
   } catch (error) {
-    if (error instanceof QuotaExceededError) {
-      return new Response(
-        JSON.stringify({ error: "Limite mensal de IA atingido. Contate o administrador." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    if ((error as any)?.status === 401 || (error as any)?.status === 403) {
-      return authErrorResponse(error, corsHeaders);
-    }
     console.error("Visual search error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Erro ao processar busca visual";
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
 });
