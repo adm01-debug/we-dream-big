@@ -239,7 +239,7 @@ export function ProductCustomizationOptions({
               </Badge>
             </div>
 
-            <div className="scrollbar-none flex snap-x gap-2 overflow-x-auto pb-1 md:grid md:grid-cols-3 md:overflow-x-visible md:pb-0">
+            <div className="scrollbar-none flex snap-x gap-2 overflow-x-auto pb-1 md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-x-visible md:pb-0">
               {locations.map((loc) => {
                 const isActive = activeLocation === loc.location_code;
                 const hasPrice = pricesRef.current.has(loc.location_code);
