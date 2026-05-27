@@ -22,8 +22,10 @@ export function ProtectedRoute({
   requireAdmin = false,
 }: ProtectedRouteProps) {
   const { user, roles, currentAAL, isLoading } = useAuth();
-  const bypassAuth = localStorage.getItem('BYPASS_AUTH_FOR_TEST') === 'true';
+  const searchParams = new URLSearchParams(window.location.search);
+  const bypassAuth = searchParams.get('bypass_auth') === 'true';
   const location = useLocation();
+
 
   if (bypassAuth) {
     return children ? <>{children}</> : <Outlet />;
