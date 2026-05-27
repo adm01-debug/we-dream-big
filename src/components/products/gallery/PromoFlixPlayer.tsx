@@ -29,8 +29,10 @@ import {
   Target,
   ChevronRight,
   ChevronLeft,
-  Settings
+  Settings,
+  MessageCircle
 } from 'lucide-react';
+import { VideoShareWhatsAppDialog } from './VideoShareWhatsAppDialog';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
