@@ -229,10 +229,19 @@ export function ProductQuickActions({
                 ))}
               </div>
             ) : hasErrorTags ? (
-              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-center">
-                <p className="text-sm text-destructive">
-                  Não foi possível carregar as indicações. Tente novamente mais tarde.
+              <div className="flex flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-center">
+                <div className="mb-3 rounded-full bg-destructive/10 p-3">
+                  <Target className="h-6 w-6 text-destructive" />
+                </div>
+                <p className="mb-4 text-sm font-medium text-destructive">
+                  Não foi possível carregar as indicações.
                 </p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="rounded-lg bg-destructive px-4 py-2 text-xs font-bold text-destructive-foreground transition-all hover:bg-destructive/90"
+                >
+                  Tentar novamente
+                </button>
               </div>
             ) : displayTagSections.length > 0 ? (
               displayTagSections.map(([category, items]) => (
