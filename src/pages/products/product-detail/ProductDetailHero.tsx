@@ -20,8 +20,9 @@ import { DynamicTrustBadges, type SupplierTrustData } from '@/components/common/
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PriceFreshnessBadge } from '@/components/products/PriceFreshnessBadge';
+import { IntelligenceBadges } from '@/components/common/IntelligenceBadges';
 
-import { useProductFreshnessOverride, type Product } from '@/hooks/products';
+import { useProductFreshnessOverride, type Product, useProductIntelligenceBadges } from '@/hooks/products';
 import { DEFAULT_PRICE_FRESHNESS_THRESHOLD_DAYS } from '@/utils/price-freshness';
 import { cn } from '@/lib/utils';
 import { sortVariationsByColor } from '@/utils/colorSorting';
@@ -76,6 +77,14 @@ export function ProductDetailHero({
 
   const minQuantity = product.minQuantity || 1;
   const stockInfo = getStockStatusInfo(product.stockStatus);
+
+  const { badges: intelBadges } = useProductIntelligenceBadges(id, {
+    featured: product.featured,
+    new_arrival: product.newArrival,
+  });
+
+  // Check if any intel badge indicates best seller or hot item
+  const isAutoBestSeller = intelBadges.some(b => b.type === 'best-seller' || b.type === 'hot-item');
 
   // Override local (admin-only) tem precedência sobre o valor exposto pelo BD
   // externo. Quando ambos são nulos, o util cai no default de 60 dias.
@@ -356,7 +365,17 @@ export function ProductDetailHero({
               </div>
 
               {/* Trust + Social proof */}
-              <div className="space-y-2.5 pt-1">
+              <div className="space-y-4 pt-1">
+                {intelBadges.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                      Inteligência de Mercado
+                    </p>
+                    <IntelligenceBadges badges={intelBadges} className="gap-1.5" />
+                  </div>
+                )}
+                
+                <div className="space-y-2.5">
                 <DynamicTrustBadges
                   trust={
                     supplierTrust ?? { isVerified: false, deliveryDays: null, avgRating: null }
@@ -364,7 +383,7 @@ export function ProductDetailHero({
                   productFlags={{
                     newArrival: product?.newArrival ?? false,
                     onSale: product?.onSale ?? false,
-                    featured: product?.featured ?? false,
+                    featured: (product?.featured || isAutoBestSeller) ?? false,
                     minQuantity: product?.minQuantity,
                   }}
                   className="text-[10px]"
