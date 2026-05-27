@@ -9,7 +9,8 @@ describe('Price Freshness Integration', () => {
   it('should use default threshold (60) when not provided', () => {
     const freshness = getPriceFreshness(thirtyDaysAgo.toISOString(), null);
     expect(freshness.thresholdDays).toBe(DEFAULT_PRICE_FRESHNESS_THRESHOLD_DAYS);
-    expect(freshness.status).toBe('fresh'); // 30 < 60
+    expect(freshness.status).toBe('fresh'); // 30 < 60/2 (30) is false, so it's fresh? wait.
+    // 30 > Math.floor(60 / 2) (30) is false. So 30 is fresh. 31 is aging.
   });
 
   it('should correctly classify 30 days as stale if threshold is 20', () => {
@@ -18,10 +19,11 @@ describe('Price Freshness Integration', () => {
     expect(freshness.status).toBe('stale');
   });
 
-  it('should correctly classify 70 days as fresh if threshold is 90', () => {
+  it('should correctly classify 70 days as aging if threshold is 90', () => {
+    // 90/2 = 45. 70 > 45, so status should be 'aging'
     const freshness = getPriceFreshness(seventyDaysAgo.toISOString(), 90);
     expect(freshness.thresholdDays).toBe(90);
-    expect(freshness.status).toBe('fresh');
+    expect(freshness.status).toBe('aging');
   });
 
   it('should correctly classify aging status (between threshold/2 and threshold)', () => {
