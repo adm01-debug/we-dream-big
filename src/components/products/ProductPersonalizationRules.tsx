@@ -354,17 +354,17 @@ export function ProductPersonalizationRules({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="font-display text-lg font-semibold text-foreground">Personalização</h3>
+          <h3 className="font-display text-sm font-semibold text-foreground">Regras de Gravação</h3>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <Info className="h-4 w-4 text-muted-foreground" />
+                <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="max-w-xs text-sm">
+                <p className="max-w-xs text-xs">
                   Técnicas e locais disponíveis para personalização deste produto
                 </p>
               </TooltipContent>
@@ -374,19 +374,19 @@ export function ProductPersonalizationRules({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-[11px]">
+              <Download className="h-3.5 w-3.5" />
               Exportar
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleExportExcel} className="cursor-pointer gap-2">
-              <FileSpreadsheet className="h-4 w-4 text-success" />
-              Exportar Excel
+            <DropdownMenuItem onClick={handleExportExcel} className="cursor-pointer gap-2 text-xs">
+              <FileSpreadsheet className="h-3.5 w-3.5 text-success" />
+              Excel
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportPDF} className="cursor-pointer gap-2">
-              <FileText className="h-4 w-4 text-destructive" />
-              Exportar PDF
+            <DropdownMenuItem onClick={handleExportPDF} className="cursor-pointer gap-2 text-xs">
+              <FileText className="h-3.5 w-3.5 text-destructive" />
+              PDF
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -397,34 +397,34 @@ export function ProductPersonalizationRules({
           <AccordionItem
             key={component.id}
             value={component.id}
-            className="mb-2 rounded-xl border border-border bg-card/50 px-4"
+            className="mb-1 rounded-lg border border-border bg-card/50 px-3"
           >
-            <AccordionTrigger className="py-4 hover:no-underline">
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                  <Layers className="h-4 w-4 text-primary" />
+            <AccordionTrigger className="py-2.5 hover:no-underline">
+              <div className="flex items-center gap-2">
+                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
+                  <Layers className="h-3 w-3 text-primary" />
                 </div>
                 <div className="text-left">
-                  <span className="font-medium text-foreground">{component.name}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">
+                  <span className="text-xs font-medium text-foreground">{component.name}</span>
+                  <span className="ml-2 text-[10px] text-muted-foreground">
                     {component.locations.length}{' '}
                     {component.locations.length === 1 ? 'local' : 'locais'}
                   </span>
                 </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="pb-4">
-              <div className="space-y-4 pl-11">
+            <AccordionContent className="pb-3">
+              <div className="space-y-3 pl-8">
                 {component.locations.map((location) => (
                   <div
                     key={location.id}
-                    className="space-y-3 rounded-xl border border-border/50 bg-secondary/30 p-4"
+                    className="space-y-2 rounded-lg border border-border/50 bg-secondary/30 p-3"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-info" />
-                        <span className="text-sm font-medium">{location.name}</span>
-                        <span className="font-mono text-xs text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 text-info" />
+                        <span className="text-xs font-medium">{location.name}</span>
+                        <span className="font-mono text-[10px] text-muted-foreground">
                           ({location.code})
                         </span>
                       </div>
