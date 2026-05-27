@@ -58,7 +58,11 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const HF_ACCESS_TOKEN = Deno.env.get("HF_ACCESS_TOKEN");
 
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const HF_ACCESS_TOKEN = Deno.env.get("HF_ACCESS_TOKEN");
+
     console.log("Analyzing image with AI...");
+    console.log(`Config status: HF_TOKEN=${!!HF_ACCESS_TOKEN}, LOVABLE_KEY=${!!LOVABLE_API_KEY}`);
 
     const requestBody = {
       messages: [
