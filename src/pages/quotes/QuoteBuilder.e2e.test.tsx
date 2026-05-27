@@ -51,6 +51,45 @@ describe('QuoteBuilder Full E2E Flow (Logic)', () => {
     vi.clearAllMocks();
   });
 
+  it('should show validation errors when mandatory fields are missing', async () => {
+    const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
+
+    // Step 1: Client - Initial empty state
+    expect(result.current.isFormValid).toBe(false);
+    expect(result.current.validationErrors).toContain('empresa');
+    expect(result.current.validationErrors).toContain('contato');
+
+    // Partially fill
+    act(() => {
+      result.current.setClientId('client-1');
+    });
+    expect(result.current.validationErrors).not.toContain('empresa');
+    expect(result.current.validationErrors).toContain('contato');
+
+    // Fill Step 1
+    act(() => {
+      result.current.setContactId('contact-1');
+    });
+    expect(result.current.completedSteps).toContain('client');
+
+    // Step 2: Conditions - Initial empty state for this step
+    expect(result.current.validationErrors).toContain('forma_pagamento');
+    expect(result.current.validationErrors).toContain('prazo_pagamento');
+
+    act(() => {
+      result.current.setPaymentMethod('boleto');
+      result.current.setPaymentTerms('7_dias');
+      result.current.setDeliveryTime('10 dias');
+      result.current.setShippingType('cif');
+    });
+
+    expect(result.current.validationErrors).not.toContain('forma_pagamento');
+    expect(result.current.completedSteps).toContain('conditions');
+
+    // Step 3: Items - Initial empty
+    expect(result.current.validationErrors).toContain('itens');
+  });
+
   it('should complete the full wizard flow logically', async () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
 
