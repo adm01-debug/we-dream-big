@@ -30,7 +30,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          # fetch-depth: 0 garante que BASE_SHA do PR está disponível independente
+          # do tamanho da branch. fetch-depth: 2 falhava em PRs com 3+ commits porque
+          # a shallow clone não continha o commit base da PR (apenas HEAD e HEAD~1).
+          fetch-depth: 0
 
       - name: Determine files to scan
         id: files
