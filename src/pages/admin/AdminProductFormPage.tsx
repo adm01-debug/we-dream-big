@@ -254,11 +254,25 @@ export default function AdminProductFormPage() {
         }
 
         const { oldFields, newFields } = getChangedFields(
-          { sku: product.sku, name: product.name, description: product.description, sale_price: getProductPrice(product), stock_quantity: getProductStock(product), is_active: product.is_active },
+          { 
+            sku: product.sku, 
+            name: product.name, 
+            description: product.description, 
+            sale_price: getProductPrice(product), 
+            stock_quantity: getProductStock(product), 
+            is_active: product.is_active,
+            price_freshness_threshold_days: product.price_freshness_threshold_days
+          },
           savedProductData,
         );
         if (Object.keys(newFields).length > 0) {
-          await logAction({ action: 'UPDATE', entityType: 'products', entityId: product.id, oldValues: oldFields, newValues: newFields });
+          await logAction({ 
+            action: 'UPDATE', 
+            entityType: 'products', 
+            entityId: product.id, 
+            oldValues: oldFields, 
+            newValues: newFields 
+          });
         }
 
         toast.success('Produto atualizado com sucesso');
