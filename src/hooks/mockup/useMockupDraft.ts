@@ -56,6 +56,10 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
     return null;
   }, [user?.id, draftKey]);
 
+  // BUG-A FIX: removed 3 FK pre-validation queries (product, technique, client).
+  // These fired on every auto-save (every 2s during active editing), generating
+  // ~90 unnecessary SELECT queries per 5 minutes of work.
+  // The upsert's existing 23503/409 fallback already handles FK violations gracefully.
   const saveToBackend = useCallback(
     async (data: MockupDraftData): Promise<boolean> => {
       if (!user) return false;
@@ -72,41 +76,11 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
         const firstLogo = data.personalizationAreas.find((a) => a.logoPreview)?.logoPreview || null;
         const safeLogoData = firstLogo && firstLogo.startsWith('http') ? firstLogo : null;
 
-        let safeProductId: string | null = null;
-        if (data.productId) {
-          const { data: productRow } = await supabase
-            .from('products')
-            .select('id')
-            .eq('id', data.productId)
-            .maybeSingle();
-          if (productRow) {
-            safeProductId = data.productId;
-          }
-        }
-
-        let safeTechniqueId: string | null = null;
-        if (data.techniqueId) {
-          const { data: techRow } = await supabase
-            .from('tabela_preco_gravacao_oficial')
-            .select('id')
-            .eq('id', data.techniqueId)
-            .maybeSingle();
-          if (techRow) {
-            safeTechniqueId = data.techniqueId;
-          }
-        }
-
-        let safeClientId: string | null = null;
-        if (data.clientId) {
-          const { data: clientRow } = await supabase
-            .from('bitrix_clients')
-            .select('id')
-            .eq('id', data.clientId)
-            .maybeSingle();
-          if (clientRow) {
-            safeClientId = data.clientId;
-          }
-        }
+        // BUG-A FIX: IDs used directly — no pre-validation queries.
+        // FK violations are caught below and handled via fallback.
+        const safeProductId: string | null = data.productId ?? null;
+        const safeTechniqueId: string | null = data.techniqueId ?? null;
+        const safeClientId: string | null = data.clientId ?? null;
 
         const payload = {
           user_id: user.id,
@@ -128,6 +102,11 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
 
         if (upsertError) {
           if (upsertError.code === '23503' || upsertError.code === '409') {
+            // BUG-H FIX: log warning so devs can diagnose FK mismatches in devtools.
+            console.warn(
+              '[useMockupDraft] FK violation on draft save — falling back to null IDs.',
+              { productId: safeProductId, techniqueId: safeTechniqueId, clientId: safeClientId },
+            );
             const { error: updateError } = await supabase
               .from('mockup_drafts')
               .update({
