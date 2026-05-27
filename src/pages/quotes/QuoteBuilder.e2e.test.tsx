@@ -151,13 +151,14 @@ describe('QuoteBuilderPage E2E Wizard Flow', () => {
     await user.click(cifOption);
 
     // Verificar Step 2
-    const conditionsStep = within(wizard).getByLabel(/Etapa 2: Condições/i);
+    const conditionsStep = within(wizard).getByLabelText(/Etapa 2: Condições/i);
     expect(conditionsStep).toHaveAttribute('aria-label', expect.stringContaining('Concluída'));
 
     // --- ETAPA 3: ITENS ---
-    // 3.1 Abrir busca de produto
-    const addProductBtn = screen.getByTestId('quote-add-product-button');
-    await user.click(addProductBtn);
+    // Precisamos primeiro ir para a etapa de itens clicando nela ou via nextStep
+    // Mas o hook useQuoteBuilderState deve permitir adicionar produtos de qualquer lugar se habilitado, 
+    // porém o wizard exige a navegação. Vamos clicar no step 3.
+    await user.click(within(wizard).getByLabelText(/Etapa 3: Itens/i));
 
     // 3.2 Buscar e Selecionar Produto
     const productSearchInput = screen.getByTestId('product-search-input');
