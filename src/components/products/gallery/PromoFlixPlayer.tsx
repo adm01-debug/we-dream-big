@@ -577,29 +577,43 @@ export function PromoFlixPlayer({
         code: error?.code,
         message: error?.message,
         usingHls: Boolean(hlsRef.current),
+        src: video.currentSrc?.substring(0, 80),
       });
-      // Quando estamos usando HLS.js, o <video> recebe erros (especialmente code 4 =
-      // SRC_NOT_SUPPORTED) sempre que o MediaSource é detached durante recuperações
-      // automáticas (network/media error → recoverMediaError, startLoad). Esses erros
-      // NÃO são fatais para o usuário — o hls.js já tem seu próprio handler (ERROR event)
-      // que decide se mostra mensagem definitiva. Ignorar aqui evita o falso positivo
-      // "Ops! Algo deu errado / CORS" que travava o player.
+      // Quando hls.js está ATIVO, o <video> recebe erros (code 4 = SRC_NOT_SUPPORTED)
+      // toda vez que o MediaSource é detached durante recuperações (network/media error,
+      // recoverMediaError, startLoad, level switch). NÃO são fatais — o próprio hls.js
+      // dispara seu evento ERROR e decide a mensagem definitiva.
       if (hlsRef.current) {
         return;
       }
-      // Sem HLS.js (reprodução nativa): erro real de fonte/decodificação.
-      if (error?.code === 4) {
-        setHlsError(
-          'Não foi possível reproduzir este vídeo. O formato pode não ser suportado pelo seu navegador ou o link está indisponível.',
-        );
-        setIsLoading(false);
-        setShowLoadingAction(false);
-        clearLoadingTimeout();
-      } else if (error?.code === 2) {
-        setHlsError('Falha de rede ao carregar o vídeo. Verifique sua conexão e tente novamente.');
-        setIsLoading(false);
-        clearLoadingTimeout();
+      // Ignora erro residual quando não há src definido (acontece após cleanup/re-init)
+      if (!video.currentSrc && !video.src) {
+        return;
       }
+      // Reprodução nativa: erro real de fonte/decodificação
+      switch (error?.code) {
+        case 1: // ABORTED — usuário ou script abortou, normalmente não fatal
+          return;
+        case 2: // NETWORK
+          setHlsError(
+            'Falha de rede ao carregar o vídeo. Verifique sua conexão e tente novamente.',
+          );
+          break;
+        case 3: // DECODE
+          setHlsError(
+            'Erro ao decodificar o vídeo. O arquivo pode estar corrompido ou em um codec não suportado.',
+          );
+          break;
+        case 4: // SRC_NOT_SUPPORTED
+        default:
+          setHlsError(
+            'Não foi possível reproduzir este vídeo. O formato pode não ser suportado pelo seu navegador ou o link está indisponível.',
+          );
+          break;
+      }
+      setIsLoading(false);
+      setShowLoadingAction(false);
+      clearLoadingTimeout();
     };
     const onRate = () => setPlaybackRate(video.playbackRate);
     const onVolume = () => {
