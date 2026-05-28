@@ -302,4 +302,70 @@ describe('PromoFlixPlayer Automated Tests', () => {
       });
     });
   });
+
+  describe('Level Changes and Auto-Leveling', () => {
+    const waitForHlsInstance = async () => {
+      await waitFor(() => {
+        expect(lastHlsInstance).not.toBeNull();
+      }, { timeout: 2000 });
+      return lastHlsInstance;
+    };
+
+    it('should update quality state during multiple level changes with auto-level enabled', async () => {
+      const { queryByText } = render(<PromoFlixPlayer src="test.m3u8" isHls={true} />);
+      
+      const hlsInstance = await waitForHlsInstance();
+      const levelSwitchedHandler = hlsInstance.on.mock.calls.find((call: any) => call[0] === 'hlsLevelSwitched')[1];
+      const manifestHandler = hlsInstance.on.mock.calls.find((call: any) => call[0] === 'hlsManifestParsed')[1];
+
+      // Initially auto-level is enabled (-1)
+      expect(hlsInstance.autoLevelEnabled).toBe(true);
+
+      // Trigger manifest parsed to clear loading state
+      await act(async () => {
+        manifestHandler('hlsManifestParsed', { levels: [{ height: 720 }, { height: 1080 }] });
+      });
+
+      expect(queryByText(/Carregando/i)).toBeNull();
+
+      // Simulate first level switch
+      await act(async () => {
+        levelSwitchedHandler('hlsLevelSwitched', { level: 1 });
+      });
+
+      // Overlay should remain hidden
+      expect(queryByText(/Carregando/i)).toBeNull();
+
+      // Simulate second level switch
+      await act(async () => {
+        levelSwitchedHandler('hlsLevelSwitched', { level: 2 });
+      });
+
+      expect(queryByText(/Carregando/i)).toBeNull();
+    });
+
+    it('should show "Manual Load" button and re-initialize player on click', async () => {
+      vi.useFakeTimers();
+      const { getByText, queryByText } = render(<PromoFlixPlayer src="stuck.m3u8" isHls={true} />);
+      
+      // Advance to trigger timeout
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(11000);
+      });
+
+      const manualLoadBtn = getByText(/Carregar Manualmente/i);
+      expect(manualLoadBtn).toBeDefined();
+
+      // Click the button
+      await act(async () => {
+        fireEvent.click(manualLoadBtn);
+      });
+
+      // Button should disappear and loading should restart
+      expect(queryByText(/Carregar Manualmente/i)).toBeNull();
+      expect(getByText(/Carregando/i)).toBeDefined();
+
+      vi.useRealTimers();
+    });
+  });
 });
