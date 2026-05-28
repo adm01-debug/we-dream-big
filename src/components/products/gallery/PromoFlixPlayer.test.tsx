@@ -368,4 +368,116 @@ describe('PromoFlixPlayer Automated Tests', () => {
       vi.useRealTimers();
     });
   });
+
+  describe('Regression Tests for Identified Bugs', () => {
+    it('should have crossOrigin="anonymous" on the video element for CORS support', () => {
+      render(<PromoFlixPlayer src="test.mp4" />);
+      const video = document.querySelector('video');
+      expect(video?.getAttribute('crossorigin')).toBe('anonymous');
+    });
+
+    it('should clean up src and load() the video element on unmount to prevent residual errors', () => {
+      const { unmount } = render(<PromoFlixPlayer src="test.mp4" />);
+      const video = document.querySelector('video') as HTMLVideoElement;
+      const removeAttributeSpy = vi.spyOn(video, 'removeAttribute');
+      const loadSpy = vi.spyOn(video, 'load');
+      
+      unmount();
+      
+      expect(removeAttributeSpy).toHaveBeenCalledWith('src');
+      expect(loadSpy).toHaveBeenCalled();
+    });
+
+    it('should reset error state when switching to a new video src', async () => {
+      const { rerender, queryByText, getByText } = render(<PromoFlixPlayer src="error.mp4" />);
+      
+      const video = document.querySelector('video');
+      await act(async () => {
+        Object.defineProperty(video, 'error', { value: { code: 2 }, configurable: true });
+        fireEvent(video, new Event('error'));
+      });
+      
+      expect(getByText(/Falha de rede/i)).toBeDefined();
+      
+      // Rerender with new src
+      rerender(<PromoFlixPlayer src="new-video.mp4" />);
+      
+      // Error should be gone immediately because initPlayer resets it
+      await waitFor(() => {
+        expect(queryByText(/Falha de rede/i)).toBeNull();
+        expect(getByText(/Carregando/i)).toBeDefined();
+      }, { timeout: 2000 });
+    });
+
+    it('should try muted autoplay fallback if play() fails with sound', async () => {
+      // Mock play on the prototype BEFORE rendering
+      // We must be careful as the beforeEach also mocks play
+      const playSpy = vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(function(this: HTMLVideoElement) {
+        if (!this.muted && !this.dataset.fallbackTried) {
+          this.dataset.fallbackTried = 'true';
+          return Promise.reject(new Error('NotAllowedError'));
+        }
+        return Promise.resolve();
+      });
+      
+      render(<PromoFlixPlayer src="test.mp4" autoPlay={true} isMuted={false} />);
+      
+      await waitFor(() => {
+        const video = document.querySelector('video');
+        expect(video?.muted).toBe(true);
+      }, { timeout: 3000 });
+      
+      playSpy.mockRestore();
+    });
+
+    it('should correctly handle native error code 3 (DECODE)', async () => {
+      const { findByText } = render(<PromoFlixPlayer src="corrupt.mp4" />);
+      const video = document.querySelector('video');
+      
+      await act(async () => {
+        Object.defineProperty(video, 'error', { value: { code: 3 }, configurable: true });
+        fireEvent(video, new Event('error'));
+      });
+      
+      expect(await findByText(/Erro ao decodificar o vídeo/i)).toBeDefined();
+    });
+
+    it('should prevent race conditions using initTokenRef during fast src changes', async () => {
+      // First render
+      render(<PromoFlixPlayer src="first.m3u8" isHls={true} />);
+      await waitFor(() => expect(lastHlsInstance).not.toBeNull());
+      const firstHls = lastHlsInstance;
+      
+      // Quickly change src
+      render(<PromoFlixPlayer src="second.m3u8" isHls={true} />);
+      
+      // Wait for second instance
+      await waitFor(() => {
+        expect(lastHlsInstance).not.toBeNull();
+        expect(lastHlsInstance).not.toBe(firstHls);
+      });
+      
+      // The first one should have been destroyed either in useEffect cleanup or at start of next initPlayer
+      expect(firstHls.destroy).toHaveBeenCalled();
+    });
+
+
+
+    it('should clean up timeouts on unmount', () => {
+      vi.useFakeTimers();
+      const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
+      const { unmount } = render(<PromoFlixPlayer src="test.mp4" />);
+      
+      // Arm both timeouts (controls and loading) by waiting a bit
+      act(() => {
+        vi.advanceTimersByTime(100); 
+      });
+      
+      unmount();
+      
+      // Should have cleared controlsTimeout and loadingTimeout
+      expect(clearTimeoutSpy).toHaveBeenCalled();
+      vi.useRealTimers();
+    });
+  });
 });
