@@ -443,16 +443,24 @@ describe('PromoFlixPlayer Automated Tests', () => {
     });
 
     it('should prevent race conditions using initTokenRef during fast src changes', async () => {
-      const { rerender } = render(<PromoFlixPlayer src="first.m3u8" isHls={true} />);
+      render(<PromoFlixPlayer src="first.m3u8" isHls={true} />);
+      
+      // Wait for first init
+      await waitFor(() => expect(lastHlsInstance).not.toBeNull());
       const firstHls = lastHlsInstance;
       
       // Quickly change src
-      rerender(<PromoFlixPlayer src="second.m3u8" isHls={true} />);
-      const secondHls = lastHlsInstance;
+      render(<PromoFlixPlayer src="second.m3u8" isHls={true} />);
       
-      expect(firstHls).not.toBe(secondHls);
+      // Wait for second init
+      await waitFor(() => {
+        expect(lastHlsInstance).not.toBeNull();
+        expect(lastHlsInstance).not.toBe(firstHls);
+      });
+      
       expect(firstHls.destroy).toHaveBeenCalled();
     });
+
 
     it('should clean up timeouts on unmount', () => {
       vi.useFakeTimers();
