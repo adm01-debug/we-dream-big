@@ -259,8 +259,11 @@ export function PromoFlixPlayer({
       return;
     }
 
+    logTelemetry('HLS_LOAD_START');
     import('hls.js')
       .then(({ default: hlsConstructor }) => {
+        logTelemetry('HLS_LOADED_SUCCESS');
+
         const videoEl = videoRef.current;
         if (!videoEl) return;
 
