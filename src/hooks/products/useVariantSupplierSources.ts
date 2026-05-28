@@ -9,8 +9,14 @@ export interface VariantWithStock {
   color_name: string | null;
   color_hex: string | null;
   stock_quantity: number | null;
-  next_entry_date: string | null;
-  next_entry_quantity: number | null;
+  next_entry_date: string | null; // Mapeado para next_date_1 por compatibilidade
+  next_entry_quantity: number | null; // Mapeado para next_quantity_1 por compatibilidade
+  next_date_1?: string | null;
+  next_quantity_1?: number | null;
+  next_date_2?: string | null;
+  next_quantity_2?: number | null;
+  next_date_3?: string | null;
+  next_quantity_3?: number | null;
   selected_thumbnail: string | null;
 }
 
@@ -55,21 +61,37 @@ export function useProductVariantsWithStock(productId: string | undefined) {
         color_hex: string | null;
         stock_quantity: number | null;
         selected_thumbnail: string | null;
+        variant_supplier_sources?: {
+          next_date_1: string | null;
+          next_quantity_1: number | null;
+          next_date_2: string | null;
+          next_quantity_2: number | null;
+          next_date_3: string | null;
+          next_quantity_3: number | null;
+        }[];
       }>({
         table: 'product_variants',
         operation: 'select',
         select:
-          'id, product_id, sku, color_code, color_name, color_hex, stock_quantity, selected_thumbnail',
+          'id, product_id, sku, color_code, color_name, color_hex, stock_quantity, selected_thumbnail, variant_supplier_sources(next_date_1, next_quantity_1, next_date_2, next_quantity_2, next_date_3, next_quantity_3)',
         filters: { product_id: productId, is_active: true },
         limit: 200,
       });
 
-      // Map to VariantWithStock (next_entry fields come from variant_supplier_sources if available)
-      return result.records.map((v) => ({
-        ...v,
-        next_entry_date: null,
-        next_entry_quantity: null,
-      }));
+      return result.records.map((v) => {
+        const source = v.variant_supplier_sources?.[0];
+        return {
+          ...v,
+          next_entry_date: source?.next_date_1 || null,
+          next_entry_quantity: source?.next_quantity_1 || null,
+          next_date_1: source?.next_date_1,
+          next_quantity_1: source?.next_quantity_1,
+          next_date_2: source?.next_date_2,
+          next_quantity_2: source?.next_quantity_2,
+          next_date_3: source?.next_date_3,
+          next_quantity_3: source?.next_quantity_3,
+        };
+      });
     },
     enabled: !!productId,
     staleTime: 5 * 60 * 1000,
@@ -82,25 +104,30 @@ export function useProductVariantsWithStock(productId: string | undefined) {
 export function processStockEntries(variants: VariantWithStock[]): StockEntry[] {
   const entries: StockEntry[] = [];
 
-  const entryCountByVariant = new Map<string, number>();
   for (const v of variants) {
-    if (v.next_entry_date && v.next_entry_quantity && v.next_entry_quantity > 0) {
-      const idx = (entryCountByVariant.get(v.id) ?? 0) + 1;
-      entryCountByVariant.set(v.id, idx);
-      entries.push({
-        id: `${v.id}-${idx}`,
-        variantId: v.id,
-        colorName: v.color_name || 'Sem cor',
-        colorHex: v.color_hex,
-        expectedDate: v.next_entry_date,
-        expectedQuantity: v.next_entry_quantity,
-        thumbnail: v.selected_thumbnail,
-        supplierSku: v.sku,
-        currentStock: v.stock_quantity ?? 0,
-        reservedStock: 0,
-        entryIndex: idx,
-      });
-    }
+    const futurePairs = [
+      { date: v.next_date_1, qty: v.next_quantity_1 },
+      { date: v.next_date_2, qty: v.next_quantity_2 },
+      { date: v.next_date_3, qty: v.next_quantity_3 },
+    ];
+
+    futurePairs.forEach((pair, idx) => {
+      if (pair.date && pair.qty && pair.qty > 0) {
+        entries.push({
+          id: `${v.id}-${idx + 1}`,
+          variantId: v.id,
+          colorName: v.color_name || 'Sem cor',
+          colorHex: v.color_hex,
+          expectedDate: pair.date,
+          expectedQuantity: pair.qty,
+          thumbnail: v.selected_thumbnail,
+          supplierSku: v.sku,
+          currentStock: v.stock_quantity ?? 0,
+          reservedStock: 0,
+          entryIndex: idx + 1,
+        });
+      }
+    });
   }
 
   return entries;
