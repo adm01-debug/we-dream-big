@@ -17,11 +17,11 @@ describe('PriceFreshnessBadge Component', () => {
     return render(<TooltipProvider>{ui}</TooltipProvider>);
   };
 
-  it("renders 'Atualizado (hoje)' for fresh updates in inline variant", () => {
+  it("renders 'Atualizado (há 0 dias)' for fresh updates in inline variant", () => {
     const today = new Date('2026-05-03T09:00:00Z').toISOString();
     renderWithProvider(<PriceFreshnessBadge priceUpdatedAt={today} variant="inline" />);
 
-    expect(screen.getByText(/Atualizado \(hoje\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Atualizado \(há 0 dias\)/i)).toBeInTheDocument();
   });
 
   it('renders nothing for fresh updates in compact variant (unless alwaysShow is true)', () => {
