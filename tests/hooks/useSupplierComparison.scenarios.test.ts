@@ -42,7 +42,7 @@ describe('useSupplierComparison Real-world Scenarios', () => {
     expect(result.current.result?.alternatives[0].product.id).toBe('alt1');
   });
 
-  it('should FAIL to match products with crucial 2-letter tokens like A4/A5 (Known Bug)', () => {
+  it('should distinguish products with crucial 2-letter tokens like A4/A5', () => {
     const paperBase = {
       ...baseProduct,
       name: 'Caderno Executivo A4',
@@ -51,24 +51,24 @@ describe('useSupplierComparison Real-world Scenarios', () => {
     const paperAlt = {
       ...paperBase,
       id: 'alt2',
-      name: 'Caderno Executivo A5', // Should NOT match if it only compares "Caderno" and "Executivo"
+      name: 'Caderno Executivo A5',
       supplier: { id: 'supp2', name: 'Fornecedor B' },
     };
 
     mockUseProducts.mockReturnValue({ data: [paperBase, paperAlt], isLoading: false });
 
-    const { result } = renderHook(() => useSupplierComparison(paperBase as any));
+    const { result } = renderHook(() => useSupplierComparison(paperBase as any, { minNameSimilarity: 0.1 }));
     
-    // If the bug exists, similarity might be high because "Caderno" and "Executivo" match, 
-    // but it won't distinguish A4 from A5.
-    // Actually, if it filters out A4 and A5, the similarity between "Caderno Executivo A4" and "Caderno Executivo A5"
-    // will be 1.0 (perfect) because both only have tokens ["caderno", "executivo"].
-    // This is a DIFFERENT bug: lack of precision.
+    // Tokens for base: ["caderno", "executivo", "a4"]
+    // Tokens for alt: ["caderno", "executivo", "a5"]
+    // Intersection: ["caderno", "executivo"] (size 2)
+    // Union: ["caderno", "executivo", "a4", "a5"] (size 4)
+    // Jaccard: 2/4 = 0.5
+    // Previous Jaccard was 2/2 = 1.0 because A4/A5 were ignored.
     
     const alt = result.current.result?.alternatives[0];
     expect(alt).toBeDefined();
-    // They match 100% because A4/A5 are ignored!
-    // We want A4 to NOT match A5 perfectly.
+    expect(alt?.score).toBeLessThan(100); // Should not be a perfect match anymore
   });
 
   it('should calculate MOQ savings correctly', () => {
