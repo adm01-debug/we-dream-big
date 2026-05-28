@@ -48,15 +48,16 @@ export function SharePreviewDialog({
   const mainImages = useMemo(() => {
     const preferredImages: string[] = [];
 
-    if (selectedVariant?.variantImages && selectedVariant.variantImages.length > 0) {
-      preferredImages.push(...selectedVariant.variantImages);
-    } else if (selectedVariant?.thumbnailUrl) {
-      preferredImages.push(selectedVariant.thumbnailUrl);
-    }
+    const variantImages = selectedVariant?.variantImages && selectedVariant.variantImages.length > 0 
+      ? selectedVariant.variantImages 
+      : (selectedVariant?.thumbnailUrl ? [selectedVariant.thumbnailUrl] : []);
+
+    preferredImages.push(...variantImages);
 
     if (!product.colors || product.colors.length === 0) {
       preferredImages.push(...product.images);
-      return Array.from(new Set(preferredImages));
+      const all = Array.from(new Set(preferredImages)).filter(Boolean);
+      return all.length > 0 ? all : product.images?.[0] ? [product.images[0]] : [];
     }
 
     const colorImageUrls = new Set<string>();
@@ -65,13 +66,15 @@ export function SharePreviewDialog({
       color.images?.forEach((img) => colorImageUrls.add(img));
     });
 
-    const filtered = product.images.filter((img) => !colorImageUrls.has(img));
-    preferredImages.push(
-      ...(filtered.length > 0 ? filtered : product.images[0] ? [product.images[0]] : []),
-    );
+    const mainOnly = product.images.filter((img) => !colorImageUrls.has(img));
+    preferredImages.push(...mainOnly);
 
-    return Array.from(new Set(preferredImages));
-  }, [product.images, product.colors, selectedVariant?.thumbnailUrl]);
+    // Fallback: if everything empty, at least use the product's primary image
+    const final = Array.from(new Set(preferredImages)).filter(Boolean);
+    if (final.length === 0 && product.images?.[0]) return [product.images[0]];
+    
+    return final;
+  }, [product.images, product.colors, selectedVariant]);
 
   const [selectedImages, setSelectedImages] = useState<Set<number>>(
     () => new Set(mainImages.map((_, i) => i)),
