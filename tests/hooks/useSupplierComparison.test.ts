@@ -187,13 +187,11 @@ describe('useSupplierComparison', () => {
 
   describe('helpers', () => {
     it('normalizeMaterials should handle non-array', () => {
-      const { normalizeMaterials } = require('@/hooks/products/useSupplierComparison');
       expect(normalizeMaterials(null as any)).toEqual([]);
       expect(normalizeMaterials(undefined as any)).toEqual([]);
     });
 
     it('normalizeColorNames should handle non-array', () => {
-      const { normalizeColorNames } = require('@/hooks/products/useSupplierComparison');
       expect(normalizeColorNames(null as any)).toEqual([]);
     });
   });
