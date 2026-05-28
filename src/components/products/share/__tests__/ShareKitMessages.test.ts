@@ -76,7 +76,7 @@ describe('ShareKitDialog Message Generation Logic', () => {
 
     it('deve mencionar que o investimento é do kit completo', () => {
       const msg = generateItemMessage(mockProduct, mockItem);
-      expect(msg).toContain('Kit completo a partir de R$ 250,00');
+      expect(msg.replace(/\u00a0/g, ' ')).toContain('Kit completo a partir de R$ 250,00');
     });
   });
 });
