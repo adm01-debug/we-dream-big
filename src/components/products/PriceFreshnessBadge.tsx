@@ -130,10 +130,11 @@ function FreshnessTooltipBody({ freshness, priceUpdatedAt }: FreshnessTooltipPro
         <span className="font-semibold">{statusLabel}</span>
         {freshness.status !== 'unknown' && (
           <span className="text-muted-foreground">
-            ·{' '}
+            {' '}
             {freshness.label
-              .replace(/^Atualizado\s+/i, '')
-              .replace(/^Preço pode estar defasado\s*/i, '')}
+              .replace(/^Atualizado\s+/i, '(')
+              .replace(/^Preço pode estar defasado\s*/i, '(')
+              .replace(/\)?$/, ')')}
           </span>
         )}
       </div>
@@ -141,7 +142,6 @@ function FreshnessTooltipBody({ freshness, priceUpdatedAt }: FreshnessTooltipPro
         <div className="leading-snug">
           <span className="text-muted-foreground">Atualizado</span>{' '}
           <span className="font-medium tabular-nums">em {shortDate}</span>
-          {longDate && <span className="text-muted-foreground"> ({longDate})</span>}
         </div>
       )}
       {!shortDate && (
