@@ -304,7 +304,8 @@ export function computeScore(input: ScoreInput): number {
   // Estoque relativo ao maior estoque visto
   const stockComponent = input.highestStock > 0 ? clamp01(input.stock / input.highestStock) : 0;
   // Cores em comum normalizadas
-  const colorsComponent = input.maxCommonColors > 0 ? input.commonColors / input.maxCommonColors : 0;
+  const colorsComponent =
+    input.maxCommonColors > 0 ? clamp01(input.commonColors / input.maxCommonColors) : 0;
   // Lead time: 0 dias = 1.0, maior lead = 0.0
   const leadComponent =
     typeof input.leadTimeDays === 'number' && input.maxLead > 0
