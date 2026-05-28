@@ -4,11 +4,12 @@
  * Use somente em produtos de demonstração (ex.: SKU 09138).
  */
 import { useRef } from 'react';
-import { Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, ChevronLeft, ChevronRight, Trophy, TrendingUp, Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { QuickAddToQuote } from './QuickAddToQuote';
 
 type MockRec = {
   id: string;
@@ -90,51 +91,80 @@ const MOCK_RECS: MockRec[] = [
   },
 ];
 
-function MockMiniCard({ rec }: { rec: MockRec }) {
+function MockMiniCard({ rec, isBestChoice, badgeLabel }: { rec: MockRec; isBestChoice?: boolean; badgeLabel?: string }) {
   const scorePct = Math.round(rec.score * 100);
+  const isHighMatch = scorePct >= 95;
+
   return (
     <Card
       className={cn(
-        'min-w-[240px] max-w-[240px] shrink-0 overflow-hidden rounded-xl border-[1.5px] border-border',
-        'animate-fade-in cursor-pointer transition-all duration-200',
-        'hover:-translate-y-0.5 hover:border-primary hover:shadow-md',
+        'group/card min-w-[240px] max-w-[240px] shrink-0 overflow-hidden rounded-xl border-[1.5px] border-border',
+        'animate-fade-in relative transition-all duration-300',
+        'cursor-pointer hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg',
+        isBestChoice && 'border-amber-400/60 shadow-[0_0_20px_-5px_rgba(251,191,36,0.3)]',
+        isHighMatch && !isBestChoice && 'border-primary/40 shadow-[0_0_15px_-5px_rgba(59,130,246,0.2)]',
       )}
     >
-      <div className="relative aspect-square overflow-hidden bg-muted">
+      <div className="relative aspect-video w-full overflow-hidden bg-muted/30">
         <img
           src={rec.image}
           alt={rec.name}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-110"
           loading="lazy"
         />
-        <div className="absolute right-2 top-2">
-          <Badge className="gap-1 border-none bg-primary/90 px-2 py-0.5 text-[10px] text-primary-foreground shadow-sm backdrop-blur-sm">
-            <Sparkles className="h-3 w-3" />
-            {scorePct}% match
-          </Badge>
-        </div>
-        <div className="absolute bottom-2 left-2">
-          <Badge
-            variant="secondary"
-            className="border-none bg-background/85 px-2 py-0.5 text-[10px] shadow-sm backdrop-blur-sm"
-          >
-            {rec.supplier}
-          </Badge>
-        </div>
+        {(isHighMatch || isBestChoice) && (
+          <div 
+            className={cn(
+              "absolute -inset-px opacity-0 transition-opacity duration-300 group-hover/card:opacity-100",
+              isBestChoice ? "bg-amber-400/10" : "bg-primary/5"
+            )} 
+          />
+        )}
       </div>
-      <CardContent className="space-y-1.5 p-3">
-        <p className="truncate text-[10px] uppercase tracking-wide text-muted-foreground">
-          {rec.category}
-        </p>
-        <h4 className="line-clamp-2 min-h-[2.25rem] text-sm font-semibold leading-tight text-foreground">
-          {rec.name}
-        </h4>
-        <div className="flex items-center justify-between gap-2 pt-1">
-          <span className="font-display text-base font-bold text-foreground">{rec.price}</span>
+
+      <CardContent className="relative space-y-2.5 p-3">
+        <div className="flex items-center justify-between gap-2">
+          {isBestChoice ? (
+            <div className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold text-amber-700">
+              <Trophy className="h-2.5 w-2.5" />
+              MELHOR ESCOLHA
+            </div>
+          ) : badgeLabel ? (
+            <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary">
+              {badgeLabel === 'Mais Pedido' ? <TrendingUp className="h-2.5 w-2.5" /> : <Star className="h-2.5 w-2.5" />}
+              {badgeLabel.toUpperCase()}
+            </div>
+          ) : <div className="h-4" />}
+
+          <span
+            className={cn(
+              "shrink-0 rounded-full border-[1.5px] px-1.5 py-0.5 font-display text-[10px] font-bold",
+              isBestChoice 
+                ? "border-amber-400/50 bg-amber-50 text-amber-600" 
+                : "border-primary/30 bg-primary/5 text-primary"
+            )}
+          >
+            {scorePct}%
+          </span>
         </div>
-        <p className="line-clamp-2 min-h-[2rem] rounded-md bg-accent/40 px-2 py-1 text-[11px] italic leading-snug text-muted-foreground">
-          “{rec.reason}”
-        </p>
+
+        <div className="space-y-1">
+          <h4 className="line-clamp-2 min-h-[2.5rem] font-display text-sm font-semibold leading-tight group-hover/card:text-primary transition-colors">
+            {rec.name}
+          </h4>
+          <p className="line-clamp-2 font-display text-[11px] leading-relaxed text-muted-foreground">
+            {rec.reason}
+          </p>
+        </div>
+
+        <div className="pt-1">
+          <QuickAddToQuote
+            productId={rec.id}
+            productName={rec.name}
+            variant="badge"
+            className="w-full justify-center py-1.5 opacity-90 hover:opacity-100"
+          />
+        </div>
       </CardContent>
     </Card>
   );
@@ -190,9 +220,13 @@ export function SmartRecommendationsMock() {
         className="scrollbar-thin flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2"
         role="list"
       >
-        {MOCK_RECS.map((rec) => (
+        {MOCK_RECS.map((rec, i) => (
           <div key={rec.id} className="snap-start" role="listitem">
-            <MockMiniCard rec={rec} />
+            <MockMiniCard 
+              rec={rec} 
+              isBestChoice={i === 0} 
+              badgeLabel={rec.score > 0.9 ? 'Mais Pedido' : rec.score > 0.7 ? 'Tendência' : undefined}
+            />
           </div>
         ))}
       </div>
