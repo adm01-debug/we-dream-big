@@ -56,51 +56,72 @@ export function FutureStockModal({
   // Buscar variantes com dados de estoque/reposição
   const { data: variantsWithStock = [], isLoading, error } = useProductVariantsWithStock(productId);
 
-  // Processar entradas de reposição
-  const stockEntries = useMemo(() => processStockEntries(variantsWithStock), [variantsWithStock]);
+  // Processar entradas de reposição (todas as 1/2/3 previsões)
+  const allStockEntries = useMemo(() => processStockEntries(variantsWithStock), [variantsWithStock]);
 
-  // Calcular resumo por cor e ordenar
-  const colorSummary = useMemo(
-    () => sortColorSummary(calculateColorSummary(variantsWithStock, stockEntries)),
-    [variantsWithStock, stockEntries],
-  );
-
-  // Aplicar filtros e ordenação
-  const filteredAndSortedEntries = useMemo(() => {
+  // Aplicar filtros de período e cor às entradas
+  const { filteredEntries, periodFilteredEntries } = useMemo(() => {
     const now = new Date();
-    let entries = [...stockEntries];
-
-    // Filtrar por cor
-    if (selectedColor) {
-      entries = entries.filter((entry) => entry.colorName === selectedColor);
-    }
-
-    // Filtrar por período
+    // Normalizar "agora" para o início do dia para evitar que previsões de hoje pareçam "atrasadas" por causa do horário
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // 1. Filtrar primeiro apenas por período (usado para o resumo de cores)
+    let periodFiltered = [...allStockEntries];
     if (dateFilter !== 'all') {
-      entries = entries.filter((entry) => {
+      periodFiltered = periodFiltered.filter((entry) => {
         const entryDate = parseISO(entry.expectedDate);
         switch (dateFilter) {
           case 'past':
-            return isBefore(entryDate, now);
+            return isBefore(entryDate, todayStart);
           case '7days':
-            return isAfter(entryDate, now) && isBefore(entryDate, addDays(now, 7));
+            // Inclui hoje + próximos 7 dias (até o final do 7º dia seguinte)
+            return !isBefore(entryDate, todayStart) && isBefore(entryDate, addDays(todayStart, 8));
           case '30days':
-            return isAfter(entryDate, now) && isBefore(entryDate, addDays(now, 30));
+            return !isBefore(entryDate, todayStart) && isBefore(entryDate, addDays(todayStart, 31));
           case '90days':
-            return isAfter(entryDate, now) && isBefore(entryDate, addDays(now, 90));
+            return !isBefore(entryDate, todayStart) && isBefore(entryDate, addDays(todayStart, 91));
           default:
             return true;
         }
       });
     }
 
-    // Ordenar
+    // 2. Filtrar por cor (usado para a lista final)
+    let finalFiltered = [...periodFiltered];
+    if (selectedColor) {
+      finalFiltered = finalFiltered.filter((entry) => entry.colorName === selectedColor);
+    }
+
+    return { 
+      filteredEntries: finalFiltered, 
+      periodFilteredEntries: periodFiltered 
+    };
+  }, [allStockEntries, dateFilter, selectedColor]);
+
+  // Calcular resumo por cor usando as entradas filtradas por período
+  // Isso garante que o grid de cores mostre a quantidade que chegará NO PERÍODO selecionado
+  const colorSummary = useMemo(
+    () => sortColorSummary(calculateColorSummary(variantsWithStock, periodFilteredEntries)),
+    [variantsWithStock, periodFilteredEntries],
+  );
+
+  // Ordenar a lista final
+  const sortedEntries = useMemo(() => {
+    const entries = [...filteredEntries];
     entries.sort((a, b) => {
       switch (sortOrder) {
-        case 'nearest':
-          return new Date(a.expectedDate).getTime() - new Date(b.expectedDate).getTime();
-        case 'farthest':
-          return new Date(b.expectedDate).getTime() - new Date(a.expectedDate).getTime();
+        case 'nearest': {
+          const timeA = new Date(a.expectedDate).getTime();
+          const timeB = new Date(b.expectedDate).getTime();
+          if (timeA !== timeB) return timeA - timeB;
+          return (a.entryIndex || 0) - (b.entryIndex || 0); // Desempate pelo índice da entrada
+        }
+        case 'farthest': {
+          const timeA = new Date(a.expectedDate).getTime();
+          const timeB = new Date(b.expectedDate).getTime();
+          if (timeA !== timeB) return timeB - timeA;
+          return (b.entryIndex || 0) - (a.entryIndex || 0);
+        }
         case 'quantity-desc':
           return b.expectedQuantity - a.expectedQuantity;
         case 'quantity-asc':
@@ -109,11 +130,10 @@ export function FutureStockModal({
           return 0;
       }
     });
-
     return entries;
-  }, [stockEntries, selectedColor, dateFilter, sortOrder]);
+  }, [filteredEntries, sortOrder]);
 
-  const hasNoFutureStock = stockEntries.length === 0;
+  const hasNoFutureStock = allStockEntries.length === 0;
   const hasVariants = variantsWithStock.length > 0;
   const hasActiveFilters = selectedColor || dateFilter !== 'all';
 
@@ -351,16 +371,16 @@ export function FutureStockModal({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-muted-foreground">
-                      Previsões de reposição ({filteredAndSortedEntries.length})
+                      Previsões de reposição ({sortedEntries.length})
                     </span>
-                    {filteredAndSortedEntries.length === 0 && hasActiveFilters && (
+                    {sortedEntries.length === 0 && hasActiveFilters && (
                       <span className="text-xs text-muted-foreground">
                         Nenhum resultado para os filtros selecionados
                       </span>
                     )}
                   </div>
                   <div className="space-y-3">
-                    {filteredAndSortedEntries.map((entry) => {
+                    {sortedEntries.map((entry) => {
                       const expectedDate = parseISO(entry.expectedDate);
                       const daysUntil = Math.ceil(
                         (expectedDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
