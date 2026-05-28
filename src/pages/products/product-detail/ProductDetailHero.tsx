@@ -390,44 +390,44 @@ export function ProductDetailHero({
                 )}
                 
                 <div className="space-y-2.5">
-                <DynamicTrustBadges
-                  trust={
-                    supplierTrust ?? { isVerified: false, deliveryDays: null, avgRating: null }
-                  }
-                  productFlags={{
-                    newArrival: product?.newArrival ?? false,
-                    onSale: product?.onSale ?? false,
-                    featured: (product?.featured || isAutoBestSeller) ?? false,
-                    minQuantity: product?.minQuantity,
-                  }}
-                  className="text-[10px]"
-                />
-                <div className="flex items-center gap-3 border-t border-border/30 pt-2">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Eye className="h-3.5 w-3.5" />
-                    <span className="font-semibold text-foreground">{viewCount}</span>
-                    <span>visualizações</span>
-                  </div>
-                  <div className="h-4 w-px bg-border/30" />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onToggleFavorite}
-                    className={cn(
-                      'h-7 gap-1.5 rounded-full px-3 text-xs transition-all duration-300 hover:scale-105 hover:bg-destructive/15 hover:text-destructive hover:shadow-md hover:shadow-destructive/20',
-                      isFavorite && 'bg-destructive/10 text-destructive',
-                    )}
-                  >
-                    <Heart
+                  <DynamicTrustBadges
+                    trust={
+                      supplierTrust ?? { isVerified: false, deliveryDays: null, avgRating: null }
+                    }
+                    productFlags={{
+                      newArrival: product?.newArrival ?? false,
+                      onSale: product?.onSale ?? false,
+                      featured: (product?.featured || isAutoBestSeller) ?? false,
+                      minQuantity: product?.minQuantity,
+                    }}
+                    className="text-[10px]"
+                  />
+                  <div className="flex items-center gap-3 border-t border-border/30 pt-2">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Eye className="h-3.5 w-3.5" />
+                      <span className="font-semibold text-foreground">{viewCount}</span>
+                      <span>visualizações</span>
+                    </div>
+                    <div className="h-4 w-px bg-border/30" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onToggleFavorite}
                       className={cn(
-                        'h-3.5 w-3.5 transition-all duration-300',
-                        isFavorite && 'scale-110 fill-destructive text-destructive',
+                        'h-7 gap-1.5 rounded-full px-3 text-xs transition-all duration-300 hover:scale-105 hover:bg-destructive/15 hover:text-destructive hover:shadow-md hover:shadow-destructive/20',
+                        isFavorite && 'bg-destructive/10 text-destructive',
                       )}
-                    />
-                    {isFavorite ? 'Favoritado' : 'Favoritar'}
-                  </Button>
+                    >
+                      <Heart
+                        className={cn(
+                          'h-3.5 w-3.5 transition-all duration-300',
+                          isFavorite && 'scale-110 fill-destructive text-destructive',
+                        )}
+                      />
+                      {isFavorite ? 'Favoritado' : 'Favoritar'}
+                    </Button>
+                  </div>
                 </div>
-              </div>
               </div>
             </div>
           </div>
