@@ -470,10 +470,26 @@ export function PromoFlixPlayer({
   useEffect(() => {
     initPlayer();
     return () => {
+      // Invalida callbacks de imports HLS ainda pendentes
+      initTokenRef.current += 1;
       clearLoadingTimeout();
       if (hlsRef.current) {
-        hlsRef.current.destroy();
+        try {
+          hlsRef.current.destroy();
+        } catch {
+          /* noop */
+        }
         hlsRef.current = null;
+      }
+      // Limpa src do <video> para o próximo mount não disparar onError code 4 com src antigo
+      const v = videoRef.current;
+      if (v) {
+        try {
+          v.removeAttribute('src');
+          v.load();
+        } catch {
+          /* noop */
+        }
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
