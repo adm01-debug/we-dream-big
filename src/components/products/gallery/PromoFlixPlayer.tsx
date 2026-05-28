@@ -175,6 +175,30 @@ export function PromoFlixPlayer({
     window.setTimeout(() => setFlashLabel(null), 700);
   }, []);
 
+  // Refs para controlar reconexões e timeout de loading sem causar re-render
+  const reconnectAttemptsRef = useRef(0);
+  const loadingTimeoutRef = useRef<number | null>(null);
+
+  const clearLoadingTimeout = useCallback(() => {
+    if (loadingTimeoutRef.current !== null) {
+      window.clearTimeout(loadingTimeoutRef.current);
+      loadingTimeoutRef.current = null;
+    }
+  }, []);
+
+  const armLoadingTimeout = useCallback(() => {
+    clearLoadingTimeout();
+    loadingTimeoutRef.current = window.setTimeout(() => {
+      // Se ainda não tocou em 20s, mostra erro acionável
+      const v = videoRef.current;
+      if (v && v.readyState < 2) {
+        setHlsError('O vídeo está demorando para carregar. Verifique sua conexão e tente novamente.');
+        setIsLoading(false);
+        setIsReconnecting(false);
+      }
+    }, 20000);
+  }, [clearLoadingTimeout]);
+
   // Setup HLS or native
   const initPlayer = useCallback(() => {
     const video = videoRef.current;
@@ -183,109 +207,180 @@ export function PromoFlixPlayer({
     setIsLoading(true);
     setHlsError(null);
     setIsReconnecting(false);
+    reconnectAttemptsRef.current = 0;
+    armLoadingTimeout();
 
-    const useNative =
-      !isHls || video.canPlayType('application/vnd.apple.mpegurl') !== '' || !src.endsWith('.m3u8');
+    // Para garantir autoplay nos navegadores (Chrome/Safari bloqueiam autoplay com som),
+    // inicia mutado quando autoPlay é solicitado. O usuário pode desmutar manualmente.
+    const shouldMuteForAutoplay = autoPlay && !isMuted;
+    const effectiveMuted = isMuted || shouldMuteForAutoplay;
+
+    const canPlayNativeHls = video.canPlayType('application/vnd.apple.mpegurl') !== '';
+    const isM3u8 = src.includes('.m3u8');
+    const useNative = !isHls || !isM3u8 || canPlayNativeHls;
 
     if (useNative) {
       video.src = src;
-      // Initialize with saved volume
       video.volume = volume;
-      video.muted = isMuted;
+      video.muted = effectiveMuted;
+      // Força o navegador a iniciar o download dos metadados
+      try {
+        video.load();
+      } catch {
+        /* noop */
+      }
       if (isPlaying || autoPlay) {
         video.play().catch(() => setIsPlaying(false));
       }
-    } else {
-      import('hls.js')
-        .then(({ default: hlsConstructor }) => {
-          if (!videoRef.current) return;
-          if (hlsConstructor.isSupported()) {
-            if (hlsRef.current) {
-              hlsRef.current.destroy();
-            }
-            const hlsInstance = new hlsConstructor({
-              maxBufferLength: 30,
-              enableWorker: true,
-              lowLatencyMode: true,
-              backBufferLength: 90,
-            });
-            hlsRef.current = hlsInstance;
-            hlsInstance.loadSource(src);
-            hlsInstance.attachMedia(videoRef.current);
-
-            hlsInstance.on(hlsConstructor.Events.MANIFEST_PARSED, (_, data) => {
-              const levels = data.levels.map((level, index) => ({
-                id: index,
-                label: level.height ? `${level.height}p` : `Qualidade ${index + 1}`,
-              }));
-              setQualities(levels);
-
-              try {
-                const savedQuality = localStorage.getItem('promoflix_quality');
-                if (savedQuality !== null && hlsInstance) {
-                  const q = parseInt(savedQuality, 10);
-                  if (!isNaN(q) && q >= -1 && q < data.levels.length) {
-                    hlsInstance.currentLevel = q;
-                    setCurrentQuality(q);
-                  }
-                }
-              } catch (err) {
-                console.warn('Falha ao carregar preferência de qualidade:', err);
-              }
-
-              // Apply saved volume/mute
-              if (videoRef.current) {
-                videoRef.current.volume = volume;
-                videoRef.current.muted = isMuted;
-                if (isPlaying || autoPlay) {
-                  videoRef.current.play().catch(() => setIsPlaying(false));
-                }
-              }
-            });
-
-            hlsInstance.on(hlsConstructor.Events.ERROR, (_, data) => {
-              if (data.fatal) {
-                switch (data.type) {
-                  case hlsConstructor.ErrorTypes.NETWORK_ERROR:
-                    console.error('HLS Network Error:', data);
-                    setIsReconnecting(true);
-                    hlsInstance.startLoad();
-                    break;
-                  case hlsConstructor.ErrorTypes.MEDIA_ERROR:
-                    console.error('HLS Media Error:', data);
-                    hlsInstance.recoverMediaError();
-                    break;
-                  default:
-                    console.error('HLS Fatal Error:', data);
-                    setHlsError('Falha ao carregar o vídeo. Verifique sua conexão.');
-                    hlsInstance.destroy();
-                    break;
-                }
-              }
-            });
-
-            hlsInstance.on(hlsConstructor.Events.LEVEL_SWITCHED, () => {
-              if (hlsInstance && hlsInstance.autoLevelEnabled) {
-                setCurrentQuality(-1);
-              }
-            });
-          } else if (videoRef.current?.canPlayType('application/vnd.apple.mpegurl')) {
-            videoRef.current.src = src;
-            videoRef.current.volume = volume;
-            videoRef.current.muted = isMuted;
-          }
-        })
-        .catch((err) => {
-          console.error('HLS loading error:', err);
-          setHlsError('Erro crítico no player.');
-          if (videoRef.current) videoRef.current.src = src;
-        });
+      return;
     }
-  }, [src, isHls, volume, isMuted, isPlaying, autoPlay]);
+
+    import('hls.js')
+      .then(({ default: hlsConstructor }) => {
+        const videoEl = videoRef.current;
+        if (!videoEl) return;
+
+        if (!hlsConstructor.isSupported()) {
+          // Sem suporte a MSE — tenta como nativo
+          videoEl.src = src;
+          videoEl.volume = volume;
+          videoEl.muted = effectiveMuted;
+          try {
+            videoEl.load();
+          } catch {
+            /* noop */
+          }
+          return;
+        }
+
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+        }
+        const hlsInstance = new hlsConstructor({
+          maxBufferLength: 30,
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 90,
+        });
+        hlsRef.current = hlsInstance;
+        hlsInstance.loadSource(src);
+        hlsInstance.attachMedia(videoEl);
+
+        hlsInstance.on(hlsConstructor.Events.MANIFEST_PARSED, (_, data) => {
+          const levels = data.levels.map((level, index) => ({
+            id: index,
+            label: level.height ? `${level.height}p` : `Qualidade ${index + 1}`,
+          }));
+          setQualities(levels);
+
+          try {
+            const savedQuality = localStorage.getItem('promoflix_quality');
+            if (savedQuality !== null) {
+              const q = parseInt(savedQuality, 10);
+              if (!isNaN(q) && q >= -1 && q < data.levels.length) {
+                hlsInstance.currentLevel = q;
+                setCurrentQuality(q);
+              }
+            }
+          } catch (err) {
+            console.warn('Falha ao carregar preferência de qualidade:', err);
+          }
+
+          const v = videoRef.current;
+          if (v) {
+            v.volume = volume;
+            v.muted = effectiveMuted;
+            if (isPlaying || autoPlay) {
+              v.play().catch(() => setIsPlaying(false));
+            }
+          }
+          // Manifest carregado — já podemos remover o overlay de loading.
+          // Esperar apenas por `loadedmetadata`/`canplay` pode travar se o autoplay for bloqueado.
+          setIsLoading(false);
+          setIsReconnecting(false);
+          clearLoadingTimeout();
+        });
+
+        // Primeiro fragmento carregado é a garantia definitiva de que está jogando
+        hlsInstance.on(hlsConstructor.Events.FRAG_LOADED, () => {
+          setIsLoading(false);
+          setIsReconnecting(false);
+          clearLoadingTimeout();
+        });
+
+        hlsInstance.on(hlsConstructor.Events.ERROR, (_, data) => {
+          if (!data.fatal) {
+            // Apenas log — não-fatais se recuperam sozinhos
+            return;
+          }
+          switch (data.type) {
+            case hlsConstructor.ErrorTypes.NETWORK_ERROR: {
+              console.error('HLS Network Error:', data);
+              reconnectAttemptsRef.current += 1;
+              if (reconnectAttemptsRef.current > 3) {
+                setHlsError('Não foi possível carregar o vídeo. Verifique sua conexão e tente novamente.');
+                setIsLoading(false);
+                setIsReconnecting(false);
+                clearLoadingTimeout();
+                hlsInstance.destroy();
+              } else {
+                setIsReconnecting(true);
+                hlsInstance.startLoad();
+              }
+              break;
+            }
+            case hlsConstructor.ErrorTypes.MEDIA_ERROR:
+              console.error('HLS Media Error:', data);
+              try {
+                hlsInstance.recoverMediaError();
+              } catch {
+                setHlsError('Erro de mídia ao reproduzir o vídeo.');
+                setIsLoading(false);
+                clearLoadingTimeout();
+              }
+              break;
+            default:
+              console.error('HLS Fatal Error:', data);
+              setHlsError('Falha ao carregar o vídeo. Tente novamente.');
+              setIsLoading(false);
+              setIsReconnecting(false);
+              clearLoadingTimeout();
+              hlsInstance.destroy();
+              break;
+          }
+        });
+
+        hlsInstance.on(hlsConstructor.Events.LEVEL_SWITCHED, () => {
+          if (hlsInstance.autoLevelEnabled) {
+            setCurrentQuality(-1);
+          }
+        });
+      })
+      .catch((err) => {
+        console.error('HLS loading error:', err);
+        const v = videoRef.current;
+        if (v) {
+          // Fallback: tenta direto como nativo
+          v.src = src;
+          v.volume = volume;
+          v.muted = effectiveMuted;
+          try {
+            v.load();
+          } catch {
+            /* noop */
+          }
+        } else {
+          setHlsError('Erro crítico no player.');
+          setIsLoading(false);
+          clearLoadingTimeout();
+        }
+      });
+  }, [src, isHls, volume, isMuted, isPlaying, autoPlay, armLoadingTimeout, clearLoadingTimeout]);
 
   useEffect(() => {
     initPlayer();
     return () => {
+      clearLoadingTimeout();
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
