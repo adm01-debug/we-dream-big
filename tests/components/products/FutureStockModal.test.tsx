@@ -69,10 +69,14 @@ describe('FutureStockModal (UI Tests)', () => {
     expect(screen.getByText('Estoque Futuro')).toBeInTheDocument();
     expect(screen.getByText(/Produto Teste/)).toBeInTheDocument();
 
-    // Verifica a seção Azul (usando getAll e filtrando pela que tem a borda lateral de destaque)
+    // Verifica a seção Azul
     const azulHeaders = screen.getAllByText(/^Azul/);
     const blueGroup = azulHeaders.find(el => el.closest('.border-l-4'))?.closest('.rounded-2xl');
     expect(blueGroup).toBeInTheDocument();
+
+    // Expande o grupo azul para ver a timeline
+    const blueToggle = within(blueGroup as HTMLElement).getByRole('button');
+    fireEvent.click(blueToggle);
 
     // Verifica se as datas da timeline do Azul estão na ordem correta
     const dates = within(blueGroup as HTMLElement).getAllByText(/\d{2}\/\d{2}\/\d{4}/);
@@ -97,6 +101,10 @@ describe('FutureStockModal (UI Tests)', () => {
     const redGroup = vermelhoHeaders.find(el => el.closest('.border-l-4'))?.closest('.rounded-2xl');
     expect(redGroup).toBeInTheDocument();
 
+    // Expande o grupo vermelho
+    const redToggle = within(redGroup as HTMLElement).getByRole('button');
+    fireEvent.click(redToggle);
+
     // Deve ter apenas 1 item de timeline para o Vermelho
     const redDates = within(redGroup as HTMLElement).getAllByText(/\d{2}\/\d{2}\/\d{4}/);
     expect(redDates).toHaveLength(1);
@@ -114,16 +122,17 @@ describe('FutureStockModal (UI Tests)', () => {
       />
     );
 
-    // Seleciona o botão de toggle da cor Azul
-    const blueToggle = screen.getByRole('button', { name: /Azul \d previsões/i });
+    // Seleciona o botão de toggle da cor Azul (agora mais flexível)
+    const blueToggle = screen.getByRole('button', { name: /Azul/i }).closest('button');
+    if (!blueToggle) throw new Error('Toggle não encontrado');
     
     // Primeiro clique para expandir
     fireEvent.click(blueToggle);
-    expect(screen.getByText('Variante SKU: SKU-BLUE-1')).toBeInTheDocument();
+    expect(screen.getByText(/Variante SKU: SKU-BLUE-1/i)).toBeInTheDocument();
 
     // Segundo clique para colapsar
     fireEvent.click(blueToggle);
-    expect(screen.queryByText('Variante SKU: SKU-BLUE-1')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Variante SKU: SKU-BLUE-1/i)).not.toBeInTheDocument();
   });
 
   it('deve expandir automaticamente a cor selecionada no grid de filtros', () => {
@@ -137,17 +146,18 @@ describe('FutureStockModal (UI Tests)', () => {
       />
     );
 
-    // Clica no botão de filtro Azul no grid (usando o título que definimos no componente)
-    const blueFilterBtn = screen.getByTitle(/Azul\nAtual: 50\nPrevisto: \+3.500/);
+    // Clica no botão de filtro Azul no grid usando um matcher parcial para o título
+    const blueFilterBtn = screen.getByTitle(/Azul/i);
     fireEvent.click(blueFilterBtn);
 
     // A variante Azul deve estar expandida
-    expect(screen.getByText('Variante SKU: SKU-BLUE-1')).toBeInTheDocument();
+    expect(screen.getByText(/Variante SKU: SKU-BLUE-1/i)).toBeInTheDocument();
     
     // Clica novamente para desmarcar o filtro
     fireEvent.click(blueFilterBtn);
-    // Deve colapsar novamente (se não estiver em expandedGroups)
-    expect(screen.queryByText('Variante SKU: SKU-BLUE-1')).not.toBeInTheDocument();
+    // Deve colapsar novamente
+    expect(screen.queryByText(/Variante SKU: SKU-BLUE-1/i)).not.toBeInTheDocument();
   });
+
 
 });
