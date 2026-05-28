@@ -2,18 +2,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, act, waitFor } from '@testing-library/react';
 import { PromoFlixPlayer } from './PromoFlixPlayer';
 
+let lastHlsInstance: any = null;
+
 // Mock hls.js for dynamic import
 vi.mock('hls.js', () => {
-  const mockHls = vi.fn().mockImplementation(() => ({
-    loadSource: vi.fn(),
-    attachMedia: vi.fn(),
-    on: vi.fn(),
-    destroy: vi.fn(),
-    startLoad: vi.fn(),
-    recoverMediaError: vi.fn(),
-    currentLevel: -1,
-    autoLevelEnabled: true,
-  }));
+  const mockHls = vi.fn().mockImplementation(() => {
+    const instance = {
+      loadSource: vi.fn(),
+      attachMedia: vi.fn(),
+      on: vi.fn(),
+      destroy: vi.fn(),
+      startLoad: vi.fn(),
+      recoverMediaError: vi.fn(),
+      currentLevel: -1,
+      autoLevelEnabled: true,
+    };
+    lastHlsInstance = instance;
+    return instance;
+  });
   
   (mockHls as any).isSupported = vi.fn().mockReturnValue(true);
   (mockHls as any).Events = {
@@ -70,6 +76,7 @@ describe('PromoFlixPlayer Automated Tests', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+    lastHlsInstance = null;
     
     // Mock HTMLMediaElement prototype
     Object.defineProperty(HTMLMediaElement.prototype, 'play', {
@@ -208,18 +215,17 @@ describe('PromoFlixPlayer Automated Tests', () => {
   });
 
   describe('HLS.js specific scenarios', () => {
-    const getHlsInstance = async () => {
-      const Hls = (await import('hls.js')).default;
+    const waitForHlsInstance = async () => {
       await waitFor(() => {
-        expect(vi.mocked(Hls).mock.results.length).toBeGreaterThan(0);
-      });
-      return vi.mocked(Hls).mock.results[0].value;
+        expect(lastHlsInstance).not.toBeNull();
+      }, { timeout: 2000 });
+      return lastHlsInstance;
     };
 
     it('should handle HLS.js fatal network errors with recovery attempts', async () => {
       const { findByText } = render(<PromoFlixPlayer src="test.m3u8" isHls={true} />);
       
-      const hlsInstance = await getHlsInstance();
+      const hlsInstance = await waitForHlsInstance();
       const errorHandler = hlsInstance.on.mock.calls.find((call: any) => call[0] === 'hlsError')[1];
 
       // Simulate 1st fatal network error (should trigger startLoad)
@@ -251,7 +257,7 @@ describe('PromoFlixPlayer Automated Tests', () => {
     it('should handle HLS.js fatal media errors with recovery', async () => {
       render(<PromoFlixPlayer src="test.m3u8" isHls={true} />);
       
-      const hlsInstance = await getHlsInstance();
+      const hlsInstance = await waitForHlsInstance();
       const errorHandler = hlsInstance.on.mock.calls.find((call: any) => call[0] === 'hlsError')[1];
 
       // Simulate fatal media error
@@ -269,7 +275,7 @@ describe('PromoFlixPlayer Automated Tests', () => {
     it('should hide loading overlay when HLS.js MANIFEST_PARSED event fires', async () => {
       const { queryByText } = render(<PromoFlixPlayer src="test.m3u8" isHls={true} />);
       
-      const hlsInstance = await getHlsInstance();
+      const hlsInstance = await waitForHlsInstance();
       const manifestHandler = hlsInstance.on.mock.calls.find((call: any) => call[0] === 'hlsManifestParsed')[1];
 
       await act(async () => {
@@ -284,7 +290,7 @@ describe('PromoFlixPlayer Automated Tests', () => {
     it('should hide loading overlay when HLS.js FRAG_LOADED event fires', async () => {
       const { queryByText } = render(<PromoFlixPlayer src="test.m3u8" isHls={true} />);
       
-      const hlsInstance = await getHlsInstance();
+      const hlsInstance = await waitForHlsInstance();
       const fragLoadedHandler = hlsInstance.on.mock.calls.find((call: any) => call[0] === 'hlsFragLoaded')[1];
 
       await act(async () => {
