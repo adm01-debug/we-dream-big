@@ -101,7 +101,7 @@ function formatExactDateTime(value: string | Date): string | null {
 
 function buildClassificationRule(thresholdDays: number): string {
   const half = Math.floor(thresholdDays / 2);
-  return `Regra: até ${half} dias = atualizado · ${half + 1}–${thresholdDays} dias = próximo do limite · acima de ${thresholdDays} dias = possivelmente defasado.`;
+  return `Regra de Preços: Até ${half} dias = Atualizado / ${half + 1}–${thresholdDays} dias = Próximo do limite / Acima de ${thresholdDays} dias = Possivelmente defasado`;
 }
 
 interface FreshnessTooltipProps {
