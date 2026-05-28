@@ -49,7 +49,7 @@ function buildAccessibleLabel(
   const longDate = isValid ? formatPriceDateLong(dateValue) : null;
   const days = freshness.daysSinceUpdate;
   const relative =
-    days === null ? null : days <= 0 ? 'hoje' : days === 1 ? 'há 1 dia' : `há ${days} dias`;
+    days === null ? null : days === 0 ? 'há 0 dias' : days === 1 ? 'há 1 dia' : `há ${days} dias`;
 
   // Frase principal lida pelo screen reader (curta e direta).
   let ariaLabel: string;
@@ -219,7 +219,7 @@ const STATUS_STYLES: Record<PriceFreshnessStatus, { color: string; Icon: typeof 
 
 function formatCompactRelative(days: number | null): string {
   if (days === null) return '—';
-  if (days <= 0) return 'hoje';
+  if (days === 0) return 'há 0d';
   if (days < 30) return `há ${days}d`;
   if (days < 365) return `há ${Math.floor(days / 30)}m`;
   return `há ${Math.floor(days / 365)}a`;
