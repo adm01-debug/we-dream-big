@@ -443,23 +443,24 @@ describe('PromoFlixPlayer Automated Tests', () => {
     });
 
     it('should prevent race conditions using initTokenRef during fast src changes', async () => {
+      // First render
       render(<PromoFlixPlayer src="first.m3u8" isHls={true} />);
-      
-      // Wait for first init
       await waitFor(() => expect(lastHlsInstance).not.toBeNull());
       const firstHls = lastHlsInstance;
       
       // Quickly change src
       render(<PromoFlixPlayer src="second.m3u8" isHls={true} />);
       
-      // Wait for second init
+      // Wait for second instance
       await waitFor(() => {
         expect(lastHlsInstance).not.toBeNull();
         expect(lastHlsInstance).not.toBe(firstHls);
       });
       
+      // The first one should have been destroyed either in useEffect cleanup or at start of next initPlayer
       expect(firstHls.destroy).toHaveBeenCalled();
     });
+
 
 
     it('should clean up timeouts on unmount', () => {
