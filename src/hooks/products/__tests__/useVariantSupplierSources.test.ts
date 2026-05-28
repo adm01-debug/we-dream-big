@@ -70,6 +70,8 @@ describe('processStockEntries', () => {
       next_quantity_1: 10,
       next_date_2: '', // Data vazia
       next_quantity_2: 20,
+      next_date_3: null, // Limpar para ter apenas 1 válida
+      next_quantity_3: null,
     };
     const entries2 = processStockEntries([variantWithOneValid]);
     expect(entries2).toHaveLength(1);
