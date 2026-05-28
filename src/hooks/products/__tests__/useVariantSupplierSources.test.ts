@@ -56,19 +56,16 @@ describe('processStockEntries', () => {
       next_date_1: '2026-06-01',
       next_quantity_1: 100,
       next_date_2: '2026-07-01',
-      next_quantity_2: 0, // Zero
-      next_date_3: null, // Nulo
+      next_quantity_2: 0, // Zero - deve ignorar
+      next_date_3: '2026-08-01',
       next_quantity_3: 300,
     };
 
     const entries = processStockEntries([variantWithPartialData]);
-    expect(entries).toHaveLength(2); // Apenas 1 e 3 (assumindo que 3 tem data válida mas no mock original tinha)
-    // Na verdade, no mock acima next_date_3 é null mas next_quantity_3 é 300.
-    // O código exige AMBOS: if (pair.date && pair.qty && pair.qty > 0)
+    expect(entries).toHaveLength(2); // Deve ter 1 e 3
     
     expect(entries[0].entryIndex).toBe(1);
-    // Entrada 2 ignorada (qty=0)
-    // Entrada 3 ignorada (date=null)
+    expect(entries[1].entryIndex).toBe(3);
   });
 
   it('deve lidar com variantes sem nenhuma previsão', () => {
