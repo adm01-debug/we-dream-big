@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest';
 import {
   aggregateDailySummaryByDate,
@@ -120,7 +119,7 @@ describe('useStockHistory helpers', () => {
           units_depleted: 0,
           units_restocked: 0,
           restock_detected: false,
-        } as any,
+        } as unknown as StockDailySummary,
       ];
       const result = aggregateDailySummaryByDate(summaries);
       expect(result[0].costPriceClose).toBeNull();
@@ -133,13 +132,13 @@ describe('useStockHistory helpers', () => {
           stock_close: 100,
           cost_price_close: 10,
           supplier_id: 'S1',
-        } as any,
+        } as unknown as StockDailySummary,
         {
           summary_date: '2024-01-01',
           stock_close: 0,
           cost_price_close: 50, // Should be ignored
           supplier_id: 'S2',
-        } as any,
+        } as unknown as StockDailySummary,
       ];
       const result = aggregateDailySummaryByDate(summaries);
       expect(result[0].costPriceClose).toBe(10);
@@ -197,7 +196,7 @@ describe('useStockHistory helpers', () => {
       const base: ProductIntelligenceData = {
         product_id: 'P1',
         abc_classification: 'C',
-      } as any;
+      } as unknown as ProductIntelligenceData;
 
       expect(getActiveFlags({ ...base, is_hot_product: true })).toEqual(['hot-product']);
       expect(getActiveFlags({ ...base, is_stockout_risk: true })).toEqual(['stockout-risk']);
