@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useProductVariantsWithStock } from '../useVariantSupplierSources';
 import { invokeExternalDb } from '@/lib/external-db';
@@ -10,18 +10,24 @@ vi.mock('@/lib/external-db', () => ({
   invokeExternalDb: vi.fn(),
 }));
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-    },
-  },
-});
+let queryClient: QueryClient;
 
 const wrapper = ({ children }: { children: React.ReactNode }) => 
   React.createElement(QueryClientProvider, { client: queryClient }, children);
 
 describe('useProductVariantsWithStock Integration (Mock)', () => {
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+          staleTime: 0,
+          gcTime: 0,
+        },
+      },
+    });
+    vi.clearAllMocks();
+  });
   it('deve formatar corretamente os dados vindo do JOIN com variant_supplier_sources', async () => {
     const mockDbResult = {
       records: [

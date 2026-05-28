@@ -106,11 +106,20 @@ describe('processStockEntries', () => {
 
   it('deve ignorar pares onde a data é nula mas a quantidade existe', () => {
     const variant: VariantWithStock = {
-      ...mockVariant,
+      id: 'v-null-date',
+      product_id: 'p1',
+      sku: 'S1',
+      color_code: '01',
+      color_name: 'Cor',
+      color_hex: '#000',
+      stock_quantity: 0,
+      selected_thumbnail: null,
       next_date_1: null,
       next_quantity_1: 100,
       next_date_2: '2026-01-01',
       next_quantity_2: 200,
+      next_date_3: null,
+      next_quantity_3: null,
     };
 
     const entries = processStockEntries([variant]);
