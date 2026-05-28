@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Supplier Comparison Modal Visual Regression', () => {
-  // Mock base product
+  // Mock base product with a valid UUID for the guard
+  const MOCK_ID = '550e8400-e29b-41d4-a716-446655440000';
   const mockBaseProduct = {
-    id: 'base-1',
+    id: MOCK_ID,
     name: 'Caneca de Cerâmica 350ml',
     price: 45.0,
     sku: 'CAN-001',
@@ -24,7 +25,7 @@ test.describe('Supplier Comparison Modal Visual Regression', () => {
       const body = route.request().postDataJSON();
       
       // Se for busca de um produto específico (base)
-      if (body?.operation === 'select' && body?.table === 'products' && body?.filters?.id === 'base-1') {
+      if (body?.operation === 'select' && body?.table === 'products' && body?.filters?.id === MOCK_ID) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -38,8 +39,7 @@ test.describe('Supplier Comparison Modal Visual Regression', () => {
     });
 
     // Navigate to a product detail page that uses the modal
-    // We'll use the mock ID we defined
-    await page.goto(`/products/base-1`);
+    await page.goto(`/produto/${MOCK_ID}`);
     
     // Ensure page is loaded
     await expect(page.getByText('Caneca de Cerâmica 350ml')).toBeVisible();
