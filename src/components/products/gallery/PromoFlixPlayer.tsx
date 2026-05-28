@@ -421,6 +421,7 @@ export function PromoFlixPlayer({
       setDuration(video.duration || 0);
       setIsLoading(false);
       setHlsError(null);
+      clearLoadingTimeout();
     };
     const onProgress = () => {
       if (video.buffered.length > 0) {
