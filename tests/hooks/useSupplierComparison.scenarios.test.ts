@@ -162,5 +162,34 @@ describe('useSupplierComparison Real-world Scenarios', () => {
      // withSub should definitely be included if minNameSimilarity is borderline
      expect(ids).toContain('with-sub');
   });
+
+  it('should rank extreme price differences correctly', () => {
+    const cheapAlt = { ...baseProduct, id: 'cheap', price: 1, supplier: { id: 's2', name: 'B' } }; // 90% cheaper
+    const expensiveAlt = { ...baseProduct, id: 'expensive', price: 100, supplier: { id: 's3', name: 'C' } }; // 900% expensive
+
+    mockUseProducts.mockReturnValue({ data: [baseProduct, cheapAlt, expensiveAlt], isLoading: false });
+
+    const { result } = renderHook(() => useSupplierComparison(baseProduct as any));
+    
+    const cheap = result.current.result?.alternatives.find(a => a.product.id === 'cheap');
+    const expensive = result.current.result?.alternatives.find(a => a.product.id === 'expensive');
+    
+    expect(cheap?.score).toBeGreaterThan(expensive?.score ?? 0);
+    // Expensive score should be very low but not negative/NaN
+    expect(expensive?.score).toBeGreaterThanOrEqual(0);
+  });
+
+  it('should handle zero stock products in score', () => {
+    const noStockAlt = { ...baseProduct, id: 'nostock', stock: 0, supplier: { id: 's2', name: 'B' } };
+    
+    mockUseProducts.mockReturnValue({ data: [baseProduct, noStockAlt], isLoading: false });
+
+    const { result } = renderHook(() => useSupplierComparison(baseProduct as any));
+    const alt = result.current.result?.alternatives[0];
+    
+    expect(alt?.score).toBeLessThan(100);
+    expect(alt?.isBestStock).toBe(false);
+  });
 });
+
 
