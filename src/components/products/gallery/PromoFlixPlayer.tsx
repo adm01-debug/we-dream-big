@@ -189,14 +189,27 @@ export function PromoFlixPlayer({
   const armLoadingTimeout = useCallback(() => {
     clearLoadingTimeout();
     loadingTimeoutRef.current = window.setTimeout(() => {
-      // Se ainda não tocou em 20s, mostra erro acionável
+      // Após 10s sem dados, libera a UI: esconde o overlay e deixa o usuário
+      // clicar em play manualmente (evita "Carregando" eterno em casos de CORS
+      // ou autoplay bloqueado). Só escala para erro se o vídeo continuar sem
+      // qualquer dado mesmo depois de 25s.
       const v = videoRef.current;
-      if (v && v.readyState < 2) {
-        setHlsError('O vídeo está demorando para carregar. Verifique sua conexão e tente novamente.');
+      if (v && v.readyState < 1) {
+        setIsLoading(false);
+        setIsReconnecting(false);
+        loadingTimeoutRef.current = window.setTimeout(() => {
+          const vv = videoRef.current;
+          if (vv && vv.readyState < 1) {
+            setHlsError(
+              'O vídeo está demorando para responder. Verifique sua conexão e tente novamente.',
+            );
+          }
+        }, 15000);
+      } else {
         setIsLoading(false);
         setIsReconnecting(false);
       }
-    }, 20000);
+    }, 10000);
   }, [clearLoadingTimeout]);
 
   // Setup HLS or native
@@ -423,12 +436,32 @@ export function PromoFlixPlayer({
       setHlsError(null);
       clearLoadingTimeout();
     };
+    const onLoadStart = () => {
+      // Browser começou a buscar mídia — mantém o overlay, mas se em 4s tiver
+      // qualquer dado, removemos via outros eventos. Aqui só garantimos limpo.
+    };
+    const onLoadedData = () => {
+      setIsLoading(false);
+      setIsReconnecting(false);
+      clearLoadingTimeout();
+    };
     const onProgress = () => {
       if (video.buffered.length > 0) {
         setBuffered(video.buffered.end(video.buffered.length - 1));
+        // Se já temos qualquer buffer, definitivamente não estamos mais "carregando"
+        setIsLoading(false);
+        clearLoadingTimeout();
       }
     };
-    const onWaiting = () => setIsLoading(true);
+    const onWaiting = () => {
+      // Só mostra spinner se realmente não tem dados suficientes
+      if (video.readyState < 2) setIsLoading(true);
+    };
+    const onPlaying = () => {
+      setIsLoading(false);
+      setIsReconnecting(false);
+      clearLoadingTimeout();
+    };
     const onCanPlay = () => {
       setIsLoading(false);
       setIsReconnecting(false);
@@ -446,8 +479,11 @@ export function PromoFlixPlayer({
     video.addEventListener('pause', onPause);
     video.addEventListener('timeupdate', onTime);
     video.addEventListener('loadedmetadata', onMeta);
+    video.addEventListener('loadstart', onLoadStart);
+    video.addEventListener('loadeddata', onLoadedData);
     video.addEventListener('progress', onProgress);
     video.addEventListener('waiting', onWaiting);
+    video.addEventListener('playing', onPlaying);
     video.addEventListener('canplay', onCanPlay);
     video.addEventListener('ratechange', onRate);
     video.addEventListener('volumechange', onVolume);
@@ -457,8 +493,11 @@ export function PromoFlixPlayer({
       video.removeEventListener('pause', onPause);
       video.removeEventListener('timeupdate', onTime);
       video.removeEventListener('loadedmetadata', onMeta);
+      video.removeEventListener('loadstart', onLoadStart);
+      video.removeEventListener('loadeddata', onLoadedData);
       video.removeEventListener('progress', onProgress);
       video.removeEventListener('waiting', onWaiting);
+      video.removeEventListener('playing', onPlaying);
       video.removeEventListener('canplay', onCanPlay);
       video.removeEventListener('ratechange', onRate);
       video.removeEventListener('volumechange', onVolume);
@@ -742,7 +781,7 @@ export function PromoFlixPlayer({
         poster={posterUrl ?? undefined}
         autoPlay={autoPlay}
         playsInline
-        crossOrigin="anonymous"
+        preload="auto"
         onClick={togglePlay}
         onDoubleClick={toggleFullscreen}
       />
