@@ -125,7 +125,11 @@ describe('PromoFlixPlayer Persistence and Logic', () => {
         },
         configurable: true
       });
-      video.dispatchEvent(new Event('progress'));
+      
+      await vi.waitFor(() => {
+        video.dispatchEvent(new Event('progress'));
+        if (queryByText(/Carregando/i)) throw new Error('Still loading');
+      });
     }
     
     // Overlay should be gone (isLoading = false)
