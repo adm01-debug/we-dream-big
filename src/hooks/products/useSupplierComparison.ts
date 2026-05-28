@@ -77,7 +77,11 @@ export function useSupplierComparison(
   const categoryName = product?.category?.name;
   const categoryId = product?.category?.id;
   const { data: categoryProductsRaw, isLoading } = useProducts(
-    categoryId ? { categoryId } : categoryName ? { category: categoryName } : undefined,
+    categoryId
+      ? { categoryId, limit: 1000 }
+      : categoryName
+        ? { category: categoryName, limit: 1000 }
+        : undefined,
     { enabled: !!product && (!!categoryId || !!categoryName), staleTime: 10 * 60 * 1000 },
   );
   const categoryProducts = categoryProductsRaw ?? [];
