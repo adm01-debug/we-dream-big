@@ -29,6 +29,7 @@ export interface ClientProfile {
 export interface ProductForRecommendation {
   id: string;
   name: string;
+  sku?: string;
   category: string;
   description?: string;
   priceRange?: string;
