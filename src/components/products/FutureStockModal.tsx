@@ -74,11 +74,12 @@ export function FutureStockModal({
           case 'past':
             return isBefore(entryDate, todayStart);
           case '7days':
-            return isAfter(entryDate, todayStart) && isBefore(entryDate, addDays(todayStart, 8)); // 8 para incluir o 7º dia
+            // Inclui hoje + próximos 7 dias (até o final do 7º dia seguinte)
+            return !isBefore(entryDate, todayStart) && isBefore(entryDate, addDays(todayStart, 8));
           case '30days':
-            return isAfter(entryDate, todayStart) && isBefore(entryDate, addDays(todayStart, 31));
+            return !isBefore(entryDate, todayStart) && isBefore(entryDate, addDays(todayStart, 31));
           case '90days':
-            return isAfter(entryDate, todayStart) && isBefore(entryDate, addDays(todayStart, 91));
+            return !isBefore(entryDate, todayStart) && isBefore(entryDate, addDays(todayStart, 91));
           default:
             return true;
         }
