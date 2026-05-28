@@ -15,6 +15,8 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -52,6 +54,15 @@ export function FutureStockModal({
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('nearest');
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
+
+  const toggleGroup = (colorName: string) => {
+    setExpandedGroups(prev => 
+      prev.includes(colorName) 
+        ? prev.filter(name => name !== colorName) 
+        : [...prev, colorName]
+    );
+  };
 
   // Buscar variantes com dados de estoque/reposição
   const { data: variantsWithStock = [], isLoading, error } = useProductVariantsWithStock(productId);
@@ -374,10 +385,14 @@ export function FutureStockModal({
                     const colorEntries = sortedEntries.filter((e) => e.colorName === colorName);
                     // Agrupar por variante dentro da cor
                     const variantIds = Array.from(new Set(colorEntries.map((e) => e.variantId)));
+                    const isExpanded = expandedGroups.includes(colorName) || selectedColor === colorName;
 
                     return (
-                      <div key={colorName} className="space-y-4 rounded-2xl border border-border/50 bg-muted/30 p-4">
-                        <div className="flex items-center justify-between">
+                      <div key={colorName} className="space-y-4 rounded-2xl border border-border/50 bg-muted/30 p-1">
+                        <button 
+                          onClick={() => toggleGroup(colorName)}
+                          className="flex w-full items-center justify-between p-3 transition-colors hover:bg-muted/50 rounded-xl"
+                        >
                           <div className="flex items-center gap-3 border-l-4 border-primary pl-3">
                             <div 
                               className="h-4 w-4 rounded-full border border-background shadow-sm"
@@ -391,16 +406,18 @@ export function FutureStockModal({
                               {colorEntries.length === 1 ? 'previsão' : 'previsões'}
                             </Badge>
                           </div>
-                        </div>
+                          {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                        </button>
 
-                        <div className="space-y-6">
-                          {variantIds.map((vId) => {
-                            // Pegamos as entradas da variante e SEMPRE ordenamos por data cronológica internamente
-                            const variantEntries = colorEntries
-                              .filter((e) => e.variantId === vId)
-                              .sort((a, b) => new Date(a.expectedDate).getTime() - new Date(b.expectedDate).getTime());
-                            
-                            const first = variantEntries[0];
+                        {isExpanded && (
+                          <div className="space-y-6 px-3 pb-4">
+                            {variantIds.map((vId) => {
+                              // Ordenação cronológica automática dentro da variante
+                              const variantEntries = colorEntries
+                                .filter((e) => e.variantId === vId)
+                                .sort((a, b) => new Date(a.expectedDate).getTime() - new Date(b.expectedDate).getTime());
+                              
+                              const first = variantEntries[0];
 
                             return (
                               <div key={vId} className="space-y-3">
@@ -515,9 +532,9 @@ export function FutureStockModal({
                                   })}
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
+                            })}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
