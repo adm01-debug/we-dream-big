@@ -174,6 +174,7 @@ export interface ProductVariation {
 
 export interface ProductFilters {
   category?: string;
+  categoryId?: string | number;
   search?: string;
   minPrice?: number;
   maxPrice?: number;

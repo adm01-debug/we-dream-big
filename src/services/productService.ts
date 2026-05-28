@@ -7,9 +7,13 @@ const getFiniteNumber = (value: unknown): number | null =>
 
 export const productService = {
   async fetchProducts(filters?: ProductFilters) {
+    const externalFilters: Record<string, unknown> = {};
+    if (filters?.categoryId) externalFilters.main_category_id = filters.categoryId;
+    
     const products = await fetchPromobrindProducts({
       search: filters?.search,
       limit: filters?.limit,
+      filters: Object.keys(externalFilters).length > 0 ? externalFilters : undefined,
     });
 
     let result = products.map(mapPromobrindToProduct);

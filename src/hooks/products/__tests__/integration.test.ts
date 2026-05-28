@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useProductVariantsWithStock } from '../useVariantSupplierSources';
@@ -49,10 +50,9 @@ describe('useProductVariantsWithStock Integration (Mock)', () => {
           ],
         },
       ],
-      count: null,
     };
 
-    vi.mocked(invokeExternalDb).mockResolvedValue(mockDbResult);
+    (invokeExternalDb as any).mockResolvedValue(mockDbResult);
 
     const { result } = renderHook(() => useProductVariantsWithStock('p1'), { wrapper });
 
@@ -84,10 +84,9 @@ describe('useProductVariantsWithStock Integration (Mock)', () => {
           variant_supplier_sources: [],
         },
       ],
-      count: null,
     };
 
-    vi.mocked(invokeExternalDb).mockResolvedValue(mockDbResult);
+    (invokeExternalDb as any).mockResolvedValue(mockDbResult);
     const { result } = renderHook(() => useProductVariantsWithStock('p1'), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -114,10 +113,9 @@ describe('useProductVariantsWithStock Integration (Mock)', () => {
           variant_supplier_sources: [{ next_date_1: '2026-06-15', next_quantity_1: 30 }],
         },
       ],
-      count: null,
     };
 
-    vi.mocked(invokeExternalDb).mockResolvedValue(mockDbResult);
+    (invokeExternalDb as any).mockResolvedValue(mockDbResult);
     const { result } = renderHook(() => useProductVariantsWithStock('p1'), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -146,10 +144,9 @@ describe('useProductVariantsWithStock Integration (Mock)', () => {
           ],
         },
       ],
-      count: null,
     };
 
-    vi.mocked(invokeExternalDb).mockResolvedValue(mockDbResult);
+    (invokeExternalDb as any).mockResolvedValue(mockDbResult);
     const { result } = renderHook(() => useProductVariantsWithStock('p1'), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 

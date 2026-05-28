@@ -88,18 +88,14 @@ export function ShareContactSelector({ onSelect, selection }: ShareContactSelect
     staleTime: 60_000,
   });
 
-  // Use prop selection as fallback when the component hasn't had a company picked locally
-  const activeCompanyId = selectedCompany?.id ?? selection?.companyId ?? null;
-  const activeCompanyName = selectedCompany?.name ?? selection?.companyName ?? '';
-
   // Fetch contacts for selected company
   const { data: contacts = [], isLoading: loadingContacts } = useQuery({
-    queryKey: ['share-contacts', activeCompanyId],
+    queryKey: ['share-contacts', selectedCompany?.id],
     queryFn: async () => {
-      if (!activeCompanyId) return [];
+      if (!selectedCompany) return [];
       const raw = await selectCrm<CrmContact>('contacts', {
         select: 'id, first_name, last_name, full_name, cargo',
-        filters: { company_id: activeCompanyId },
+        filters: { company_id: selectedCompany.id },
         limit: 20,
       });
 
@@ -133,7 +129,7 @@ export function ShareContactSelector({ onSelect, selection }: ShareContactSelect
       );
       return enriched;
     },
-    enabled: !!activeCompanyId,
+    enabled: !!selectedCompany,
     staleTime: 60_000,
   });
 
@@ -145,10 +141,10 @@ export function ShareContactSelector({ onSelect, selection }: ShareContactSelect
   };
 
   const handleSelectContact = (contact: ContactOption) => {
-    if (!activeCompanyId || !activeCompanyName) return;
+    if (!selectedCompany) return;
     onSelect({
-      companyId: activeCompanyId,
-      companyName: activeCompanyName,
+      companyId: selectedCompany.id,
+      companyName: selectedCompany.name,
       contactId: contact.id,
       contactName: contact.name,
       contactPhone: contact.phone ?? undefined,

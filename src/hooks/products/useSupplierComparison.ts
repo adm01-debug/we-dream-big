@@ -75,9 +75,14 @@ export function useSupplierComparison(
   const { onlyVerified = false, sortBy = 'score', minNameSimilarity = 0.4 } = options;
 
   const categoryName = product?.category?.name;
+  const categoryId = product?.category?.id;
   const { data: categoryProductsRaw, isLoading } = useProducts(
-    categoryName ? { category: categoryName } : undefined,
-    { enabled: !!product && !!categoryName, staleTime: 10 * 60 * 1000 },
+    categoryId
+      ? { categoryId, limit: 1000 }
+      : categoryName
+        ? { category: categoryName, limit: 1000 }
+        : undefined,
+    { enabled: !!product && (!!categoryId || !!categoryName), staleTime: 10 * 60 * 1000 },
   );
   const categoryProducts = categoryProductsRaw ?? [];
 

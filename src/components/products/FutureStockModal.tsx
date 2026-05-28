@@ -379,12 +379,7 @@ export function FutureStockModal({
             ) : (
               !isLoading &&
               !error &&
-              hasVariants &&
-              (sortedEntries.length === 0 ? (
-                <div className="rounded-xl border border-border/50 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
-                  Nenhuma reposição encontrada para os filtros selecionados.
-                </div>
-              ) : (
+              hasVariants && (
                 <div className="space-y-6">
                   {/* Agrupamento por cor */}
                   {Array.from(new Set(sortedEntries.map((e) => e.colorName))).map((colorName) => {
@@ -567,7 +562,7 @@ export function FutureStockModal({
                     );
                   })}
                 </div>
-              ))
+              )
             )}
 
             {/* Resumo total */}
