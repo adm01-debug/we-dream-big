@@ -105,7 +105,7 @@ export function getPriceFreshness(
 
   // Copy curto e consistente entre PDP e Quick View: apenas o relativo.
   // A data absoluta fica no tooltip para evitar poluição visual.
-  const baseLabel = `Atualizado ${relative}`;
+  const baseLabel = `Atualizado (${relative})`;
   // Tooltip padronizado para todos os status: data por extenso + janela de
   // validade configurada para este produto. Mensagem escrita para o vendedor:
   // direta, sem jargão técnico, sem repetir o número de dias.
@@ -116,7 +116,7 @@ export function getPriceFreshness(
       status,
       daysSinceUpdate: days,
       thresholdDays: threshold,
-      label: `Preço pode estar defasado (${relative})`,
+      label: `Possivelmente defasado (${relative})`,
       tooltip: `${baseTooltip} O prazo de validade já foi ultrapassado — confirme o valor com o fornecedor antes de enviar o orçamento ao cliente.`,
       shouldWarn: true,
       isStale: true,
@@ -128,7 +128,7 @@ export function getPriceFreshness(
       status,
       daysSinceUpdate: days,
       thresholdDays: threshold,
-      label: baseLabel,
+      label: `Próximo do limite (${relative})`,
       tooltip: `${baseTooltip} Está se aproximando do limite — recomendamos confirmar o valor com o fornecedor antes de fechar o orçamento.`,
       shouldWarn: true,
       isStale: false,
@@ -139,7 +139,7 @@ export function getPriceFreshness(
     status,
     daysSinceUpdate: days,
     thresholdDays: threshold,
-    label: baseLabel,
+    label: `Atualizado (${relative})`,
     tooltip: `${baseTooltip} Preço dentro do prazo de validade.`,
     shouldWarn: false,
     isStale: false,

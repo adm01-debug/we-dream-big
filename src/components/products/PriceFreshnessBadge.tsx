@@ -129,11 +129,7 @@ function FreshnessTooltipBody({ freshness, priceUpdatedAt }: FreshnessTooltipPro
       <div className="flex items-center gap-1.5">
         <span className="font-semibold">{statusLabel}</span>
         {freshness.status !== 'unknown' && (() => {
-          const stripped = freshness.label
-            .replace(/^Atualizado\s+/i, '')
-            .replace(/^Preço pode estar defasado\s*/i, '')
-            .replace(/^\(|\)$/g, '')
-            .trim();
+          const stripped = freshness.label.match(/\(([^)]+)\)/)?.[1] || freshness.label.replace(/^(Atualizado|Próximo do limite|Possivelmente defasado)\s+/i, '').trim();
           return (
             <span className="text-muted-foreground">({stripped})</span>
           );
@@ -399,7 +395,7 @@ export function PriceFreshnessBadge({
         >
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <div className="flex flex-col gap-0.5 leading-tight">
-            <span className="font-display text-sm font-semibold">Preço pode estar defasado</span>
+            <span className="font-display text-sm font-semibold">Possivelmente defasado</span>
             {absolute && (
               <span className="text-xs tabular-nums text-amber-800/90 dark:text-amber-200/80">
                 Última atualização em {absolute} ({relative})
@@ -424,7 +420,7 @@ export function PriceFreshnessBadge({
           <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span className="tabular-nums">
             Atualizado em {absolute}
-            <span className="text-amber-700/70 dark:text-amber-300/70"> · {relative}</span>
+            <span className="text-amber-700/70 dark:text-amber-300/70"> ({relative})</span>
             {limitSuffix}
           </span>
         </span>
@@ -442,7 +438,7 @@ export function PriceFreshnessBadge({
           <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span className="tabular-nums">
             Atualizado em {absolute}
-            <span className="text-emerald-700/70 dark:text-emerald-400/70"> · {relative}</span>
+            <span className="text-emerald-700/70 dark:text-emerald-400/70"> ({relative})</span>
             {limitSuffix}
           </span>
         </span>
