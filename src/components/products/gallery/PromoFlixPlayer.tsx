@@ -471,6 +471,7 @@ export function PromoFlixPlayer({
 
   useEffect(() => {
     initPlayer();
+    const video = videoRef.current;
     return () => {
       // Invalida callbacks de imports HLS ainda pendentes
       initTokenRef.current += 1;
@@ -484,11 +485,10 @@ export function PromoFlixPlayer({
         hlsRef.current = null;
       }
       // Limpa src do <video> para o próximo mount não disparar onError code 4 com src antigo
-      const v = videoRef.current;
-      if (v) {
+      if (video) {
         try {
-          v.removeAttribute('src');
-          v.load();
+          video.removeAttribute('src');
+          video.load();
         } catch {
           /* noop */
         }
@@ -496,6 +496,7 @@ export function PromoFlixPlayer({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src, isHls]); // Only re-init on src change to avoid loop with persistence states
+
 
   const setQuality = useCallback(
     (index: number) => {
