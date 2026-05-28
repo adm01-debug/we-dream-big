@@ -38,6 +38,8 @@ interface SupplierProduct {
   isVerified: boolean;
   /** Score composto 0-100 (maior = melhor). */
   score: number;
+  /** Detalhamento do score por critério */
+  scoreBreakdown: Record<string, number>;
   /** Economia projetada por pedido considerando o MOQ efetivo. */
   economiaPorMOQ: number;
   /** MOQ efetivo usado no cálculo de economia (max entre base e alt). */
@@ -146,7 +148,8 @@ export function useSupplierComparison(
         isVerified,
         economiaPorMOQ,
         effectiveMOQ,
-        score: 0, // preenchido logo abaixo
+        score: 0,
+        scoreBreakdown: {},
       };
     });
 
@@ -157,19 +160,24 @@ export function useSupplierComparison(
     );
     const maxCommonColors = Math.max(...rawAlternatives.map((a) => a.commonColors.length), 1);
 
-    const withScore = rawAlternatives.map((a) => ({
-      ...a,
-      score: computeScore({
-        priceDiffPercent: a.priceDiffPercent,
-        stock: a.product.stock,
-        highestStock,
-        leadTimeDays: a.leadTimeDays,
-        maxLead,
-        commonColors: a.commonColors.length,
-        maxCommonColors,
-        isVerified: a.isVerified,
-      }),
-    }));
+    const withScore = rawAlternatives.map((a) => {
+      const breakdown = {
+        price: clamp01(0.5 - a.priceDiffPercent / 100) * 35,
+        stock: highestStock > 0 ? clamp01(a.product.stock / highestStock) * 20 : 0,
+        colors: maxCommonColors > 0 ? clamp01(a.commonColors.length / maxCommonColors) * 15 : 0,
+        moq: clamp01(1 - (a.product.minQuantity ?? 1) / 100) * 15,
+        lead: typeof a.leadTimeDays === 'number' && maxLead > 0 ? clamp01(1 - a.leadTimeDays / maxLead) * 10 : 5,
+        verified: a.isVerified ? 10 : 0,
+      };
+
+      const total = Object.values(breakdown).reduce((acc, val) => acc + val, 0);
+
+      return {
+        ...a,
+        score: Math.round(total),
+        scoreBreakdown: breakdown,
+      };
+    });
 
     const alternativesUnfiltered = sortAlternatives(withScore, sortBy);
     const alternatives = onlyVerified
