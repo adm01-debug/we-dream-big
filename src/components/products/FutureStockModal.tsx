@@ -405,7 +405,10 @@ export function FutureStockModal({
                                   Variante SKU: {first.supplierSku}
                                 </div>
 
-                                <div className="grid gap-2">
+                                <div className="relative grid gap-3 pl-4">
+                                  {/* Linha vertical da timeline */}
+                                  <div className="absolute left-1.5 top-2 bottom-2 w-0.5 bg-border/40" />
+                                  
                                   {variantEntries.map((entry) => {
                                     const expectedDate = parseISO(entry.expectedDate);
                                     const daysUntil = Math.ceil(
@@ -418,11 +421,16 @@ export function FutureStockModal({
                                       <div
                                         key={entry.id}
                                         className={cn(
-                                          'flex items-center gap-4 rounded-xl border bg-card p-3 transition-all hover:border-primary/30',
+                                          'relative flex items-center gap-4 rounded-xl border bg-card p-3 transition-all hover:border-primary/30',
                                           isUrgent && !isPast && 'border-warning/30 bg-warning/5',
                                           isPast && 'border-destructive/30 bg-destructive/5',
                                         )}
                                       >
+                                        {/* Marcador da timeline */}
+                                        <div className={cn(
+                                          "absolute -left-[18px] h-2.5 w-2.5 rounded-full border-2 border-background",
+                                          isPast ? "bg-destructive" : isUrgent ? "bg-warning" : "bg-primary"
+                                        )} />
                                         {/* Indicador visual de cor/thumb */}
                                         <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border">
                                           {entry.thumbnail ? (
