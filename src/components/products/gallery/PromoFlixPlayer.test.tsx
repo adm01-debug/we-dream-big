@@ -312,22 +312,28 @@ describe('PromoFlixPlayer Automated Tests', () => {
     };
 
     it('should update quality state during multiple level changes with auto-level enabled', async () => {
-      const { queryByText, getByTestId } = render(<PromoFlixPlayer src="test.m3u8" isHls={true} />);
+      const { queryByText } = render(<PromoFlixPlayer src="test.m3u8" isHls={true} />);
       
       const hlsInstance = await waitForHlsInstance();
       const levelSwitchedHandler = hlsInstance.on.mock.calls.find((call: any) => call[0] === 'hlsLevelSwitched')[1];
+      const manifestHandler = hlsInstance.on.mock.calls.find((call: any) => call[0] === 'hlsManifestParsed')[1];
 
       // Initially auto-level is enabled (-1)
       expect(hlsInstance.autoLevelEnabled).toBe(true);
+
+      // Trigger manifest parsed to clear loading state
+      await act(async () => {
+        manifestHandler('hlsManifestParsed', { levels: [{ height: 720 }, { height: 1080 }] });
+      });
+
+      expect(queryByText(/Carregando/i)).toBeNull();
 
       // Simulate first level switch
       await act(async () => {
         levelSwitchedHandler('hlsLevelSwitched', { level: 1 });
       });
 
-      // Even after switch, if auto-level is still enabled on the instance, 
-      // the component should keep setCurrentQuality(-1)
-      // We can't easily check internal state, but we can verify no error overlay is shown
+      // Overlay should remain hidden
       expect(queryByText(/Carregando/i)).toBeNull();
 
       // Simulate second level switch
