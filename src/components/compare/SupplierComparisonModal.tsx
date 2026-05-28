@@ -109,7 +109,7 @@ export function SupplierComparisonModal({
     ];
   }, [comparison, baseProduct, baseIsLowest, baseIsBestStock]);
 
-  if (isLoading || !baseProduct) {
+  if (isLoading) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[85vh] max-w-5xl">
@@ -120,26 +120,36 @@ export function SupplierComparisonModal({
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6 p-4">
-            {!baseProduct && !isLoading ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Package className="mb-4 h-12 w-12 text-muted-foreground/30" />
-                <p className="text-lg font-medium">Produto base não carregado</p>
-                <p className="text-sm text-muted-foreground">Ocorreu um erro ao carregar os dados para comparação.</p>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="h-20 w-full rounded-lg" />
-                  ))}
-                </div>
-                <div className="space-y-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Skeleton key={i} className="h-24 w-full rounded-xl" />
-                  ))}
-                </div>
-              </>
-            )}
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-20 w-full rounded-lg" />
+              ))}
+            </div>
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (!baseProduct) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-h-[85vh] max-w-5xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-primary" />
+              Comparador de Fornecedores
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Package className="mb-4 h-12 w-12 text-muted-foreground/30" />
+            <p className="text-lg font-medium">Produto base não carregado</p>
+            <p className="text-sm text-muted-foreground">Ocorreu um erro ao identificar o produto para comparação.</p>
           </div>
         </DialogContent>
       </Dialog>
