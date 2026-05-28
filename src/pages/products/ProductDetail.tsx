@@ -13,6 +13,11 @@ const SmartRecommendations = lazyWithRetry(() =>
     default: m.SmartRecommendations,
   })),
 );
+const SmartRecommendationsMock = lazyWithRetry(() =>
+  import('@/components/products/SmartRecommendationsMock').then((m) => ({
+    default: m.SmartRecommendationsMock,
+  })),
+);
 const StockHistoryChart = lazyWithRetry(() =>
   import('@/components/products/StockHistoryChart').then((m) => ({ default: m.StockHistoryChart })),
 );
