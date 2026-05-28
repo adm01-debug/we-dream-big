@@ -111,4 +111,59 @@ describe('useSupplierComparison Real-world Scenarios', () => {
      const { result } = renderHook(() => useSupplierComparison(baseProduct as any));
      expect(result.current.result?.fastestLeadTimeDays).toBe(5);
   });
+
+  it('should handle data corruption: negative prices or zero stock', () => {
+    const corruptAlt = { 
+      ...baseProduct, 
+      id: 'corrupt', 
+      price: -10, // Should probably be ignored or handled
+      stock: 0,
+      supplier: { id: 's2', name: 'B' }
+    };
+
+    mockUseProducts.mockReturnValue({ data: [baseProduct, corruptAlt], isLoading: false });
+
+    const { result } = renderHook(() => useSupplierComparison(baseProduct as any));
+    
+    // It currently includes them but score should be low or it should filter them.
+    // Let's see what happens.
+    const alt = result.current.result?.alternatives.find(a => a.product.id === 'corrupt');
+    expect(alt).toBeDefined();
+    expect(alt?.score).toBeLessThan(100);
+  });
+
+  it('should handle many alternatives (Performance/Limit test)', () => {
+    const manyAlts = Array.from({ length: 100 }, (_, i) => ({
+      ...baseProduct,
+      id: `alt-${i}`,
+      name: `Product Alternative ${i}`,
+      supplier: { id: `supp-${i}`, name: `Supplier ${i}` },
+      price: 10 + i,
+      stock: 1000 - i,
+    }));
+
+    mockUseProducts.mockReturnValue({ data: [baseProduct, ...manyAlts], isLoading: false });
+
+    const start = performance.now();
+    const { result } = renderHook(() => useSupplierComparison(baseProduct as any));
+    const end = performance.now();
+
+    expect(result.current.result?.alternatives.length).toBeGreaterThan(0);
+    expect(end - start).toBeLessThan(100); // Should be fast
+  });
+
+  it('should respect subcategory bonus in similarity', () => {
+     // baseSubcategory is 'Cerâmica'
+     const altNoSub = { ...baseProduct, id: 'no-sub', name: 'Caneca Branca', subcategory: 'Outro', supplier: {id: 's2', name: 'B'}};
+     const altWithSub = { ...baseProduct, id: 'with-sub', name: 'Caneca Branca', subcategory: 'Cerâmica', supplier: {id: 's3', name: 'C'}};
+
+     mockUseProducts.mockReturnValue({ data: [baseProduct, altNoSub, altWithSub], isLoading: false });
+
+     const { result } = renderHook(() => useSupplierComparison(baseProduct as any, { minNameSimilarity: 0.5 }));
+     
+     const ids = result.current.result?.alternatives.map(a => a.product.id);
+     // withSub should definitely be included if minNameSimilarity is borderline
+     expect(ids).toContain('with-sub');
+  });
 });
+
