@@ -431,6 +431,7 @@ export function PromoFlixPlayer({
     const onCanPlay = () => {
       setIsLoading(false);
       setIsReconnecting(false);
+      clearLoadingTimeout();
     };
     const onRate = () => setPlaybackRate(video.playbackRate);
     const onVolume = () => {
