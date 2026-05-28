@@ -42,20 +42,31 @@ export function ShareActions({
   const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
   const [showAllColors, setShowAllColors] = useState(false);
+  const [showKitComplete, setShowKitComplete] = useState(false);
+  const [showKitItems, setShowKitItems] = useState(false);
   const [copied, setCopied] = useState(false);
   const { downloadPhotos, downloading } = usePhotoDownload();
 
-  // Count main product images (excluding color-specific ones)
-  const mainPhotosCount = useMemo(() => {
-    if (!product.colors || product.colors.length === 0) return product.images.length;
+  // Count photos considering selection
+  const totalPhotosCount = useMemo(() => {
+    // If we have a selected variant with specific images, use those + main product images
+    const variantImages = selectedVariant?.thumbnailUrl ? [selectedVariant.thumbnailUrl] : [];
+    
+    if (!product.colors || product.colors.length === 0) {
+      return Array.from(new Set([...variantImages, ...product.images])).length;
+    }
+
     const colorImageUrls = new Set<string>();
     product.colors.forEach((color) => {
       if (color.image) colorImageUrls.add(color.image);
       color.images?.forEach((img) => colorImageUrls.add(img));
     });
-    const filtered = product.images.filter((img) => !colorImageUrls.has(img));
-    return filtered.length > 0 ? filtered.length : 1;
-  }, [product.images, product.colors]);
+
+    const mainImages = product.images.filter((img) => !colorImageUrls.has(img));
+    const combined = Array.from(new Set([...variantImages, ...mainImages]));
+    
+    return combined.length > 0 ? combined.length : 1;
+  }, [product.images, product.colors, selectedVariant]);
 
   const handleCopyDescription = async () => {
     const message = MESSAGE_TEMPLATES[1].generate(product); // informal default
@@ -84,7 +95,7 @@ export function ShareActions({
           <MessageCircle className="h-4 w-4" />
           Enviar - WhatsApp
           <span className="rounded-full bg-primary-foreground/20 px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
-            {mainPhotosCount}
+            {totalPhotosCount}
           </span>
         </Button>
 
@@ -102,7 +113,7 @@ export function ShareActions({
               <MessageCircle className="mr-2 h-4 w-4" />
               Enviar Produto Simples
               <span className="ml-auto text-[10px] text-muted-foreground">
-                {mainPhotosCount} foto{mainPhotosCount !== 1 ? 's' : ''}
+                {totalPhotosCount} foto{totalPhotosCount !== 1 ? 's' : ''}
               </span>
             </DropdownMenuItem>
 
@@ -118,25 +129,11 @@ export function ShareActions({
 
             {product.isKit && (
               <>
-                <DropdownMenuItem
-                  onClick={() => {
-                    toast({
-                      title: 'KIT Completo',
-                      description: 'Preparando fotos do kit montado...',
-                    });
-                  }}
-                >
+                <DropdownMenuItem onClick={() => setShowKitComplete(true)}>
                   <ImageIcon className="mr-2 h-4 w-4" />
                   Enviar KIT Completo
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    toast({
-                      title: 'Itens do KIT',
-                      description: 'Preparando fotos individuais dos itens...',
-                    });
-                  }}
-                >
+                <DropdownMenuItem onClick={() => setShowKitItems(true)}>
                   <ImageIcon className="mr-2 h-4 w-4" />
                   Enviar Itens Separados
                 </DropdownMenuItem>
@@ -179,6 +176,26 @@ export function ShareActions({
           product={product}
         />
       )}
+
+      {product.isKit && (
+        <>
+          <ShareKitDialog
+            open={showKitComplete}
+            onOpenChange={setShowKitComplete}
+            product={product}
+            mode="complete"
+          />
+          <ShareKitDialog
+            open={showKitItems}
+            onOpenChange={setShowKitItems}
+            product={product}
+            mode="separate"
+          />
+        </>
+      )}
     </>
   );
 }
+
+// Add the missing import at the top
+import { ShareKitDialog } from './share/ShareKitDialog';
