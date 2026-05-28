@@ -110,8 +110,16 @@ describe('PromoFlixPlayer Automated Tests', () => {
     expect(await findByText(/restrições de segurança \(CORS\)/i)).toBeDefined();
     expect(await findByText(/Verifique as permissões do servidor ou tente um link diferente/i)).toBeDefined();
     
-    // Ensure "Tentar Novamente" button exists (actionable)
-    expect(getByRole('button', { name: /Tentar Novamente/i })).toBeDefined();
+    // Ensure "Tentar Novamente" button exists and works
+    const retryButton = getByRole('button', { name: /Tentar Novamente/i });
+    expect(retryButton).toBeDefined();
+    
+    await act(async () => {
+      fireEvent.click(retryButton);
+    });
+    
+    // After retry, it should be in loading state again
+    expect(await findByText(/Carregando/i)).toBeDefined();
   });
 
   it('should hide loading overlay when progress event has buffer', async () => {
