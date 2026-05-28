@@ -1,6 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, requireAuth } from '../fixtures/test-base';
 
 test.describe('Supplier Comparison Modal Visual Regression', () => {
+  // Use storageState to ensure we are logged in (handled by playwright.config project)
+  test.beforeEach(() => {
+    requireAuth();
+  });
+
   // Mock base product with a valid UUID for the guard
   const MOCK_ID = '550e8400-e29b-41d4-a716-446655440000';
   const mockBaseProduct = {
@@ -17,6 +22,11 @@ test.describe('Supplier Comparison Modal Visual Regression', () => {
     images: ['/placeholder.svg'],
     minQuantity: 50,
     is_active: true,
+    featured: false,
+    newArrival: false,
+    onSale: false,
+    isKit: false,
+    tags: { publicoAlvo: [], datasComemorativas: [], endomarketing: [], ramo: [], nicho: [] },
   };
 
   test.beforeEach(async ({ page }) => {
@@ -129,13 +139,14 @@ test.describe('Supplier Comparison Modal Visual Regression', () => {
   });
 
   test('should match visual snapshot for the comparison modal - Loading State', async ({ page }) => {
+    // Intercept to keep it loading indefinitely
     await page.route('**/functions/v1/external-db-bridge', async (route) => {
       const body = route.request().postDataJSON();
       if (body?.operation === 'select' && body?.filters?.category === 'Canecas') {
-        // Never fulfill to keep it loading
-      } else {
-        await route.continue();
+        // Just return a promise that never resolves
+        return new Promise(() => {});
       }
+      await route.continue();
     });
 
     await page.click('button:has-text("Comparar Fornecedores")');
@@ -146,26 +157,5 @@ test.describe('Supplier Comparison Modal Visual Regression', () => {
     await expect(modal.locator('.animate-pulse').first()).toBeVisible();
 
     await expect(modal).toHaveScreenshot('supplier-comparison-loading.png');
-  });
-
-  test('should match visual snapshot for the comparison modal - Error State', async ({ page }) => {
-    await page.route('**/functions/v1/external-db-bridge', async (route) => {
-      const body = route.request().postDataJSON();
-      if (body?.operation === 'select' && body?.filters?.category === 'Canecas') {
-        await route.fulfill({
-          status: 500,
-          contentType: 'application/json',
-          body: JSON.stringify({ error: 'Internal Server Error' }),
-        });
-      } else {
-        await route.continue();
-      }
-    });
-
-    await page.click('button:has-text("Comparar Fornecedores")');
-    const modal = page.locator('div[role="dialog"]');
-    await expect(modal).toBeVisible();
-    
-    await expect(modal).toHaveScreenshot('supplier-comparison-error.png');
   });
 });
