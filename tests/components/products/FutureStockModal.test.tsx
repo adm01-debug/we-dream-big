@@ -43,6 +43,21 @@ describe('FutureStockModal (UI Tests)', () => {
       next_quantity_2: 500,
       next_date_3: '2026-08-20',
       next_quantity_3: 0, // Ignorado
+    },
+    {
+      id: 'var-green-1',
+      product_id: 'p1',
+      sku: 'SKU-GREEN-1',
+      color_name: 'Verde',
+      color_hex: '#00FF00',
+      stock_quantity: 10,
+      selected_thumbnail: 'green.jpg',
+      next_date_1: null,
+      next_quantity_1: null,
+      next_date_2: '2026-05-15', // Única data válida
+      next_quantity_2: 450,
+      next_date_3: null,
+      next_quantity_3: 0,
     }
   ];
 
