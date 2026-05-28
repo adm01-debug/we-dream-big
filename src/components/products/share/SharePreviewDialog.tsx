@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { MessageCircle, Send, Eye, Pencil } from 'lucide-react';
+import { MessageCircle, Send, Eye, Pencil, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -121,7 +121,24 @@ export function SharePreviewDialog({
     setCustomMessage(null);
   };
 
+  const phoneError = useMemo(() => {
+    if (!contactSelection?.contactPhone) return null;
+    const digits = contactSelection.contactPhone.replace(/\D/g, '');
+    if (digits.length < 10) return 'Telefone muito curto (mínimo 10 dígitos)';
+    if (digits.length > 13) return 'Telefone muito longo';
+    return null;
+  }, [contactSelection?.contactPhone]);
+
   const handleSend = () => {
+    if (phoneError) {
+      toast({
+        title: 'Telefone inválido',
+        description: phoneError,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const target = contactSelection?.contactName || contactSelection?.companyName || 'destinatário';
 
     const { opened } = openWhatsAppShare({
