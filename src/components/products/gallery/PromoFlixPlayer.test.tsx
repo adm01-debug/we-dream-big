@@ -1,30 +1,43 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, fireEvent, act, waitFor } from '@testing-library/react';
+import { render, fireEvent, act, waitFor, screen } from '@testing-library/react';
 import { PromoFlixPlayer } from './PromoFlixPlayer';
+
+// Mock hls.js for dynamic import
+vi.mock('hls.js', () => {
+  const mockHls = vi.fn().mockImplementation(() => ({
+    loadSource: vi.fn(),
+    attachMedia: vi.fn(),
+    on: vi.fn(),
+    destroy: vi.fn(),
+    startLoad: vi.fn(),
+    recoverMediaError: vi.fn(),
+    currentLevel: -1,
+    autoLevelEnabled: true,
+  }));
+  
+  (mockHls as any).isSupported = vi.fn().mockReturnValue(true);
+  (mockHls as any).Events = {
+    MANIFEST_PARSED: 'hlsManifestParsed',
+    ERROR: 'hlsError',
+    LEVEL_SWITCHED: 'hlsLevelSwitched',
+    LEVEL_SWITCHING: 'hlsLevelSwitching',
+    FRAG_LOADED: 'hlsFragLoaded',
+  };
+  (mockHls as any).ErrorTypes = {
+    NETWORK_ERROR: 'networkError',
+    MEDIA_ERROR: 'mediaError',
+    OTHER_ERROR: 'otherError',
+  };
+
+  return { default: mockHls };
+});
 
 // Mock lucide-react icons
 vi.mock('lucide-react', () => ({
   Play: () => <div data-testid="play-icon" />,
   Pause: () => <div data-testid="pause-icon" />,
-  Volume2: () => <div data-testid="volume-icon" />,
-  VolumeX: () => <div data-testid="mute-icon" />,
-  Maximize: () => <div data-testid="maximize-icon" />,
-  Minimize: () => <div data-testid="minimize-icon" />,
-  Settings: () => <div data-testid="settings-icon" />,
-  RotateCcw: () => <div data-testid="rotate-ccw-icon" />,
-  RotateCw: () => <div data-testid="rotate-cw-icon" />,
-  Camera: () => <div data-testid="camera-icon" />,
-  Zap: () => <div data-testid="zap-icon" />,
-  ZapOff: () => <div data-testid="zap-off-icon" />,
-  ChevronLeft: () => <div data-testid="chevron-left-icon" />,
-  ChevronRight: () => <div data-testid="chevron-right-icon" />,
-  Search: () => <div data-testid="search-icon" />,
-  Target: () => <div data-testid="target-icon" />,
-  Info: () => <div data-testid="info-icon" />,
-  X: () => <div data-testid="x-icon" />,
-  PictureInPicture2: () => <div data-testid="pip-icon" />,
-  Gauge: () => <div data-testid="gauge-icon" />,
+...
   MessageCircle: () => <div data-testid="whatsapp-icon" />,
 }));
 
@@ -38,6 +51,7 @@ vi.mock('sonner', () => ({
 }));
 
 describe('PromoFlixPlayer Automated Tests', () => {
+
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
