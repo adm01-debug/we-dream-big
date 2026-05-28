@@ -270,11 +270,17 @@ export function SharePreviewDialog({
 
           {/* Contact selector */}
           <div className="space-y-2">
-            <span className="text-xs font-medium text-muted-foreground">Destinatário</span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">Destinatário</span>
+              {phoneError && (
+                <span className="flex items-center gap-1 text-[10px] font-medium text-destructive">
+                  <AlertCircle className="h-3 w-3" /> {phoneError}
+                </span>
+              )}
+            </div>
             <ShareContactSelector selection={contactSelection} onSelect={setContactSelection} />
           </div>
 
-          {/* Actions */}
           <div className="flex gap-2 pt-1">
             <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
               Cancelar
@@ -282,6 +288,7 @@ export function SharePreviewDialog({
             <Button
               className="flex-1 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={handleSend}
+              disabled={!!phoneError}
             >
               <Send className="h-4 w-4" />
               Enviar - WhatsApp
