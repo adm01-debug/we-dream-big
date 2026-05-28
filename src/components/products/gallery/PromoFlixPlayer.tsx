@@ -896,6 +896,16 @@ export function PromoFlixPlayer({
 
   useEffect(() => bumpControls(), [bumpControls]);
 
+  // Cleanup do auto-hide ao desmontar
+  useEffect(() => {
+    return () => {
+      if (controlsTimeoutRef.current) {
+        window.clearTimeout(controlsTimeoutRef.current);
+        controlsTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
   const bufferedPct = duration > 0 ? (buffered / duration) * 100 : 0;
 
