@@ -92,6 +92,7 @@ export default function ProductDetail() {
         name: it.name,
         category: it.category_name || product?.category?.name || 'Brindes',
         priceRange: formatCurrency(it.price),
+        imageUrl: it.og_image_url || it.images?.[0],
         tags: [it.supplier_name].filter(Boolean) as string[],
       })),
     [similarItems, product?.category?.name],
