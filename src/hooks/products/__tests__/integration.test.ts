@@ -28,6 +28,7 @@ describe('useProductVariantsWithStock Integration (Mock)', () => {
     });
     vi.clearAllMocks();
   });
+
   it('deve formatar corretamente os dados vindo do JOIN com variant_supplier_sources', async () => {
     const mockDbResult = {
       records: [
@@ -69,7 +70,7 @@ describe('useProductVariantsWithStock Integration (Mock)', () => {
 
     expect(variant.next_quantity_1).toBe(50);
     expect(variant.next_quantity_2).toBe(100);
-    expect(variant.next_quantity_3).toBe(0); // No mock era 0, mas o processStockEntries deve ignorar se for <= 0
+    expect(variant.next_quantity_3).toBe(0);
   });
 
   it('deve lidar com variant_supplier_sources vazio sem quebrar', async () => {
@@ -120,6 +121,7 @@ describe('useProductVariantsWithStock Integration (Mock)', () => {
     expect(result.current.data).toHaveLength(2);
     expect(result.current.data![0].color_name).toBe('Azul');
     expect(result.current.data![1].color_name).toBe('Azul');
+  });
 
   it('deve mapear corretamente combinações parciais (alguns campos nulos)', async () => {
     const mockDbResult = {
