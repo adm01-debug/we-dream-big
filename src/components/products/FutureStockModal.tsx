@@ -378,7 +378,11 @@ export function FutureStockModal({
                     return (
                       <div key={colorName} className="space-y-4 rounded-2xl border border-border/50 bg-muted/30 p-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 border-l-4 border-primary pl-3">
+                          <div className="flex items-center gap-3 border-l-4 border-primary pl-3">
+                            <div 
+                              className="h-4 w-4 rounded-full border border-background shadow-sm"
+                              style={{ backgroundColor: colorEntries[0]?.colorHex || '#888' }}
+                            />
                             <span className="text-sm font-bold uppercase tracking-wider text-foreground">
                               {colorName}
                             </span>
