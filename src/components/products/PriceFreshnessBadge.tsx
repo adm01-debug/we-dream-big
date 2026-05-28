@@ -129,11 +129,7 @@ function FreshnessTooltipBody({ freshness, priceUpdatedAt }: FreshnessTooltipPro
       <div className="flex items-center gap-1.5">
         <span className="font-semibold">{statusLabel}</span>
         {freshness.status !== 'unknown' && (() => {
-          const stripped = freshness.label
-            .replace(/^Atualizado\s+/i, '')
-            .replace(/^Preço pode estar defasado\s*/i, '')
-            .replace(/^\(|\)$/g, '')
-            .trim();
+          const stripped = freshness.label.match(/\(([^)]+)\)/)?.[1] || freshness.label.replace(/^(Atualizado|Próximo do limite|Possivelmente defasado)\s+/i, '').trim();
           return (
             <span className="text-muted-foreground">({stripped})</span>
           );
