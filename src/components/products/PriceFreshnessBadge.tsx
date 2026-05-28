@@ -438,7 +438,7 @@ export function PriceFreshnessBadge({
           <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span className="tabular-nums">
             Atualizado em {absolute}
-            <span className="text-emerald-700/70 dark:text-emerald-400/70"> · {relative}</span>
+            <span className="text-emerald-700/70 dark:text-emerald-400/70"> ({relative})</span>
             {limitSuffix}
           </span>
         </span>
