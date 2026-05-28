@@ -274,6 +274,29 @@ export const AuthSkeleton = makeSkeleton(
   'min-h-[60vh] flex items-center justify-center p-6',
 );
 
+/** Profile / user settings page skeleton */
+export const ProfileSkeleton = makeSkeleton(
+  'Profile',
+  () => (
+    <div className="space-y-6">
+      <PageHeaderSkeleton />
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-20 w-20 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-56" />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-full rounded-lg" />
+        <Skeleton className="h-10 w-full rounded-lg" />
+        <Skeleton className="h-10 w-full rounded-lg" />
+      </div>
+    </div>
+  ),
+  'p-3 sm:p-4 lg:p-6',
+);
+
 /** Modal loading skeleton */
 export const ModalSkeleton = makeSkeleton(
   'Modal',
