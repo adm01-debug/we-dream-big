@@ -60,5 +60,30 @@ describe('useProductVariantsWithStock Integration (Mock)', () => {
     expect(variant.next_date_1).toBe('2026-06-10');
     expect(variant.next_date_2).toBe('2026-07-15');
     expect(variant.next_date_3).toBe(null);
+
+    expect(variant.next_quantity_1).toBe(50);
+    expect(variant.next_quantity_2).toBe(100);
+    expect(variant.next_quantity_3).toBe(0); // No mock era 0, mas o processStockEntries deve ignorar se for <= 0
+  });
+
+  it('deve lidar com variant_supplier_sources vazio sem quebrar', async () => {
+    const mockDbResult = {
+      records: [
+        {
+          id: 'v2',
+          product_id: 'p1',
+          sku: 'SKU-02',
+          variant_supplier_sources: []
+        }
+      ]
+    };
+
+    (invokeExternalDb as any).mockResolvedValue(mockDbResult);
+    const { result } = renderHook(() => useProductVariantsWithStock('p1'), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    
+    const variant = result.current.data![0];
+    expect(variant.next_date_1).toBeUndefined();
+    expect(variant.next_entry_date).toBeNull();
   });
 });
