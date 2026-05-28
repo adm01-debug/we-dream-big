@@ -78,11 +78,12 @@ describe('FutureStockModal (UI Tests)', () => {
     const blueToggle = within(blueGroup as HTMLElement).getByRole('button');
     fireEvent.click(blueToggle);
 
-    // Verifica se as datas da timeline do Azul estão na ordem correta
-    // Usamos exact: false para permitir que o matcher ignore elementos irmãos (como o SVG)
-    expect(within(blueGroup as HTMLElement).getByText('01/06/2026', { exact: false })).toBeInTheDocument();
-    expect(within(blueGroup as HTMLElement).getByText('31/12/2026', { exact: false })).toBeInTheDocument();
-    expect(within(blueGroup as HTMLElement).getByText('15/01/2027', { exact: false })).toBeInTheDocument();
+    // Verifica se as datas da timeline do Azul estão presentes
+    // Usamos um matcher mais tolerante para encontrar o texto dentro de elementos com múltiplos filhos
+    const contentAzul = (blueGroup as HTMLElement).textContent;
+    expect(contentAzul).toContain('01/06/2026');
+    expect(contentAzul).toContain('31/12/2026');
+    expect(contentAzul).toContain('15/01/2027');
   });
 
   it('deve ignorar pares nulos ou com quantidade zero na visualização', () => {
@@ -105,9 +106,9 @@ describe('FutureStockModal (UI Tests)', () => {
     fireEvent.click(redToggle);
 
     // Deve ter a data válida
-    expect(within(redGroup as HTMLElement).getByText('10/07/2026', { exact: false })).toBeInTheDocument();
-    // Não deve ter as outras datas/quantidades que foram ignoradas (ex: 20/08/2026 com qty 0)
-    expect(within(redGroup as HTMLElement).queryByText('20/08/2026', { exact: false })).not.toBeInTheDocument();
+    expect((redGroup as HTMLElement).textContent).toContain('10/07/2026');
+    // Não deve ter as outras datas que foram ignoradas
+    expect((redGroup as HTMLElement).textContent).not.toContain('20/08/2026');
   });
 
   it('deve alternar o estado de colapso/expandir ao clicar no header da cor', () => {
@@ -158,6 +159,7 @@ describe('FutureStockModal (UI Tests)', () => {
     // Deve colapsar novamente
     expect(screen.queryByText(/Variante SKU: SKU-BLUE-1/i)).not.toBeInTheDocument();
   });
+
 
 
 
