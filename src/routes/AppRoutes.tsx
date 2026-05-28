@@ -8,7 +8,6 @@ import { getFallback } from '@/components/layout/SkeletonLoaders';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import { adminRoutes } from './admin-routes';
 import { homeAndClientRoutes, notFoundRoute } from './client-routes';
-import { ProductDetail } from './lazy-pages';
 import { productRoutes } from './product-routes';
 import { publicRoutes } from './public-routes';
 import { quoteRoutes } from './quote-routes';
@@ -95,18 +94,10 @@ export function AppRoutes() {
     <RouteSuspense>
       <Routes>
         {publicRoutes}
-        <Route path="/produto/:id" element={<ProductDetail />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<ProtectedAppLayout />}>
-            <Route
-              path="/produto/:id"
-              element={
-                <ValidProductIdRoute>
-                  <ProductDetail />
-                </ValidProductIdRoute>
-              }
-            />
+            {productRoutes}
             {quoteRoutes}
             {adminRoutes}
             {toolsRoutes}
