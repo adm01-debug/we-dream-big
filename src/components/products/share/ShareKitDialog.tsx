@@ -23,7 +23,7 @@ interface ShareKitDialogProps {
   mode: 'complete' | 'separate';
 }
 
-function generateKitCompleteMessage(product: Product) {
+export function generateKitCompleteMessage(product: Product) {
   const itemsList = product.kitItems
     ?.map((item, i) => `${i + 1}. ${item.productName} (${item.quantity} un)`)
     .join('\n');
@@ -45,7 +45,7 @@ ${product.stockStatus === 'in-stock' ? '✅ Pronta entrega' : '⚠️ Consultar 
 Promo Brindes - Brindes com Excelência!`;
 }
 
-function generateItemMessage(product: Product, item: KitComponent) {
+export function generateItemMessage(product: Product, item: KitComponent) {
   return `📦 *ITEM DO KIT* 📦
 
 *${item.productName}*
@@ -60,6 +60,7 @@ ${item.weightG ? `⚖️ Peso: ${item.weightG}g` : ''}
 
 Promo Brindes - Brindes com Excelência!`;
 }
+
 
 export function ShareKitDialog({ open, onOpenChange, product, mode }: ShareKitDialogProps) {
   const { toast } = useToast();
