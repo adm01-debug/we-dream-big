@@ -232,6 +232,25 @@ export function PromoFlixPlayer({
     const video = videoRef.current;
     if (!video || !src) return;
 
+    // Invalida qualquer init anterior em andamento (Strict Mode / troca de src / Retry)
+    const myToken = ++initTokenRef.current;
+    autoplayFallbackTriedRef.current = false;
+
+    // Reset de estado imediato para evitar flicker de erro anterior
+    act(() => {
+      setIsLoading(true);
+      setHlsError(null);
+      setIsReconnecting(false);
+      setShowLoadingAction(false);
+      reconnectAttemptsRef.current = 0;
+    });
+
+    logTelemetry('INIT_PLAYER', { src: src.substring(0, 50) + '...', isHls });
+    armLoadingTimeout();
+
+    // ... continua ...
+
+
 
     // Invalida qualquer init anterior em andamento (Strict Mode / troca de src / Retry)
     const myToken = ++initTokenRef.current;
