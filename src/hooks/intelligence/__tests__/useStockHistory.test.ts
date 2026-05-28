@@ -192,5 +192,20 @@ describe('useStockHistory helpers', () => {
     it('should return empty array if no data', () => {
       expect(getActiveFlags(null)).toEqual([]);
     });
+
+    it('should handle each flag individually', () => {
+      const base: ProductIntelligenceData = {
+        product_id: 'P1',
+        abc_classification: 'C',
+      } as any;
+
+      expect(getActiveFlags({ ...base, is_hot_product: true })).toEqual(['hot-product']);
+      expect(getActiveFlags({ ...base, is_stockout_risk: true })).toEqual(['stockout-risk']);
+      expect(getActiveFlags({ ...base, is_stagnant: true })).toEqual(['stagnant']);
+      expect(getActiveFlags({ ...base, is_negotiation_opportunity: true })).toEqual(['negotiation-opportunity']);
+      expect(getActiveFlags({ ...base, has_frequent_restock: true })).toEqual(['frequent-restock']);
+      expect(getActiveFlags({ ...base, abc_classification: 'A' })).toEqual(['class-a']);
+    });
   });
 });
+
