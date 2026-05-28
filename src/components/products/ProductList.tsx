@@ -219,9 +219,10 @@ export function ProductList({
     );
   }
 
-  const displayProducts =
+  type SkeletonEntry = { id: string; isSkeleton: true };
+  const displayProducts: Array<Product | SkeletonEntry> =
     isLoading && products.length === 0
-      ? Array.from({ length: 8 }).map((_, i) => ({ id: `skeleton-${i}`, isSkeleton: true }) as any)
+      ? Array.from({ length: 8 }).map((_, i) => ({ id: `skeleton-${i}`, isSkeleton: true as const }))
       : products;
 
   // Get first selected product for collection modal
@@ -232,23 +233,23 @@ export function ProductList({
     <>
       <div className="flex flex-col gap-2">
         {displayProducts.map((product, index) =>
-          (product as any).isSkeleton ? (
+          'isSkeleton' in product && product.isSkeleton ? (
             <ProductCardSkeleton key={product.id} variant="compact" selectionMode={selectionMode} />
           ) : (
             <ProductListItemWrapper
-              key={product.id}
-              product={product}
+              key={(product as Product).id}
+              product={product as Product}
               index={index}
-              isSelected={selectedIds.has(product.id)}
+              isSelected={selectedIds.has((product as Product).id)}
               selectionMode={selectionMode}
               onToggleSelect={toggleSelect}
-              onClick={onProductClick ? () => onProductClick(product.id) : undefined}
+              onClick={onProductClick ? () => onProductClick((product as Product).id) : undefined}
               onView={onViewProduct}
               onShare={onShareProduct}
               onFavorite={onFavoriteProduct}
-              isFavorited={isFavorite ? isFavorite(product.id) : false}
+              isFavorited={isFavorite ? isFavorite((product as Product).id) : false}
               onToggleFavorite={onToggleFavorite}
-              isInCompare={isInCompare ? isInCompare(product.id) : false}
+              isInCompare={isInCompare ? isInCompare((product as Product).id) : false}
               onToggleCompare={onToggleCompare}
               canAddToCompare={canAddToCompare}
               highlightColors={highlightColors}

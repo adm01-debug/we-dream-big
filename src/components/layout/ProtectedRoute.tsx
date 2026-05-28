@@ -56,11 +56,6 @@ export function ProtectedRoute({
   });
 
   if (!allowed) {
-    if (reason === 'mfa_required') {
-      // O AdminRoute/DevRoute tratam o diálogo de MFA, aqui apenas bloqueamos se for o caso
-      // mas o ProtectedRoute genérico geralmente não exige MFA a menos que passado explicitamente
-    }
-
     return (
       <EmptyState
         variant="security"

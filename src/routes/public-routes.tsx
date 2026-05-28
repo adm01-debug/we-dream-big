@@ -8,7 +8,6 @@ import {
   TermsPage,
   PrivacyPage,
 } from './lazy-pages';
-import PDPTest from '@/pages/test/PDPTest';
 
 /**
  * Public routes — accessible without authentication.
@@ -27,6 +26,5 @@ export const publicRoutes = (
     <Route path="/unauthorized" element={<Unauthorized />} />
     <Route path="/termos" element={<TermsPage />} />
     <Route path="/privacidade" element={<PrivacyPage />} />
-    <Route path="/test-pdp/:id" element={<PDPTest />} />
   </>
 );
