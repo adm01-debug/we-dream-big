@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Layers, Send, Package, Eye, Pencil, Check } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Layers, Send, Package, Eye, Pencil, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -86,20 +86,44 @@ export function ShareKitDialog({ open, onOpenChange, product, mode }: ShareKitDi
 
   const allImages = useMemo(() => {
     if (mode === 'complete') {
-      const images = [product.images[0]]; // Start with kit main photo
+      const images: string[] = [];
+      const mainImg = product.images?.[0] || product.image_url;
+      if (mainImg) images.push(mainImg);
+      
       kitItems.forEach((item) => {
         if (item.imageUrl) images.push(item.imageUrl);
       });
       return Array.from(new Set(images.filter(Boolean) as string[]));
     } else if (activeItem) {
-      return [activeItem.imageUrl].filter(Boolean) as string[];
+      const images = [activeItem.imageUrl].filter(Boolean) as string[];
+      if (images.length === 0 && (product.images?.[0] || product.image_url)) {
+        images.push((product.images?.[0] || product.image_url) as string);
+      }
+      return images;
     }
     return [];
-  }, [mode, product.images, kitItems, activeItem]);
+  }, [mode, product.images, product.image_url, kitItems, activeItem]);
 
   const imageIndices = useMemo(() => new Set(allImages.map((_, i) => i)), [allImages]);
 
+  const phoneError = useMemo(() => {
+    if (!contactSelection?.contactPhone) return null;
+    const digits = contactSelection.contactPhone.replace(/\D/g, '');
+    if (digits.length < 10) return 'Telefone muito curto (mínimo 10 dígitos)';
+    if (digits.length > 13) return 'Telefone muito longo';
+    return null;
+  }, [contactSelection?.contactPhone]);
+
   const handleSend = () => {
+    if (phoneError) {
+      toast({
+        title: 'Telefone inválido',
+        description: phoneError,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const target = contactSelection?.contactName || contactSelection?.companyName || 'destinatário';
     const { opened } = openWhatsAppShare({
       message,
@@ -226,7 +250,14 @@ export function ShareKitDialog({ open, onOpenChange, product, mode }: ShareKitDi
               </div>
 
               <div className="space-y-2">
-                <span className="text-xs font-medium text-muted-foreground">Destinatário</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">Destinatário</span>
+                  {phoneError && (
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-destructive">
+                      <AlertCircle className="h-3 w-3" /> {phoneError}
+                    </span>
+                  )}
+                </div>
                 <ShareContactSelector
                   selection={contactSelection}
                   onSelect={setContactSelection}
@@ -237,7 +268,11 @@ export function ShareKitDialog({ open, onOpenChange, product, mode }: ShareKitDi
                 <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
                   Cancelar
                 </Button>
-                <Button className="flex-1 gap-2 bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleSend}>
+                <Button 
+                  className="flex-1 gap-2 bg-primary text-primary-foreground hover:bg-primary/90" 
+                  onClick={handleSend}
+                  disabled={!!phoneError}
+                >
                   <Send className="h-4 w-4" />
                   Enviar WhatsApp
                 </Button>
