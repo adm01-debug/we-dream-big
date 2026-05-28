@@ -28,7 +28,7 @@ describe("useAdvancedFilters - Reset Logic", () => {
   it("defaultAdvancedFilters has correct range defaults", () => {
     // FIX-11: priceRange foi corrigido para [0, 9999] em constants/filters.ts
     expect(defaultAdvancedFilters.priceRange).toEqual([0, 9999]);
-    expect(defaultAdvancedFilters.quantityRange).toEqual([1, 10000]);
+    // BUG-SF-16: quantityRange foi removido (campo orphaned, não aparecia na UI)
   });
 
   it("defaultAdvancedFilters has correct scalar defaults", () => {
