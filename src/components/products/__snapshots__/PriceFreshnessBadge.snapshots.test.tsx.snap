@@ -76,7 +76,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 02/04/2026
             </span>
@@ -85,11 +85,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (02 de abril de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 02/04/2026, 09:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -184,7 +179,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 03/05/2026
             </span>
@@ -193,11 +188,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (03 de maio de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 03/05/2026, 06:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -288,7 +278,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 03/03/2026
             </span>
@@ -297,11 +287,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (03 de março de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 03/03/2026, 09:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -474,7 +459,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
               </span>
                
               <span
-                class="tabular-nums font-medium"
+                class="font-medium tabular-nums"
               >
                 em 03/03/2026
               </span>
@@ -483,11 +468,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
               >
                  (03 de março de 2026)
               </span>
-            </div>
-            <div
-              class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-            >
-              Hora local: 03/03/2026, 09:00
             </div>
             <div
               class="leading-snug text-muted-foreground"
@@ -573,7 +553,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 02/04/2026
             </span>
@@ -582,11 +562,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (02 de abril de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 02/04/2026, 09:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -671,7 +646,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 03/05/2026
             </span>
@@ -680,11 +655,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (03 de maio de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 03/05/2026, 06:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -765,7 +735,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 03/03/2026
             </span>
@@ -774,11 +744,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (03 de março de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 03/03/2026, 09:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -904,7 +869,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
           <span>
             Atualizado há 31 dias
             <span
-              class="text-muted-foreground tabular-nums"
+              class="tabular-nums text-muted-foreground"
             >
                · em 02/04/2026
             </span>
@@ -941,7 +906,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 02/04/2026
             </span>
@@ -950,11 +915,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (02 de abril de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 02/04/2026, 09:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -1009,7 +969,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
           <span>
             Atualizado hoje
             <span
-              class="text-muted-foreground tabular-nums"
+              class="tabular-nums text-muted-foreground"
             >
                · em 03/05/2026
             </span>
@@ -1046,7 +1006,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 03/05/2026
             </span>
@@ -1055,11 +1015,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (03 de maio de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 03/05/2026, 06:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -1110,7 +1065,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
           <span>
             Preço pode estar defasado (há 61 dias)
             <span
-              class="text-muted-foreground tabular-nums"
+              class="tabular-nums text-muted-foreground"
             >
                · em 03/03/2026
             </span>
@@ -1147,7 +1102,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 03/03/2026
             </span>
@@ -1156,11 +1111,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (03 de março de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 03/03/2026, 09:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -1326,7 +1276,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 02/04/2026
             </span>
@@ -1335,11 +1285,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (02 de abril de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 02/04/2026, 09:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -1432,7 +1377,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 03/05/2026
             </span>
@@ -1441,11 +1386,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (03 de maio de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 03/05/2026, 06:00
           </div>
           <div
             class="leading-snug text-muted-foreground"
@@ -1471,7 +1411,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
         >
           <svg
             aria-hidden="true"
-            class="lucide lucide-alert-triangle h-4 w-4 shrink-0 mt-0.5"
+            class="lucide lucide-alert-triangle mt-0.5 h-4 w-4 shrink-0"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -1496,12 +1436,12 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             class="flex flex-col gap-0.5 leading-tight"
           >
             <span
-              class="font-display font-semibold text-sm"
+              class="font-display text-sm font-semibold"
             >
               Preço pode estar defasado
             </span>
             <span
-              class="text-xs text-amber-800/90 dark:text-amber-200/80 tabular-nums"
+              class="text-xs tabular-nums text-amber-800/90 dark:text-amber-200/80"
             >
               Última atualização em 03/03/2026 (há 61 dias)
             </span>
@@ -1543,7 +1483,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             </span>
              
             <span
-              class="tabular-nums font-medium"
+              class="font-medium tabular-nums"
             >
               em 03/03/2026
             </span>
@@ -1552,11 +1492,6 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             >
                (03 de março de 2026)
             </span>
-          </div>
-          <div
-            class="leading-snug text-[11px] text-muted-foreground tabular-nums"
-          >
-            Hora local: 03/03/2026, 09:00
           </div>
           <div
             class="leading-snug text-muted-foreground"

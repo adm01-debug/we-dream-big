@@ -40,7 +40,7 @@ interface OrganizationContextType {
 
 // Organização fixa — corresponde ao único registro existente em `organizations`.
 const FIXED_ORG: Organization = {
-  id: '35c6a2a6-5d6d-4ddb-8dbd-8e842a0118e5',
+  id: '35c6a2a6-5d6d-4ddb-8dbd-8e842a0118e5', // allowed: prod org seed record
   name: 'Promo Brindes',
   slug: 'promo-brindes',
   logo_url: null,

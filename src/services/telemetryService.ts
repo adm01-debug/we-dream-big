@@ -1,4 +1,5 @@
 import { getSupabaseClient } from '@/integrations/supabase/lazy-client';
+import type { Json } from '@/integrations/supabase/types';
 
 export type TelemetryEventType = 'error' | 'performance' | 'ux_action' | 'api_fail';
 
@@ -6,7 +7,7 @@ export interface TelemetryPayload {
   event_type: TelemetryEventType;
   name: string;
   duration_ms?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -30,10 +31,11 @@ const SAMPLE_RATE: Record<TelemetryEventType, number> = {
   ux_action: 0.2, // 20% — ações de UX são frequentes mas amostradas
 };
 
-interface BufferedEvent extends TelemetryPayload {
+interface BufferedEvent extends Omit<TelemetryPayload, 'metadata'> {
   url: string;
   user_agent: string;
   session_id: string;
+  metadata?: Json;
 }
 
 class TelemetryService {
@@ -112,7 +114,7 @@ class TelemetryService {
         event_type: payload.event_type,
         name: payload.name,
         duration_ms: payload.duration_ms,
-        metadata: payload.metadata || {},
+        metadata: (payload.metadata || {}) as Json,
         url: typeof window !== 'undefined' ? window.location.href : '',
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
         session_id: this.sessionId,
@@ -130,13 +132,18 @@ class TelemetryService {
   }
 
   async logError(name: string, error: unknown, metadata?: Record<string, unknown>): Promise<void> {
-    const errObj = error instanceof Error ? error : (typeof error === 'object' && error !== null ? error as any : { message: String(error) });
-    const stack = errObj.stack || new Error().stack;
+    const errObj =
+      error instanceof Error
+        ? error
+        : typeof error === 'object' && error !== null
+          ? (error as Record<string, unknown>)
+          : { message: String(error) };
+    const stack = (errObj as { stack?: string }).stack || new Error().stack;
     return this.log({
       event_type: 'error',
       name,
       metadata: {
-        message: error?.message || String(error),
+        message: error instanceof Error ? error.message : String(error),
         stack,
         context_data: metadata,
         pathname: typeof window !== 'undefined' ? window.location.pathname : '',
@@ -148,7 +155,7 @@ class TelemetryService {
   async logPerformance(
     name: string,
     duration_ms: number,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
   ): Promise<void> {
     // Mantém o threshold (só >= 100ms importa) ANTES do sampling
     if (duration_ms < 100) return;
@@ -160,7 +167,7 @@ class TelemetryService {
     });
   }
 
-  async logUXAction(name: string, metadata?: Record<string, any>): Promise<void> {
+  async logUXAction(name: string, metadata?: Record<string, unknown>): Promise<void> {
     return this.log({
       event_type: 'ux_action',
       name,
