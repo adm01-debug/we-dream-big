@@ -3,6 +3,7 @@
  */
 import * as Lucide from 'lucide-react';
 import { Star, Pencil, Copy, Trash2, Wand2, Tag as TagIcon, Layers, Pin } from 'lucide-react';
+import { TruncatedTooltip } from '@/components/ui/truncated-tooltip';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -76,7 +77,9 @@ export function KitCard({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate font-display font-semibold">{data.name}</h3>
+              <TruncatedTooltip className="font-display font-semibold">
+                {data.name}
+              </TruncatedTooltip>
               {data.badge && (
                 <Badge
                   variant={data.badge === 'Popular' ? 'default' : 'outline'}

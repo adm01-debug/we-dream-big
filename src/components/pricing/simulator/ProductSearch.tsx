@@ -130,7 +130,9 @@ export function ProductSearch({ onSelect, selectedProduct }: ProductSearchProps)
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{product.name}</p>
+                  <TruncatedTooltip className="font-medium">
+                    {product.name}
+                  </TruncatedTooltip>
                   <p className="text-xs text-muted-foreground">
                     {product.sku} • {formatCurrency(product.price)}
                   </p>
