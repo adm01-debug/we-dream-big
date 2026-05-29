@@ -9,7 +9,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { emitBridgeStatus, isColdStartSignal } from './bridge-status-events';
-import { getKillSwitchState } from './kill-switch-client';
+import { getKillSwitchState, KillSwitchActiveError } from './kill-switch-client';
 import { tryExecuteRestNative } from './rest-native';
 
 const KILL_SWITCH_NAME = 'edge_external_db_bridge';
@@ -112,6 +112,27 @@ export async function invokeBridge<T>(body: Record<string, unknown>): Promise<Br
       body,
     );
     throw new Error(`invokeBridge: tabela não informada (operation=${op})`);
+  }
+
+  // ============================================================
+  // KILL-SWITCH FAIL-FAST: a edge function `external-db-bridge` foi
+  // descontinuada (responde 410 Gone). Não tente chamá-la — devolve um
+  // erro claro para o caller (que deve ter um fallback REST nativo ou
+  // tratar o estado vazio sem quebrar a UI / blank screen).
+  // ============================================================
+  try {
+    const switchState = await getKillSwitchState(KILL_SWITCH_NAME);
+    if (!switchState.enabled) {
+      const friendly =
+        switchState.message ??
+        'external-db-bridge foi descontinuada. Migre para REST nativo /rest/v1/.';
+      logger.warn(`[external-db] invokeBridge short-circuit (kill-switch OFF): ${friendly}`);
+      emitBridgeStatus({ type: 'unavailable', reason: `kill-switch: ${friendly}`, attempts: 0 });
+      throw new KillSwitchActiveError(KILL_SWITCH_NAME, friendly);
+    }
+  } catch (err) {
+    if (err instanceof KillSwitchActiveError) throw err;
+    // qualquer outra falha lendo o switch: fail-open, segue para a invocação
   }
 
   let sawColdStart = false;
