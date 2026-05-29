@@ -146,29 +146,29 @@ export function CatalogToolbar({
                   <SelectTrigger
                     className={cn(
                       "h-9 w-10 text-xs font-medium transition-all sm:h-10 sm:w-52 sm:text-sm",
-                      sortBy !== 'relevance' && sortBy !== 'store-default' && "border-primary bg-primary/5 ring-1 ring-primary/20"
+                      sortBy !== 'name' && "border-primary bg-primary/5 ring-1 ring-primary/20"
                     )}
                     aria-label="Ordenar por"
                     data-testid="catalog-sort-trigger"
                   >
                     <ArrowUpDown className={cn(
                       "h-3.5 w-3.5 shrink-0 sm:mr-2",
-                      (sortBy !== 'relevance' && sortBy !== 'store-default') ? "text-primary" : "text-muted-foreground"
+                      sortBy !== 'name' ? "text-primary" : "text-muted-foreground"
                     )} />
                     <span className="hidden sm:inline">
                       <SelectValue placeholder="Ordenar" />
                     </span>
                     {/* BUG-G7: Mobile indicator when sorted */}
-                    {(sortBy !== 'relevance' && sortBy !== 'store-default') && (
+                    {sortBy !== 'name' && (
                       <div className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary sm:hidden" />
                     )}
                   </SelectTrigger>
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                {sortBy !== 'relevance' && sortBy !== 'store-default' 
+                {sortBy !== 'name' 
                   ? `Ordenado por: ${SORT_OPTIONS.find(o => o.value === sortBy)?.label}`
-                  : 'Ordenar produtos (relevância, preço, novidades…)'}
+                  : 'Ordenar produtos (nome, preço, novidades…)'}
               </TooltipContent>
             </Tooltip>
             <SelectContent>
