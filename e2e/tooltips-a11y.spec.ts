@@ -7,8 +7,11 @@ test.describe("Tooltip Accessibility & Visual Regression", () => {
     requireAuth();
     testInfo.annotations.push({ type: 'component', description: 'Tooltip' });
     testInfo.annotations.push({ type: 'component', description: 'TruncatedTooltip' });
+    testInfo.annotations.push({ type: 'component', description: 'TooltipContent' });
+    testInfo.annotations.push({ type: 'component', description: 'TooltipTrigger' });
     testInfo.annotations.push({ type: 'feature', description: 'Accessibility (axe-core)' });
     testInfo.annotations.push({ type: 'feature', description: 'Visual Regression (Screenshots)' });
+    testInfo.annotations.push({ type: 'feature', description: 'Theme Support (Compact vs Standard)' });
   });
 
   const viewports = [
