@@ -175,6 +175,7 @@ export function ProductCategoryBadges({
                   },
                 })
               }
+              data-testid="product-mockup-badge"
               className={cn(
                 'cursor-pointer px-2.5 py-1 text-sm font-medium',
                 'border-success/50 bg-success/15 hover:bg-success/25',
