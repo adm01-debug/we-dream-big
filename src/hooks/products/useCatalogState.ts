@@ -31,6 +31,9 @@ import { usePromoSalesRanking } from '@/hooks/intelligence/usePromoSalesRanking'
 import { useCatalogFiltering } from '@/hooks/products/useCatalogFiltering';
 import { useCatalogPreferences } from '@/hooks/products/useCatalogPreferences';
 import { useProductAnalytics } from '@/hooks/products/useProductAnalytics';
+// BUG-SORT-01 FIX: importar SORT_OPTIONS para derivar VALID_SORT_VALUES e
+// validar sort params de URL/localStorage antes de aplicar ao state.
+import { SORT_OPTIONS } from '@/constants/filters';
 
 export type ViewMode = 'grid' | 'list' | 'table';
 export type SortOption =
@@ -44,6 +47,21 @@ export type SortOption =
   | 'best-seller-promo';
 
 const VIEW_MODE_KEY = 'catalog-view-mode';
+
+// BUG-SORT-01 FIX: Conjunto dos valores válidos derivado do SSOT (SORT_OPTIONS).
+// Declarado fora do hook para não ser recriado a cada render.
+const VALID_SORT_VALUES = new Set<string>(SORT_OPTIONS.map(o => o.value));
+
+/**
+ * BUG-SORT-01 FIX: Valida e normaliza um sort value arbitrário.
+ * Retorna 'name' (default seguro) para qualquer valor inválido, nulo ou ausente
+ * do SSOT SORT_OPTIONS. Previne que URL params corrompidos ou localStorage stale
+ * (ex: 'relevance' de versão anterior) quebrem o Select UI e o URL sync loop.
+ */
+function validateSortOption(s: string | null | undefined): SortOption {
+  if (s && VALID_SORT_VALUES.has(s)) return s as SortOption;
+  return 'name';
+}
 
 function getPersistedViewMode(): ViewMode {
   try {
@@ -100,13 +118,22 @@ export function useCatalogState() {
       /* empty */
     }
   }, []);
-  const initialSortBy = (searchParams.get('sort') as SortOption) || preferences.sortBy || 'name';
+
+  // BUG-SORT-01 FIX: Validar o sort param da URL e o valor de preferência antes
+  // de usá-los como estado inicial. O cast `as SortOption` anterior não tinha
+  // runtime check — valores stale (ex: 'relevance') ou corrompidos eram aceitos.
+  const rawUrlSort = searchParams.get('sort');
+  const initialSortBy: SortOption = rawUrlSort
+    ? validateSortOption(rawUrlSort)
+    : validateSortOption(preferences.sortBy);
+
   const [sortBy, setSortByState] = useState<SortOption>(initialSortBy);
 
   // Sync sortBy with preferences once loaded
   useEffect(() => {
     if (prefsLoaded && preferences.sortBy && !searchParams.get('sort')) {
-      setSortByState(preferences.sortBy);
+      // BUG-SORT-01 FIX: validar o valor de preferência antes de aplicar ao state.
+      setSortByState(validateSortOption(preferences.sortBy));
     }
   }, [prefsLoaded, preferences.sortBy, searchParams]);
 
@@ -134,6 +161,11 @@ export function useCatalogState() {
     // 2. Update URL
     const newParams = new URLSearchParams(window.location.search);
     if (sortBy === 'name') {
+      // BUG-SORT-04 FIX [CRÍTICO]: Remover o param 'sort' ao reverter para o default.
+      // Antes: bloco vazio deixava '?sort=price-asc' na URL quando o usuário
+      // selecionava 'Nome A-Z'. O URL sync effect lia o param stale e revertia
+      // o state imediatamente — tornando impossível selecionar o item default.
+      newParams.delete('sort');
     } else {
       newParams.set('sort', sortBy);
     }
@@ -288,10 +320,16 @@ export function useCatalogState() {
     }
   }, [searchQueryFromUrl, trackSearch, sortBy, updatePreferences]);
 
+  // BUG-SORT-01 FIX: Validar o sort param da URL antes de sincronizar com o state.
+  // O cast `as SortOption` anterior não tinha runtime check — valores inválidos
+  // (ex: URL manipulada manualmente) eram aceitos sem validação.
   useEffect(() => {
-    const urlSort = searchParams.get('sort') as SortOption;
-    if (urlSort && urlSort !== sortBy) {
-      setSortByState(urlSort);
+    const urlSort = searchParams.get('sort');
+    if (urlSort) {
+      const validated = validateSortOption(urlSort);
+      if (validated !== sortBy) {
+        setSortByState(validated);
+      }
     }
   }, [searchParams, sortBy]);
 
