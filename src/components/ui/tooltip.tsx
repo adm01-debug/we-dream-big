@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
 import { cn } from '@/lib/utils';
