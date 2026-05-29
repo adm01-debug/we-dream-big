@@ -3419,6 +3419,33 @@ export type Database = {
         }
         Relationships: []
       }
+      navigation_analytics: {
+        Row: {
+          button_name: string
+          created_at: string
+          id: string
+          source_path: string
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          button_name: string
+          created_at?: string
+          id?: string
+          source_path: string
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          button_name?: string
+          created_at?: string
+          id?: string
+          source_path?: string
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       optimization_queue: {
         Row: {
           category: string
