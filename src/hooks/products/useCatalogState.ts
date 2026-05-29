@@ -586,10 +586,9 @@ export function useCatalogState() {
     realStats,
   ]);
 
-  // BUG-CS-02 FIX: era setSortBy('name') — default correto e 'relevance'
   const resetFilters = useCallback(() => {
     setFilters(defaultFilters);
-    setSortBy('relevance');
+    setSortBy('name');
     setSearchQuery('');
     navigate('/', { replace: true });
   }, [navigate, setSortBy]);
