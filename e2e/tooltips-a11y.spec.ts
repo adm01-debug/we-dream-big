@@ -52,6 +52,19 @@ test.describe("Tooltip Accessibility & Visual Regression", () => {
         const ariaDescribedBy = await trigger.getAttribute('aria-describedby');
         expect(ariaDescribedBy || ariaLabel).toBeTruthy();
 
+        // Axe Accessibility Audit
+        const accessibilityScanResults = await new AxeBuilder({ page })
+          .include('[role="tooltip"]')
+          .analyze();
+        
+        expect(accessibilityScanResults.violations).toEqual([]);
+
+        // Contrast and ARIA check on the trigger too
+        const triggerA11y = await new AxeBuilder({ page })
+          .include('[data-state="open"]')
+          .analyze();
+        expect(triggerA11y.violations).toEqual([]);
+
         // Visual Snapshot
         await expect(tooltip).toHaveScreenshot(`tooltip-${mode}-${viewport.name}.png`);
       });
