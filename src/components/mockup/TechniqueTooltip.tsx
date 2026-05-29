@@ -132,38 +132,38 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
       <HoverCardTrigger asChild>
         <div className={cn('cursor-help', className)}>{children}</div>
       </HoverCardTrigger>
-      <HoverCardContent side="right" align="start" className="w-72 overflow-hidden p-0">
+      <HoverCardContent side="right" align="start" className="w-64 overflow-hidden p-0">
         {/* Visual Header */}
-        <div className={cn('bg-gradient-to-r p-4 text-primary-foreground', info.gradient)}>
+        <div className={cn('bg-gradient-to-r p-3 text-primary-foreground', info.gradient)}>
           <div className="flex items-center justify-between">
-            <h4 className="text-lg font-semibold">{technique.name}</h4>
-            <Badge variant="secondary" className="border-0 bg-white/20 text-primary-foreground">
+            <h4 className="text-sm font-semibold leading-tight">{technique.name}</h4>
+            <Badge variant="secondary" className="border-0 bg-white/20 text-tooltip font-bold px-1 py-0 text-primary-foreground">
               {technique.code || 'PRO'}
             </Badge>
           </div>
-          <p className="mt-1 text-sm opacity-90">{info.description}</p>
+          <p className="mt-1 text-tooltip opacity-90">{info.description}</p>
         </div>
 
         {/* Details */}
-        <div className="space-y-2 p-3">
-          <div className="flex items-start gap-2 text-sm">
-            <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
+        <div className="space-y-1.5 p-2.5">
+          <div className="flex items-start gap-1.5 text-tooltip">
+            <Clock className="mt-0.5 h-3 w-3 text-muted-foreground" />
             <div>
               <span className="text-muted-foreground">Durabilidade:</span>
               <span className="ml-1 font-medium">{info.durability}</span>
             </div>
           </div>
 
-          <div className="flex items-start gap-2 text-sm">
-            <Palette className="mt-0.5 h-4 w-4 text-muted-foreground" />
+          <div className="flex items-start gap-1.5 text-tooltip">
+            <Palette className="mt-0.5 h-3 w-3 text-muted-foreground" />
             <div>
               <span className="text-muted-foreground">Cores:</span>
               <span className="ml-1 font-medium">{info.colors}</span>
             </div>
           </div>
 
-          <div className="flex items-start gap-2 text-sm">
-            <Info className="mt-0.5 h-4 w-4 text-muted-foreground" />
+          <div className="flex items-start gap-1.5 text-tooltip">
+            <Info className="mt-0.5 h-3 w-3 text-muted-foreground" />
             <div>
               <span className="text-muted-foreground">Ideal para:</span>
               <span className="ml-1 font-medium">{info.bestFor}</span>
