@@ -38,18 +38,23 @@ export function useProfileRoles() {
         if (profileResult.data) {
           const profileData = profileResult.data as Profile;
           setProfile(profileData);
-          
-          // background update — fire and forget, com proteção de mount
-          getSupabaseClient().then((supabase) => {
-            if (!userId) return;
-            supabase
-              .from('profiles')
-              .update({ last_login_at: new Date().toISOString() })
-              .eq('user_id', userId)
-              .then(({ error }) => {
-                if (error) authDebugError('useProfileRoles.updateLastLogin', 'failed', error);
-              });
-          });
+
+          // background update — fire and forget, com proteção de mount.
+          // `.catch` evita unhandled rejection se conexão/escrita falhar (rede/RLS).
+          getSupabaseClient()
+            .then((supabase) => {
+              if (!userId) return;
+              return supabase
+                .from('profiles')
+                .update({ last_login_at: new Date().toISOString() })
+                .eq('user_id', userId)
+                .then(({ error }) => {
+                  if (error) authDebugError('useProfileRoles.updateLastLogin', 'failed', error);
+                });
+            })
+            .catch(() => {
+              /* atualização de last_login_at é best-effort */
+            });
         }
 
         if (rolesResult.data && rolesResult.data.length > 0) {
