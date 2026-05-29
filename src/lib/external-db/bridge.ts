@@ -9,7 +9,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { emitBridgeStatus, isColdStartSignal } from './bridge-status-events';
-import { getKillSwitchState, KillSwitchActiveError } from './kill-switch-client';
+import { getKillSwitchState, KillSwitchActiveError, invalidateKillSwitchCache } from './kill-switch-client';
 import { tryExecuteRestNative, isRestNativeEligible } from './rest-native';
 
 const KILL_SWITCH_NAME = 'edge_external_db_bridge';
@@ -103,6 +103,23 @@ async function buildBridgeError(error: unknown): Promise<{ message: string; retr
   return { message: `Erro na bridge: ${details}`, retryable };
 }
 
+/**
+ * Detecta se o erro é CORS ou falha de rede ao tentar chamar a edge function.
+ * Quando isso ocorre, o cache do kill-switch deve ser invalidado para forçar
+ * re-leitura do banco — resolve o cenário onde o cache localStorage tem
+ * enabled=true mas o banco já foi atualizado para enabled=false.
+ */
+function isCorsOrNetworkBridgeError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes('failed to send a request to the edge function') ||
+    lower.includes('err_failed') ||
+    lower.includes('cors') ||
+    lower.includes('x-application-name') ||
+    lower.includes('preflight')
+  );
+}
+
 export async function invokeBridge<T>(body: Record<string, unknown>): Promise<BridgeResponse<T>> {
   const op = body.operation as string | undefined;
   if (op !== 'batch' && (!body.table || typeof body.table !== 'string')) {
@@ -150,6 +167,19 @@ export async function invokeBridge<T>(body: Record<string, unknown>): Promise<Br
     });
     if (error) {
       const parsed = await buildBridgeError(error);
+
+      // FIX: Erro CORS ou rede ao tentar chamar a edge function.
+      // Invalida o cache do kill-switch para forçar re-leitura do banco na próxima
+      // chamada. Resolve o cenário onde o cache localStorage (TTL 5min) tem
+      // enabled=true mas o banco já foi atualizado para enabled=false.
+      // Na próxima chamada, o banco será consultado e o short-circuit será ativado.
+      if (isCorsOrNetworkBridgeError(parsed.message)) {
+        invalidateKillSwitchCache(KILL_SWITCH_NAME);
+        logger.warn(
+          '[external-db] CORS/network error detectado — cache do kill-switch invalidado. Próxima chamada re-lerá o banco.',
+        );
+      }
+
       if (parsed.retryable && attempt < BOOT_RETRY_ATTEMPTS) {
         const base = BOOT_INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1);
         const jitter = Math.floor(Math.random() * 150);
