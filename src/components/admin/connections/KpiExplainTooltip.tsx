@@ -1,27 +1,16 @@
 /**
- * KpiExplainTooltip — Onda 14
- *
- * Tooltip rico para o modo "Ver como calculamos". Estrutura padronizada:
- *  - Resumo (1 linha)
- *  - Fórmula (mono)
- *  - Janela de tempo
- *  - Fonte de dados (tabela/coluna)
- *  - Threshold/alvo (opcional)
+ * KpiExplainTooltip — Evolução Estratégica
+ * Padronizado com hierarquia visual e micro-interações premium.
  */
 import { Calculator, Clock, Database, Target, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 export interface KpiExplain {
-  /** Resumo curto do que o KPI representa */
   summary: string;
-  /** Fórmula em pseudocódigo / SQL-like */
   formula: string;
-  /** Janela de tempo considerada */
   window: string;
-  /** Fonte de dados (tabela.coluna ou múltiplas) */
   source: string;
-  /** Threshold/alvo opcional */
   threshold?: string;
 }
 
@@ -37,66 +26,60 @@ export function KpiExplainTooltip({
       <TooltipTrigger asChild>
         <button
           type="button"
-          aria-label={`Ver como calculamos: ${explain.summary}`}
+          aria-label={`Explicação: ${explain.summary}`}
           className={cn(
-            'inline-flex h-3.5 w-3.5 items-center justify-center rounded-full',
-            'text-primary/80 hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
-            'transition-colors',
+            'inline-flex h-4 w-4 items-center justify-center rounded-full transition-all duration-300',
+            'bg-primary/5 text-primary/60 hover:bg-primary/20 hover:text-primary hover:scale-110',
             className,
           )}
         >
           <Info className="h-3 w-3" />
         </button>
       </TooltipTrigger>
-      <TooltipContent
-        side="bottom"
-        className="max-w-sm overflow-hidden p-0"
-      >
-        <div className="border-b border-white/10 bg-black/10 px-3 py-2">
-          <p className="text-[11px] font-semibold leading-snug">{explain.summary}</p>
+      <TooltipContent side="bottom" className="w-72 p-0">
+        <div className="border-b border-white/5 bg-white/[0.03] px-3.5 py-2.5">
+          <p className="font-semibold leading-tight">{explain.summary}</p>
         </div>
-        <dl className="space-y-2 px-3 py-2 text-[10px]">
-          <div className="flex gap-2">
-            <Calculator className="mt-0.5 h-2.5 w-2.5 shrink-0 text-background/70" />
-            <div className="min-w-0">
-              <dt className="text-[8px] font-semibold uppercase tracking-wide text-background/60">
-                Fórmula
-              </dt>
-              <dd className="mt-0.5 break-words rounded bg-black/20 px-1.5 py-0.5 font-mono text-[10px] leading-snug">
-                {explain.formula}
-              </dd>
+        <div className="space-y-3 p-3.5">
+          <section className="space-y-1">
+            <header className="flex items-center gap-1.5 text-tooltip-header">
+              <Calculator className="h-3 w-3" />
+              <span>Fórmula Logística</span>
+            </header>
+            <div className="rounded-md bg-white/[0.05] p-2 font-mono text-[10px] leading-relaxed text-white/90">
+              {explain.formula}
             </div>
+          </section>
+
+          <div className="grid grid-cols-2 gap-4">
+            <section className="space-y-1">
+              <header className="flex items-center gap-1.5 text-tooltip-header">
+                <Clock className="h-3 w-3" />
+                <span>Janela</span>
+              </header>
+              <p className="text-[10px] text-white/80">{explain.window}</p>
+            </section>
+            <section className="space-y-1">
+              <header className="flex items-center gap-1.5 text-tooltip-header">
+                <Database className="h-3 w-3" />
+                <span>Fonte</span>
+              </header>
+              <p className="truncate text-[10px] text-white/80" title={explain.source}>
+                {explain.source}
+              </p>
+            </section>
           </div>
-          <div className="flex gap-2">
-            <Clock className="mt-0.5 h-2.5 w-2.5 shrink-0 text-background/70" />
-            <div className="min-w-0">
-              <dt className="text-[8px] font-semibold uppercase tracking-wide text-background/60">
-                Janela
-              </dt>
-              <dd className="leading-snug">{explain.window}</dd>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Database className="mt-0.5 h-2.5 w-2.5 shrink-0 text-background/70" />
-            <div className="min-w-0">
-              <dt className="text-[8px] font-semibold uppercase tracking-wide text-background/60">
-                Fonte
-              </dt>
-              <dd className="break-words font-mono text-[10px] leading-snug">{explain.source}</dd>
-            </div>
-          </div>
+
           {explain.threshold && (
-            <div className="flex gap-2">
-                <Target className="mt-0.5 h-2.5 w-2.5 shrink-0 text-background/70" />
-                <div className="min-w-0">
-                  <dt className="text-[8px] font-semibold uppercase tracking-wide text-background/60">
-                  Alvo
-                </dt>
-                <dd className="leading-snug">{explain.threshold}</dd>
-              </div>
-            </div>
+            <section className="rounded-md bg-primary/10 p-2 border border-primary/20">
+              <header className="flex items-center gap-1.5 text-tooltip-header !text-primary !opacity-100">
+                <Target className="h-3 w-3" />
+                <span>Meta de Performance</span>
+              </header>
+              <p className="mt-0.5 text-[10px] font-medium text-primary-foreground">{explain.threshold}</p>
+            </section>
           )}
-        </dl>
+        </div>
       </TooltipContent>
     </Tooltip>
   );
