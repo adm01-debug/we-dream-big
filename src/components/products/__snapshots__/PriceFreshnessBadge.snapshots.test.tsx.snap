@@ -161,7 +161,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             <span
               class="text-muted-foreground"
             >
-              (há 0 dias)
+              (hoje)
             </span>
           </div>
           <div
@@ -608,7 +608,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             <span
               class="text-muted-foreground"
             >
-              (há 0 dias)
+              (hoje)
             </span>
           </div>
           <div
@@ -832,7 +832,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             />
           </svg>
           <span>
-            Próximo do limite (há 31 dias)
+            Atualizado há 31 dias
             <span
               class="tabular-nums text-muted-foreground"
             >
@@ -927,7 +927,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             />
           </svg>
           <span>
-            Atualizado (há 0 dias)
+            Atualizado hoje
             <span
               class="tabular-nums text-muted-foreground"
             >
@@ -953,7 +953,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             <span
               class="text-muted-foreground"
             >
-              (há 0 dias)
+              (hoje)
             </span>
           </div>
           <div
@@ -1018,7 +1018,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             />
           </svg>
           <span>
-            Possivelmente defasado (há 61 dias)
+            Preço pode estar defasado (há 61 dias)
             <span
               class="tabular-nums text-muted-foreground"
             >
@@ -1191,7 +1191,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             <span
               class="text-amber-700/70 dark:text-amber-300/70"
             >
-               (há 31 dias)
+               · há 31 dias
             </span>
           </span>
         </span>
@@ -1287,7 +1287,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             <span
               class="text-emerald-700/70 dark:text-emerald-400/70"
             >
-               (há 0 dias)
+               · há 0 dias
             </span>
           </span>
         </span>
@@ -1309,7 +1309,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             <span
               class="text-muted-foreground"
             >
-              (há 0 dias)
+              (hoje)
             </span>
           </div>
           <div
@@ -1378,7 +1378,7 @@ exports[`PriceFreshnessBadge Snapshots and A11y > Snapshots > matches snapshot f
             <span
               class="font-display text-sm font-semibold"
             >
-              Possivelmente defasado
+              Preço pode estar defasado
             </span>
             <span
               class="text-xs tabular-nums text-amber-800/90 dark:text-amber-200/80"

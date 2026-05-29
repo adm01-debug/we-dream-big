@@ -63,6 +63,37 @@ describe('useSupplierComparison', () => {
     expect(result.current.result).toBeNull();
   });
 
+  it('should query by category name when the product has no category id', () => {
+    mockUseProducts.mockReturnValue({ data: [], isLoading: false });
+    const productSemId = {
+      ...mockBaseProduct,
+      category: { name: 'Canecas' },
+    } as Product;
+    const { result } = renderHook(() => useSupplierComparison(productSemId));
+    // Sem alternativas (data vazia) → result null; o ramo `category: name` foi avaliado.
+    expect(result.current.result).toBeNull();
+    expect(result.current.isLoading).toBe(false);
+    // 2º argumento (options.enabled) deve ser true pois há categoryName.
+    expect(mockUseProducts).toHaveBeenCalledWith(
+      { category: 'Canecas', limit: 1000 },
+      expect.objectContaining({ enabled: true }),
+    );
+  });
+
+  it('should pass undefined filters when the product has no category at all', () => {
+    mockUseProducts.mockReturnValue({ data: [], isLoading: false });
+    const productSemCategoria = {
+      ...mockBaseProduct,
+      category: undefined,
+    } as unknown as Product;
+    const { result } = renderHook(() => useSupplierComparison(productSemCategoria));
+    expect(result.current.result).toBeNull();
+    expect(mockUseProducts).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ enabled: false }),
+    );
+  });
+
   it('should filter and rank alternatives correctly', () => {
     mockUseProducts.mockReturnValue({ 
       data: [mockBaseProduct, mockAlt1, mockAlt2], 
