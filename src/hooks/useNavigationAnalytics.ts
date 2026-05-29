@@ -8,7 +8,7 @@ export function useNavigationAnalytics() {
   const location = useLocation();
 
   const trackNavigationClick = useCallback(
-    async (buttonName: 'Início' | 'Teletransporte') => {
+    async (buttonName: 'Início' | 'Teletransporte', destination?: string) => {
       if (!user?.id) return;
 
       try {
@@ -16,6 +16,7 @@ export function useNavigationAnalytics() {
           user_id: user.id,
           button_name: buttonName,
           source_path: location.pathname,
+          destination_path: destination,
           timestamp: new Date().toISOString(),
         });
       } catch {

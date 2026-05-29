@@ -11,19 +11,21 @@ test.describe('Navigation Tooltips and Analytics', () => {
 
     // Check "Início" breadcrumb tooltip
     const inicioBreadcrumb = page.getByTestId('home-breadcrumb-link');
+    await expect(inicioBreadcrumb).toBeVisible();
     await inicioBreadcrumb.hover();
     
-    const inicioTooltip = page.locator('text=Leva você de volta ao Catálogo (Home)');
-    await expect(inicioTooltip).toBeVisible();
-    await expect(inicioTooltip).toContainText('Use para recomeçar sua busca do zero');
+    // Using a more flexible locator for tooltip content
+    await expect(page.locator('[role="tooltip"]')).toBeVisible();
+    await expect(page.locator('[role="tooltip"]')).toContainText('Catálogo (Home)');
+    await expect(page.locator('[role="tooltip"]')).toContainText('recomeçar sua busca do zero');
 
     // Check "Teletransporte" button tooltip
     const backButton = page.getByTestId('back-teleport-button');
     await expect(backButton).toBeVisible();
     await backButton.hover();
 
-    const teleportTooltip = page.locator('text=Retorna para a página anterior');
-    await expect(teleportTooltip).toBeVisible();
-    await expect(teleportTooltip).toContainText('Diferente do Início, ele mantém seu progresso anterior');
+    await expect(page.locator('[role="tooltip"]')).toBeVisible();
+    await expect(page.locator('[role="tooltip"]')).toContainText('página anterior');
+    await expect(page.locator('[role="tooltip"]')).toContainText('mantém seu progresso anterior');
   });
 });

@@ -61,7 +61,8 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
     const { trackNavigationClick } = useNavigationAnalytics();
 
     const handleBack = useCallback(() => {
-      trackNavigationClick('Teletransporte');
+      const destination = window.history.length > 2 ? 'previous_page' : '/';
+      trackNavigationClick('Teletransporte', destination);
       if (window.history.length > 2) {
         navigate(-1);
       } else {
@@ -70,7 +71,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
     }, [navigate, trackNavigationClick]);
 
     const handleHomeClick = useCallback(() => {
-      trackNavigationClick('Início');
+      trackNavigationClick('Início', '/');
     }, [trackNavigationClick]);
 
     const buildBreadcrumbs = (): BreadcrumbItem[] => {
