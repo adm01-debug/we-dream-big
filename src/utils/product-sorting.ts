@@ -71,6 +71,13 @@ export function sortProducts(
       }
       break;
     }
+    case 'color-match':
+      // BUG-SORT-02 FIX: 'color-match' é gerenciado upstream pelo pipeline de
+      // filtragem/enriquecimento de cor (useColorEnrichment + useCatalogFiltering).
+      // Não aplicar sort adicional — preservar a ordem de scoring de entrada.
+      // O case explícito evita que o valor caia no `default` (sort por nome A-Z),
+      // que seria semanticamente incorreto para resultados filtrados por cor.
+      break;
     // FIX-06+13: "popularity" era mapeado no voice agent mas nao tinha case aqui.
     // Adicionado alias para best-seller-promo (semanticamente equivalente).
     case 'best-seller-promo':
@@ -82,6 +89,12 @@ export function sortProducts(
         if (bCount !== aCount) return bCount - aCount;
         return a.name.localeCompare(b.name);
       });
+      break;
+    default:
+      // BUG-SORT-03 FIX: Fallback seguro para sortBy desconhecido (URL corrompida,
+      // localStorage stale, alias programático sem case explícito). Ordena por
+      // nome A-Z para não deixar o catálogo em ordem arbitrária de inserção.
+      products.sort((a, b) => a.name.localeCompare(b.name));
       break;
   }
 
