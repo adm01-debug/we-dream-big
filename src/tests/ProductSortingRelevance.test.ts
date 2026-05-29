@@ -205,7 +205,7 @@ describe('sortProducts — + Vendidos (Indústria)', () => {
     const result = sortProducts(baseProducts(), 'best-seller-supplier', {
       supplierSalesMap: new Map(),
     }).map((p) => p.id);
-    // scores: 1=0, 2=3 (feat+new), 3=1 (new), 4=2 (feat) -> 2,4,3,1
+    // scores (novo 10/5): 1=0, 2=15 (feat+new), 3=5 (new), 4=10 (feat) -> 2,4,3,1
     expect(result).toEqual(['2', '4', '3', '1']);
   });
 
