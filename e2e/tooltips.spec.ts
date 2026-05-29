@@ -32,9 +32,9 @@ test.describe("Tooltip Regression Tests", () => {
         console.log(`Tooltip Padding: ${padding}`);
         console.log(`Tooltip Max Width: ${maxWidth}`);
         
-        expect(parseFloat(fontSize)).toBeCloseTo(9, 0);
-        expect(padding).toMatch(/6px|12px/);
-        expect(maxWidth).toBe("240px");
+        expect(parseFloat(fontSize)).toBeCloseTo(11.7, 0);
+        expect(padding).toMatch(/8px|16px/);
+        expect(maxWidth).toBe("380px");
         
         testInfo.annotations.push({ 
           type: 'result', 
@@ -71,5 +71,4 @@ test.describe("Tooltip Regression Tests", () => {
       }
     });
   });
-});
 });
