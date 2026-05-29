@@ -35,6 +35,7 @@ import { useProductAnalytics } from '@/hooks/products/useProductAnalytics';
 export type ViewMode = 'grid' | 'list' | 'table';
 export type SortOption =
   | 'relevance'
+  | 'store-default'
   | 'name'
   | 'price-asc'
   | 'price-desc'
