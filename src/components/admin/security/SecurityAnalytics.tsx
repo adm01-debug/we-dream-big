@@ -138,11 +138,17 @@ export function SecurityAnalytics({ botLogs, onBlockIp }: Props) {
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
-                    background: 'hsl(var(--popover))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    fontSize: '12px',
+                    background: '#1a1a1a',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '6px',
+                    fontSize: '6px',
+                    fontWeight: 600,
+                    padding: '4px 6px',
+                    backdropFilter: 'blur(8px)',
+                    color: '#fff'
                   }}
+                  itemStyle={{ padding: 0 }}
+                  labelStyle={{ fontSize: '5.5px', opacity: 0.7, marginBottom: '2px', fontWeight: 800, textTransform: 'uppercase' }}
                 />
                 <Area
                   type="monotone"
