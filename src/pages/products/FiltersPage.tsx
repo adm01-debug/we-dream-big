@@ -102,6 +102,7 @@ export default function FiltersPage() {
         // caía no fallback 'name' silenciosamente.
         const sortMap: Record<string, string> = {
           relevance: 'relevance',
+          'store-default': 'store-default',
           'price-asc': 'price-asc',
           'price-desc': 'price-desc',
           name: 'name',
