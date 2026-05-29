@@ -102,11 +102,17 @@ export function EnrichedOrdersTimeline({ clientId }: Props) {
                 />
                 <RTooltip
                   contentStyle={{
-                    background: 'hsl(var(--popover))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: 8,
-                    fontSize: 12,
+                    background: '#1a1a1a',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '6px',
+                    fontSize: '6px',
+                    fontWeight: 600,
+                    padding: '4px 6px',
+                    backdropFilter: 'blur(8px)',
+                    color: '#fff'
                   }}
+                  itemStyle={{ padding: 0 }}
+                  labelStyle={{ display: 'none' }}
                   formatter={(v: number) => [fmtBRL(v), 'Total']}
                 />
               </LineChart>
@@ -179,7 +185,7 @@ export function EnrichedOrdersTimeline({ clientId }: Props) {
                                 Atípico
                               </Badge>
                             </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-[220px] text-xs">
+                            <TooltipContent side="top">
                               Pedido {o.deviation > 0 ? 'acima' : 'abaixo'} do padrão histórico (
                               {o.deviation > 0 ? '+' : ''}
                               {o.deviation}σ).{' '}

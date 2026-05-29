@@ -127,7 +127,7 @@ export function ProductVideoGallery({ productId }: ProductVideoGalleryProps) {
                   Gerar thumbnails
                 </Button>
               </TooltipTrigger>
-              <TooltipContent className="text-xs">
+              <TooltipContent>
                 Gerar thumbnails para{' '}
                 {g.videos.filter((v) => !v.url_thumbnail && !v.source_youtube_id).length} vídeo(s)
               </TooltipContent>

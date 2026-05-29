@@ -610,7 +610,7 @@ function ComparisonRow({ row, formatCurrency, formatPercent }: ComparisonItemPro
                   <TooltipTrigger>
                     <AlertCircle className="h-3.5 w-3.5 text-warning" />
                   </TooltipTrigger>
-                  <TooltipContent className="text-xs font-bold">
+                  <TooltipContent>
                     MOQ Elevado: {p.minQuantity} un.
                   </TooltipContent>
                 </Tooltip>

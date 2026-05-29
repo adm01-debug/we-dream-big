@@ -210,17 +210,17 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
             marginBottom: 6,
           }}
         >
-          <div className="min-w-[220px] overflow-hidden rounded-xl border border-border/60 bg-popover/95 shadow-2xl shadow-black/20 backdrop-blur-md">
+          <div className="min-w-[160px] overflow-hidden rounded-md border border-white/10 bg-[#1a1a1a]/95 shadow-2xl backdrop-blur-md">
             {/* Header with day info */}
             <div className="border-b border-border/40 bg-gradient-to-r from-muted/80 to-transparent px-3 py-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Activity className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Activity className="h-2.5 w-2.5 text-muted-foreground" />
+                  <span className="text-tooltip-header">
                     Mercado · Dia {hoverIndex + 1}
                   </span>
                 </div>
-                <span className="text-sm font-bold text-foreground">{points[hoverIndex]} un</span>
+                <span className="text-tooltip font-bold text-foreground">{points[hoverIndex]} un</span>
               </div>
               {/* Mini bar showing relative to peak */}
               <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
@@ -250,8 +250,8 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
 
             {/* Comparison bar */}
             <div className="border-t border-border/40 bg-muted/30 px-3 py-2">
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="text-muted-foreground">1ª metade vs 2ª metade</span>
+              <div className="flex items-center justify-between text-tooltip-header">
+                <span className="opacity-60">1ª vs 2ª metade</span>
                 <div className="flex items-center gap-1">
                   <TrendIcon
                     className={cn(
@@ -265,7 +265,7 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
                   />
                   <span
                     className={cn(
-                      'text-[11px] font-bold',
+                      'text-tooltip font-bold',
                       summary.periodChange > 0
                         ? 'text-success'
                         : summary.periodChange < 0
@@ -325,16 +325,16 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
             </div>
 
             {/* Trend footer */}
-            <div className="flex items-center justify-between border-t border-border/40 px-3 py-1.5">
+            <div className="flex items-center justify-between border-t border-white/5 px-3 py-1.5">
               <div className="flex items-center gap-1">
-                <Zap className="h-3 w-3 text-warning" />
-                <span className="text-[10px] text-muted-foreground">
+                <Zap className="h-2.5 w-2.5 text-warning" />
+                <span className="text-tooltip-header">
                   {summary.activeDays}/{points.length} dias ativos
                 </span>
               </div>
               <div
                 className={cn(
-                  'flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+                  'flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-tooltip font-bold',
                   summary.trend > 0
                     ? 'bg-success/10 text-success'
                     : summary.trend < 0
@@ -365,9 +365,9 @@ function TooltipMetric({
 }) {
   return (
     <div className="flex flex-col">
-      <span className="text-[9px] uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className="text-tooltip-header">{label}</span>
       <span
-        className={cn('text-[11px] font-semibold', highlight ? 'text-warning' : 'text-foreground')}
+        className={cn('text-tooltip font-semibold', highlight ? 'text-warning' : 'text-foreground')}
       >
         {value}
       </span>
