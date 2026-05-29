@@ -71,7 +71,7 @@ export function useCatalogState() {
   const { data: promoSalesMap } = usePromoSalesRanking();
   const { data: supplierSalesMap } = useSupplierSalesRanking();
   const { preferences, updatePreferences, isLoaded: prefsLoaded } = useCatalogPreferences();
-  const { trackSort } = useProductAnalytics();
+  const { trackSort, trackSearch } = useProductAnalytics();
 
   const searchQueryFromUrl = searchParams.get('search') || '';
 
@@ -104,38 +104,8 @@ export function useCatalogState() {
     }
   }, [prefsLoaded, preferences.sortBy, searchParams]);
 
-  const setSortBy = useCallback(
-    (s: SortOption) => {
-      const previousSort = sortBy;
-      setIsTransitioning(true);
-      React.startTransition(() => {
-        setSortByState(s);
-        updatePreferences({ sortBy: s });
+  // setSortBy moved below filteredProducts to avoid TDZ on filteredProducts/searchQuery/setIsTransitioning.
 
-        // Update URL query string
-        const newParams = new URLSearchParams(window.location.search);
-        if (s === 'relevance') {
-          newParams.delete('sort');
-        } else {
-          newParams.set('sort', s);
-        }
-
-        const newPath = `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`;
-        navigate(newPath, { replace: true });
-
-        // Analytics tracking
-        trackSort({
-          sortBy: s,
-          previousSortBy: previousSort,
-          resultsCount: filteredProducts.length,
-          hasSearch: !!searchQuery.trim(),
-        });
-
-        setIsTransitioning(false);
-      });
-    },
-    [navigate, sortBy, updatePreferences, trackSort, filteredProducts.length, searchQuery],
-  );
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedCount, setSelectedCount] = useState(0);
   const [activeProductId, setActiveProductId] = useState<string | null>(null);
@@ -253,20 +223,8 @@ export function useCatalogState() {
   const isInitialCatalogLoad =
     (isLoadingProducts || isFetchingProducts) && realProducts.length === 0;
 
-  useEffect(() => {
-    setSearchQuery(searchQueryFromUrl);
-    if (searchQueryFromUrl.trim()) {
-      trackSearch({
-        searchTerm: searchQueryFromUrl,
-        resultsCount: filteredProducts.length,
-        filtersUsed: { sortBy },
-      });
-      updatePreferences({ 
-        lastSearchTerm: searchQueryFromUrl,
-        lastSearchSortBy: sortBy 
-      });
-    }
-  }, [searchQueryFromUrl, trackSearch, filteredProducts.length, sortBy, updatePreferences]);
+  // search-sync useEffect moved below filteredProducts to avoid TDZ.
+
 
   useEffect(() => {
     const urlSort = searchParams.get('sort') as SortOption;
@@ -329,6 +287,54 @@ export function useCatalogState() {
     promoSalesMap,
     supplierSalesMap: supplierSalesMap as unknown as Map<string, number> | undefined,
   });
+
+  // --- Moved declarations (post-filteredProducts) to avoid TDZ ---
+  const setSortBy = useCallback(
+    (s: SortOption) => {
+      const previousSort = sortBy;
+      setIsTransitioning(true);
+      React.startTransition(() => {
+        setSortByState(s);
+        updatePreferences({ sortBy: s });
+
+        const newParams = new URLSearchParams(window.location.search);
+        if (s === 'relevance') {
+          newParams.delete('sort');
+        } else {
+          newParams.set('sort', s);
+        }
+
+        const newPath = `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`;
+        navigate(newPath, { replace: true });
+
+        trackSort({
+          sortBy: s,
+          previousSortBy: previousSort,
+          resultsCount: filteredProducts.length,
+          hasSearch: !!searchQuery.trim(),
+        });
+
+        setIsTransitioning(false);
+      });
+    },
+    [navigate, sortBy, updatePreferences, trackSort, filteredProducts.length, searchQuery],
+  );
+
+  useEffect(() => {
+    setSearchQuery(searchQueryFromUrl);
+    if (searchQueryFromUrl.trim()) {
+      trackSearch({
+        searchTerm: searchQueryFromUrl,
+        resultsCount: filteredProducts.length,
+        filtersUsed: { sortBy },
+      });
+      updatePreferences({
+        lastSearchTerm: searchQueryFromUrl,
+        lastSearchSortBy: sortBy,
+      });
+    }
+  }, [searchQueryFromUrl, trackSearch, filteredProducts.length, sortBy, updatePreferences]);
+  // --- End moved declarations ---
 
   const [lastNonTransitionedProducts, setLastNonTransitionedProducts] = useState<Product[]>([]);
   const deferredIsTransitioning = useDeferredValue(isTransitioning);
