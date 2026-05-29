@@ -34,8 +34,6 @@ import { useProductAnalytics } from '@/hooks/products/useProductAnalytics';
 
 export type ViewMode = 'grid' | 'list' | 'table';
 export type SortOption =
-  | 'relevance'
-  | 'store-default'
   | 'name'
   | 'price-asc'
   | 'price-desc'
@@ -102,7 +100,7 @@ export function useCatalogState() {
       /* empty */
     }
   }, []);
-  const initialSortBy = (searchParams.get('sort') as SortOption) || preferences.sortBy || 'relevance';
+  const initialSortBy = (searchParams.get('sort') as SortOption) || preferences.sortBy || 'name';
   const [sortBy, setSortByState] = useState<SortOption>(initialSortBy);
 
   // Sync sortBy with preferences once loaded
@@ -135,8 +133,7 @@ export function useCatalogState() {
 
     // 2. Update URL
     const newParams = new URLSearchParams(window.location.search);
-    if (sortBy === 'relevance' || sortBy === 'store-default') {
-      newParams.delete('sort');
+    if (sortBy === 'name') {
     } else {
       newParams.set('sort', sortBy);
     }
