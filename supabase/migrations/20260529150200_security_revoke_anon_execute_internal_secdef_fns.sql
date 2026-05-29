@@ -14,10 +14,32 @@
 -- get_quote_token_by_value, submit_quote_response.
 --
 -- Applied to prod via MCP on 2026-05-29; this file keeps the repo history in
--- sync and is idempotent (REVOKE is a no-op when the grant is already absent).
+-- sync. Each REVOKE is guarded by to_regprocedure() so a fresh `db reset` /
+-- preview branch does not fail when a function is absent (e.g.
+-- send_digest_notification is created out-of-band and has no repo migration
+-- yet). REVOKE is itself a no-op when the grant is already absent, so the
+-- whole migration is idempotent.
 -- =====================================================================
-REVOKE EXECUTE ON FUNCTION public.fn_run_and_persist_smoke_tests() FROM anon;
-REVOKE EXECUTE ON FUNCTION public.is_dnd_active(uuid) FROM PUBLIC, anon;
-REVOKE EXECUTE ON FUNCTION public.send_digest_notification(uuid, uuid[], integer) FROM PUBLIC, anon;
-REVOKE EXECUTE ON FUNCTION public.sync_user_org_to_org_members() FROM PUBLIC, anon;
-REVOKE EXECUTE ON FUNCTION public.validate_edge_functions_base_url(text) FROM PUBLIC, anon;
+DO $$
+BEGIN
+  -- smoke-test runner: prod revoked from anon only (PUBLIC grant was already absent).
+  IF to_regprocedure('public.fn_run_and_persist_smoke_tests()') IS NOT NULL THEN
+    REVOKE EXECUTE ON FUNCTION public.fn_run_and_persist_smoke_tests() FROM anon;
+  END IF;
+
+  IF to_regprocedure('public.is_dnd_active(uuid)') IS NOT NULL THEN
+    REVOKE EXECUTE ON FUNCTION public.is_dnd_active(uuid) FROM PUBLIC, anon;
+  END IF;
+
+  IF to_regprocedure('public.send_digest_notification(uuid, uuid[], integer)') IS NOT NULL THEN
+    REVOKE EXECUTE ON FUNCTION public.send_digest_notification(uuid, uuid[], integer) FROM PUBLIC, anon;
+  END IF;
+
+  IF to_regprocedure('public.sync_user_org_to_org_members()') IS NOT NULL THEN
+    REVOKE EXECUTE ON FUNCTION public.sync_user_org_to_org_members() FROM PUBLIC, anon;
+  END IF;
+
+  IF to_regprocedure('public.validate_edge_functions_base_url(text)') IS NOT NULL THEN
+    REVOKE EXECUTE ON FUNCTION public.validate_edge_functions_base_url(text) FROM PUBLIC, anon;
+  END IF;
+END $$;
