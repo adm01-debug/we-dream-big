@@ -114,13 +114,19 @@ export function QuoteAutoSave({
     setStatus('saving');
 
     try {
-      // Obter versões anteriores
+      // Obter versões anteriores. Uma versão histórica corrompida (storage
+      // truncado por quota, adulteração, drift de schema) NÃO deve abortar o
+      // autosave inteiro — senão a cotação para de persistir silenciosamente.
+      // Parse defensivo por entrada: ignora e remove a chave inválida.
       const existingDrafts: QuoteDraft[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key?.startsWith(storageKey + '_v')) {
-          const draft = JSON.parse(localStorage.getItem(key) || '');
-          existingDrafts.push(draft);
+          try {
+            existingDrafts.push(JSON.parse(localStorage.getItem(key) || '') as QuoteDraft);
+          } catch {
+            localStorage.removeItem(key);
+          }
         }
       }
 
