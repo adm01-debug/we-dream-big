@@ -193,7 +193,7 @@ export const TrustBadge = React.forwardRef<HTMLDivElement, TrustBadgeProps>(func
           {content}
         </div>
       </TooltipTrigger>
-      <TooltipContent side="bottom" className="max-w-[200px] text-xs">
+      <TooltipContent side="bottom">
         {tooltip}
       </TooltipContent>
     </Tooltip>

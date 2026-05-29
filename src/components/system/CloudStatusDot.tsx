@@ -38,7 +38,7 @@ const CloudStatusDotInner = memo(function CloudStatusDotInner() {
             <span className={cn('relative inline-flex h-2.5 w-2.5 rounded-full', color)} />
           </span>
         </TooltipTrigger>
-        <TooltipContent side="left" className="text-xs">
+        <TooltipContent side="left">
           {label}
         </TooltipContent>
       </Tooltip>
