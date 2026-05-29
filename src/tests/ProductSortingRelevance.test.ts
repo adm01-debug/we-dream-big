@@ -70,9 +70,10 @@ const baseProducts = (): Product[] => [
 ];
 
 describe('SORT_OPTIONS — contrato do seletor', () => {
-  it('expõe exatamente as 8 opções esperadas, na ordem da UI', () => {
+  it('expõe exatamente as 9 opções esperadas, na ordem da UI', () => {
     expect(SORT_OPTIONS.map((o) => o.value)).toEqual([
       'relevance',
+      'store-default',
       'name',
       'price-asc',
       'price-desc',
