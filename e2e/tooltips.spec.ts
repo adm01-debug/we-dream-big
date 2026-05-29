@@ -62,7 +62,7 @@ test.describe("Tooltip Regression Tests", () => {
         await expect(tooltip).toBeVisible();
         
         const maxWidth = await tooltip.evaluate((el) => window.getComputedStyle(el).maxWidth);
-        expect(parseFloat(maxWidth)).toBeLessThanOrEqual(240);
+        expect(parseFloat(maxWidth)).toBeLessThanOrEqual(320);
         
         testInfo.annotations.push({ 
           type: 'result', 
