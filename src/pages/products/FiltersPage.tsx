@@ -331,18 +331,18 @@ export default function FiltersPage() {
                       <SelectTrigger
                         className={cn(
                           "w-44 shrink-0 transition-all sm:w-52",
-                          state.sortBy !== 'relevance' && state.sortBy !== 'store-default' && "border-primary bg-primary/5 ring-1 ring-primary/20"
+                          state.sortBy !== 'name' && "border-primary bg-primary/5 ring-1 ring-primary/20"
                         )}
                         aria-label="Ordenar produtos"
                         data-testid="catalog-sort-trigger"
                       >
                         <ArrowUpDown className={cn(
                           "mr-2 h-4 w-4",
-                          (state.sortBy !== 'relevance' && state.sortBy !== 'store-default') ? "text-primary" : "text-muted-foreground"
+                          state.sortBy !== 'name' ? "text-primary" : "text-muted-foreground"
                         )} />
                         <SelectValue placeholder="Ordenar" />
                         {/* BUG-G7: Mobile indicator when sorted */}
-                        {(state.sortBy !== 'relevance' && state.sortBy !== 'store-default') && (
+                        state.sortBy !== 'name' && (
                           <div className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary sm:hidden" />
                         )}
                       </SelectTrigger>
@@ -360,7 +360,7 @@ export default function FiltersPage() {
                     </Select>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {state.sortBy !== 'relevance' && state.sortBy !== 'store-default'
+                    {state.sortBy !== 'name'
                       ? `Ordenado por: ${SORT_OPTIONS.find(o => o.value === state.sortBy)?.label}`
                       : 'Ordenar resultados (nome, preço, novidades, popularidade)'}
                   </TooltipContent>
