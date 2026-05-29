@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { cn } from '@/lib/utils';
 
 interface RiskChartDataPoint {
   fullDate?: string;
@@ -19,26 +20,41 @@ export const RiskTooltip = forwardRef<
   return (
     <div
       ref={ref}
-      className="text-tooltip min-w-[150px] rounded-lg border border-border/40 bg-foreground/90 p-2.5 text-background shadow-sm backdrop-blur-sm"
+      className="text-tooltip min-w-[160px] rounded-lg border border-white/10 bg-black/85 p-3 text-white shadow-2xl backdrop-blur-md animate-in fade-in-0 zoom-in-95"
     >
-      <p className="font-semibold">{data.fullDate}</p>
-      <div className="mt-1.5 space-y-1">
-        <div className="flex justify-between">
-          <span className="opacity-70">Estoque:</span>
-          <span className="font-semibold">
+      <div className="mb-2 border-b border-white/5 pb-1.5">
+        <p className="text-tooltip-header">{data.fullDate}</p>
+      </div>
+      
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-white/50">Estoque Atual</span>
+          <span className="font-bold tabular-nums">
             {data.stockClose != null ? data.stockClose.toLocaleString('pt-BR') : '—'}
           </span>
         </div>
-        {data.depleted !== null && data.depleted > 0 && (
-          <div className="flex justify-between text-destructive-foreground">
-            <span>Saída:</span>
-            <span className="font-semibold">-{data.depleted}</span>
+
+        {(data.depleted || data.restocked) && (
+          <div className="grid grid-cols-2 gap-2 border-t border-white/5 pt-2">
+            {data.depleted !== null && data.depleted > 0 && (
+              <div className="space-y-0.5">
+                <span className="text-[9px] uppercase tracking-wider text-destructive/80">Saídas</span>
+                <p className="font-bold text-destructive tabular-nums">-{data.depleted}</p>
+              </div>
+            )}
+            {data.restocked !== null && data.restocked > 0 && (
+              <div className="space-y-0.5">
+                <span className="text-[9px] uppercase tracking-wider text-primary/80">Entradas</span>
+                <p className="font-bold text-primary tabular-nums">+{data.restocked}</p>
+              </div>
+            )}
           </div>
         )}
-        {data.restocked !== null && data.restocked > 0 && (
-          <div className="flex justify-between text-primary-foreground">
-            <span>Reposição:</span>
-            <span className="font-semibold">+{data.restocked}</span>
+
+        {data.restockDetected && (
+          <div className="mt-1 flex items-center gap-1.5 rounded bg-primary/10 px-1.5 py-0.5 border border-primary/20">
+            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+            <span className="text-[9px] font-bold uppercase tracking-wider text-primary">Reposição Detectada</span>
           </div>
         )}
       </div>
