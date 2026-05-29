@@ -47,15 +47,11 @@ Deno.serve(async (req) => {
       return new Response(rl.body, { status: rl.status, headers });
     }
 
-    // BUG-008 FIX: resolveCredential() returns CredentialResolution (object), not string.
-    // Previously: `const HF_API_KEY = await resolveCredential(...)` was always truthy (object),
-    // so the null-check never fired and `Bearer [object Object]` was sent to HuggingFace,
-    // causing 100% of AI recommendation requests to fail with 401.
-    const { value: HF_API_KEY } = await resolveCredential('HUGGINGFACE_API_KEY');
-    if (!HF_API_KEY) {
-      console.warn('[ai-recommendations] HUGGINGFACE_API_KEY not configured');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      console.warn('[ai-recommendations] LOVABLE_API_KEY not configured');
       return new Response(
-        JSON.stringify({ recommendations: [], insights: 'Servi\u00e7o de IA n\u00e3o configurado.' }),
+        JSON.stringify({ recommendations: [], insights: 'Serviço de IA não configurado.' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
@@ -74,38 +70,36 @@ Deno.serve(async (req) => {
     }
     const { client, products } = parsed.data;
 
-    const systemPrompt = `Voc\u00ea \u00e9 um especialista em brindes promocionais e marketing corporativo.
+    const systemPrompt = `Você é um especialista em brindes promocionais e marketing corporativo.
 Retorne EXATAMENTE em formato JSON (sem markdown):
-{"recommendations":[{"productId":"id","score":0.95,"reason":"Motivo"}],"insights":"An\u00e1lise"}`;
+{"recommendations":[{"productId":"id","score":0.95,"reason":"Motivo"}],"insights":"Análise"}`;
 
     const userPrompt = `Cliente: ${client.name}${client.industry ? ` | Segmento: ${client.industry}` : ''}\nProdutos: ${products.map(p => `${p.id}|${p.name}|${p.category}`).join(', ')}`;
 
-    const hfResponse = await fetchWithBreaker('huggingface', HF_ENDPOINT, {
+    const aiResponse = await fetchWithBreaker('lovable-ai', AI_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${HF_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: HF_MODEL,
+        model: AI_MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        max_tokens: 1024,
-        temperature: 0.3,
       }),
     });
 
-    if (!hfResponse.ok) {
-      await hfResponse.text();
-      console.error('[ai-recommendations] HuggingFace API error:', hfResponse.status);
+    if (!aiResponse.ok) {
+      await aiResponse.text();
+      console.error('[ai-recommendations] Lovable AI error:', aiResponse.status);
       return new Response(
-        JSON.stringify({ recommendations: [], insights: 'Servi\u00e7o de IA temporariamente indispon\u00edvel.' }),
+        JSON.stringify({ recommendations: [], insights: 'Serviço de IA temporariamente indisponível.' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const hfData = await hfResponse.json();
+    const hfData = await aiResponse.json();
     const content = hfData?.choices?.[0]?.message?.content || '{}';
 
     let result: { recommendations: unknown[]; insights: string };
