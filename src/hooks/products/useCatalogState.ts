@@ -29,6 +29,8 @@ import { useComparisonStore } from '@/stores/useComparisonStore';
 import { useToast } from '@/hooks/ui/use-toast';
 import { usePromoSalesRanking } from '@/hooks/intelligence/usePromoSalesRanking';
 import { useCatalogFiltering } from '@/hooks/products/useCatalogFiltering';
+import { useCatalogPreferences } from '@/hooks/products/useCatalogPreferences';
+import { useProductAnalytics } from '@/hooks/products/useProductAnalytics';
 
 export type ViewMode = 'grid' | 'list' | 'table';
 export type SortOption =
@@ -66,6 +68,8 @@ export function useCatalogState() {
   const { registerProducts } = useProductsContext();
   const { data: promoSalesMap } = usePromoSalesRanking();
   const { data: supplierSalesMap } = useSupplierSalesRanking();
+  const { preferences, updatePreferences, isLoaded: prefsLoaded } = useCatalogPreferences();
+  const { trackSort } = useProductAnalytics();
 
   const searchQueryFromUrl = searchParams.get('search') || '';
 
@@ -88,14 +92,23 @@ export function useCatalogState() {
       /* empty */
     }
   }, []);
-  const initialSortBy = (searchParams.get('sort') as SortOption) || 'relevance';
+  const initialSortBy = (searchParams.get('sort') as SortOption) || preferences.sortBy || 'relevance';
   const [sortBy, setSortByState] = useState<SortOption>(initialSortBy);
+
+  // Sync sortBy with preferences once loaded
+  useEffect(() => {
+    if (prefsLoaded && preferences.sortBy && !searchParams.get('sort')) {
+      setSortByState(preferences.sortBy);
+    }
+  }, [prefsLoaded, preferences.sortBy, searchParams]);
 
   const setSortBy = useCallback(
     (s: SortOption) => {
+      const previousSort = sortBy;
       setIsTransitioning(true);
       React.startTransition(() => {
         setSortByState(s);
+        updatePreferences({ sortBy: s });
 
         // Update URL query string
         const newParams = new URLSearchParams(window.location.search);
@@ -108,10 +121,18 @@ export function useCatalogState() {
         const newPath = `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`;
         navigate(newPath, { replace: true });
 
+        // Analytics tracking
+        trackSort({
+          sortBy: s,
+          previousSortBy: previousSort,
+          resultsCount: filteredProducts.length,
+          hasSearch: !!searchQuery.trim(),
+        });
+
         setIsTransitioning(false);
       });
     },
-    [navigate],
+    [navigate, sortBy, updatePreferences, trackSort, filteredProducts.length, searchQuery],
   );
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedCount, setSelectedCount] = useState(0);

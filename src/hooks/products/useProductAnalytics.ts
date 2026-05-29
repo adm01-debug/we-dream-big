@@ -15,6 +15,13 @@ interface TrackSearchParams {
   filtersUsed?: Record<string, unknown>;
 }
 
+interface TrackSortParams {
+  sortBy: string;
+  previousSortBy?: string;
+  resultsCount: number;
+  hasSearch: boolean;
+}
+
 export function useProductAnalytics() {
   const { user } = useAuth();
 
@@ -60,5 +67,27 @@ export function useProductAnalytics() {
     [user?.id],
   );
 
-  return { trackProductView, trackSearch };
+  const trackSort = useCallback(
+    async ({ sortBy, previousSortBy, resultsCount, hasSearch }: TrackSortParams) => {
+      if (!user?.id) return;
+
+      try {
+        await supabase.from('catalog_analytics').insert({
+          event_type: 'sort_change',
+          event_data: {
+            sort_by: sortBy,
+            previous_sort_by: previousSortBy,
+            results_count: resultsCount,
+            has_search: hasSearch,
+          },
+          user_id: user.id,
+        });
+      } catch {
+        // Silently ignore tracking errors
+      }
+    },
+    [user?.id],
+  );
+
+  return { trackProductView, trackSearch, trackSort };
 }
