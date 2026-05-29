@@ -416,7 +416,7 @@ export default function VisualSearchPage() {
                           <div className="absolute inset-0 pointer-events-none" style={{ opacity: hotspotOpacity }}>
                             {results.analysis.visualHighlights.map((hl, idx) => (
                               <motion.div
-                                key={idx}
+                                key={`${hl.label}-${idx}`}
                                 initial={{ scale: 0, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ delay: 0.5 + idx * 0.1 }}
