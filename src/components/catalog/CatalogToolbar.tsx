@@ -144,21 +144,41 @@ export function CatalogToolbar({
               <TooltipTrigger asChild>
                 <span className="inline-flex">
                   <SelectTrigger
-                    className="h-9 w-10 text-xs font-medium sm:h-10 sm:w-44 sm:text-sm"
+                    className={cn(
+                      "h-9 w-10 text-xs font-medium transition-all sm:h-10 sm:w-52 sm:text-sm",
+                      sortBy !== 'relevance' && sortBy !== 'store-default' && "border-primary bg-primary/5 ring-1 ring-primary/20"
+                    )}
                     aria-label="Ordenar por"
+                    data-testid="catalog-sort-trigger"
                   >
-                    <ArrowUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:mr-2" />
+                    <ArrowUpDown className={cn(
+                      "h-3.5 w-3.5 shrink-0 sm:mr-2",
+                      (sortBy !== 'relevance' && sortBy !== 'store-default') ? "text-primary" : "text-muted-foreground"
+                    )} />
                     <span className="hidden sm:inline">
                       <SelectValue placeholder="Ordenar" />
                     </span>
+                    {/* BUG-G7: Mobile indicator when sorted */}
+                    {(sortBy !== 'relevance' && sortBy !== 'store-default') && (
+                      <div className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary sm:hidden" />
+                    )}
                   </SelectTrigger>
                 </span>
               </TooltipTrigger>
-              <TooltipContent>Ordenar produtos (relevância, preço, novidades…)</TooltipContent>
+              <TooltipContent>
+                {sortBy !== 'relevance' && sortBy !== 'store-default' 
+                  ? `Ordenado por: ${SORT_OPTIONS.find(o => o.value === sortBy)?.label}`
+                  : 'Ordenar produtos (relevância, preço, novidades…)'}
+              </TooltipContent>
             </Tooltip>
             <SelectContent>
               {SORT_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value} className="text-xs sm:text-sm">
+                <SelectItem 
+                  key={option.value} 
+                  value={option.value} 
+                  className="text-xs sm:text-sm"
+                  data-testid={`catalog-sort-item-${option.value}`}
+                >
                   {option.label}
                 </SelectItem>
               ))}
