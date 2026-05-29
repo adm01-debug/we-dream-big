@@ -5,6 +5,7 @@ import {
   useState,
   useRef,
   useCallback,
+  useMemo,
   type ReactNode,
 } from 'react';
 import { type User, type Session, type AuthError } from '@supabase/supabase-js';
@@ -197,7 +198,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const now = Date.now();
     const timeToExpiry = expiresAt - now;
 
-    if (timeToExpiry > 0 && timeToExpiry < 10 * 60 * 1000) refreshSession();
+    const buffer = 5 * 60 * 1000;
+    const refreshDelay = timeToExpiry - buffer;
+
+    // Expiração conhecida e já dentro da janela de buffer (≤5min): refaz uma
+    // única vez agora. Se `expires_at` for desconhecido (timeToExpiry≤0), NÃO
+    // força refresh — o autoRefreshToken do Supabase cuida disso (evita loop de
+    // refresh quando a sessão não traz expiry). Antes havia um refresh imediato
+    // (timeToExpiry < 10min) somado a um setTimeout com delay potencialmente
+    // negativo (dispara em 0ms) → duplo refresh redundante.
+    if (timeToExpiry > 0 && refreshDelay <= 0) {
+      refreshSession();
+    }
 
     const warningTime = timeToExpiry - 2 * 60 * 1000;
     let warningTimer: number | null = null;
@@ -210,12 +222,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, warningTime);
     }
 
-    const buffer = 5 * 60 * 1000;
-    const refreshTimer = setTimeout(() => refreshSession(), expiresAt - now - buffer);
+    const refreshTimer =
+      refreshDelay > 0 ? window.setTimeout(() => refreshSession(), refreshDelay) : null;
 
     return () => {
       if (warningTimer) window.clearTimeout(warningTimer);
-      clearTimeout(refreshTimer);
+      if (refreshTimer) window.clearTimeout(refreshTimer);
     };
   }, [session, refreshSession]);
 
@@ -241,7 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(timer);
   }, [isLoading, setIsLoading]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const log = createClientLogger('auth.signIn', { base: { email_domain: email.split('@')[1] } });
     const { allowed, remainingSeconds } = checkLoginAllowed(email);
     if (!allowed) {
@@ -277,9 +289,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch(() => {});
 
     return { error, data };
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       await authService.signOut();
     } finally {
@@ -289,41 +301,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearMFA();
       import('@/lib/external-db-prewarm').then((m) => m.resetPrewarmSession()).catch(() => {});
     }
-  };
+  }, [clearProfileRoles, clearMFA]);
 
   const isSupervisorOrAbove = checkIsSupervisorOrAbove(userRoles);
-  const value: AuthContextType = {
-    user,
-    session,
-    profile,
-    isLoading,
-    roles: userRoles,
-    role: getHighestRole(userRoles),
-    isDev: userRoles.includes('dev'),
-    isSupervisor: userRoles.some((r) => ['supervisor', 'admin', 'manager'].includes(r)),
-    isAgente: userRoles.some((r) => ['agente', 'vendedor'].includes(r)),
-    isSupervisorOrAbove,
-    isAdmin: isSupervisorOrAbove,
-    isManager: userRoles.includes('manager'),
-    isSeller: userRoles.some((r) => ['agente', 'vendedor'].includes(r)),
-    canManage: isSupervisorOrAbove,
-    isAuthenticated: !!user,
-    currentAAL,
-    nextAAL,
-    hasMFA,
-    mfaRequired: isSupervisorOrAbove && currentAAL !== 'aal2',
-    rolesLoaded: userRoles.length > 0,
-    refreshAAL: fetchAAL,
-    signIn,
-    signOut,
-    refreshSession,
-    refreshProfile: async () => {
-      if (user) {
-        fetchPromiseRef.current = null;
-        await fetchUserData(user.id);
-      }
-    },
-  };
+  const value: AuthContextType = useMemo(
+    () => ({
+      user,
+      session,
+      profile,
+      isLoading,
+      roles: userRoles,
+      role: getHighestRole(userRoles),
+      isDev: userRoles.includes('dev'),
+      isSupervisor: userRoles.some((r) => ['supervisor', 'admin', 'manager'].includes(r)),
+      isAgente: userRoles.some((r) => ['agente', 'vendedor'].includes(r)),
+      isSupervisorOrAbove,
+      isAdmin: isSupervisorOrAbove,
+      isManager: userRoles.includes('manager'),
+      isSeller: userRoles.some((r) => ['agente', 'vendedor'].includes(r)),
+      canManage: isSupervisorOrAbove,
+      isAuthenticated: !!user,
+      currentAAL,
+      nextAAL,
+      hasMFA,
+      mfaRequired: isSupervisorOrAbove && currentAAL !== 'aal2',
+      rolesLoaded: userRoles.length > 0,
+      refreshAAL: fetchAAL,
+      signIn,
+      signOut,
+      refreshSession,
+      refreshProfile: async () => {
+        if (user) {
+          fetchPromiseRef.current = null;
+          await fetchUserData(user.id);
+        }
+      },
+    }),
+    [
+      user,
+      session,
+      profile,
+      isLoading,
+      userRoles,
+      isSupervisorOrAbove,
+      currentAAL,
+      nextAAL,
+      hasMFA,
+      fetchAAL,
+      signIn,
+      signOut,
+      refreshSession,
+      fetchUserData,
+      fetchPromiseRef,
+    ],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
