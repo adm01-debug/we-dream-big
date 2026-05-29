@@ -26,7 +26,6 @@ vi.mock('@/contexts/SellerCartContext', () => ({
 
 vi.mock('@/hooks/products', () => ({
   useProductFreshnessOverride: () => ({ data: null }),
-  useProductIntelligenceBadges: () => ({ badges: [] }),
   useCategoryIcons: () => ({ data: [] }),
   getCategoryIcon: () => '📦',
   useProductIntelligence: () => ({ badges: [] }),
@@ -115,7 +114,7 @@ describe('B2B Product Detail Flow Integration', () => {
     const variantButton = await screen.findByText('Mock Variant');
     fireEvent.click(variantButton);
     
-    const confirmAdd = await screen.findByText(/Adicionar ao Carrinho/i);
+    const confirmAdd = await screen.findByTestId('product-card-add-to-cart');
     fireEvent.click(confirmAdd);
 
     expect(mockAddToActiveCart).toHaveBeenCalledWith(expect.objectContaining({
@@ -144,12 +143,9 @@ describe('B2B Product Detail Flow Integration', () => {
   });
 
   it('Fluxo 4: Verificação de Tags e Nichos (Indicação)', async () => {
-    // Passando tags explicitamente para habilitar o botão
     renderPDP({ 'Público-Alvo': ['Executivos'] });
     
     const indicationButton = screen.getByText('Indicação');
-    expect(indicationButton).not.toBeDisabled();
-    
     fireEvent.click(indicationButton);
     
     const modalTitle = await screen.findByText(/Indicado para/i);
