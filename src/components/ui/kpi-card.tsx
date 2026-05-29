@@ -79,8 +79,8 @@ export function KpiCard({
                   <Info className="h-2.5 w-2.5" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-xs">
-                <p className="text-xs leading-relaxed">{tooltip}</p>
+              <TooltipContent side="top">
+                <p className="leading-relaxed">{tooltip}</p>
               </TooltipContent>
             </Tooltip>
           )}
