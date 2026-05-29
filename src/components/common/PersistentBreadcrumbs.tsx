@@ -120,90 +120,99 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
     const isNotHome = location.pathname !== '/';
 
     return (
-      <nav
-        ref={ref}
-        data-testid="breadcrumb"
-        aria-label="Breadcrumb"
-        className={cn(
-          'scrollbar-hide flex max-w-full items-center gap-3 overflow-x-auto text-sm',
-          className,
-        )}
-      >
-        {showBackButton && isNotHome && (
-          <button
-            onClick={handleBack}
-            aria-label="Teletransporte — Voltar"
-            title="Teletransporte"
-            className="group hidden h-7 flex-shrink-0 items-center justify-center gap-1.5 rounded-full border border-border/40 bg-muted/60 px-3 text-xs font-medium text-muted-foreground transition-all duration-200 hover:border-border hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4 group-hover:animate-pulse"
-            >
-              <circle cx="12" cy="5" r="2.5" fill="currentColor" stroke="none" />
-              <path d="M10 10h4v6h-4z" fill="currentColor" stroke="none" />
-              <rect
-                x="10"
-                y="17"
-                width="1.5"
-                height="3"
-                rx="0.5"
-                fill="currentColor"
-                stroke="none"
-              />
-              <rect
-                x="12.5"
-                y="17"
-                width="1.5"
-                height="3"
-                rx="0.5"
-                fill="currentColor"
-                stroke="none"
-              />
-              <ellipse cx="12" cy="8" rx="6" ry="1.5" className="opacity-70" />
-              <ellipse cx="12" cy="13" rx="5" ry="1.3" className="opacity-50" />
-              <ellipse cx="12" cy="17.5" rx="4.5" ry="1.2" className="opacity-30" />
-            </svg>
-            <span className="hidden md:inline">Teletransporte</span>
-          </button>
-        )}
+      <TooltipProvider delayDuration={300}>
+        <nav
+          ref={ref}
+          data-testid="breadcrumb"
+          aria-label="Breadcrumb"
+          className={cn(
+            'scrollbar-hide flex max-w-full items-center gap-3 overflow-x-auto text-sm',
+            className,
+          )}
+        >
+          {showBackButton && isNotHome && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleBack}
+                  aria-label="Teletransporte — Voltar"
+                  className="group hidden h-7 flex-shrink-0 items-center justify-center gap-1.5 rounded-full border border-border/40 bg-muted/60 px-3 text-xs font-medium text-muted-foreground transition-all duration-200 hover:border-border hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                >
+                  <Zap className="h-3.5 w-3.5 text-sky-400 group-hover:animate-pulse" />
+                  <span className="hidden md:inline">Teletransporte</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[200px] text-xs">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 font-semibold text-sky-400">
+                    <Zap className="h-3 w-3" />
+                    <span>Teletransporte</span>
+                  </div>
+                  <p className="leading-relaxed text-muted-foreground">
+                    Retorna para a <strong>última página</strong> que você visitou no seu histórico de navegação.
+                  </p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          )}
 
-        <Breadcrumb>
-          <BreadcrumbList>
-            {breadcrumbs.map((item, index) => {
-              const Icon = item.icon;
-              const isLast = index === breadcrumbs.length - 1;
+          <Breadcrumb>
+            <BreadcrumbList>
+              {breadcrumbs.map((item, index) => {
+                const Icon = item.icon;
+                const isLast = index === breadcrumbs.length - 1;
+                const isHome = item.label === 'Início' || item.label === 'Catálogo de Produtos';
 
-              return (
-                <Fragment key={`${item.href ?? item.label}-${index}`}>
-                  <BreadcrumbItem>
-                    {item.href ? (
-                      <BreadcrumbLink asChild>
-                        <Link to={item.href} className="flex items-center gap-1.5">
-                          {Icon && <Icon className="h-3.5 w-3.5" />}
-                          <span>{item.label}</span>
-                        </Link>
-                      </BreadcrumbLink>
-                    ) : (
-                      <BreadcrumbPage className="flex items-center gap-1.5">
-                        {Icon && <Icon className="h-3.5 w-3.5" />}
-                        <span>{item.label}</span>
-                      </BreadcrumbPage>
+                const content = (
+                  <div className="flex items-center gap-1.5">
+                    {Icon && <Icon className="h-3.5 w-3.5" />}
+                    <span>{item.label}</span>
+                    {isHome && index === 0 && (
+                      <HelpCircle className="h-3 w-3 opacity-40 transition-opacity group-hover:opacity-100" />
                     )}
-                  </BreadcrumbItem>
-                  {!isLast && <BreadcrumbSeparator />}
-                </Fragment>
-              );
-            })}
-          </BreadcrumbList>
-        </Breadcrumb>
-      </nav>
+                  </div>
+                );
+
+                const itemElement = item.href ? (
+                  <BreadcrumbLink asChild>
+                    <Link to={item.href} className="group">
+                      {content}
+                    </Link>
+                  </BreadcrumbLink>
+                ) : (
+                  <BreadcrumbPage className="group">{content}</BreadcrumbPage>
+                );
+
+                return (
+                  <Fragment key={`${item.href ?? item.label}-${index}`}>
+                    {isHome && index === 0 ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <BreadcrumbItem className="cursor-help">{itemElement}</BreadcrumbItem>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="max-w-[200px] text-xs">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1.5 font-semibold text-primary">
+                              <Home className="h-3 w-3" />
+                              <span>Início</span>
+                            </div>
+                            <p className="leading-relaxed text-muted-foreground">
+                              Leva você direto para a <strong>página inicial</strong> (Catálogo), reiniciando sua jornada.
+                            </p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <BreadcrumbItem>{itemElement}</BreadcrumbItem>
+                    )}
+                    {!isLast && <BreadcrumbSeparator />}
+                  </Fragment>
+                );
+              })}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </nav>
+      </TooltipProvider>
     );
   },
 );
