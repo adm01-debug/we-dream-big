@@ -1,8 +1,8 @@
 /**
- * Fluxo: Navegação — sidebar, deep-links, 404, voltar.
+ * Fluxo: Navegação — sidebar, deep-links, 404, voltar, teletransporte.
  */
 import { test, expect, requireAuth } from "../fixtures/test-base";
-import { gotoAndSettle } from "../helpers/nav";
+import { gotoAndSettle, expectOnRoute } from "../helpers/nav";
 import { Sel } from "../fixtures/selectors";
 
 const ROUTES = [
