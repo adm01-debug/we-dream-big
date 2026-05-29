@@ -9,7 +9,8 @@ export const productService = {
   async fetchProducts(filters?: ProductFilters) {
     const externalFilters: Record<string, unknown> = {};
     if (filters?.categoryId) externalFilters.main_category_id = filters.categoryId;
-    
+    if (filters?.inStock) externalFilters.stock_quantity = { op: 'gt', value: 0 };
+
     const products = await fetchPromobrindProducts({
       search: filters?.search,
       limit: filters?.limit,
@@ -44,6 +45,7 @@ export const productService = {
       });
     }
 
+    // Belt+suspenders: client-side filter kept as safety net for bridge fallback
     if (filters?.inStock) {
       result = result.filter((p) => (p.stock || 0) > 0);
     }
@@ -54,9 +56,9 @@ export const productService = {
   async fetchProductById(id: string) {
     const product = await fetchPromobrindProductById(id);
     if (!product) return null;
-    
+
     const mapped = mapPromobrindToProduct(product);
-    
+
     return mapped;
   },
 
