@@ -40,6 +40,7 @@ const mockProduct: Product = {
   sku: 'SKU-B2B',
   price: 10.5,
   images: ['img1.jpg'],
+  colors: [{ name: 'Azul', hex: '#0000FF', group: 'Cores' }],
   stock: 1000,
   minQuantity: 50,
   stockStatus: 'in-stock',
@@ -54,6 +55,7 @@ const mockProduct: Product = {
   priceUpdatedAt: new Date().toISOString(),
   leadTimeDays: 5,
 } as any;
+
 
 const queryClient = new QueryClient();
 
