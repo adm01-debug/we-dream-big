@@ -159,7 +159,7 @@ export function GlobalSearchPalette() {
               <Mic className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent className="text-xs">
+          <TooltipContent>
             Assistente de voz IA <kbd className="ml-1 text-[9px] opacity-60">Ctrl+Shift+V</kbd>
           </TooltipContent>
         </Tooltip>

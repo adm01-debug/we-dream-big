@@ -196,7 +196,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                   <span className="hidden sm:inline">Theme Safe-Mode</span>
                 </div>
               </TooltipTrigger>
-              <TooltipContent className="max-w-[200px] text-xs">
+              <TooltipContent>
                 O ThemeProvider não foi detectado. O sistema está rodando em modo de segurança com o
                 tema padrão.
               </TooltipContent>
@@ -251,7 +251,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                   )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent className="border-border bg-card text-xs">
+              <TooltipContent>
                 Favoritos{' '}
                 <kbd className="ml-1.5 rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-muted-foreground">
                   Alt+F
@@ -279,7 +279,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                   )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent className="border-border bg-card text-xs">
+              <TooltipContent>
                 Comparar{' '}
                 <kbd className="ml-1.5 rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-muted-foreground">
                   Alt+C
@@ -307,7 +307,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                   <span className="sr-only">Alternar tema</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent className="border-border bg-card text-xs">
+              <TooltipContent>
                 {actualTheme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}{' '}
                 <kbd className="ml-1.5 rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-muted-foreground">
                   Alt+T

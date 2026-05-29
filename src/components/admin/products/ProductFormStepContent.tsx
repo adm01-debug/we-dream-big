@@ -262,7 +262,7 @@ export function ProductFormStepContent({
                   <TooltipTrigger asChild>
                     <Info className="h-3 w-3 shrink-0 cursor-help text-muted-foreground/40" />
                   </TooltipTrigger>
-                  <TooltipContent className="max-w-[220px] text-xs">
+                  <TooltipContent>
                     Define como kit composto por múltiplos componentes
                   </TooltipContent>
                 </Tooltip>

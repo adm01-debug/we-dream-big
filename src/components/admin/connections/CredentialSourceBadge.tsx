@@ -53,7 +53,7 @@ export function CredentialSourceBadge({ status, className }: Props) {
             {source === 'env' && <span aria-hidden="true">⚠</span>}
           </span>
         </TooltipTrigger>
-        <TooltipContent className="max-w-xs text-xs">{config.tooltip}</TooltipContent>
+        <TooltipContent>{config.tooltip}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
