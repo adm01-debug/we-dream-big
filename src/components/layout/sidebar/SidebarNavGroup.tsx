@@ -1,4 +1,5 @@
 import React, { forwardRef, useState, useCallback } from 'react';
+import { TruncatedTooltip } from '@/components/ui/truncated-tooltip';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
@@ -175,7 +176,11 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
                 : 'group-hover:scale-110 group-hover:text-primary',
             )}
           />
-          {!isCollapsed && <span className="flex-1 truncate text-sm">{item.label}</span>}
+          {!isCollapsed && (
+            <TruncatedTooltip className="flex-1 text-sm">
+              {item.label}
+            </TruncatedTooltip>
+          )}
           {!isCollapsed && item.shortcut && (
             <kbd className="ml-auto hidden rounded bg-muted/30 px-1 py-0.5 font-mono text-[9px] text-muted-foreground/40 lg:inline-block">
               {item.shortcut}
