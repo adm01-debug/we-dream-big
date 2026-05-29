@@ -118,20 +118,20 @@
   }
 }
 
-  /* Protected action button font styles to prevent overrides */
+/* Protected action button font styles to prevent overrides */
+.font-action-button {
+  font-family: var(--font-display) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.15em !important;
+  text-transform: none;
+}
+
+/* Responsive tracking for action buttons if needed in the future */
+@screen lg {
   .font-action-button {
-    font-family: var(--font-display) !important;
-    font-weight: 800 !important;
     letter-spacing: 0.15em !important;
-    text-transform: none;
   }
-  
-  /* Responsive tracking for action buttons if needed in the future */
-  @screen lg {
-    .font-action-button {
-      letter-spacing: 0.15em !important;
-    }
-  }
+}
 
 @keyframes orbitSmooth {
   0% {
@@ -1732,7 +1732,7 @@ html[data-scroll-locked] body {
 
   /* Stock Indicators */
   .stock-indicator {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap leading-none;
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium leading-none;
   }
 
   .stock-indicator.in-stock {
