@@ -136,7 +136,7 @@ export function useCatalogState() {
 
     // 2. Update URL
     const newParams = new URLSearchParams(window.location.search);
-    if (sortBy === 'relevance') {
+    if (sortBy === 'relevance' || sortBy === 'store-default') {
       newParams.delete('sort');
     } else {
       newParams.set('sort', sortBy);
