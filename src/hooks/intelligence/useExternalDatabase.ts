@@ -146,7 +146,7 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
         const result = await invokeExternalDb<T>({
           table: tableName,
           operation,
-          data: options?.data as T | undefined,
+          data: options?.data as Record<string, unknown> | undefined,
           filters: mergedFilters,
           id: options?.id,
           select: options?.select,
