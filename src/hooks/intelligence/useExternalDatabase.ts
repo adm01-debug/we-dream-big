@@ -17,7 +17,8 @@ export * from '@/lib/external-db/tables';
 export { extractFunctionErrorMessage } from '@/lib/external-db/invoke';
 
 import type { ExternalTable } from '@/lib/external-db/tables';
-import { invokeWithRetry, extractFunctionErrorMessage } from '@/lib/external-db/invoke';
+import { extractFunctionErrorMessage } from '@/lib/external-db/invoke';
+import { invokeExternalDb } from '@/lib/external-db/bridge';
 import { KillSwitchActiveError } from '@/lib/external-db/kill-switch-client';
 import { logger } from '@/lib/logger';
 import type {
@@ -127,11 +128,26 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
       }
 
       try {
-        const { data, error } = await invokeWithRetry({
+        // MIGRAÇÃO REST-NATIVO (2026-05-30): roteia via invokeExternalDb, que tenta o
+        // REST nativo (PostgREST) primeiro e, quando o kill-switch `edge_external_db_bridge`
+        // está OFF, retorna vazio em SILÊNCIO — sem emitir o evento `unavailable` que o
+        // invokeWithRetry legado disparava (banner de "catálogo indisponível") para um
+        // estado que hoje é o esperado. Ver src/lib/external-db/bridge.ts::invokeExternalDb.
+        //
+        // SELECT por id: o REST nativo filtra via PostgREST (.eq), então traduzimos o id
+        // em filtro. Para escritas (insert/update/delete) o id segue no campo próprio.
+        const idFilter =
+          operation === 'select' && options?.id ? { id: options.id } : undefined;
+        const mergedFilters =
+          idFilter || options?.filters
+            ? { ...(options?.filters ?? {}), ...(idFilter ?? {}) }
+            : undefined;
+
+        const result = await invokeExternalDb<T>({
           table: tableName,
           operation,
-          data: options?.data,
-          filters: options?.filters,
+          data: options?.data as T | undefined,
+          filters: mergedFilters,
           id: options?.id,
           select: options?.select,
           orderBy: options?.orderBy,
@@ -139,19 +155,8 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
           offset: options?.offset,
         });
 
-        if (error) {
-          const message = await extractFunctionErrorMessage(error);
-          throw new Error(message);
-        }
-
-        const bridgeData = data as { success?: boolean; error?: string; data?: unknown } | null;
-
-        if (!bridgeData?.success) {
-          throw new Error(bridgeData?.error || 'Erro desconhecido');
-        }
-
+        // invokeExternalDb já devolve { records, count } desempacotado.
         if (operation === 'select') {
-          const result = (bridgeData?.data ?? null) as QueryResult<T>;
           if (isMountedRef.current) {
             setState((prev) => ({
               ...prev,
@@ -160,20 +165,19 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
               isLoading: false,
             }));
           }
-          return result;
+          return result as QueryResult<T>;
         }
         if (isMountedRef.current) {
           setState((prev) => ({ ...prev, isLoading: false }));
         }
-        return (bridgeData?.data ?? null) as T;
+        return (result.records[0] ?? null) as T;
       } catch (err) {
         const errorMessage = await extractFunctionErrorMessage(err);
         if (isMountedRef.current) {
           setState((prev) => ({ ...prev, error: errorMessage, isLoading: false }));
-          // FIX: Não exibir toast para erros do bridge descontinuado.
-          // Quando kill-switch está OFF ou o bridge falha com FunctionsFetchError
-          // ("Failed to send a request to the Edge Function"), o erro é esperado
-          // e silencioso — não deve poluir a UX com toasts na página de produto.
+          // Não exibir toast para erros do bridge descontinuado — são esperados e silenciosos
+          // (kill-switch OFF / falha de rede com a edge function). Demais erros (auth, dados)
+          // continuam gerando toast normalmente.
           if (!isBridgeRelatedError(err, errorMessage)) {
             toast.error(errorMessage);
           } else {
