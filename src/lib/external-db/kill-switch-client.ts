@@ -92,12 +92,48 @@ function getBucketKey(): string {
   }
 }
 
+/**
+ * Valida e normaliza um objeto vindo do localStorage. localStorage é fonte NÃO
+ * confiável: pode estar corrompido, ter shape de versão antiga, ou ter sido
+ * adulterado manualmente. Retorna um SwitchCheck bem-tipado, ou null se o objeto
+ * for inválido — nesse caso o caller trata como cache miss e refaz a consulta de
+ * rede, que coage o estado via Boolean() contra a fonte da verdade (o banco).
+ *
+ * Endurecimento contra coerção implícita (em vez de adivinhar uma direção, rejeita):
+ *  - `enabled` DEVE ser boolean estrito. Um "false" string seria truthy em
+ *    `if (check.enabled)` e religaria a bridge por engano (rollback acidental).
+ *  - `fetchedAt` DEVE ser número finito. Um NaN faria `Date.now() - NaN > TTL`
+ *    avaliar como `false`, e o cache stale NUNCA expiraria.
+ *  - `shouldApply` DEVE ser boolean ou ausente (governa o rollout quando OFF).
+ *  - `legacy_message` inválido é coagido para null (campo só de exibição).
+ */
+function coerceSwitchCheck(raw: unknown): SwitchCheck | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.enabled !== 'boolean') return null;
+  if (typeof o.fetchedAt !== 'number' || !Number.isFinite(o.fetchedAt)) return null;
+  if (o.shouldApply !== undefined && typeof o.shouldApply !== 'boolean') return null;
+  return {
+    enabled: o.enabled,
+    legacy_message: typeof o.legacy_message === 'string' ? o.legacy_message : null,
+    fetchedAt: o.fetchedAt,
+    shouldApply: o.shouldApply as boolean | undefined,
+  };
+}
+
 function readFromLocalStorage(switchName: string): SwitchCheck | null {
   if (typeof window === 'undefined' || !window.localStorage) return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY_PREFIX + switchName);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as SwitchCheck;
+    const parsed = coerceSwitchCheck(JSON.parse(raw));
+    if (!parsed) {
+      // Entrada corrompida ou de shape inválido — descarta e trata como cache miss
+      // (a rede recoage o estado corretamente). Evita religar a bridge por um
+      // `enabled` truthy não-booleano e o bug de `fetchedAt` NaN nunca expirar.
+      window.localStorage.removeItem(STORAGE_KEY_PREFIX + switchName);
+      return null;
+    }
     if (Date.now() - parsed.fetchedAt > STORAGE_TTL_MS) {
       window.localStorage.removeItem(STORAGE_KEY_PREFIX + switchName);
       return null;
