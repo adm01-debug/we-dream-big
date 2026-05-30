@@ -1,3 +1,9 @@
+> 📌 **Este documento é histórico.** A **fonte de verdade** sobre a bridge e o
+> REST nativo (arquitetura atual, mapa de arquivos, kill-switch, camada de
+> compatibilidade, lacuna de escrita e passos de aposentadoria) é:
+> **[`docs/ARQUITETURA_BRIDGE_REST_NATIVE.md`](./ARQUITETURA_BRIDGE_REST_NATIVE.md)**.
+> Mantenha este arquivo apenas como registro da migração (métricas, RLS add/removidas).
+
 # REST Native Migration
 
 **Data**: 2026-05-29/30
