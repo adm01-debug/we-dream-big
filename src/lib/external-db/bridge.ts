@@ -5,6 +5,9 @@
  * DUAL-MODE (2026-05-25): quando o kill-switch `edge_external_db_bridge` está OFF,
  * SELECTs em tabelas whitelistadas são roteados via REST nativo (PostgREST).
  * Writes e batches continuam sempre via bridge. Veja rest-native.ts.
+ *
+ * BATCH FALLBACK (2026-05-29): quando bridge OFF, invokeBatchBridge decompõe
+ * queries batch em chamadas individuais invokeExternalDb (que têm fallback REST).
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -230,33 +233,89 @@ function extractBatchResults(payload: unknown): BatchResult[] {
   return [];
 }
 
-export async function invokeBatchBridge(queries: BatchQuery[]): Promise<BatchResult[]> {
-  if (queries.length <= BATCH_MAX_QUERIES) {
-    const response = await invokeBridge<{ results: BatchResult[] }>({
-      operation: 'batch',
-      queries,
-    });
-    const parsedResults = extractBatchResults(response);
-    if (parsedResults.length === 0 && queries.length > 0) {
-      throw new Error('Resposta inválida da batch bridge');
-    }
-    return parsedResults;
-  }
+/**
+ * Decomposes batch queries into individual invokeExternalDb calls.
+ * Used as fallback when bridge is OFF (kill-switch). Each individual call
+ * gets REST native routing automatically via invokeExternalDb → tryExecuteRestNative.
+ *
+ * Uses Promise.allSettled for resilience — one query failing doesn't abort others.
+ */
+async function decomposeBatchToIndividual(queries: BatchQuery[]): Promise<BatchResult[]> {
+  logger.info(
+    `[external-db] Decomposing ${queries.length} batch queries into individual REST native calls`,
+  );
+  const settled = await Promise.allSettled(
+    queries.map(async (q): Promise<BatchResult> => {
+      try {
+        const result = await invokeExternalDb<Record<string, unknown>>({
+          table: q.table,
+          operation: q.operation ?? 'select',
+          select: q.select,
+          filters: q.filters,
+          orderBy: q.orderBy,
+          limit: q.limit,
+          offset: q.offset,
+        });
+        return { success: true, data: { records: result.records, count: result.count } };
+      } catch (e) {
+        logger.warn(
+          `[external-db] Batch decompose: query table=${q.table} failed: ${(e as Error).message}`,
+        );
+        return { success: false, error: (e as Error).message };
+      }
+    }),
+  );
+  return settled.map((r) =>
+    r.status === 'fulfilled' ? r.value : { success: false, error: 'Promise rejected' },
+  );
+}
 
-  const results: BatchResult[] = [];
-  for (let i = 0; i < queries.length; i += BATCH_MAX_QUERIES) {
-    const chunk = queries.slice(i, i + BATCH_MAX_QUERIES);
-    const response = await invokeBridge<{ results: BatchResult[] }>({
-      operation: 'batch',
-      queries: chunk,
-    });
-    const parsedResults = extractBatchResults(response);
-    if (parsedResults.length === 0 && chunk.length > 0) {
-      throw new Error('Resposta inválida da batch bridge');
+export async function invokeBatchBridge(queries: BatchQuery[]): Promise<BatchResult[]> {
+  // Try the bridge first; fall back to individual REST native on kill-switch
+  try {
+    if (queries.length <= BATCH_MAX_QUERIES) {
+      const response = await invokeBridge<{ results: BatchResult[] }>({
+        operation: 'batch',
+        queries,
+      });
+      const parsedResults = extractBatchResults(response);
+      if (parsedResults.length === 0 && queries.length > 0) {
+        throw new Error('Resposta inválida da batch bridge');
+      }
+      return parsedResults;
     }
-    results.push(...parsedResults);
+
+    const results: BatchResult[] = [];
+    for (let i = 0; i < queries.length; i += BATCH_MAX_QUERIES) {
+      const chunk = queries.slice(i, i + BATCH_MAX_QUERIES);
+      const response = await invokeBridge<{ results: BatchResult[] }>({
+        operation: 'batch',
+        queries: chunk,
+      });
+      const parsedResults = extractBatchResults(response);
+      if (parsedResults.length === 0 && chunk.length > 0) {
+        throw new Error('Resposta inválida da batch bridge');
+      }
+      results.push(...parsedResults);
+    }
+    return results;
+  } catch (err) {
+    // Bridge OFF (kill-switch) → decompose into individual REST native calls
+    if (err instanceof KillSwitchActiveError) {
+      return decomposeBatchToIndividual(queries);
+    }
+    // CORS/network errors that indicate bridge is unreachable → also try decompose
+    if (
+      err instanceof Error &&
+      isCorsOrNetworkBridgeError(err.message)
+    ) {
+      logger.warn(
+        '[external-db] Bridge unreachable (CORS/network), attempting batch decompose fallback',
+      );
+      return decomposeBatchToIndividual(queries);
+    }
+    throw err;
   }
-  return results;
 }
 
 // ============================================

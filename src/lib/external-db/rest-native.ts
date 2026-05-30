@@ -4,7 +4,10 @@
  * When the kill-switch `edge_external_db_bridge` is OFF, eligible read-only
  * queries are rerouted to local Postgres via supabase.from(...).select(...).
  *
- * Eligibility: SELECT only, table in REST_NATIVE_SAFE_TABLES, no _search filter.
+ * Eligibility: SELECT only, table in REST_NATIVE_SAFE_TABLES.
+ *
+ * Phase 2 (2026-05-29): expanded whitelist, _search via ilike, table aliases
+ * for security (suppliers → v_suppliers_public VIEW).
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -15,9 +18,38 @@ const REST_NATIVE_SAFE_TABLES = new Set<string>([
   'product_variants',
   'product_images',
   'suppliers',
+  'v_suppliers_public',
   'color_variations',
   'color_groups',
+  'categories',
+  'product_videos',
+  'product_kit_components',
+  'product_materials',
+  'material_types',
 ]);
+
+/**
+ * Table aliases: bridge used raw table names; REST native redirects to
+ * views for security (e.g. suppliers → v_suppliers_public hides
+ * api_credentials, markup%, cnpj).
+ */
+const TABLE_ALIASES: Record<string, string> = {
+  suppliers: 'v_suppliers_public',
+};
+
+/**
+ * Columns searchable via _search filter, per table.
+ * Uses ILIKE which leverages GIN trigram indexes when available.
+ */
+const SEARCH_COLUMNS: Record<string, string> = {
+  products: 'name',
+  categories: 'name',
+  suppliers: 'name',
+  v_suppliers_public: 'name',
+  material_types: 'name',
+  color_variations: 'name',
+  color_groups: 'name',
+};
 
 /**
  * BUG-NEW-02 FIX: When offset is provided without limit, this conservative
@@ -59,8 +91,16 @@ type RestNativeClient = {
 
 export function isRestNativeEligible(options: InvokeOptions): boolean {
   if (options.operation !== 'select') return false;
-  if (!REST_NATIVE_SAFE_TABLES.has(options.table)) return false;
-  if (options.filters && '_search' in options.filters) return false;
+  const resolvedTable = TABLE_ALIASES[options.table] ?? options.table;
+  if (!REST_NATIVE_SAFE_TABLES.has(options.table) && !REST_NATIVE_SAFE_TABLES.has(resolvedTable)) {
+    return false;
+  }
+  // _search is now handled natively via ilike (Phase 2d)
+  // Only reject _search if the table has no searchable column defined
+  if (options.filters && '_search' in options.filters) {
+    const searchCol = SEARCH_COLUMNS[resolvedTable] ?? SEARCH_COLUMNS[options.table];
+    if (!searchCol) return false;
+  }
   return true;
 }
 
@@ -161,6 +201,18 @@ function applyFilters(query: RestQuery, filters?: Record<string, unknown>): Rest
 }
 
 export async function executeRestNativeSelect<T>(options: InvokeOptions): Promise<InvokeResult<T>> {
+  // Resolve table alias (e.g. suppliers → v_suppliers_public)
+  const tableName = TABLE_ALIASES[options.table] ?? options.table;
+
+  // Extract _search from filters and prepare clean filter set
+  const filters = options.filters ? { ...options.filters } : undefined;
+  let searchTerm: string | undefined;
+  if (filters && '_search' in filters) {
+    const raw = filters._search;
+    searchTerm = typeof raw === 'string' ? raw.trim() : undefined;
+    delete filters._search;
+  }
+
   if (!isRestNativeEligible(options)) {
     throw new Error(`rest-native: not eligible for table=${options.table} op=${options.operation}`);
   }
@@ -178,10 +230,16 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
 
   const client = supabase as unknown as RestNativeClient;
   let query = countOption
-    ? client.from(options.table).select(selectCols, { count: countOption, head: false })
-    : client.from(options.table).select(selectCols);
+    ? client.from(tableName).select(selectCols, { count: countOption, head: false })
+    : client.from(tableName).select(selectCols);
 
-  query = applyFilters(query, options.filters);
+  query = applyFilters(query, filters);
+
+  // Apply _search via ILIKE (leverages idx_products_name_trgm GIN index)
+  if (searchTerm) {
+    const searchCol = SEARCH_COLUMNS[tableName] ?? SEARCH_COLUMNS[options.table] ?? 'name';
+    query = query.ilike(searchCol, `%${searchTerm}%`);
+  }
 
   if (options.orderBy) {
     query = query.order(options.orderBy.column, { ascending: options.orderBy.ascending ?? true });
@@ -195,7 +253,7 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
     // pattern is visible in logs. The upper bound is intentionally conservative
     // (999 rows) — callers should always specify limit alongside offset.
     logger.warn(
-      `[rest-native] PAGINATION WARNING: offset=${options.offset} without limit on table=${options.table}. ` +
+      `[rest-native] PAGINATION WARNING: offset=${options.offset} without limit on table=${tableName}. ` +
         `Capping at ${OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER} rows. ` +
         'Please specify limit for predictable behavior.',
     );
@@ -203,7 +261,7 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
   }
 
   const { data, error, count } = await query;
-  if (error) throw new Error(`rest-native error: ${error.message}`);
+  if (error) throw new Error(`rest-native error (${tableName}): ${error.message}`);
 
   return {
     records: (data ?? []) as T[],
@@ -217,8 +275,9 @@ export async function tryExecuteRestNative<T>(
   if (!isRestNativeEligible(options)) return null;
   try {
     const result = await executeRestNativeSelect<T>(options);
+    const resolvedTable = TABLE_ALIASES[options.table] ?? options.table;
     logger.debug(
-      `[rest-native] OK table=${options.table} rows=${result.records.length} count=${result.count}`,
+      `[rest-native] OK table=${resolvedTable} rows=${result.records.length} count=${result.count}`,
     );
     return result;
   } catch (e) {
