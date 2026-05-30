@@ -108,7 +108,12 @@ export async function invokeBridge<T>(body: Record<string, unknown>): Promise<Br
     const switchState = await getKillSwitchState(KILL_SWITCH_NAME);
     if (!switchState.enabled) {
       const friendly = switchState.message ?? 'Bridge OFF. REST nativo ativo.';
-      emitBridgeStatus({ type: 'unavailable', reason: `kill-switch: ${friendly}`, attempts: 0 });
+      // NAO emitir 'unavailable' aqui: kill-switch OFF e o estado ESPERADO (REST nativo 100%),
+      // nao uma indisponibilidade. O emit acendia os 3 banners de "catalogo indisponivel" em todo
+      // carregamento de catalogo (invokeBatchBridge -> invokeBridge), mesmo com os dados carregando
+      // via decomposicao REST nativo. Apenas lancamos o erro de controle, que os callers ja tratam:
+      // invokeBatchBridge decompoe p/ REST nativo, invokeExternalDb retorna vazio, delete vira no-op.
+      // (Outage REAL com bridge ON continua sinalizado no loop de retry abaixo.)
       throw new KillSwitchActiveError(KILL_SWITCH_NAME, friendly);
     }
   } catch (err) {
