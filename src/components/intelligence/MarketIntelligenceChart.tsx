@@ -38,7 +38,11 @@ import {
 } from '@/lib/format-utils';
 import {
   useMarketIntelligenceMacro,
-...
+  type MacroMarketPoint,
+  type MacroSupplierMetrics,
+  type MacroMarketKpis,
+} from '@/hooks/intelligence/useMarketIntelligenceMacro';
+import { useSupplierNames } from '@/hooks/products/useSupplierNames';
 import { safeParseDateForChart } from '@/lib/stock-chart-utils';
 import { SupplierChartFilter } from '@/components/products/SupplierChartFilter';
 import { Skeleton } from '@/components/ui/skeleton';
