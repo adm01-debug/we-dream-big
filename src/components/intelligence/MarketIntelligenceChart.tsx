@@ -370,8 +370,9 @@ export function MarketIntelligenceChart({
                     ? ` "A procura subiu ${formatTooltipPercent(trendPercent)} esta semana! Se esperarmos, o preço pode subir ou o lote esgotar rápido."` 
                     : trendPercent < -15
                       ? ` "Notamos um recuo de ${formatTooltipPercent(trendPercent)}. É a janela perfeita para negociarmos uma condição agressiva."`
-                      : " \"O mercado segue estável. Temos previsibilidade total de custos e prazos para o seu pedido hoje.\""}
+                      : " O mercado segue estável. Temos previsibilidade total de custos e prazos para o seu pedido hoje."}
                 </>
+
               )
             }
           />
