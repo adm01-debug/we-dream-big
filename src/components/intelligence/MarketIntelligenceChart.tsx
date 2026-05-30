@@ -293,7 +293,7 @@ export function MarketIntelligenceChart({
             value={avgDepletion.toFixed(1)}
             sub="un/dia (média 7d)"
             highlight={avgDepletion >= 20}
-            tooltip="Velocidade média de saída do produto no mercado nos últimos 7 dias, somando todos os fornecedores. Use para dimensionar a proposta: quanto maior, mais aquecida está a demanda e mais rápido o estoque some."
+            tooltip={`Velocidade média de saída do produto no mercado. Atualmente em ${avgDepletion.toFixed(1)} unidades por dia nos últimos 7 dias. Exemplo: se o cliente quer 500 unidades e a saída é 10/dia, o estoque dura 50 dias.`}
           />
           <KpiCard
             icon={BarChart3}
@@ -301,7 +301,7 @@ export function MarketIntelligenceChart({
             value={demandLevel}
             sub={trendLabel}
             customValueColor={demandColor}
-            tooltip="Classificação qualitativa do momento do produto (Alta, Média, Baixa) calculada a partir do volume e da tendência recentes. 'Alta' é gatilho para urgência no fechamento; 'Baixa' permite negociar prazo e preço."
+            tooltip={`Momento do produto: ${demandLevel}. Calculado pelo volume e aceleração recente. Exemplo: Demanda 'Muito Alta' com tendência '+20%' indica que você deve fechar o pedido hoje para não ficar sem.`}
           />
           <KpiCard
             icon={trendRatio > 1.2 ? TrendingUp : trendRatio < 0.8 ? TrendingDown : BarChart3}
@@ -315,14 +315,14 @@ export function MarketIntelligenceChart({
                   : 'demanda estável'
             }
             highlight={trendRatio > 1.3}
-            tooltip="Variação da demanda comparando o período recente com o anterior. Positivo = produto subindo (argumento de urgência para o cliente). Negativo = procura caindo (espaço para desconto ou troca por similar)."
+            tooltip={`Variação da velocidade de saída: ${trendPercent >= 0 ? '+' : ''}${trendPercent}%. Compara o ritmo dos últimos 7 dias com a média do mês. Exemplo: +30% significa que o produto está 'subindo' e a urgência do cliente deve aumentar.`}
           />
           <KpiCard
             icon={Package}
             label="Disponível"
             value={(kpis?.totalCurrentStock ?? 0).toLocaleString('pt-BR')}
             sub={supplierText}
-            tooltip="Estoque total disponível agora somando todos os fornecedores monitorados. Compare com 'Vendas no mercado' para estimar em quantos dias o produto pode acabar e antecipar o pedido do cliente."
+            tooltip={`Total de ${(kpis?.totalCurrentStock ?? 0).toLocaleString('pt-BR')} unidades em estoque hoje. Dividindo pelo ritmo de ${avgDepletion.toFixed(1)}/dia, o mercado tem estoque para aproximadamente ${avgDepletion > 0 ? Math.round((kpis?.totalCurrentStock ?? 0) / avgDepletion) : '??'} dias.`}
           />
         </div>
 
