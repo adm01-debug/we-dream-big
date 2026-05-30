@@ -1,5 +1,4 @@
-import { SUPABASE_URL } from '@/integrations/supabase/client';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '@/integrations/supabase/client';
 
 // Tipos
 export interface MaterialGroup {
@@ -48,6 +47,8 @@ class MaterialService {
   private baseUrl: string;
 
   constructor() {
+    // URL canonica resolvida (com fallback) — evita `undefined/functions/v1/...`
+    // em builds sem env (ex.: preview Lovable).
     this.baseUrl = `${SUPABASE_URL}/functions/v1/materials-api`;
   }
 
@@ -57,8 +58,8 @@ class MaterialService {
     } = await supabase.auth.getSession();
     return {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${session?.access_token || ''}`,
-      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      Authorization: `Bearer ${session?.access_token || SUPABASE_PUBLISHABLE_KEY}`,
+      apikey: SUPABASE_PUBLISHABLE_KEY,
     };
   }
 
