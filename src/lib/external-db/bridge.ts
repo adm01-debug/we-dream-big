@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { emitBridgeStatus, isColdStartSignal } from './bridge-status-events';
 import { getKillSwitchState, KillSwitchActiveError, invalidateKillSwitchCache } from './kill-switch-client';
-import { tryExecuteRestNative, isRestNativeEligible, runWithConcurrency } from './rest-native';
+import { tryExecuteRestNative, isRestNativeEligible, runWithConcurrency, tryExecuteRestNativeWrite, isRestNativeWriteEligible } from './rest-native';
 import { reportSilentEmpty } from './silent-empty-report';
 import { recordBridgeCall, estimatePayloadBytes, type BridgeOperation } from '@/lib/telemetry/bridgeCallMetrics';
 import { newRequestId } from '@/lib/telemetry/requestId';
@@ -103,7 +103,7 @@ export interface BatchResult {
   fromCache?: boolean;
 }
 
-// ── Bridge invocation (legacy, kept for rollback) ───────────────────
+// ── Bridge invocation (legacy, kept for rollback) ────
 
 const BOOT_RETRY_ATTEMPTS = 4;
 const BOOT_INITIAL_BACKOFF_MS = 400;
@@ -195,7 +195,7 @@ export async function invokeBridge<T>(body: Record<string, unknown>): Promise<Br
   throw new Error('Erro na bridge: tentativas esgotadas');
 }
 
-// ── Batch bridge ────────────────────────────────────────────────────
+// ── Batch bridge ────
 
 const BATCH_MAX_QUERIES = 10;
 
@@ -263,7 +263,7 @@ export async function invokeBatchBridge(queries: BatchQuery[]): Promise<BatchRes
   }
 }
 
-// ── CRUD ────────────────────────────────────────────────────────────
+// ── CRUD ────
 
 /**
  * Etapa 2: mapeia o Operation do bridge para o BridgeOperation da telemetria.
@@ -323,6 +323,15 @@ export async function invokeExternalDb<T>(options: InvokeOptions): Promise<Invok
     // tryExecuteRestNative already recorded the sample (ok=false) AND
     // reportSilentEmpty('rest_error'), so we must NOT re-emit below. When bridge
     // is ON, it recorded the failed REST attempt and we fall back to the bridge.
+  }
+
+  // Fast path WRITE (Plano A): escrita via PostgREST nativo + RLS, independente da
+  // bridge/kill-switch. Sucesso → retorna; erro (RLS negada, validação) → PROPAGA
+  // LOUD (toast.error no caller). Só cai para baixo se a tabela/op não for elegível,
+  // onde o WriteUnavailableError honesto assume.
+  if (isRestNativeWriteEligible(options)) {
+    const writeResult = await tryExecuteRestNativeWrite<T>(options);
+    if (writeResult !== null) return writeResult;
   }
 
   if (!bridgeEnabled) {
@@ -397,6 +406,11 @@ export async function invokeExternalDbSingle<T>(options: InvokeOptions): Promise
 }
 
 export async function invokeExternalDbDelete(table: string, id: string): Promise<void> {
+  // Plano A: tenta escrita REST nativa (RLS) primeiro. Sucesso → done; erro → LOUD.
+  if (isRestNativeWriteEligible({ table, operation: 'delete', id })) {
+    await tryExecuteRestNativeWrite({ table, operation: 'delete', id });
+    return;
+  }
   try {
     await invokeBridge<{ success: boolean; deleted_id: string }>({ table, operation: 'delete', id });
   } catch (err) {
