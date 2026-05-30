@@ -2,7 +2,7 @@
  * MockupBeforeAfter — Slider comparison between positioning preview and AI result
  */
 
-import { memo, useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeftRight } from 'lucide-react';
@@ -13,7 +13,7 @@ interface MockupBeforeAfterProps {
   className?: string;
 }
 
-export const MockupBeforeAfter = memo(function MockupBeforeAfter({ beforeImage, afterImage, className }: MockupBeforeAfterProps) {
+export function MockupBeforeAfter({ beforeImage, afterImage, className }: MockupBeforeAfterProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -106,4 +106,4 @@ export const MockupBeforeAfter = memo(function MockupBeforeAfter({ beforeImage, 
       </Badge>
     </div>
   );
-});
+}

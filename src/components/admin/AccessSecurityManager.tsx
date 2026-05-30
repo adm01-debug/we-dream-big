@@ -5,14 +5,13 @@
 import { useAccessSecurity } from '@/hooks/auth';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { memo } from 'react';
 import { Loader2, MapPin, ShieldAlert, Wifi } from 'lucide-react';
 import { SecuritySettingsCard } from './access-security/SecuritySettingsCard';
 import { IpWhitelistTab } from './access-security/IpWhitelistTab';
 import { CityWhitelistTab } from './access-security/CityWhitelistTab';
 import { BlockedLogsTab } from './access-security/BlockedLogsTab';
 
-export const AccessSecurityManager = memo(function AccessSecurityManager() {
+export function AccessSecurityManager() {
   const {
     settings,
     ips,
@@ -84,4 +83,4 @@ export const AccessSecurityManager = memo(function AccessSecurityManager() {
       </Tabs>
     </div>
   );
-});
+}

@@ -6,7 +6,7 @@
  * Flow: Search products -> Select product -> Load full data -> Choose color/variant -> Confirmed.
  */
 
-import { memo, useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { useDebounce } from '@/hooks/common';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Search, Package, X, SearchX, Filter } from 'lucide-react';
@@ -39,7 +39,7 @@ interface MockupProductSelectorProps {
   disabled?: boolean;
 }
 
-export const MockupProductSelector = memo(function MockupProductSelector({
+export function MockupProductSelector({
   selection,
   onSelect,
   disabled,
@@ -396,7 +396,7 @@ export const MockupProductSelector = memo(function MockupProductSelector({
       </Dialog>
     </div>
   );
-});
+}
 
 // Re-export from extracted module
 export { ProductLoaderAndColorSelector } from './MockupColorSelector';

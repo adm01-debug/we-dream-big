@@ -3,7 +3,7 @@
  * Duplicar · Compartilhar link · WhatsApp · Marcar ganho.
  * Visíveis no hover da linha (desktop) ou sempre (mobile).
  */
-import { memo, type MouseEvent as ReactMouseEvent } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import { Copy, Share2, MessageCircle, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ function buildWhatsappUrl(quote: Quote) {
   return phone ? `https://wa.me/55${phone}?text=${text}` : `https://wa.me/?text=${text}`;
 }
 
-export const QuoteRowQuickActions = memo(function QuoteRowQuickActions({
+export function QuoteRowQuickActions({
   quote,
   onDuplicate,
   onMarkApproved,
@@ -136,4 +136,4 @@ export const QuoteRowQuickActions = memo(function QuoteRowQuickActions({
       )}
     </div>
   );
-});
+}

@@ -167,7 +167,7 @@ const columnClasses: Record<number, string> = {
   8: 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8',
 };
 
-export const ProductGrid = React.memo(function ProductGrid({
+export function ProductGrid({
   products,
   isLoading,
   isError,
@@ -289,4 +289,4 @@ export const ProductGrid = React.memo(function ProductGrid({
       )}
     </div>
   );
-});
+}

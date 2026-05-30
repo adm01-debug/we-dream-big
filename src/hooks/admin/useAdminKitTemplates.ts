@@ -7,7 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { sanitizeError } from '@/lib/security/sanitize-error';
 import type { KitTemplateRow } from '@/hooks/kit-builder/useKitTemplates';
-import type { Database } from '@/integrations/supabase/types';
 
 const QUERY_KEY = ['admin-kit-templates'] as const;
 
@@ -26,7 +25,7 @@ export function useAdminKitTemplates() {
         .select('*')
         .order('updated_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as KitTemplateRow[];
+      return (data || []) as unknown as KitTemplateRow[];
     },
     staleTime: 30_000,
   });
@@ -36,11 +35,11 @@ export function useAdminKitTemplates() {
       if (id) {
         const { error } = await supabase
           .from('kit_templates')
-          .update(payload as Database['public']['Tables']['kit_templates']['Update'])
+          .update(payload as never)
           .eq('id', id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('kit_templates').insert(payload as Database['public']['Tables']['kit_templates']['Insert']);
+        const { error } = await supabase.from('kit_templates').insert(payload as never);
         if (error) throw error;
       }
     },
@@ -69,7 +68,7 @@ export function useAdminKitTemplates() {
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
       const { error } = await supabase
         .from('kit_templates')
-        .update({ is_active })
+        .update({ is_active } as never)
         .eq('id', id);
       if (error) throw error;
     },

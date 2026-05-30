@@ -72,7 +72,6 @@ export function ProtectedRoute({
 
   return (
     <EnhancedErrorBoundary
-      onError={(error, errorInfo) => console.error('[ProtectedRoute] Boundary caught:', error, errorInfo)}
       fallback={
         <div className="p-8">
           <EmptyState

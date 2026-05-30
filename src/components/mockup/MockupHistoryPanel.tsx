@@ -72,7 +72,7 @@ interface MockupHistoryPanelProps {
 
 const ITEMS_PER_PAGE = 12;
 
-export const MockupHistoryPanel = memo(function MockupHistoryPanel({
+export function MockupHistoryPanel({
   mockupHistory,
   isLoading,
   clients,
@@ -457,7 +457,7 @@ export const MockupHistoryPanel = memo(function MockupHistoryPanel({
       />
     </Card>
   );
-});
+}
 
 // ============================================
 // Sub-components (inlined — small enough)

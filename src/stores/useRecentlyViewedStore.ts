@@ -26,14 +26,7 @@ interface RecentlyViewedStore extends RecentlyViewedState, RecentlyViewedActions
 function loadFromStorage(): RecentlyViewedItem[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return [];
-    const raw = JSON.parse(stored);
-    if (!Array.isArray(raw)) return [];
-    // Validate each item has productId (filter out corrupted entries)
-    return raw.filter(
-      (item: unknown): item is RecentlyViewedItem =>
-        typeof item === 'object' && item !== null && typeof (item as RecentlyViewedItem).productId === 'string',
-    );
+    return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
   }
@@ -88,7 +81,3 @@ export const useRecentlyViewedStore = create<RecentlyViewedStore>((set, get) => 
     },
   };
 });
-
-/** Atomic selectors — use these in components to avoid unnecessary re-renders */
-export const useRecentlyViewedItems = () => useRecentlyViewedStore((s) => s.items);
-export const useRecentlyViewedCount = () => useRecentlyViewedStore((s) => s.itemCount);

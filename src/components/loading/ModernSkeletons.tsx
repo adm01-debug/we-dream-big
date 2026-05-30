@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -10,7 +9,7 @@ export interface ProductCardSkeletonProps {
   selectionMode?: boolean;
 }
 
-export const ProductCardSkeleton = memo(function ProductCardSkeleton({
+export function ProductCardSkeleton({
   variant = 'default',
   className,
   animate = true,
@@ -108,7 +107,7 @@ export const ProductCardSkeleton = memo(function ProductCardSkeleton({
       </div>
     </div>
   );
-});
+}
 
 const gridColumnClasses: Record<number, string> = {
   3: 'grid-cols-2 sm:grid-cols-3',

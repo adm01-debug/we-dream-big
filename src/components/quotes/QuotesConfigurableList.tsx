@@ -119,7 +119,7 @@ interface QuotesConfigurableListProps {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
-export const QuotesConfigurableList = React.memo(function QuotesConfigurableList({
+export function QuotesConfigurableList({
   quotes,
   onDelete,
   onBulkDelete,
@@ -505,4 +505,4 @@ export const QuotesConfigurableList = React.memo(function QuotesConfigurableList
       </div>
     </div>
   );
-});
+}
