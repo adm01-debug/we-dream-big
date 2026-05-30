@@ -8,7 +8,9 @@ import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-
 import { getCorsHeaders } from "./cors.ts";
 import { isTokenRevoked } from "./token-revocation.ts";
 
-export type AppRole = "dev" | "supervisor" | "agente";
+// Roles reais em user_roles: 'vendedor' (tier-base), 'admin' (== supervisor),
+// 'dev'. 'agente'/'supervisor' sao aliases historicos mantidos por compat.
+export type AppRole = "dev" | "supervisor" | "admin" | "agente" | "vendedor";
 
 export interface AuthorizeOptions {
   /** Mínimo exigido (hierárquico). Omita para apenas exigir authenticated. */
@@ -32,9 +34,15 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+// Ranking hierarquico. 'vendedor' e 'agente' sao a mesma tier-base (1);
+// 'admin' e 'supervisor' sao a mesma tier (2); 'dev' no topo (3).
+// BUGFIX: antes faltavam 'vendedor'/'admin' aqui, fazendo ROLE_RANK[role]
+// retornar undefined para usuarios reais -> comparacoes NaN instaveis.
 const ROLE_RANK: Record<AppRole, number> = {
+  vendedor: 1,
   agente: 1,
   supervisor: 2,
+  admin: 2,
   dev: 3,
 };
 
@@ -163,14 +171,18 @@ export async function authorize(
     };
   }
 
+  // Normaliza roles desconhecidas para rank 0 (sem privilegio) de forma segura.
+  const rankOf = (r: AppRole | string | null): number =>
+    (r != null && r in ROLE_RANK ? ROLE_RANK[r as AppRole] : 0);
+
   const userRoles = (roles ?? []).map((r) => r.role as AppRole);
   const highestRole: AppRole | null = userRoles.length
-    ? (userRoles.reduce((acc, r) => (ROLE_RANK[r] > ROLE_RANK[acc] ? r : acc), userRoles[0]) as AppRole)
+    ? (userRoles.reduce((acc, r) => (rankOf(r) > rankOf(acc) ? r : acc), userRoles[0]) as AppRole)
     : null;
 
   if (opts.requireRole) {
-    const requiredRank = ROLE_RANK[opts.requireRole];
-    const userRank = highestRole ? ROLE_RANK[highestRole] : 0;
+    const requiredRank = rankOf(opts.requireRole);
+    const userRank = rankOf(highestRole);
     if (userRank < requiredRank) {
       return {
         ok: false,
