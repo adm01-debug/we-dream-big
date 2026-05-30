@@ -16,7 +16,7 @@ import { recordBridgeCall, estimatePayloadBytes } from '@/lib/telemetry/bridgeCa
 import { newRequestId } from '@/lib/telemetry/requestId';
 import type { InvokeOptions, InvokeResult } from './bridge';
 
-// ── Whitelist ─────────────────────────────────────────────────────────────
+// ── Whitelist ────
 
 const REST_NATIVE_SAFE_TABLES = new Set<string>([
   // Core catalog
@@ -139,7 +139,7 @@ function mapRows(table: string, rows: unknown[]): unknown[] {
   });
 }
 
-// ── Metrics (Etapa 6) ─────────────────────────────────────────────────────
+// ── Metrics (Etapa 6) ────
 
 interface RestNativeMetrics {
   success: number;
@@ -177,7 +177,7 @@ export function resetRestNativeMetrics(): void {
   metrics.lastErrorAt = null;
 }
 
-// ── Retry (Etapa 3) ───────────────────────────────────────────────────────
+// ── Retry (Etapa 3) ────
 
 const REST_NATIVE_RETRY_COUNT = 1;
 const REST_NATIVE_RETRY_DELAY_MS = 500;
@@ -199,7 +199,7 @@ function isRetryableError(msg: string): boolean {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// ── Concurrency limiter (Etapa 4) ────────────────────────────────────
+// ── Concurrency limiter (Etapa 4) ────
 
 const BATCH_CONCURRENCY_LIMIT = 6;
 
@@ -231,7 +231,7 @@ export async function runWithConcurrency<T>(
   return results;
 }
 
-// ── Constants ────────────────────────────────────────────────────────────
+// ── Constants ────
 
 const OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER = 999;
 
@@ -265,7 +265,7 @@ type RestNativeClient = {
   };
 };
 
-// ── Eligibility ────────────────────────────────────────────────────────
+// ── Eligibility ────
 
 export function isRestNativeEligible(options: InvokeOptions): boolean {
   if (options.operation !== 'select') return false;
@@ -280,7 +280,7 @@ export function isRestNativeEligible(options: InvokeOptions): boolean {
   return true;
 }
 
-// ── PostgREST operator parsing ───────────────────────────────────────
+// ── PostgREST operator parsing ────
 
 const POSTGREST_OP_REGEX = /^(eq|neq|gt|gte|lt|lte|like|ilike|is|in|not)\.(.+)$/;
 
@@ -339,7 +339,7 @@ function applyFilters(query: RestQuery, filters?: Record<string, unknown>): Rest
   return query;
 }
 
-// ── Core execution ──────────────────────────────────────────────────────
+// ── Core execution ────
 
 export async function executeRestNativeSelect<T>(options: InvokeOptions): Promise<InvokeResult<T>> {
   const tableName = TABLE_ALIASES[options.table] ?? options.table;
@@ -490,7 +490,7 @@ export async function tryExecuteRestNative<T>(
   return null;
 }
 
-// ── WRITE support (Plano A) ─────────────────────────────────────
+// ── WRITE support (Plano A) ────
 //
 // Escrita vai SEMPRE para a tabela BASE — nunca para as views v_*_public
 // (read-only). Por isso NÃO reusa TABLE_ALIASES (que mapeia p/ views de leitura);
