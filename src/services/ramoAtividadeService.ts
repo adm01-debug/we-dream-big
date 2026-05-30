@@ -16,6 +16,9 @@ import type {
 // Acesso controlado por RLS:
 //   - leitura: anon + authenticated (catalogo publico)
 //   - escrita: admin autenticado (is_admin_or_above)
+//
+// `as never` no nome da tabela / payload segue o padrao do codebase para
+// tabelas resolvidas em runtime (o supabase client e tipado por literais).
 type SelectParams = {
   id?: string;
   filters?: Record<string, unknown>;
@@ -27,7 +30,7 @@ class RamoAtividadeService {
     table: string,
     params: SelectParams = {},
   ): Promise<{ records: T[]; count: number }> {
-    let query = supabase.from(table).select('*', { count: 'exact' });
+    let query = supabase.from(table as never).select('*', { count: 'exact' });
 
     if (params.id) {
       query = query.eq('id', params.id);
@@ -44,12 +47,16 @@ class RamoAtividadeService {
     const { data, error, count } = await query;
     if (error) throw new Error(error.message || 'Erro ao acessar ramos de atividade');
 
-    const records = (data ?? []) as T[];
+    const records = (data ?? []) as unknown as T[];
     return { records, count: count ?? records.length };
   }
 
   private async insertRow<T>(table: string, data: Record<string, unknown>): Promise<T> {
-    const { data: row, error } = await supabase.from(table).insert(data).select().single();
+    const { data: row, error } = await supabase
+      .from(table as never)
+      .insert(data as never)
+      .select()
+      .single();
     if (error) throw new Error(error.message || 'Erro ao criar registro');
     return row as T;
   }
@@ -60,8 +67,8 @@ class RamoAtividadeService {
     data: Record<string, unknown>,
   ): Promise<T> {
     const { data: row, error } = await supabase
-      .from(table)
-      .update(data)
+      .from(table as never)
+      .update(data as never)
       .eq('id', id)
       .select()
       .single();
@@ -70,7 +77,7 @@ class RamoAtividadeService {
   }
 
   private async deleteRow(table: string, id: string): Promise<void> {
-    const { error } = await supabase.from(table).delete().eq('id', id);
+    const { error } = await supabase.from(table as never).delete().eq('id', id);
     if (error) throw new Error(error.message || 'Erro ao remover registro');
   }
 
@@ -217,7 +224,7 @@ class RamoAtividadeService {
   }
 
   // ============================================================
-  // ASSOCIAÇÕES PRODUTO ↔ RAMO DE ATIVIDADE
+  // ASSOCIACOES PRODUTO <-> RAMO DE ATIVIDADE
   // ============================================================
 
   async getRamosDoProduto(
