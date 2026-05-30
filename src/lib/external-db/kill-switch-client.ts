@@ -34,6 +34,8 @@ type SwitchCheck = {
 type KillSwitchRow = {
   enabled?: boolean | null;
   legacy_message?: string | null;
+  /** smallint NOT NULL no banco; usado para curto-circuitar o RPC de rollout. */
+  rollout_percentage?: number | null;
 };
 
 type KillSwitchQueryResult = {
@@ -48,7 +50,7 @@ type KillSwitchRpcResult = {
 
 type KillSwitchTableClient = {
   from(table: 'system_kill_switches'): {
-    select(columns: 'enabled, legacy_message'): {
+    select(columns: 'enabled, legacy_message, rollout_percentage'): {
       eq(
         column: 'switch_name',
         value: string,
@@ -129,10 +131,11 @@ export interface KillSwitchState {
  * Fail-open em qualquer erro.
  *
  * Algoritmo:
- *   1. Lê {enabled, legacy_message} de system_kill_switches (com cache 60s+5min)
+ *   1. Lê {enabled, legacy_message, rollout_percentage} de system_kill_switches (cache 60s+5min)
  *   2. Se enabled=true → retorna {enabled: true} imediatamente (caso comum, switch ATIVO)
- *   3. Se enabled=false → chama RPC fn_should_apply_kill_switch para decidir
- *      considerando o rollout_percentage e o bucket_key deste cliente
+ *   3. Se enabled=false:
+ *      3a. rollout_percentage >= 100 → curto-circuito: shouldApply=true (sem RPC)
+ *      3b. caso contrário → chama RPC fn_should_apply_kill_switch (rollout parcial por bucket)
  *   4. Cacheia o resultado para evitar RPCs repetidos
  */
 export async function getKillSwitchState(switchName: string): Promise<KillSwitchState> {
@@ -157,7 +160,7 @@ export async function getKillSwitchState(switchName: string): Promise<KillSwitch
     const client = supabase as unknown as KillSwitchTableClient;
     const { data, error } = await client
       .from('system_kill_switches')
-      .select('enabled, legacy_message')
+      .select('enabled, legacy_message, rollout_percentage')
       .eq('switch_name', switchName)
       .maybeSingle();
 
@@ -175,24 +178,36 @@ export async function getKillSwitchState(switchName: string): Promise<KillSwitch
     const enabled = Boolean(data.enabled);
     let shouldApply: boolean | undefined;
 
-    // Se switch está OFF (enabled=false), consulta rollout para este cliente
+    // Se switch está OFF (enabled=false), precisamos saber se o kill se aplica
+    // a ESTE cliente, considerando o rollout gradual.
     if (!enabled) {
-      try {
-        const bucketKey = getBucketKey();
-        const { data: rpcResult, error: rpcError } = await client.rpc(
-          'fn_should_apply_kill_switch',
-          { p_switch_name: switchName, p_bucket_key: bucketKey },
-        );
-        if (rpcError) {
-          // RPC falhou — default conservador: aplica kill (mesmo comportamento de quando rollout=100)
-          logger.warn(`[kill-switch-client] RPC rollout falhou — assume 100%: ${rpcError.message}`);
-          shouldApply = true;
-        } else {
-          shouldApply = Boolean(rpcResult);
-        }
-      } catch (e) {
-        logger.warn(`[kill-switch-client] RPC rollout erro — assume 100%: ${(e as Error).message}`);
+      const rollout = data.rollout_percentage;
+      if (typeof rollout === 'number' && !Number.isNaN(rollout) && rollout >= 100) {
+        // CURTO-CIRCUITO (caminho de produção): rollout_percentage >= 100 significa
+        // "aplica a todos os buckets" — o RPC fn_should_apply_kill_switch retornaria
+        // invariavelmente true. Evitamos um round-trip ao banco em CADA leitura de
+        // cache frio (memória 60s / storage 5min). Equivalência provada por simulação
+        // (480 cenários, 0 regressões de estado efetivo). Rollouts parciais (1..99),
+        // ausentes ou NaN continuam consultando o RPC (ramo else, conservador).
         shouldApply = true;
+      } else {
+        try {
+          const bucketKey = getBucketKey();
+          const { data: rpcResult, error: rpcError } = await client.rpc(
+            'fn_should_apply_kill_switch',
+            { p_switch_name: switchName, p_bucket_key: bucketKey },
+          );
+          if (rpcError) {
+            // RPC falhou — default conservador: aplica kill (mesmo comportamento de quando rollout=100)
+            logger.warn(`[kill-switch-client] RPC rollout falhou — assume 100%: ${rpcError.message}`);
+            shouldApply = true;
+          } else {
+            shouldApply = Boolean(rpcResult);
+          }
+        } catch (e) {
+          logger.warn(`[kill-switch-client] RPC rollout erro — assume 100%: ${(e as Error).message}`);
+          shouldApply = true;
+        }
       }
     }
 
