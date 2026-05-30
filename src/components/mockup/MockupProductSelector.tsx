@@ -396,7 +396,7 @@ export const MockupProductSelector = memo(function MockupProductSelector({
       </Dialog>
     </div>
   );
-}
+});
 
 // Re-export from extracted module
 export { ProductLoaderAndColorSelector } from './MockupColorSelector';

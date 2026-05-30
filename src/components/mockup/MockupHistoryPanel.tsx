@@ -457,7 +457,7 @@ export const MockupHistoryPanel = memo(function MockupHistoryPanel({
       />
     </Card>
   );
-}
+});
 
 // ============================================
 // Sub-components (inlined — small enough)
