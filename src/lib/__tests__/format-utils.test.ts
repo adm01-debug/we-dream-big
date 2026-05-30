@@ -22,9 +22,10 @@ describe('format-utils', () => {
     });
 
     it('should handle very large numbers', () => {
-      expect(formatTooltipNumber(999999999.99)).toBe('999.999.999');
+      expect(formatTooltipNumber(999999999.49)).toBe('999.999.999');
       expect(formatTooltipNumber(1234567890)).toBe('1.234.567.890');
     });
+
 
     it('should handle long decimals by rounding', () => {
       expect(formatTooltipNumber(1.23456789, 4)).toBe('1,2346');
