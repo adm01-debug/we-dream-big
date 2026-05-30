@@ -1,6 +1,6 @@
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import { getCredential } from '../_shared/credentials.ts';
-import { authenticateRequest, requireRole, authErrorResponse } from '../_shared/auth.ts';
+import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { z } from '../_shared/zod-validate.ts';
 import { safeErrorFields } from '../_shared/log-safety.ts';
@@ -11,6 +11,11 @@ const CategoriesRequestSchema = z.object({
   includeDescendants: z.boolean().optional(),
 });
 
+// Roles internas validas deste sistema. A role 'agente' historicamente usada
+// no gate NAO existe no banco (as reais sao vendedor/admin/dev); mantemos
+// 'agente' e 'coordenador'/'supervisor' por compatibilidade futura.
+const INTERNAL_ROLES = ['vendedor', 'agente', 'coordenador', 'supervisor', 'admin', 'dev'];
+
 Deno.serve(async (req) => {
   // CORS preflight MUST be handled BEFORE auth — OPTIONS requests don't
   // carry auth tokens, so authenticateRequest would reject them with 401.
@@ -20,10 +25,19 @@ Deno.serve(async (req) => {
 
   const corsHeaders = getCorsHeaders(req);
 
-  // Auth: exige vendedor autenticado (agente ou acima)
+  // Auth: exige usuario interno autenticado (qualquer role conhecida).
+  // BUGFIX: o gate anterior era requireRole(authCtx, 'agente'), mas 'agente'
+  // nao existe no sistema -> 403 para vendedores E admins (so dev passava).
+  // Dados aqui sao metadados publicos de catalogo, mesmo nivel da materials-api.
   try {
     const authCtx = await authenticateRequest(req);
-    requireRole(authCtx, 'agente');
+    const hasInternalRole = authCtx.userRoles.some((r) => INTERNAL_ROLES.includes(r));
+    if (!hasInternalRole) {
+      return authErrorResponse(
+        { status: 403, message: 'Acesso restrito a usuarios internos' },
+        corsHeaders,
+      );
+    }
   } catch (authErr) {
     return authErrorResponse(authErr, corsHeaders);
   }
