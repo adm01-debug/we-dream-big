@@ -54,7 +54,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const auth = await authorize(req);
+    // ONDA-16 (30/05/2026): gate de role reativado. O bloqueador do NaN
+    // (ROLE_RANK['vendedor'] undefined) foi corrigido em _shared/authorize.ts,
+    // entao agora exigimos tier-base interna (vendedor/admin/dev) em vez de
+    // apenas "qualquer autenticado". Defesa-em-profundidade prevista na Onda 10.
+    const auth = await authorize(req, { requireRole: 'vendedor' });
     if (!auth.ok) return auth.response;
 
     const authenticatedEmail = auth.user.email ?? null;
