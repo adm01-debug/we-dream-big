@@ -15,6 +15,7 @@ import { logger } from '@/lib/logger';
 import { emitBridgeStatus, isColdStartSignal } from './bridge-status-events';
 import { getKillSwitchState, KillSwitchActiveError, invalidateKillSwitchCache } from './kill-switch-client';
 import { tryExecuteRestNative, isRestNativeEligible, runWithConcurrency } from './rest-native';
+import { isRestNativeWriteEligible, executeRestNativeWrite } from './rest-native-write';
 import { reportSilentEmpty } from './silent-empty-report';
 import { recordBridgeCall, estimatePayloadBytes, type BridgeOperation } from '@/lib/telemetry/bridgeCallMetrics';
 import { newRequestId } from '@/lib/telemetry/requestId';
@@ -35,6 +36,8 @@ export interface InvokeOptions<T = Record<string, unknown>> {
   limit?: number;
   offset?: number;
   countMode?: 'exact' | 'planned' | 'estimated' | 'none';
+  /** Etapa 4: coluna(s) de conflito para upsert/batch_insert (REST-native write). */
+  onConflict?: string;
 }
 
 export interface InvokeResult<T> {
@@ -288,6 +291,22 @@ export async function invokeExternalDb<T>(options: InvokeOptions): Promise<Invok
     // is ON, it recorded the failed REST attempt and we fall back to the bridge.
   }
 
+  // Etapa 4: REST-native WRITE path. The bridge is retired, so writes go
+  // directly to Postgres via supabase.from(<BASE table>) with RLS as the
+  // security boundary, and errors propagate LOUDLY (no silent no-op). This is
+  // independent of the kill-switch: the bridge cannot perform writes anymore.
+  if (options.operation !== 'select' && isRestNativeWriteEligible(options.table)) {
+    try {
+      const writeResult = await executeRestNativeWrite<T>(options as InvokeOptions & { onConflict?: string });
+      recordCall(true, writeResult);
+      return writeResult;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      recordCall(false, null, msg);
+      throw err instanceof Error ? err : new Error(msg);
+    }
+  }
+
   if (!bridgeEnabled) {
     if (options.operation !== 'select') {
       // (c) write became a no-op while bridge is OFF — actionable, error level.
@@ -351,6 +370,11 @@ export async function invokeExternalDbSingle<T>(options: InvokeOptions): Promise
 }
 
 export async function invokeExternalDbDelete(table: string, id: string): Promise<void> {
+  // Etapa 4: whitelisted tables delete via REST native (loud errors, RLS-enforced).
+  if (isRestNativeWriteEligible(table)) {
+    await executeRestNativeWrite({ table, operation: 'delete', id });
+    return;
+  }
   try {
     await invokeBridge<{ success: boolean; deleted_id: string }>({ table, operation: 'delete', id });
   } catch (err) {

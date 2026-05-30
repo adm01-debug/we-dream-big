@@ -122,6 +122,31 @@ export async function invokeExternalDbBridge(body: BridgeBody): Promise<BridgeCo
     }
   }
 
+  // Etapa 4: write operations (insert/update/delete/upsert/batch_insert) route
+  // through the REST-native write path (the bridge is retired). Errors surface
+  // LOUDLY as success:false instead of hitting the dead Edge Function.
+  if (operation === 'insert' || operation === 'update' || operation === 'delete' ||
+      operation === 'upsert' || operation === 'batch_insert') {
+    try {
+      const result = await invokeExternalDb<Record<string, unknown>>({
+        table,
+        operation: operation as Operation,
+        data: body.data as Record<string, unknown>,
+        id: body.id,
+        filters: body.filters,
+        onConflict: typeof body.onConflict === 'string' ? body.onConflict : undefined,
+      });
+      return {
+        data: { success: true, data: { records: result.records, count: result.count } },
+        error: null,
+      };
+    } catch (e) {
+      const msg = (e as Error).message;
+      logger.warn(`[bridge-compat] WRITE ${operation} failed for ${table}: ${msg}`);
+      return { data: { success: false, error: msg }, error: null };
+    }
+  }
+
   // Write operations (insert, update, delete, upsert, batch_insert, ping):
   // Try the bridge Edge Function with graceful error handling.
   // If bridge returns 410 or CORS error, return a clear error.
