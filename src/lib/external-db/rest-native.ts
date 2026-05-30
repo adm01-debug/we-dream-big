@@ -87,6 +87,55 @@ const SEARCH_COLUMNS: Record<string, string> = {
   ramo_atividade: 'name',
 };
 
+// ── Adaptador de colunas para tabelas SSOT com nomes em PT (ONDA-17) ──
+// Algumas tabelas SSOT usam colunas em portugues. O bridge (morto) fazia este
+// remap; replicado aqui ESCOPADO por tabela. Tabelas fora do mapa passam intactas.
+const COLUMN_ALIASES_BY_TABLE: Record<string, Record<string, string>> = {
+  tecnicas_gravacao: {
+    id: 'codigo', code: 'codigo', codigo: 'codigo',
+    name: 'nome', nome: 'nome', slug: 'slug',
+    is_active: 'ativo', ativo: 'ativo',
+    display_order: 'ordem_exibicao', ordem_exibicao: 'ordem_exibicao',
+  },
+};
+
+function remapFilters(table: string, filters?: Record<string, unknown>): Record<string, unknown> | undefined {
+  const map = COLUMN_ALIASES_BY_TABLE[table];
+  if (!map || !filters) return filters;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(filters)) out[map[k] ?? k] = v;
+  return out;
+}
+
+// Para tabelas com remap, usamos '*' (garante todas as colunas PT p/ remontar o
+// shape legado). Sao tabelas pequenas; custo irrelevante. Evita 400 por coluna EN.
+function remapSelect(table: string, select: string): string {
+  return COLUMN_ALIASES_BY_TABLE[table] ? '*' : select;
+}
+
+function remapOrderByCol(table: string, column: string): string {
+  const map = COLUMN_ALIASES_BY_TABLE[table];
+  if (!map) return column;
+  return map[column] ?? 'nome';
+}
+
+// Remonta o shape legado (id/code/name/is_active/display_order) a partir das
+// colunas PT reais (codigo/nome/ativo/ordem_exibicao), preservando as originais.
+function mapRows(table: string, rows: unknown[]): unknown[] {
+  if (table !== 'tecnicas_gravacao') return rows;
+  return rows.map((r) => {
+    const row = r as Record<string, unknown>;
+    return {
+      ...row,
+      id: row.codigo,
+      code: row.codigo,
+      name: row.nome,
+      is_active: row.ativo,
+      display_order: row.ordem_exibicao,
+    };
+  });
+}
+
 // ── Metrics (Etapa 6) ───────────────────────────────────────────────
 
 interface RestNativeMetrics {
@@ -303,7 +352,7 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
   }
 
   const countMode = options.countMode ?? 'none';
-  const selectCols = options.select ?? '*';
+  const selectCols = remapSelect(tableName, options.select ?? '*');
   const countOption =
     countMode === 'none' ? undefined
     : countMode === 'exact' ? 'exact'
@@ -315,7 +364,7 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
     ? client.from(tableName).select(selectCols, { count: countOption, head: false })
     : client.from(tableName).select(selectCols);
 
-  query = applyFilters(query, filters);
+  query = applyFilters(query, remapFilters(tableName, filters));
 
   if (searchTerm) {
     const searchCol = SEARCH_COLUMNS[tableName] ?? SEARCH_COLUMNS[options.table] ?? 'name';
@@ -323,7 +372,7 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
   }
 
   if (options.orderBy) {
-    query = query.order(options.orderBy.column, { ascending: options.orderBy.ascending ?? true });
+    query = query.order(remapOrderByCol(tableName, options.orderBy.column), { ascending: options.orderBy.ascending ?? true });
   }
 
   if (typeof options.limit === 'number') {
@@ -341,7 +390,7 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
   if (error) throw new Error(`rest-native error (${tableName}): ${error.message}`);
 
   return {
-    records: (data ?? []) as T[],
+    records: (mapRows(tableName, data ?? []) as T[]),
     count: typeof count === 'number' ? count : null,
   };
 }
