@@ -24,6 +24,43 @@ const KILL_SWITCH_NAME = 'edge_external_db_bridge';
 
 export type Operation = 'select' | 'insert' | 'update' | 'delete' | 'upsert' | 'batch_insert';
 
+const WRITE_OPERATIONS: ReadonlySet<Operation> = new Set<Operation>([
+  'insert',
+  'update',
+  'delete',
+  'upsert',
+  'batch_insert',
+]);
+
+/** True para qualquer operação que MUTA dados (tudo menos 'select'). */
+export function isWriteOperation(op: Operation | string | undefined): boolean {
+  return !!op && WRITE_OPERATIONS.has(op as Operation);
+}
+
+/**
+ * Lançado quando uma operação de ESCRITA não pôde ser executada porque a bridge
+ * está OFF (REST nativo ainda não cobre escrita) ou está inacessível (CORS/rede).
+ *
+ * Diferença crítica em relação ao retorno vazio de LEITURA: uma escrita NUNCA
+ * pode falhar em silêncio — senão a UI reporta "salvo com sucesso" sem que nada
+ * tenha sido persistido (corrupção silenciosa). Os callers (mutations / try-catch)
+ * já exibem `toast.error` a partir de `error.message`, então este erro tipado
+ * transforma o no-op silencioso em falha honesta e visível.
+ */
+export class WriteUnavailableError extends Error {
+  table: string;
+  operation: string;
+  constructor(table: string, operation: string) {
+    super(
+      `Escrita indisponível: '${operation}' em '${table}' não pôde ser persistida ` +
+        `(bridge OFF ou inacessível). Nenhum dado foi alterado.`,
+    );
+    this.name = 'WriteUnavailableError';
+    this.table = table;
+    this.operation = operation;
+  }
+}
+
 export interface InvokeOptions<T = Record<string, unknown>> {
   table: string;
   operation: Operation;
@@ -289,8 +326,10 @@ export async function invokeExternalDb<T>(options: InvokeOptions): Promise<Invok
   }
 
   if (!bridgeEnabled) {
-    if (options.operation !== 'select') {
+    if (isWriteOperation(options.operation)) {
       // (c) write became a no-op while bridge is OFF — actionable, error level.
+      // Telemetria + ERRO TIPADO: escrita nunca pode no-op silencioso (a UI mostraria
+      // "salvo" sem persistir). O throw vira toast.error nos callers (mutations/try-catch).
       reportSilentEmpty({
         reason: 'write_bridge_off',
         table: options.table,
@@ -298,6 +337,7 @@ export async function invokeExternalDb<T>(options: InvokeOptions): Promise<Invok
       });
       recordCall(false, null, 'write_bridge_off');
       recordKillSwitchHit({ switch_name: KILL_SWITCH_NAME, operation: telemetryOp, target: options.table });
+      throw new WriteUnavailableError(options.table, options.operation);
     } else if (!isRestNativeEligible(options)) {
       // (a) SELECT on a table with no REST-native path — config gap, warn level.
       reportSilentEmpty({
@@ -329,13 +369,19 @@ export async function invokeExternalDb<T>(options: InvokeOptions): Promise<Invok
   } catch (err) {
     if (err instanceof KillSwitchActiveError) {
       recordCall(false, null, 'kill_switch_active');
+      if (isWriteOperation(options.operation)) {
+        throw new WriteUnavailableError(options.table, options.operation);
+      }
       return { records: [], count: 0 };
     }
     if (err instanceof Error && isCorsOrNetworkBridgeError(err.message)) {
+      recordCall(false, null, err.message);
+      if (isWriteOperation(options.operation)) {
+        throw new WriteUnavailableError(options.table, options.operation);
+      }
       logger.debug(
         `[external-db] Bridge CORS/network error for ${options.table} — returning empty.`,
       );
-      recordCall(false, null, err.message);
       return { records: [], count: 0 };
     }
     // Non-CORS errors still propagate (auth errors, data errors, etc.)
@@ -355,12 +401,14 @@ export async function invokeExternalDbDelete(table: string, id: string): Promise
     await invokeBridge<{ success: boolean; deleted_id: string }>({ table, operation: 'delete', id });
   } catch (err) {
     if (err instanceof KillSwitchActiveError) {
-      logger.warn(`[external-db] Delete blocked by kill-switch for ${table}/${id}`);
-      return;
+      // Delete não pode no-op silencioso: a UI mostraria "excluído com sucesso"
+      // sem nada ter sido removido. Vira toast.error no caller.
+      logger.warn(`[external-db] Delete blocked by kill-switch for ${table}/${id} — surfacing loud`);
+      throw new WriteUnavailableError(table, 'delete');
     }
     if (err instanceof Error && isCorsOrNetworkBridgeError(err.message)) {
-      logger.warn(`[external-db] Delete CORS error for ${table}/${id}`);
-      return;
+      logger.warn(`[external-db] Delete CORS error for ${table}/${id} — surfacing loud`);
+      throw new WriteUnavailableError(table, 'delete');
     }
     throw err;
   }
