@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent }
 import { Send, Loader2, Bot, User as UserIcon, AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { supabase, SUPABASE_URL } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 // ============================================
@@ -199,7 +199,7 @@ export function AIChat({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            apikey: SUPABASE_PUBLISHABLE_KEY,
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
