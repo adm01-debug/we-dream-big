@@ -1,4 +1,3 @@
-import { SUPABASE_URL } from '@/integrations/supabase/client';
 /**
  * Card "Cold vs Warm — crm-db-bridge"
  *
@@ -16,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Flame, RefreshCw, Snowflake, Thermometer } from 'lucide-react';
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '@/integrations/supabase/client';
 
 interface DiagSnapshot {
   ok: boolean;
@@ -40,9 +40,9 @@ interface DiagSnapshot {
   };
 }
 
-const SUPABASE_URL = (SUPABASE_URL as string | undefined)?.replace(/\/+$/, '');
-const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
-const FN_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/crm-db-bridge?op=diag` : null;
+const BASE_URL = SUPABASE_URL.replace(/\/+$/, '');
+const ANON_KEY = SUPABASE_PUBLISHABLE_KEY;
+const FN_URL = BASE_URL ? `${BASE_URL}/functions/v1/crm-db-bridge?op=diag` : null;
 const POLL_MS = 30_000;
 
 function fmtMs(v: number | null | undefined): string {
@@ -73,7 +73,7 @@ export function ColdVsWarmCrmCard() {
 
   const fetchDiag = useCallback(async () => {
     if (!FN_URL || !ANON_KEY) {
-      setError('VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY precisam estar configuradas.');
+      setError('Configuração do Supabase ausente.');
       setLoading(false);
       return;
     }
@@ -98,7 +98,7 @@ export function ColdVsWarmCrmCard() {
 
   useEffect(() => {
     if (!FN_URL || !ANON_KEY) {
-      setError('VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY precisam estar configuradas.');
+      setError('Configuração do Supabase ausente.');
       return;
     }
 
