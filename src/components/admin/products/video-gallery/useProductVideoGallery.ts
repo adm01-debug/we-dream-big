@@ -395,9 +395,7 @@ export function useProductVideoGallery(productId?: string) {
       data: { title?: string; description?: string; video_type?: string },
     ) => {
       try {
-        await supabase.functions.invoke('external-db-bridge', {
-          body: { table: 'product_videos', operation: 'update', id: videoId, data },
-        });
+        await invokeExternalDbBridge({ table: 'product_videos', operation: 'update', id: videoId, data });
         queryClient.invalidateQueries({ queryKey: ['product-videos-ext', productId] });
         toast.success('Metadados do vídeo atualizados');
         setEditingVideoId(null);
