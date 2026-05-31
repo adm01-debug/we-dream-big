@@ -50,14 +50,12 @@ export async function deleteComponent(id: string): Promise<void> {
 }
 
 export async function fetchPrintAreas(componentId: string): Promise<PrintArea[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table: 'kit_component_print_areas',
-      operation: 'select',
-      filters: { kit_component_id: componentId },
-      limit: 50,
-      orderBy: { column: 'display_order', ascending: true },
-    },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'kit_component_print_areas',
+    operation: 'select',
+    filters: { kit_component_id: componentId },
+    limit: 50,
+    orderBy: { column: 'display_order', ascending: true },
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao buscar áreas');
