@@ -67,13 +67,11 @@ export function useTechniquePricingOptions(techniqueCode: string | null): Techni
     const fetchTables = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'customization_price_tables',
-            operation: 'select',
-            filters: { table_code: techniqueCode },
-            limit: 100,
-          },
+        const { data, error } = await invokeExternalDbBridge({
+          table: 'customization_price_tables',
+          operation: 'select',
+          filters: { table_code: techniqueCode },
+          limit: 100,
         });
 
         if (error) throw error;
