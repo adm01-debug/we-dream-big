@@ -29,7 +29,10 @@ export type SupplierSourceInput = Omit<SupplierSource, 'id' | 'created_at' | 'up
 const BRIDGE_TABLE = 'variant_supplier_sources';
 
 async function bridgeInvoke(body: Record<string, unknown>) {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', { body });
+  // Chamada residual substituída por invokeExternalDbBridge (compat shim)
+  // que agora usa PostgREST nativo para evitar o 410 Gone.
+  const { invokeExternalDbBridge } = await import('@/lib/external-db/bridge-compat');
+  const { data, error } = await invokeExternalDbBridge(body);
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro na operação');
   return data;

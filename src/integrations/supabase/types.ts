@@ -908,6 +908,41 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          parent_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          parent_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          parent_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_icons: {
         Row: {
           category_name: string
@@ -4379,6 +4414,66 @@ export type Database = {
         }
         Relationships: []
       }
+      product_variants: {
+        Row: {
+          color_code: string | null
+          color_hex: string | null
+          color_id: string | null
+          color_name: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string | null
+          product_id: string | null
+          sku: string | null
+          stock_quantity: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          color_code?: string | null
+          color_hex?: string | null
+          color_id?: string | null
+          color_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string | null
+          product_id?: string | null
+          sku?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          color_code?: string | null
+          color_hex?: string | null
+          color_id?: string | null
+          color_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string | null
+          product_id?: string | null
+          sku?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "v_products_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_views: {
         Row: {
           created_at: string
@@ -6070,6 +6165,51 @@ export type Database = {
           },
         ]
       }
+      suppliers: {
+        Row: {
+          active: boolean | null
+          code: string | null
+          created_at: string | null
+          id: string
+          is_engraving_supplier: boolean | null
+          is_product_supplier: boolean | null
+          logo_url: string | null
+          name: string
+          state_uf: string | null
+          trading_name: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          code?: string | null
+          created_at?: string | null
+          id?: string
+          is_engraving_supplier?: boolean | null
+          is_product_supplier?: boolean | null
+          logo_url?: string | null
+          name: string
+          state_uf?: string | null
+          trading_name?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          code?: string | null
+          created_at?: string | null
+          id?: string
+          is_engraving_supplier?: boolean | null
+          is_product_supplier?: boolean | null
+          logo_url?: string | null
+          name?: string
+          state_uf?: string | null
+          trading_name?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       system_error_logs: {
         Row: {
           created_at: string
@@ -6367,6 +6507,79 @@ export type Database = {
         }
         Relationships: []
       }
+      variant_supplier_sources: {
+        Row: {
+          id: string
+          is_active: boolean | null
+          next_date_1: string | null
+          next_date_2: string | null
+          next_date_3: string | null
+          next_quantity_1: number | null
+          next_quantity_2: number | null
+          next_quantity_3: number | null
+          quantity: number | null
+          reserved_quantity: number | null
+          supplier_id: string | null
+          supplier_sku: string | null
+          updated_at: string | null
+          variant_id: string | null
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean | null
+          next_date_1?: string | null
+          next_date_2?: string | null
+          next_date_3?: string | null
+          next_quantity_1?: number | null
+          next_quantity_2?: number | null
+          next_quantity_3?: number | null
+          quantity?: number | null
+          reserved_quantity?: number | null
+          supplier_id?: string | null
+          supplier_sku?: string | null
+          updated_at?: string | null
+          variant_id?: string | null
+        }
+        Update: {
+          id?: string
+          is_active?: boolean | null
+          next_date_1?: string | null
+          next_date_2?: string | null
+          next_date_3?: string | null
+          next_quantity_1?: number | null
+          next_quantity_2?: number | null
+          next_quantity_3?: number | null
+          quantity?: number | null
+          reserved_quantity?: number | null
+          supplier_id?: string | null
+          supplier_sku?: string | null
+          updated_at?: string | null
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "variant_supplier_sources_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "variant_supplier_sources_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "v_suppliers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "variant_supplier_sources_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       video_variant_links: {
         Row: {
           created_at: string
@@ -6446,6 +6659,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visual_search_feedback_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "v_products_public"
             referencedColumns: ["id"]
           },
         ]
@@ -6759,6 +6979,90 @@ export type Database = {
           token_id: string | null
           user_agent: string | null
           verifications_applied: Json | null
+        }
+        Relationships: []
+      }
+      v_products_public: {
+        Row: {
+          category_id: string | null
+          cost_price: string | null
+          description: string | null
+          id: string | null
+          is_active: boolean | null
+          is_kit: boolean | null
+          name: string | null
+          price: number | null
+          sku: string | null
+          stock_quantity: number | null
+          supplier_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          cost_price?: never
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_kit?: boolean | null
+          name?: string | null
+          price?: number | null
+          sku?: string | null
+          stock_quantity?: number | null
+          supplier_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          cost_price?: never
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_kit?: boolean | null
+          name?: string | null
+          price?: number | null
+          sku?: string | null
+          stock_quantity?: number | null
+          supplier_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      v_suppliers_public: {
+        Row: {
+          active: boolean | null
+          code: string | null
+          id: string | null
+          is_engraving_supplier: boolean | null
+          is_product_supplier: boolean | null
+          logo_url: string | null
+          name: string | null
+          state_uf: string | null
+          trading_name: string | null
+          website: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          code?: string | null
+          id?: string | null
+          is_engraving_supplier?: boolean | null
+          is_product_supplier?: boolean | null
+          logo_url?: string | null
+          name?: string | null
+          state_uf?: string | null
+          trading_name?: string | null
+          website?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          code?: string | null
+          id?: string | null
+          is_engraving_supplier?: boolean | null
+          is_product_supplier?: boolean | null
+          logo_url?: string | null
+          name?: string | null
+          state_uf?: string | null
+          trading_name?: string | null
+          website?: string | null
         }
         Relationships: []
       }

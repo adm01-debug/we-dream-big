@@ -19,6 +19,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { invokeExternalDb } from '@/lib/external-db';
 import { logger } from '@/lib/logger';
+import { isRestNativeWriteEligible, tryExecuteRestNativeWrite } from '@/lib/external-db/rest-native';
 import type { InvokeOptions, Operation } from '@/lib/external-db/bridge';
 
 interface BridgeBody {
@@ -122,9 +123,39 @@ export async function invokeExternalDbBridge(body: BridgeBody): Promise<BridgeCo
     }
   }
 
-  // Write operations (insert, update, delete, upsert, batch_insert, ping):
-  // Try the bridge Edge Function with graceful error handling.
-  // If bridge returns 410 or CORS error, return a clear error.
+  // Write operations (insert, update, delete, upsert, batch_insert):
+  // Phase 6 (2026-05-31): try REST native write FIRST to avoid 410 Gone.
+  if (isRestNativeWriteEligible({ table, operation: operation as Operation })) {
+    try {
+      const result = await tryExecuteRestNativeWrite({
+        table,
+        operation: operation as Operation,
+        data: body.data as Record<string, unknown>,
+        id: body.id as string,
+        filters: body.filters,
+      });
+
+      if (result) {
+        return {
+          data: {
+            success: true,
+            data: { records: result.records, count: result.count },
+          },
+          error: null,
+        };
+      }
+    } catch (e) {
+      const msg = (e as Error).message;
+      logger.warn(`[bridge-compat] REST native WRITE failed for ${table}: ${msg}`);
+      return {
+        data: { success: false, error: msg },
+        error: null,
+      };
+    }
+  }
+
+  // Fallback: Try the bridge Edge Function only if not eligible for REST native.
+  // Note: Most tables are now whitelisted, so this is rarely reached.
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     const accessToken = sessionData?.session?.access_token;
@@ -140,14 +171,12 @@ export async function invokeExternalDbBridge(body: BridgeBody): Promise<BridgeCo
       const msg = error.message ?? 'Unknown bridge error';
       // 410 Gone = bridge deprecated
       if (msg.includes('410') || msg.includes('Gone') || msg.includes('descontinuada')) {
-        logger.warn(
-          `[bridge-compat] Bridge deprecated (410) for ${table}/${operation}. ` +
-            'Admin CRUD needs migration to direct Supabase client.',
-        );
+        const friendlyMsg = `A função de integração legado foi descontinuada (410 Gone). Por favor, use as novas views REST nativas para acessar ${table}.`;
+        logger.warn(`[bridge-compat] Bridge deprecated (410) for ${table}/${operation}.`);
         return {
           data: {
             success: false,
-            error: `Operacao ${operation} em ${table} temporariamente indisponivel. A bridge foi descontinuada.`,
+            error: friendlyMsg,
           },
           error: null,
         };

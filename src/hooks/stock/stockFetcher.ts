@@ -106,10 +106,17 @@ export async function fetchPaginatedFromBridge<T extends { id: string }>(
       }
     }
 
-    query = query.range(offset, offset + pageSize - 1);
+    // Ordenação determinística por ID é essencial para paginação estável
+    query = query.order('id', { ascending: true }).range(offset, offset + pageSize - 1);
 
-    const { data, error, count } = await query;
+    const { data, error, count, status } = await query;
     if (error) {
+      // Phase 6: Tratamento específico para 410 Gone (PostgREST ou Edge)
+      if (status === 410 || error.message?.includes('410') || error.message?.includes('Gone')) {
+        logger.warn(`[Stock] Tabela ${table} retornou 410 Gone. Caminho PostgREST pode estar incompleto.`);
+        break; // Para a busca mas não quebra o app
+      }
+      
       const errorMsg = `Erro ao buscar ${table}: ${error.message}`;
       console.error(`[Stock] ${errorMsg}`, error);
       throw new Error(errorMsg);
