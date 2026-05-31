@@ -9,9 +9,57 @@ const viewports = [
 ];
 
 test.describe('Replenishment Grid Advanced Visual & A11y @mobile', () => {
+  test.beforeEach(async ({ context }) => {
+    // Hard cleaning of cache and service workers
+    await context.addInitScript(() => {
+      window.addEventListener('load', () => {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (const registration of registrations) {
+              registration.unregister();
+            }
+          });
+        }
+      });
+      // Clear localStorage/sessionStorage to avoid flag overrides
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+  });
+
   for (const viewport of viewports) {
     test.describe(`Viewport: ${viewport.name}`, () => {
       test.use({ viewport: { width: viewport.width, height: viewport.height } });
+
+      test('Immediate Header Rendering (No Delay)', async ({ page }) => {
+        // Navigate with no cache and wait for DOMContentLoaded (fastest point)
+        await page.goto('/reposicao', { waitUntil: 'domcontentloaded' });
+        
+        const header = page.locator('div.flex.items-center.gap-4').first();
+        const title = header.locator('[data-testid="page-title-reposicao"]');
+        const desc = header.locator('[data-testid="replenishment-description"]');
+        
+        // Should be present in DOM almost immediately
+        await expect(title).toBeVisible({ timeout: 5000 });
+        await expect(title).toHaveText('Reposição');
+        await expect(desc).toHaveText('Produtos que voltaram ao estoque dos fornecedores nos últimos 30 dias');
+      });
+
+      test('Loading State Visual Validation', async ({ page }) => {
+        // Simulate slow network to see the skeleton
+        await page.route('**/replenishments**', async route => {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          await route.continue();
+        });
+        
+        await page.goto('/reposicao');
+        
+        // Take screenshot of the page while data is loading (showing skeletons)
+        await expect(page).toHaveScreenshot(`loading-state-${viewport.name}.png`, {
+          mask: [page.locator('[data-testid="replenishment-description"]')], // ensure we ignore the text if it's already there
+        });
+      });
+
 
       test('Page Header Visual Validation', async ({ page }) => {
         await page.goto('/reposicao');
