@@ -532,23 +532,21 @@ export function useProductImageGallery({
       const results = await Promise.all(
         urls.map((url) => {
           const d = resolveData(url);
-          return supabase.functions.invoke('external-db-bridge', {
-            body: {
-              table: 'product_images',
-              operation: 'insert',
-              data: {
-                product_id: productId,
-                url_cdn: url,
-                url_original: url,
-                image_type: d.image_type,
-                is_primary: Math.max(images.indexOf(url), 0) === 0,
-                is_og_image: false,
-                display_order: Math.max(images.indexOf(url), 0),
-                is_active: true,
-                supplier_code: d.supplier_code,
-                variant_id: d.variant_id,
-                alt_text: null,
-              },
+          return invokeExternalDbBridge({
+            table: 'product_images',
+            operation: 'insert',
+            data: {
+              product_id: productId,
+              url_cdn: url,
+              url_original: url,
+              image_type: d.image_type,
+              is_primary: Math.max(images.indexOf(url), 0) === 0,
+              is_og_image: false,
+              display_order: Math.max(images.indexOf(url), 0),
+              is_active: true,
+              supplier_code: d.supplier_code,
+              variant_id: d.variant_id,
+              alt_text: null,
             },
           });
         }),
