@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ImageOff } from 'lucide-react';
+import { ImageOff, Loader2 } from 'lucide-react';
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackClassName?: string;
@@ -132,8 +132,10 @@ export function OptimizedImage({
           {!isLoaded && !lqip && !localPlaceholder && (
             <div
               aria-hidden
-              className="absolute inset-0 z-10 h-full w-full bg-white/20 image-shimmer backdrop-blur-sm"
-            />
+              className="absolute inset-0 z-10 flex items-center justify-center bg-muted/10 animate-pulse"
+            >
+              <Loader2 className="h-6 w-6 text-muted-foreground/20 animate-spin" />
+            </div>
           )}
 
           <img
@@ -141,14 +143,16 @@ export function OptimizedImage({
             src={isInView ? src : undefined}
             alt={alt}
             className={cn(
-              'h-full w-full object-cover transition-all',
+              'h-full w-full transition-all ease-out-expo',
               isLoaded ? 'opacity-100 scale-100 blur-0' : 'opacity-0',
               className,
             )}
             style={{ 
               transitionDuration: `${duration}ms`,
+              transitionProperty: 'opacity, filter, transform',
               filter: isLoaded ? 'none' : `blur(${blurAmount}px)`,
               transform: isLoaded ? 'scale(1)' : `scale(${zoomAmount})`,
+              willChange: 'opacity, filter, transform'
             }}
             onLoad={(e) => {
               setIsLoaded(true);
