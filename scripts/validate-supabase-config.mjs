@@ -17,16 +17,22 @@ try {
     process.exit(1);
   }
 
-  // 2. Check if the fallback logic is present
-  // It should check if envUrl includes the canonical ID
-  const hasFallbackLogic = content.includes('.includes("doufsxqlfjyuvxuezpln")');
+  // 2. Check if the fallback/enforcement logic is present
+  // Accepts either the old envMatchesCanonical pattern or the newer envPointsToForbidden pattern
+  const hasFallbackLogic =
+    content.includes('.includes("doufsxqlfjyuvxuezpln")') ||
+    content.includes('FORBIDDEN_REFS') ||
+    content.includes('envPointsToForbidden');
   if (!hasFallbackLogic) {
     console.error(`❌ ERROR: Enforcement logic for "${CANONICAL_PROJECT_ID}" not found in ${CLIENT_PATH}`);
     process.exit(1);
   }
 
   // 3. Ensure SUPABASE_URL is assigned using the validation logic
-  const hasCorrectAssignment = content.includes('export const SUPABASE_URL = envMatchesCanonical ? (envUrl as string) : CANONICAL_URL;');
+  // Accepts either the old envMatchesCanonical pattern or the newer envPointsToForbidden pattern
+  const hasCorrectAssignment =
+    content.includes('export const SUPABASE_URL = envMatchesCanonical ? (envUrl as string) : CANONICAL_URL;') ||
+    content.includes('export const SUPABASE_URL = envPointsToForbidden || !envUrl ? CANONICAL_URL : envUrl;');
   if (!hasCorrectAssignment) {
     console.error(`❌ ERROR: SUPABASE_URL assignment does not enforce canonical fallback in ${CLIENT_PATH}`);
     process.exit(1);
