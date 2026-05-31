@@ -56,6 +56,7 @@ export interface ProductCardProps {
   noveltyDaysRemaining?: number;
   activeColorFilter?: ActiveColorFilter | null;
   priority?: boolean;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }
 
 export const ProductCard = memo(
