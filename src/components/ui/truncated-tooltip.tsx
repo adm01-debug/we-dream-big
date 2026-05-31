@@ -18,7 +18,7 @@ export function TruncatedTooltip({
   children,
   className,
   tooltipClassName,
-  delayDuration = 300,
+  delayDuration = TOOLTIP_DELAY,
   side = 'top',
 }: TruncatedTooltipProps) {
   const [isTruncated, setIsTruncated] = React.useState(false);
