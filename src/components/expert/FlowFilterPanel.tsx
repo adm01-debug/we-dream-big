@@ -29,85 +29,23 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { GroupSeparator, SectionRow, CollapsibleContent } from './FlowFilterPrimitives';
 import { SectionContent, GENDER_OPTIONS } from './FlowFilterSections';
 
-// ─── Types (re-exported from shared file to avoid circular dep) ─────
-export type { FlowFilterState, FlowFilterOptions } from './flow-filter-types';
-import type { FlowFilterState, FlowFilterOptions } from './flow-filter-types';
+// ─── Types & utils (imported from flow-filter-types to break circular dep) ──
+import {
+  type FlowFilterState,
+  type FlowFilterOptions,
+  defaultFlowFilters,
+  countActiveFilters,
+  getActiveFilterLabels,
+} from './flow-filter-types';
 
-export const defaultFlowFilters: FlowFilterState = {
-  priceMin: '',
-  priceMax: '',
-  selectedCategories: [],
-  selectedMaterials: [],
-  selectedColors: [],
-  selectedGenders: [],
-  selectedSuppliers: [],
-  selectedTechniques: [],
-  selectedPublicos: [],
-  selectedDatasComemorativas: [],
-  selectedEndomarketing: [],
-  selectedNichos: [],
-  selectedTags: [],
-  onlyInStock: false,
-  onlyNew: false,
-  onlyKit: false,
-  onlyBestseller: false,
-  onlyFeatured: false,
-  hasPersonalization: false,
+// Re-export for backward compatibility (useExpertChat, ChatHeader import from here)
+export {
+  type FlowFilterState,
+  type FlowFilterOptions,
+  defaultFlowFilters,
+  countActiveFilters,
+  getActiveFilterLabels,
 };
-
-export function countActiveFilters(f: FlowFilterState): number {
-  let count = 0;
-  if (f.priceMin || f.priceMax) count++;
-  count += f.selectedCategories.length + f.selectedMaterials.length + f.selectedColors.length;
-  count += f.selectedGenders.length + f.selectedSuppliers.length + f.selectedTechniques.length;
-  count += f.selectedPublicos.length + f.selectedDatasComemorativas.length;
-  count += f.selectedEndomarketing.length + f.selectedNichos.length + f.selectedTags.length;
-  if (f.onlyInStock) count++;
-  if (f.onlyNew) count++;
-  if (f.onlyKit) count++;
-  if (f.onlyBestseller) count++;
-  if (f.onlyFeatured) count++;
-  if (f.hasPersonalization) count++;
-  return count;
-}
-
-export function getActiveFilterLabels(
-  f: FlowFilterState,
-): { label: string; key: string; value?: string }[] {
-  const labels: { label: string; key: string; value?: string }[] = [];
-  if (f.priceMin || f.priceMax) {
-    const l =
-      f.priceMin && f.priceMax
-        ? `R$${f.priceMin}–${f.priceMax}`
-        : f.priceMin
-          ? `R$${f.priceMin}+`
-          : `Até R$${f.priceMax}`;
-    labels.push({ label: l, key: 'price' });
-  }
-  const arrayKeys: [keyof FlowFilterState, string][] = [
-    ['selectedCategories', 'selectedCategories'],
-    ['selectedColors', 'selectedColors'],
-    ['selectedMaterials', 'selectedMaterials'],
-    ['selectedGenders', 'selectedGenders'],
-    ['selectedSuppliers', 'selectedSuppliers'],
-    ['selectedTechniques', 'selectedTechniques'],
-    ['selectedPublicos', 'selectedPublicos'],
-    ['selectedDatasComemorativas', 'selectedDatasComemorativas'],
-    ['selectedEndomarketing', 'selectedEndomarketing'],
-    ['selectedNichos', 'selectedNichos'],
-    ['selectedTags', 'selectedTags'],
-  ];
-  arrayKeys.forEach(([k, key]) =>
-    (f[k] as string[]).forEach((v) => labels.push({ label: v, key, value: v })),
-  );
-  if (f.onlyInStock) labels.push({ label: 'Em estoque', key: 'onlyInStock' });
-  if (f.onlyNew) labels.push({ label: 'Novidades', key: 'onlyNew' });
-  if (f.onlyKit) labels.push({ label: 'Kits', key: 'onlyKit' });
-  if (f.onlyBestseller) labels.push({ label: '+ Vendidos', key: 'onlyBestseller' });
-  if (f.onlyFeatured) labels.push({ label: 'Destaques', key: 'onlyFeatured' });
-  if (f.hasPersonalization) labels.push({ label: 'Personalização', key: 'hasPersonalization' });
-  return labels;
-}
 
 // ─── Section definitions ────────────────────────────────
 const SECTION_GROUPS: {
