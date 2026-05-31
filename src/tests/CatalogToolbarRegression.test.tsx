@@ -23,7 +23,7 @@ describe('CatalogToolbar Regression', () => {
       filterSheetOpen: false,
       setFilterSheetOpen: vi.fn(),
       resetFilters: vi.fn(),
-      sortBy: 'relevance' as const,
+      sortBy: 'relevance' as never,
       setSortBy,
       statBadges: [],
       viewMode: 'grid' as const,

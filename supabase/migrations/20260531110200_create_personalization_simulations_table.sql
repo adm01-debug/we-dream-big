@@ -1,0 +1,27 @@
+CREATE TABLE IF NOT EXISTS public.personalization_simulations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  seller_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  client_id TEXT,
+  client_name TEXT,
+  product_id TEXT NOT NULL,
+  product_name TEXT,
+  product_sku TEXT,
+  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+  product_unit_price NUMERIC(12,2) NOT NULL DEFAULT 0,
+  simulation_data JSONB NOT NULL DEFAULT '[]',
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+ALTER TABLE public.personalization_simulations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Sellers can manage own simulations"
+  ON public.personalization_simulations
+  FOR ALL
+  USING (seller_id = auth.uid())
+  WITH CHECK (seller_id = auth.uid());
+
+CREATE INDEX IF NOT EXISTS idx_personalization_simulations_seller_id ON public.personalization_simulations(seller_id);
+CREATE INDEX IF NOT EXISTS idx_personalization_simulations_created_at ON public.personalization_simulations(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_personalization_simulations_product_id ON public.personalization_simulations(product_id);

@@ -152,7 +152,7 @@ export async function executeBatchImport(
       const response = await invokeExternalDb<{ id: string; sku: string; name: string }>({
         table: 'products',
         operation: 'batch_insert',
-        data: chunk,
+        data: chunk as unknown as Record<string, unknown>,
         ...(mode === 'upsert' ? { onConflict: 'sku' } : {}),
       });
 
