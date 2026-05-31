@@ -176,6 +176,7 @@ export default function OptimizedImageDemo() {
                 key={`cf-${key}`}
                 src={`https://imagedelivery.net/demo-id/product-${key}/public`}
                 alt="Cloudflare Demo"
+                debug={true}
                 blurAmount={blur}
                 zoomAmount={zoom}
                 duration={duration}
