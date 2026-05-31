@@ -24,7 +24,8 @@ import type { NoveltyWithDetails } from '@/hooks/products';
 import { productCardStyles } from '@/components/products/product-card-styles';
 
 function isFresh(detectedAt: string): boolean {
-...
+  return Math.floor((Date.now() - new Date(detectedAt).getTime()) / 86400000) <= 2;
+}
 function formatPrice(price: number) {
   return price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
