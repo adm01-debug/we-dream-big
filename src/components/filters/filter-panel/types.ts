@@ -51,6 +51,7 @@ export interface FilterState {
   featured: boolean;
   isNew: boolean;
   hasPersonalization: boolean;
+  onSale: boolean;
   hasCommercialPackaging: boolean;
   gender: string[];
   sizes: string[];
@@ -97,6 +98,7 @@ export const defaultFilters: FilterState = {
   featured: false,
   isNew: false,
   hasPersonalization: false,
+  onSale: false,
   hasCommercialPackaging: false,
   gender: [],
   sizes: [],

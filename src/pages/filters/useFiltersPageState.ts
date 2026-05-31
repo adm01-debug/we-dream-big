@@ -79,6 +79,7 @@ export function useFiltersPageState() {
     if (get('featured') === '1') f.featured = true;
     if (get('isNew') === '1') f.isNew = true;
     if (get('hasPersonalization') === '1') f.hasPersonalization = true;
+    if (get('onSale') === '1') f.onSale = true;
     if (get('hasCommercialPackaging') === '1') f.hasCommercialPackaging = true;
     const sortByParam = get('sortBy');
     if (sortByParam) f.sortBy = sortByParam;
@@ -161,6 +162,7 @@ export function useFiltersPageState() {
     if (filters.featured) params.set('featured', '1');
     if (filters.isNew) params.set('isNew', '1');
     if (filters.hasPersonalization) params.set('hasPersonalization', '1');
+    if (filters.onSale) params.set('onSale', '1');
     if (filters.hasCommercialPackaging) params.set('hasCommercialPackaging', '1');
     if (filters.sortBy && filters.sortBy !== 'name') params.set('sortBy', filters.sortBy);
     setSearchParams(params, { replace: true });
@@ -271,6 +273,7 @@ export function useFiltersPageState() {
     if (filters.featured) count++;
     if (filters.isNew) count++;
     if (filters.hasPersonalization) count++;
+    if (filters.onSale) count++;
     if (filters.hasCommercialPackaging) count++;
     if ((filters.techniques?.length || 0) > 0) count++;
     if ((filters.tags?.length || 0) > 0) count++;
@@ -417,6 +420,8 @@ export function useFiltersPageState() {
     // BUG-15c FIX (parte 2): hasPersonalization — tipo corrigido em commit anterior; filtro aplicado aqui.
     if (filters.hasPersonalization)
       result = result.filter((product) => product.hasPersonalization === true);
+    if (filters.onSale)
+      result = result.filter((product) => product.onSale === true);
     // BUG-16 FIX: gender era contabilizado/chipeado mas sem bloco de filtro.
     if (filters.gender?.length) {
       const genderSet = new Set(filters.gender.map((g) => g.toLowerCase().trim()));

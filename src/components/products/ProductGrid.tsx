@@ -31,6 +31,7 @@ export interface ProductGridProps {
   selectionMode?: boolean;
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }
 
 function ProductCardWrapper({
@@ -188,6 +189,7 @@ export function ProductGrid({
   selectionMode,
   selectedIds,
   onToggleSelect,
+  onStatusClick,
 }: ProductGridProps) {
   const [isGridVisible, setIsGridVisible] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -284,6 +286,7 @@ export function ProductGrid({
             selectionMode={selectionMode}
             selectedIds={selectedIds}
             onToggleSelect={onToggleSelect}
+            onStatusClick={onStatusClick}
           />
         ),
       )}

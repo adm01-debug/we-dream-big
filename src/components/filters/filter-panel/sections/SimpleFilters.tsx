@@ -379,6 +379,16 @@ export function QuickOptionsFilter({
       </div>
       <div className="flex items-center gap-2">
         <Checkbox
+          id="filter-onSale"
+          checked={filters.onSale}
+          onCheckedChange={() => toggleBooleanFilter('onSale')}
+        />
+        <Label htmlFor="filter-onSale" className="cursor-pointer text-sm">
+          Promoções
+        </Label>
+      </div>
+      <div className="flex items-center gap-2">
+        <Checkbox
           id="filter-isNew"
           checked={filters.isNew}
           onCheckedChange={() => toggleBooleanFilter('isNew')}

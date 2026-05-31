@@ -42,6 +42,7 @@ interface VirtualizedProductGridProps {
   selectedIds?: Set<string>;
   /** External toggle handler */
   onToggleSelect?: (id: string) => void;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }
 
 export function VirtualizedProductGrid({
@@ -70,6 +71,7 @@ export function VirtualizedProductGrid({
   selectionMode = false,
   selectedIds,
   onToggleSelect,
+  onStatusClick,
 }: VirtualizedProductGridProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -300,6 +302,7 @@ export function VirtualizedProductGrid({
                       onToggleCompare={onToggleCompare}
                       canAddToCompare={canAddToCompare}
                       activeColorFilter={activeColorFilter}
+                      onStatusClick={onStatusClick}
                     />
                   ) : (
                     <motion.div
@@ -351,6 +354,7 @@ export function VirtualizedProductGrid({
                         canAddToCompare={canAddToCompare}
                         onShare={onShare}
                         activeColorFilter={activeColorFilter}
+                        onStatusClick={onStatusClick}
                       />
                     </motion.div>
                   ),

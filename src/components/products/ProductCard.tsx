@@ -56,6 +56,7 @@ export interface ProductCardProps {
   noveltyDaysRemaining?: number;
   activeColorFilter?: ActiveColorFilter | null;
   priority?: boolean;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }
 
 export const ProductCard = memo(
@@ -77,6 +78,7 @@ export const ProductCard = memo(
       noveltyDaysRemaining,
       activeColorFilter,
       priority = false,
+      onStatusClick,
     },
     ref,
   ) {
@@ -125,6 +127,31 @@ export const ProductCard = memo(
 
     const favStore = useFavoritesStore();
     const compStore = useComparisonStore();
+
+    const handleStatusClick = useCallback(
+      (type: string, _value?: string | number) => {
+        if (onStatusClick) {
+          onStatusClick(type, _value);
+          return;
+        }
+
+        switch (type) {
+          case 'novelty':
+            navigate('/novidades');
+            break;
+          case 'promotion':
+            navigate('/filtros?onSale=1');
+            break;
+          case 'featured':
+            navigate('/filtros?featured=1');
+            break;
+          case 'kit':
+            navigate('/filtros?isKit=1');
+            break;
+        }
+      },
+      [onStatusClick, navigate],
+    );
 
     const handleVariantComplete = useCallback(
       (variant: ExternalVariantStock | null) => {
@@ -392,6 +419,7 @@ export const ProductCard = memo(
             setImageLoaded(false);
           }}
           priority={priority}
+          onStatusClick={handleStatusClick}
         />
 
         {/* Quick Actions FAB */}

@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import type { Product } from '@/hooks/products';
 import { PriceFreshnessBadge } from './PriceFreshnessBadge';
+import { ProductStatusBadge, UrgencyType } from './ProductStatusBadge';
 
 interface EnhancedProductCardProps {
   product: Product;
@@ -38,6 +39,7 @@ interface EnhancedProductCardProps {
   showUrgencyBadge?: boolean;
   urgencyType?: 'limited-stock' | 'trending' | 'ending-soon';
   urgencyText?: string;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }
 
 export function EnhancedProductCard({
@@ -54,6 +56,7 @@ export function EnhancedProductCard({
   showUrgencyBadge = false,
   urgencyType = 'limited-stock',
   urgencyText,
+  onStatusClick,
 }: EnhancedProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -87,37 +90,19 @@ export function EnhancedProductCard({
   const getUrgencyBadge = () => {
     if (!showUrgencyBadge) return null;
 
-    const configs = {
-      'limited-stock': {
-        icon: <Package className="h-3 w-3" />,
-        text: urgencyText || 'Estoque limitado',
-        className: 'bg-destructive/90 text-destructive-foreground',
-      },
-      trending: {
-        icon: <TrendingUp className="h-3 w-3" />,
-        text: urgencyText || 'Em alta',
-        className: 'bg-primary/90 text-primary-foreground',
-      },
-      'ending-soon': {
-        icon: <Clock className="h-3 w-3" />,
-        text: urgencyText || 'Termina em breve',
-        className: 'bg-warning/90 text-warning-foreground',
-      },
-    };
-
-    const config = configs[urgencyType];
-
     return (
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={cn(
-          'absolute left-3 top-3 z-20 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium shadow-md',
-          config.className,
-        )}
+        className="absolute left-3 top-3 z-20"
       >
-        {config.icon}
-        <span>{config.text}</span>
+        <ProductStatusBadge 
+          type="urgency" 
+          urgencyType={urgencyType} 
+          value={urgencyText}
+          size="sm"
+          onClick={() => onStatusClick?.('urgency', urgencyType)}
+        />
       </motion.div>
     );
   };
@@ -164,10 +149,13 @@ export function EnhancedProductCard({
 
         {/* Featured badge */}
         {product.featured && (
-          <Badge className="absolute right-3 top-3 z-10 bg-primary text-primary-foreground shadow-md">
-            <Sparkles className="mr-1 h-3 w-3" />
-            Destaque
-          </Badge>
+          <div className="absolute right-3 top-3 z-10">
+            <ProductStatusBadge 
+              type="featured" 
+              size="sm" 
+              onClick={() => onStatusClick?.('featured')}
+            />
+          </div>
         )}
 
         {/* Quick Actions - Always visible on mobile, hover on desktop */}
