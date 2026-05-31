@@ -78,8 +78,10 @@ async function fetchProductVariants(productId: string): Promise<ProductVariant[]
 }
 
 async function createVariantApi(payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'product_variants', operation: 'insert', data: payload },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'product_variants',
+    operation: 'insert',
+    data: payload,
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao criar variação');
