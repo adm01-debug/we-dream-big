@@ -170,13 +170,8 @@ function HighlightCell({
 /**
  * Utility to highlight best/worst in a comparison table row
  */
-interface HighlightRowProps {
-  attribute: string;
-  values: (string | number | boolean | null)[];
-  productNames: string[];
-  mode?: CompareMode;
-  formatFn?: (v: string | number | boolean) => string;
-}
+// HighlightRowProps removido por não estar em uso atualmente
+
 
 export function useComparisonHighlight(
   values: (number | null | undefined)[],
