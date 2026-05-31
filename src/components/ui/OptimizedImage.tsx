@@ -11,6 +11,7 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   zoomAmount?: number;
   duration?: number;
   lqip?: string;
+  debug?: boolean;
 }
 
 /**
@@ -31,6 +32,7 @@ export function OptimizedImage({
   zoomAmount = 1.1,
   duration = 700,
   lqip,
+  debug = false,
   onLoad: onLoadProp,
   onError: onErrorProp,
   ...props
@@ -46,8 +48,11 @@ export function OptimizedImage({
     
     // Cloudflare Images (imagedelivery.net)
     if (src.includes('imagedelivery.net')) {
-      // Replace variant with /thumbnail for a micro-version
-      return src.replace(/\/[^/]+$/, '/thumbnail');
+      const thumbUrl = src.replace(/\/[^/]+$/, '/thumbnail');
+      if (debug || process.env.NODE_ENV === 'development') {
+        console.info(`[OptimizedImage] Cloudflare Image detected. Generated thumbnail: ${thumbUrl}`);
+      }
+      return thumbUrl;
     }
 
     // If it's an Unsplash image, we can get a tiny version for LQIP
@@ -56,12 +61,20 @@ export function OptimizedImage({
       url.searchParams.set('w', '50');
       url.searchParams.set('q', '10');
       url.searchParams.set('blur', '10');
-      return url.toString();
+      const thumbUrl = url.toString();
+      if (debug || process.env.NODE_ENV === 'development') {
+        console.info(`[OptimizedImage] Unsplash Image detected. Generated thumbnail: ${thumbUrl}`);
+      }
+      return thumbUrl;
     }
     
     // If it's a Supabase storage image, we can try to get a thumbnail if transformations are enabled
     if (src.includes('/storage/v1/object/public/')) {
-      return `${src}${src.includes('?') ? '&' : '?'}width=50&quality=10`;
+      const thumbUrl = `${src}${src.includes('?') ? '&' : '?'}width=50&quality=10`;
+      if (debug || process.env.NODE_ENV === 'development') {
+        console.info(`[OptimizedImage] Supabase Storage detected. Generated thumbnail: ${thumbUrl}`);
+      }
+      return thumbUrl;
     }
 
     // No local preview for other sources
