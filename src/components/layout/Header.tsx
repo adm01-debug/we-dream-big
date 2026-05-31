@@ -12,6 +12,7 @@ import {
   Shield,
   MoreHorizontal,
   Palette,
+  BookOpen,
   Tag,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -365,7 +366,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                   className="relative h-8 w-8 rounded-full text-muted-foreground transition-all duration-200 hover:bg-primary/10 hover:text-foreground"
                   aria-label="Alternar tamanho do tooltip"
                 >
-                  <Palette className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                  <BookOpen className="h-[17px] w-[17px]" strokeWidth={1.75} />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
