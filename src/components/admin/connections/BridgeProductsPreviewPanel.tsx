@@ -26,8 +26,8 @@ const fmtCurrency = (n?: number) =>
     : '—';
 
 /**
- * Painel de revisão rápida dos produtos retornados pelo `external-db-bridge`
- * (operação `select` na tabela `products`). Permite filtrar por busca livre,
+ * Painel de revisão rápida dos produtos retornados pela conexão nativa
+ * (operação `select` na view `v_products_public`). Permite filtrar por busca livre,
  * ativos/inativos, faixa de preço e estoque mínimo, com paginação server-side
  * (limit/offset) e contagem exata para revisar o catálogo externo sem precisar
  * acessar o BD diretamente.
