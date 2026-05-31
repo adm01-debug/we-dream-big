@@ -99,12 +99,10 @@ async function invokeExternalDb<T>(
     limit?: number;
   },
 ): Promise<{ records: T[]; count: number }> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table,
-      operation,
-      ...options,
-    },
+  const { data, error } = await invokeExternalDbBridge({
+    table,
+    operation,
+    ...options,
   });
 
   if (error) throw new Error(error.message);
