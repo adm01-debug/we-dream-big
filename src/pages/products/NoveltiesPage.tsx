@@ -25,7 +25,10 @@ export default function NoveltiesPage() {
             >
               Novidades
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p
+              data-testid="novelty-description"
+              className="text-sm text-muted-foreground"
+            >
               Produtos recém-chegados ao catálogo nos últimos 30 dias
             </p>
           </div>
