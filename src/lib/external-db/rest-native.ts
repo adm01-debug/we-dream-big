@@ -388,6 +388,9 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
   }
   if (options.orderBy) {
     query = query.order(remapOrderByCol(tableName, options.orderBy.column), { ascending: options.orderBy.ascending ?? true });
+  } else {
+    // Phase 6 (2026-05-31): Fallback order by ID for stable pagination
+    query = query.order('id', { ascending: true });
   }
   if (typeof options.limit === 'number') {
     const offset = options.offset ?? 0;
