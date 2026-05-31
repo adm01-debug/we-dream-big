@@ -49,19 +49,6 @@ function buildAccessibleLabel(
   return { ariaLabel, title };
 }
 
-/** Data + hora exatas no fuso local do usuário (PT-BR). Ex.: "24/04/2026 09:32". */
-function _formatExactDateTime(value: string | Date): string | null {
-  const d = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(d);
-}
-
 function buildClassificationRule(thresholdDays: number): string {
   const half = Math.floor(thresholdDays / 2);
   return `Regra de Preços: Até ${half} dias = Atualizado / ${half + 1}–${thresholdDays} dias = Próximo do limite / Acima de ${thresholdDays} dias = Possivelmente defasado`;
