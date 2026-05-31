@@ -16,6 +16,7 @@ import {
 import { Package, Building2, FolderTree, Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NoveltyBadge } from '@/components/products/NoveltyBadge';
+import { ProductStatusBadge } from '@/components/products/ProductStatusBadge';
 import { ProductSparkline } from '@/components/products/ProductSparkline';
 import { SelectionCheckbox } from '@/components/common/SelectionCheckbox';
 import { cn } from '@/lib/utils';
@@ -61,6 +62,7 @@ export interface NoveltyCardProps {
   selectionMode: boolean;
   isSelected: boolean;
   onToggleSelect: () => void;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }
 
 export const NoveltyGridCard = memo(function NoveltyGridCard({
@@ -69,6 +71,7 @@ export const NoveltyGridCard = memo(function NoveltyGridCard({
   selectionMode,
   isSelected,
   onToggleSelect,
+  onStatusClick,
 }: NoveltyCardProps) {
   const fresh = isFresh(product.detected_at);
   const stockQty = product.stock_quantity ?? 0;
@@ -109,15 +112,27 @@ export const NoveltyGridCard = memo(function NoveltyGridCard({
               />
             </div>
           )}
-          <div className="absolute left-2 top-2">
-            <NoveltyBadge daysRemaining={product.days_remaining} size="sm" />
+          <div className="absolute left-2 top-2 flex flex-col gap-1">
+            <NoveltyBadge 
+              daysRemaining={product.days_remaining} 
+              size="sm" 
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusClick?.('novelty');
+              }}
+            />
           </div>
           {fresh && !selectionMode && (
             <div className="absolute right-2 top-2">
-              <Badge className="gap-0.5 border-0 bg-success/90 px-1.5 py-0 text-[9px] text-success-foreground">
-                <Sparkles className="h-2.5 w-2.5" />
-                NEW
-              </Badge>
+              <ProductStatusBadge 
+                type="novelty" 
+                value="NEW" 
+                size="sm" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusClick?.('novelty');
+                }}
+              />
             </div>
           )}
           <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -209,6 +224,7 @@ export const NoveltyListCard = memo(function NoveltyListCard({
   selectionMode,
   isSelected,
   onToggleSelect,
+  onStatusClick,
 }: NoveltyCardProps) {
   const fresh = isFresh(product.detected_at);
   const stockQty = product.stock_quantity ?? 0;
@@ -251,11 +267,24 @@ export const NoveltyListCard = memo(function NoveltyListCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="mb-0.5 flex items-center gap-2">
-            <NoveltyBadge daysRemaining={product.days_remaining} size="sm" />
+            <NoveltyBadge 
+              daysRemaining={product.days_remaining} 
+              size="sm" 
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusClick?.('novelty');
+              }}
+            />
             {fresh && (
-              <Badge className="border-0 bg-success/90 px-1 py-0 text-[9px] text-success-foreground">
-                NEW
-              </Badge>
+              <ProductStatusBadge 
+                type="novelty" 
+                value="NEW" 
+                size="sm" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusClick?.('novelty');
+                }}
+              />
             )}
           </div>
           <h4 className="line-clamp-1 text-sm font-medium transition-colors group-hover:text-primary">
@@ -309,6 +338,7 @@ export function NoveltyTableView({
   selectionMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }) {
   return (
     <div className="overflow-hidden rounded-lg border border-border/50">
@@ -392,7 +422,11 @@ export function NoveltyTableView({
                   </span>
                 </TableCell>
                 <TableCell className="px-2 py-1.5 text-center">
-                  <NoveltyBadge daysRemaining={product.days_remaining} size="sm" />
+                  <NoveltyBadge 
+                    daysRemaining={product.days_remaining} 
+                    size="sm" 
+                    onClick={() => onStatusClick?.('novelty')}
+                  />
                 </TableCell>
                 <TableCell className="px-2 py-1.5 text-center">
                   <span
