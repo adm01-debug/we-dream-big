@@ -19,8 +19,10 @@ export async function fetchKitComponents(productId: string): Promise<KitComponen
 }
 
 export async function createComponent(payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'product_kit_components', operation: 'insert', data: payload },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'product_kit_components',
+    operation: 'insert',
+    data: payload,
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao criar componente');
