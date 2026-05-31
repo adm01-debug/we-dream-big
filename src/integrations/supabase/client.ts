@@ -1,21 +1,32 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from "./types";
 
-const envUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const envKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
-  import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined;
-
-// SSOT: O projeto canônico é doufsxqlfjyuvxuezpln.
-// No entanto, permitimos que variáveis de ambiente locais/preview tenham precedência
-// para facilitar o desenvolvimento e testes em forks/clones.
+// SSOT: O projeto canônico do app é doufsxqlfjyuvxuezpln.
+// O .env é auto-gerado pelo Lovable e pode apontar para um projeto Lovable Cloud
+// vazio (ex.: pqpdolkaeqlyzpdpbizo). Por isso, o canônico SEMPRE vence em produção
+// e qualquer override de env só é aceito se NÃO for um dos projetos proibidos.
 const CANONICAL_URL = "https://doufsxqlfjyuvxuezpln.supabase.co";
 const CANONICAL_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdWZzeHFsZmp5dXZ4dWV6cGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczODY2NDMsImV4cCI6MjA4Mjk2MjY0M30.nm3WMOBSx5SUnIBmvF_Mj0Y-4hV6UohrBF0sUpuQvPc";
 
-export const SUPABASE_URL = envUrl || CANONICAL_URL;
-export const SUPABASE_PUBLISHABLE_KEY = envKey || CANONICAL_ANON_KEY;
+const FORBIDDEN_REFS = ["pqpdolkaeqlyzpdpbizo", "hncgwjbzdajfdgtqgefe"];
 
-if (!envUrl && typeof console !== "undefined") {
+const envUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const envKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+  import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined;
+
+const envPointsToForbidden = !!envUrl && FORBIDDEN_REFS.some((ref) => envUrl.includes(ref));
+
+export const SUPABASE_URL = envPointsToForbidden || !envUrl ? CANONICAL_URL : envUrl;
+export const SUPABASE_PUBLISHABLE_KEY =
+  envPointsToForbidden || !envKey ? CANONICAL_ANON_KEY : envKey;
+
+if (envPointsToForbidden && typeof console !== "undefined") {
+  console.warn(
+    `[supabase/client] VITE_SUPABASE_URL aponta para projeto proibido (${envUrl}). ` +
+      "Forçando uso do banco canônico doufsxqlfjyuvxuezpln."
+  );
+} else if (!envUrl && typeof console !== "undefined") {
   console.warn(
     "[supabase/client] VITE_SUPABASE_URL não encontrada - usando banco canônico doufsxqlfjyuvxuezpln."
   );
