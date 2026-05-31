@@ -43,14 +43,12 @@ export function useProductVideoGallery(productId?: string) {
   const { data: videos = [], isLoading } = useQuery<ExternalVideo[]>({
     queryKey: ['product-videos-ext', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_videos',
-          operation: 'select',
-          filters: { product_id: productId, is_active: true },
-          orderBy: { column: 'display_order', ascending: true },
-          limit: 50,
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_videos',
+        operation: 'select',
+        filters: { product_id: productId, is_active: true },
+        orderBy: { column: 'display_order', ascending: true },
+        limit: 50,
       });
       if (error) return [];
       return data?.data?.records || [];
