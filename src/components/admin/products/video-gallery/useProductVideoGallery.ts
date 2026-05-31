@@ -429,13 +429,11 @@ export function useProductVideoGallery(productId?: string) {
       try {
         await Promise.all(
           reordered.map((v, i) =>
-            supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_videos',
-                operation: 'update',
-                id: v.id,
-                data: { display_order: i },
-              },
+            invokeExternalDbBridge({
+              table: 'product_videos',
+              operation: 'update',
+              id: v.id,
+              data: { display_order: i },
             }),
           ),
         );
