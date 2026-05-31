@@ -146,10 +146,9 @@ export function EnhancedProductCard({
 
         {/* Featured badge */}
         {product.featured && (
-          <Badge className="absolute right-3 top-3 z-10 bg-primary text-primary-foreground shadow-md">
-            <Sparkles className="mr-1 h-3 w-3" />
-            Destaque
-          </Badge>
+          <div className="absolute right-3 top-3 z-10">
+            <ProductStatusBadge type="featured" size="sm" />
+          </div>
         )}
 
         {/* Quick Actions - Always visible on mobile, hover on desktop */}
