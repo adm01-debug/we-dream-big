@@ -37,6 +37,7 @@ import { useDevGate } from '@/hooks/admin/useDevGate';
 import { useIPValidation } from '@/hooks/admin/useIPValidation';
 import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons';
 import { getSupabaseClient } from '@/integrations/supabase/lazy-client';
+import { SUPABASE_URL } from '@/integrations/supabase/client';
 import { AppLogo } from '@/components/layout/AppLogo';
 import { isSupabaseLighthousePlaceholder } from '@/lib/env/supabase-placeholder';
 import { loginSchema, type LoginFormData } from '@/lib/validations';
@@ -179,10 +180,9 @@ export default function Auth() {
 
       if (cancelled) return;
 
-      // 2. Principal Backend (Directly from env or client)
-      const principalUrl =
-        import.meta.env.VITE_EXTERNAL_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
-      const isExternal = !!import.meta.env.VITE_EXTERNAL_SUPABASE_URL;
+      // 2. Principal Backend (Directly from client SSOT)
+      const principalUrl = SUPABASE_URL;
+      const isExternal = !!import.meta.env.VITE_EXTERNAL_SUPABASE_URL || !SUPABASE_URL.includes("lovable");
 
       setDbStatus((prev) => ({
         ...prev,
