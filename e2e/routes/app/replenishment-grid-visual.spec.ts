@@ -58,6 +58,21 @@ test.describe('Replenishment Grid Advanced Visual & A11y @mobile', () => {
         
         expect(accessibilityScanResults.violations).toEqual([]);
       });
+      test('Keyboard Navigation Flow', async ({ page }) => {
+        await page.goto('/reposicao');
+        await page.keyboard.press('Tab');
+        
+        // We expect focus to reach the search input or first interactive element
+        const activeElement = await page.evaluate(() => document.activeElement?.tagName);
+        expect(activeElement).toBeDefined();
+        
+        // Navigate through the toolbar
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        
+        // Take a screenshot of the focus state if possible
+        await expect(page).toHaveScreenshot(`keyboard-focus-${viewport.name}.png`);
+      });
     });
   }
 
