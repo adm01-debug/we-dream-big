@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getSupabaseClient } from '@/integrations/supabase/lazy-client';
+import type { Json } from '@/integrations/supabase/types';
 
 /**
  * Define as configurações de visibilidade por tema (light/dark).
@@ -114,9 +115,14 @@ export const useBadgeVisibilityStore = create<BadgeVisibilityStore>()(
               .from('profiles')
               .update({
                 preferences: {
-                  ...(profile?.preferences || {}),
+                  ...(profile !== null &&
+                  profile.preferences !== null &&
+                  typeof profile.preferences === 'object' &&
+                  !Array.isArray(profile.preferences)
+                    ? (profile.preferences as { [key: string]: Json | undefined })
+                    : {}),
                   badge_visibility: newRouteSettings,
-                },
+                } as unknown as Json,
               })
               .eq('user_id', userId);
 
@@ -169,9 +175,14 @@ export const useBadgeVisibilityStore = create<BadgeVisibilityStore>()(
               .from('profiles')
               .update({
                 preferences: {
-                  ...(profile?.preferences || {}),
+                  ...(profile !== null &&
+                  profile.preferences !== null &&
+                  typeof profile.preferences === 'object' &&
+                  !Array.isArray(profile.preferences)
+                    ? (profile.preferences as { [key: string]: Json | undefined })
+                    : {}),
                   badge_visibility: newRouteSettings,
-                },
+                } as unknown as Json,
               })
               .eq('user_id', userId);
 
