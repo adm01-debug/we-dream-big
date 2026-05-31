@@ -189,6 +189,7 @@ export function ProductGrid({
   selectionMode,
   selectedIds,
   onToggleSelect,
+  onStatusClick,
 }: ProductGridProps) {
   const [isGridVisible, setIsGridVisible] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
