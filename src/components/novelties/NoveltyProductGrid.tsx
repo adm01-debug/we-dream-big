@@ -36,6 +36,7 @@ import { useComparisonStore } from '@/stores/useComparisonStore';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { NoveltyGridCard, NoveltyTableView } from './NoveltyCards';
+import { VirtualizedNoveltyGrid } from './VirtualizedNoveltyGrid';
 
 type ViewMode = 'grid' | 'list' | 'table';
 type SortMode =
