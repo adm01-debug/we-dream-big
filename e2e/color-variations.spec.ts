@@ -31,8 +31,16 @@ test.describe("Color Variation Tooltips", () => {
     // 3. Hover no thumb para disparar o tooltip
     await colorThumbButton.locator('img').first().hover();
 
-    // 4. Verificar o conteúdo do tooltip
+    // 4. Verificar o conteúdo do tooltip com delay de 1000ms
     const tooltip = page.locator('[role="tooltip"]');
+    
+    // Não deve aparecer imediatamente
+    await expect(tooltip).not.toBeVisible();
+    
+    // Deve respeitar o delay de 1000ms
+    await page.waitForTimeout(800);
+    await expect(tooltip).not.toBeVisible();
+    
     await expect(tooltip).toBeVisible();
 
     // 5. Validar swatch (círculo) e texto
