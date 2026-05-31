@@ -49,11 +49,11 @@ describe('ProductColorSelector Tooltip', () => {
     }, { timeout: 2000 });
 
     // Check if it has the swatch inside the tooltip (the circle)
-    const tooltipContent = screen.getByText('Vermelho').parentElement;
-    const swatch = tooltipContent?.querySelector('span');
-    expect(swatch).toBeTruthy();
-    // Use style object directly as JSDOM might not reflect it in getComputedStyle correctly for all properties
-    expect(swatch?.style.backgroundColor).toBe('rgb(255, 0, 0)');
+    const swatch = screen.getByTestId('color-tooltip-swatch');
+    expect(swatch).toBeInTheDocument();
+    // In JSDOM, style.backgroundColor might be empty string or hex depending on how it's set
+    // but usually it's normalized to rgb()
+    expect(swatch.style.backgroundColor).toMatch(/rgb\(255, 0, 0\)|#ff0000/i);
 
     // Leave
     fireEvent.mouseLeave(firstSwatch);
