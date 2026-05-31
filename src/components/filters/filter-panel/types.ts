@@ -98,6 +98,7 @@ export const defaultFilters: FilterState = {
   featured: false,
   isNew: false,
   hasPersonalization: false,
+  onSale: false,
   hasCommercialPackaging: false,
   gender: [],
   sizes: [],
