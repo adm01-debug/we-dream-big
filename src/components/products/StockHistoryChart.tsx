@@ -169,7 +169,7 @@ export function StockHistoryChart({ productId }: StockHistoryChartProps) {
             )}
             {showTurnover && (
               <TooltipProvider>
-                <Tooltip>
+                <TooltipUI>
                   <TooltipTrigger asChild>
                     <Badge variant="secondary" className="cursor-help font-mono text-xs">
                       Potencial: {Math.round(turnoverScore ?? 0)}
@@ -179,7 +179,7 @@ export function StockHistoryChart({ productId }: StockHistoryChartProps) {
                     Potencial comercial: quanto maior este índice, mais o mercado está absorvendo
                     este produto no momento.
                   </TooltipContent>
-                </Tooltip>
+                </TooltipUI>
               </TooltipProvider>
             )}
           </div>
