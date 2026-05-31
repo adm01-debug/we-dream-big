@@ -52,7 +52,7 @@ interface HeaderProps {
 }
 
 export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: HeaderProps) {
-  const { theme, actualTheme, setTheme, toggleTheme, tooltipStyle, setTooltipStyle, isFallback } =
+  const { actualTheme, tooltipStyle, setTooltipStyle, isFallback } =
     useTheme();
   const navigate = useNavigate();
   const location = useLocation();
