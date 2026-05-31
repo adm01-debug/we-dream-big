@@ -402,7 +402,7 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
   const { data, error, count, status } = await query;
   if (error) {
     if (status === 410) {
-      throw new Error(`410 Gone: A integração REST nativa para '${tableName}' retornou erro de descontinuação.`);
+      throw new Error(`O sistema de integração nativa para '${tableName}' retornou 410 Gone (Descontinuado).`);
     }
     throw new Error(`rest-native error (${tableName}): ${error.message}`);
   }
