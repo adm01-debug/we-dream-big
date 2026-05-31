@@ -76,15 +76,13 @@ export function useProductImageGallery({
   const { data: variants = [] } = useQuery<VariantInfo[]>({
     queryKey: ['product-variants-for-gallery', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_variants',
-          operation: 'select',
-          select: 'id, name, color_name, color_hex, color_code',
-          filters: { product_id: productId, is_active: true },
-          limit: 200,
-          orderBy: { column: 'name', ascending: true },
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_variants',
+        operation: 'select',
+        select: 'id, name, color_name, color_hex, color_code',
+        filters: { product_id: productId, is_active: true },
+        limit: 200,
+        orderBy: { column: 'name', ascending: true },
       });
       if (error) return [];
       const records = data?.data?.records || [];
