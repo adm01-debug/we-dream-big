@@ -201,13 +201,11 @@ export function useTecnicaById(id: string | undefined) {
     queryFn: async (): Promise<TecnicaUnificada | null> => {
       if (!id) return null;
 
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'tecnica_gravacao',
-          operation: 'select',
-          filters: { id },
-          limit: 1,
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'tecnica_gravacao',
+        operation: 'select',
+        filters: { id },
+        limit: 1,
       });
 
       if (error) throw error;
