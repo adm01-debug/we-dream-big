@@ -55,6 +55,12 @@ const REST_NATIVE_SAFE_TABLES = new Set<string>([
   'personalization_techniques',
   // Reference data
   'ramo_atividade',
+  // Intelligence / stock charts (catalog sparkline + product detail stock history)
+  'stock_daily_summary',
+  'mv_stock_velocity',
+  // Similar products (product detail page)
+  'product_relationships',
+  'product_group_members',
   // System
   'system_kill_switches',
 ]);
