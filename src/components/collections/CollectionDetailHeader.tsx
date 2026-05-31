@@ -43,7 +43,7 @@ export function CollectionDetailHeader({
   products,
   variantMap,
   notesMap,
-  onBack, // Mantido para compatibilidade legado mas não usado no render atual
+  onBack, // Mantido para compatibilidade legado mas não usado no render atual // Mantido para compatibilidade legado mas não usado no render atual
   onCreateQuote,
   onPresent,
   onShare,
