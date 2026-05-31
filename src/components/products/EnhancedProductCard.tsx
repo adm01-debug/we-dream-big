@@ -39,6 +39,7 @@ interface EnhancedProductCardProps {
   showUrgencyBadge?: boolean;
   urgencyType?: 'limited-stock' | 'trending' | 'ending-soon';
   urgencyText?: string;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }
 
 export function EnhancedProductCard({
