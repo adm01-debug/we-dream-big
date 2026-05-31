@@ -70,7 +70,7 @@ const FIELD_MAP: DataSourceMap[] = [
     field: 'Lista de produtos (catálogo)',
     description: 'Dados do banco Promobrind',
     source: 'integration_credentials',
-    notes: 'URL/key consumidos pelo `external-db-bridge` em runtime',
+    notes: 'URL/key consumidos pela camada de conexão nativa em runtime',
   },
 ];
 
@@ -259,10 +259,10 @@ export function DataSourceDebugTab() {
         return {
           ...base,
           technicalSource: {
-            kind: 'edge_function' as const,
-            name: 'external-db-bridge (op: select_products)',
+            kind: 'table_query' as const,
+            name: 'v_products_public (via REST nativo)',
             snippet:
-             "// Edge function lê EXTERNAL_PROMOBRIND_URL + _SERVICE_ROLE_KEY\n// (de integration_credentials, via secrets-manager interno)\n// e cria um client Supabase apontando para o BD do catálogo.\nconst client = createClient(URL, SERVICE_ROLE_KEY);\nawait client.from('products').select(...);",
+             "// Conexão nativa lê EXTERNAL_PROMOBRIND_URL + _SERVICE_ROLE_KEY\n// e cria um client Supabase apontando para o BD do catálogo.\nconst client = createClient(URL, SERVICE_ROLE_KEY);\nawait client.from('v_products_public').select(...);",
           },
           samples: [
             {

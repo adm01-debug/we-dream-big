@@ -12,6 +12,7 @@ import { useState, useCallback, useMemo, useRef } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { invokeExternalDb } from '@/lib/external-db';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import { toast } from 'sonner';
 import { sanitizeError } from '@/lib/security/sanitize-error';
 import {
@@ -101,8 +102,10 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
 
   const createMutation = useMutation({
     mutationFn: async (area: Omit<PrintAreaTechnique, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: { table: 'print_area_techniques', operation: 'insert', data: area },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'print_area_techniques',
+        operation: 'insert',
+        data: area,
       });
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || 'Erro ao criar área');
@@ -116,8 +119,11 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...payload }: { id: string } & Record<string, unknown>) => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: { table: 'print_area_techniques', operation: 'update', id, data: payload },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'print_area_techniques',
+        operation: 'update',
+        id,
+        data: payload,
       });
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || 'Erro ao atualizar área');
@@ -131,8 +137,10 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: { table: 'print_area_techniques', operation: 'delete', id },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'print_area_techniques',
+        operation: 'delete',
+        id,
       });
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || 'Erro ao excluir área');
@@ -293,12 +301,10 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
         _techData: _td,
         ...areaData
       } = area as typeof area & { _techData?: ExternalTechnique };
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'print_area_techniques',
-          operation: 'insert',
-          data: { ...areaData, product_id: realProductId },
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'print_area_techniques',
+        operation: 'insert',
+        data: { ...areaData, product_id: realProductId },
       });
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || 'Erro ao salvar área de personalização');

@@ -26,8 +26,8 @@ const fmtCurrency = (n?: number) =>
     : '—';
 
 /**
- * Painel de revisão rápida dos produtos retornados pelo `external-db-bridge`
- * (operação `select` na tabela `products`). Permite filtrar por busca livre,
+ * Painel de revisão rápida dos produtos retornados pela conexão nativa
+ * (operação `select` na view `v_products_public`). Permite filtrar por busca livre,
  * ativos/inativos, faixa de preço e estoque mínimo, com paginação server-side
  * (limit/offset) e contagem exata para revisar o catálogo externo sem precisar
  * acessar o BD diretamente.
@@ -134,11 +134,11 @@ export function BridgeProductsPreviewPanel() {
               <Boxes className="h-5 w-5 text-primary" aria-hidden="true" />
             </div>
             <div>
-              <CardTitle className="text-base">Produtos preenchidos (external-db-bridge)</CardTitle>
+              <CardTitle className="text-base">Produtos preenchidos (Conexão Nativa)</CardTitle>
               <CardDescription className="text-xs">
-                Pré-visualização paginada da tabela{' '}
-                <code className="rounded bg-muted px-1">products</code> retornada pela edge
-                function. Filtros e paginação são aplicados server-side.
+                Pré-visualização paginada da view{' '}
+                <code className="rounded bg-muted px-1">v_products_public</code> retornada via
+                REST nativo. Filtros e paginação são aplicados no banco de dados.
               </CardDescription>
             </div>
           </div>

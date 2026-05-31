@@ -45,13 +45,11 @@ async function fetchTags(): Promise<ExternalTag[]> {
 }
 
 async function fetchProductTags(productId: string): Promise<ProductTag[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table: 'product_tags',
-      operation: 'select',
-      filters: { product_id: productId },
-      limit: 500,
-    },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'product_tags',
+    operation: 'select',
+    filters: { product_id: productId },
+    limit: 500,
   });
   if (error) throw new Error(error.message);
   return data?.data?.records || [];

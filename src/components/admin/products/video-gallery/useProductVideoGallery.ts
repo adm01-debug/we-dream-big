@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import {
   ACCEPTED_VIDEO_TYPES,
   MAX_FILE_SIZE,
@@ -42,14 +43,12 @@ export function useProductVideoGallery(productId?: string) {
   const { data: videos = [], isLoading } = useQuery<ExternalVideo[]>({
     queryKey: ['product-videos-ext', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_videos',
-          operation: 'select',
-          filters: { product_id: productId, is_active: true },
-          orderBy: { column: 'display_order', ascending: true },
-          limit: 50,
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_videos',
+        operation: 'select',
+        filters: { product_id: productId, is_active: true },
+        orderBy: { column: 'display_order', ascending: true },
+        limit: 50,
       });
       if (error) return [];
       return data?.data?.records || [];
@@ -62,15 +61,13 @@ export function useProductVideoGallery(productId?: string) {
   const { data: variants = [] } = useQuery<VideoVariant[]>({
     queryKey: ['product-variants-for-videos', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_variants',
-          operation: 'select',
-          select: 'id, name, color_name, color_hex, color_code',
-          filters: { product_id: productId, is_active: true },
-          limit: 200,
-          orderBy: { column: 'name', ascending: true },
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_variants',
+        operation: 'select',
+        select: 'id, name, color_name, color_hex, color_code',
+        filters: { product_id: productId, is_active: true },
+        limit: 200,
+        orderBy: { column: 'name', ascending: true },
       });
       if (error) return [];
       const records = data?.data?.records || [];
@@ -249,23 +246,21 @@ export function useProductVideoGallery(productId?: string) {
       if (!productId) return null;
       const nextOrder =
         videos.length > 0 ? Math.max(...videos.map((v) => v.display_order || 0)) + 1 : 0;
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_videos',
-          operation: 'insert',
-          data: {
-            product_id: productId,
-            url_original: url,
-            url_stream: url,
-            url_thumbnail: thumbnailUrl,
-            source_youtube_id: youtubeId || null,
-            video_type: uploadVideoType,
-            display_order: nextOrder,
-            is_primary: videos.length === 0,
-            is_active: true,
-            title: fileName,
-            file_size_bytes: fileSize,
-          },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_videos',
+        operation: 'insert',
+        data: {
+          product_id: productId,
+          url_original: url,
+          url_stream: url,
+          url_thumbnail: thumbnailUrl,
+          source_youtube_id: youtubeId || null,
+          video_type: uploadVideoType,
+          display_order: nextOrder,
+          is_primary: videos.length === 0,
+          is_active: true,
+          title: fileName,
+          file_size_bytes: fileSize,
         },
       });
       if (error || !data?.success) return null;
@@ -377,13 +372,11 @@ export function useProductVideoGallery(productId?: string) {
     async (videoId: string) => {
       try {
         await supabase.from('video_variant_links').delete().eq('video_id', videoId);
-        await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'product_videos',
-            operation: 'update',
-            id: videoId,
-            data: { is_active: false },
-          },
+        await invokeExternalDbBridge({
+          table: 'product_videos',
+          operation: 'update',
+          id: videoId,
+          data: { is_active: false },
         });
         queryClient.invalidateQueries({ queryKey: ['product-videos-ext', productId] });
         queryClient.invalidateQueries({ queryKey: ['video-variant-links', productId] });
@@ -402,9 +395,7 @@ export function useProductVideoGallery(productId?: string) {
       data: { title?: string; description?: string; video_type?: string },
     ) => {
       try {
-        await supabase.functions.invoke('external-db-bridge', {
-          body: { table: 'product_videos', operation: 'update', id: videoId, data },
-        });
+        await invokeExternalDbBridge({ table: 'product_videos', operation: 'update', id: videoId, data });
         queryClient.invalidateQueries({ queryKey: ['product-videos-ext', productId] });
         toast.success('Metadados do vídeo atualizados');
         setEditingVideoId(null);
@@ -438,13 +429,11 @@ export function useProductVideoGallery(productId?: string) {
       try {
         await Promise.all(
           reordered.map((v, i) =>
-            supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_videos',
-                operation: 'update',
-                id: v.id,
-                data: { display_order: i },
-              },
+            invokeExternalDbBridge({
+              table: 'product_videos',
+              operation: 'update',
+              id: v.id,
+              data: { display_order: i },
             }),
           ),
         );
@@ -494,13 +483,11 @@ export function useProductVideoGallery(productId?: string) {
           return;
         }
         const { data: tu } = supabase.storage.from('product-videos').getPublicUrl(td.path);
-        await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'product_videos',
-            operation: 'update',
-            id: video.id,
-            data: { url_thumbnail: tu.publicUrl },
-          },
+        await invokeExternalDbBridge({
+          table: 'product_videos',
+          operation: 'update',
+          id: video.id,
+          data: { url_thumbnail: tu.publicUrl },
         });
         queryClient.invalidateQueries({ queryKey: ['product-videos-ext', productId] });
         toast.success('Thumbnail regenerada!');

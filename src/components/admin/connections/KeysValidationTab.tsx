@@ -57,12 +57,12 @@ const FEATURE_GROUPS: FeatureGroup[] = [
       {
         name: 'EXTERNAL_PROMOBRIND_URL',
         severity: 'required',
-        impact: 'Sem URL, a edge function external-db-bridge não conecta — catálogo fica vazio.',
+        impact: 'Sem URL, a conexão nativa com o banco externo não funciona — catálogo fica vazio.',
       },
       {
         name: 'EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY',
         severity: 'required',
-        impact: 'Sem service role, queries falham com 401 — produtos/variantes não carregam.',
+        impact: 'Sem service role, as consultas nativas falham com 401 — produtos/variantes não carregam.',
       },
       {
         name: 'EXTERNAL_PROMOBRIND_ANON_KEY',
