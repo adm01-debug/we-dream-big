@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider, TOOLTIP_DELAY } from './tooltip';
 import { cn } from '@/lib/utils';
 
 interface TruncatedTooltipProps {
