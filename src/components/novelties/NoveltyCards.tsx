@@ -16,6 +16,7 @@ import {
 import { Package, Building2, FolderTree, Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NoveltyBadge } from '@/components/products/NoveltyBadge';
+import { ProductStatusBadge } from '@/components/products/ProductStatusBadge';
 import { ProductSparkline } from '@/components/products/ProductSparkline';
 import { SelectionCheckbox } from '@/components/common/SelectionCheckbox';
 import { cn } from '@/lib/utils';
