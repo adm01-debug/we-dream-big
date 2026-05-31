@@ -24,42 +24,42 @@ describe('ProductColorSelector Tooltip', () => {
   });
 
   it('shows the custom tooltip on hover and hides it on leave', async () => {
+    vi.useFakeTimers();
     render(
       <TooltipProvider>
         <ProductColorSelector colors={mockColors} />
       </TooltipProvider>
     );
 
-    const firstSwatch = screen.getAllByRole('button')[0];
+    const swatches = screen.getAllByRole('button');
+    const firstSwatch = swatches[0];
     
-    // Initial state: tooltip should not be in the document (or be hidden)
-    expect(screen.queryByText('Vermelho')).not.toBeInTheDocument();
+    // Initial state: tooltip should not be in the document
+    expect(screen.queryByTestId('color-tooltip-swatch')).not.toBeInTheDocument();
 
     // Hover
     fireEvent.mouseEnter(firstSwatch);
-
-    // Radix Tooltip might have a delay, or it might be instant in tests if mocked/configured.
-    // In our case, we set delayDuration={700} in the component, but vitest-jsdom usually handles this.
-    // However, for the sake of the test being reliable, we might need to wait or adjust.
-    // Actually, Radix Tooltip in tests often needs some time or a trigger.
     
-    // Let's check for the text "Vermelho" which is inside the TooltipContent
+    // Fast-forward for Radix delay (700ms in component)
+    vi.advanceTimersByTime(800);
+    
+    // Now it should be there
     await waitFor(() => {
-      expect(screen.getByText('Vermelho')).toBeInTheDocument();
-    }, { timeout: 2000 });
+      expect(screen.getByTestId('color-tooltip-swatch')).toBeInTheDocument();
+    });
 
-    // Check if it has the swatch inside the tooltip (the circle)
     const swatch = screen.getByTestId('color-tooltip-swatch');
-    expect(swatch).toBeInTheDocument();
-    // In JSDOM, style.backgroundColor might be empty string or hex depending on how it's set
-    // but usually it's normalized to rgb()
     expect(swatch.style.backgroundColor).toMatch(/rgb\(255, 0, 0\)|#ff0000/i);
+    expect(screen.getByText('Vermelho')).toBeInTheDocument();
 
     // Leave
     fireEvent.mouseLeave(firstSwatch);
+    vi.advanceTimersByTime(800);
     
     await waitFor(() => {
-      expect(screen.queryByText('Vermelho')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('color-tooltip-swatch')).not.toBeInTheDocument();
     });
+
+    vi.useRealTimers();
   });
 });
