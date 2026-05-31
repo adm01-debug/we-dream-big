@@ -71,14 +71,12 @@ export function useCategoriesTree() {
     setError(null);
 
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'categories_tree_visual',
-          operation: 'select',
-          select: '*',
-          orderBy: { column: 'sort_path', ascending: true },
-          limit: 500,
-        },
+      const { data, error: invokeError } = await invokeExternalDbBridge({
+        table: 'categories_tree_visual',
+        operation: 'select',
+        select: '*',
+        orderBy: { column: 'sort_path', ascending: true },
+        limit: 500,
       });
 
       if (invokeError) throw new Error(invokeError.message);
