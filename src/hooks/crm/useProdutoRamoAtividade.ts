@@ -4,6 +4,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 
 export interface ProdutoRamo {
   ramo_id: string;
