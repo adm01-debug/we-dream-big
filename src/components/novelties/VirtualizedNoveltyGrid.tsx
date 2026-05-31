@@ -2,10 +2,14 @@ import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { NoveltyWithDetails } from '@/hooks/products';
 import type { ColumnCount } from '@/components/products/ColumnSelector';
-import { useResponsiveColumns, getGridColsClass, getGridGapClass } from '../replenishments/grid-layout';
+import {
+  useResponsiveColumns,
+  getGridColsClass,
+  getGridGapClass,
+} from '@/components/replenishments/grid-layout';
 import { NoveltyGridCard } from './NoveltyCards';
 
-interface VirtualizedGridProps {
+interface VirtualizedNoveltyGridProps {
   products: NoveltyWithDetails[];
   gridColumns: ColumnCount;
   selectionMode: boolean;
@@ -15,6 +19,11 @@ interface VirtualizedGridProps {
   onStatusClick?: (type: string, value?: string | number) => void;
 }
 
+/**
+ * Grade virtualizada de Novidades — espelha a implementação de Reposição
+ * para garantir colunas responsivas, espaçamento vertical uniforme (pb-8)
+ * e alinhamento interno consistente em todas as resoluções.
+ */
 export function VirtualizedNoveltyGrid({
   products,
   gridColumns,
@@ -23,9 +32,9 @@ export function VirtualizedNoveltyGrid({
   onToggleSelect,
   onProductClick,
   onStatusClick,
-}: VirtualizedGridProps) {
+}: VirtualizedNoveltyGridProps) {
   const parentRef = useRef<HTMLDivElement>(null);
-  
+
   const numCols = useResponsiveColumns(gridColumns);
   const rowCount = Math.ceil(products.length / numCols);
 
@@ -36,8 +45,6 @@ export function VirtualizedNoveltyGrid({
     overscan: 3,
     measureElement: (el) => el.getBoundingClientRect().height,
   });
-
-  const effectiveCols = gridColumns;
 
   return (
     <div
@@ -70,7 +77,7 @@ export function VirtualizedNoveltyGrid({
                 width: '100%',
                 transform: `translateY(${virtualRow.start}px)`,
               }}
-              className={`grid ${getGridColsClass(effectiveCols)} ${getGridGapClass(effectiveCols)} pb-8`}
+              className={`grid ${getGridColsClass(gridColumns)} ${getGridGapClass(gridColumns)} pb-8`}
             >
               {rowProducts.map((product) => (
                 <div key={product.novelty_id} role="listitem">

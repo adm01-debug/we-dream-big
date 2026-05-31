@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/types/product-catalog';
 import { useQuery } from '@tanstack/react-query';
@@ -65,12 +66,15 @@ function ProductMiniCard({ product, onClick }: { product: Product; onClick: () =
             </span>
             <div className="flex -space-x-1">
               {product.colors.slice(0, 3).map((color, idx) => (
-                <div
-                  key={`${color.name}-${idx}`}
-                  className="h-3 w-3 rounded-full border border-background ring-1 ring-border/30"
-                  style={{ backgroundColor: color.hex }}
-                  title={color.name}
-                />
+                <Tooltip key={`${color.name}-${idx}`}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className="h-3 w-3 rounded-full border border-background ring-1 ring-border/30"
+                      style={{ backgroundColor: color.hex }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>{color.name}</TooltipContent>
+                </Tooltip>
               ))}
               {product.colors.length > 3 && (
                 <div className="flex h-3 w-3 items-center justify-center rounded-full border border-background bg-muted">

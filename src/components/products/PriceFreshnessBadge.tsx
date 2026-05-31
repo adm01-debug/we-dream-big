@@ -40,50 +40,11 @@ function buildAccessibleLabel(
   freshness: PriceFreshness,
   priceUpdatedAt?: string | Date | null,
 ): { ariaLabel: string; title: string } {
-  const dateValue = priceUpdatedAt
-    ? priceUpdatedAt instanceof Date
-      ? priceUpdatedAt
-      : new Date(priceUpdatedAt)
-    : null;
-  const isValid = dateValue && !Number.isNaN(dateValue.getTime());
-  const longDate = isValid ? formatPriceDateLong(dateValue) : null;
-  const days = freshness.daysSinceUpdate;
-  const relative =
-    days === null ? null : days === 0 ? 'há 0 dias' : days === 1 ? 'há 1 dia' : `há ${days} dias`;
-
   // Frase principal lida pelo screen reader (curta e direta).
-  let ariaLabel: string;
-  switch (freshness.status) {
-    case 'fresh':
-      ariaLabel = longDate
-        ? `Preço atualizado pelo fornecedor em ${longDate}, ${relative}.`
-        : 'Preço atualizado pelo fornecedor recentemente.';
-      break;
-    case 'aging':
-      ariaLabel = longDate
-        ? `Preço próximo do limite de validade. Última atualização do fornecedor em ${longDate}, ${relative}. Recomendamos confirmar antes de fechar o orçamento.`
-        : 'Preço próximo do limite de validade. Recomendamos confirmar com o fornecedor.';
-      break;
-    case 'stale':
-      ariaLabel = longDate
-        ? `Atenção: preço possivelmente defasado. Última atualização do fornecedor em ${longDate}, ${relative}. Confirme o valor antes de enviar o orçamento ao cliente.`
-        : 'Atenção: preço possivelmente defasado. Confirme com o fornecedor antes de enviar o orçamento.';
-      break;
-    case 'unknown':
-    default: {
-      // Diferencia entre data ausente e data inválida (ambas caem em
-      // `unknown` na utility, mas o `freshness.label` carrega a causa).
-      const isInvalid = /inválida/i.test(freshness.label);
-      ariaLabel = isInvalid
-        ? 'Preço com data de atualização inválida informada pelo fornecedor. Confirme o valor antes de enviar o orçamento.'
-        : 'Preço com data de atualização não informada pelo fornecedor. Confirme o valor antes de enviar o orçamento.';
-    }
-  }
+  const ariaLabel = freshness.label;
+  const title = priceUpdatedAt ? `Atualizado em ${formatAbsoluteDate(priceUpdatedAt)}` : freshness.label;
 
-  // `title` espelha o aria-label para que o tooltip nativo do navegador
-  // funcione mesmo quando o Radix Tooltip não estiver disponível (ex.: foco
-  // por teclado em browsers sem suporte a hover).
-  return { ariaLabel, title: ariaLabel };
+  return { ariaLabel, title };
 }
 
 /** Data + hora exatas no fuso local do usuário (PT-BR). Ex.: "24/04/2026 09:32". */
@@ -119,7 +80,6 @@ function FreshnessTooltipBody({ freshness, priceUpdatedAt }: FreshnessTooltipPro
   // Padrão único pt-BR: "em DD/MM/AAAA". A hora local e a forma por extenso
   // ficam como detalhamento auxiliar, sem repetir a data curta.
   const shortDate = isValidDate ? formatPriceDateShort(dateValue) : null;
-  const _exactDateTime = isValidDate ? formatExactDateTime(dateValue) : null;
   const statusLabel = STATUS_LABELS[freshness.status];
   const rule = buildClassificationRule(freshness.thresholdDays);
 
@@ -364,7 +324,6 @@ export function PriceFreshnessBadge({
       <span
         role="status"
         aria-label={ariaLabel}
-        title={title}
         tabIndex={0}
         className={cn(
           'inline-flex items-center gap-1 text-xs font-medium',
@@ -387,27 +346,19 @@ export function PriceFreshnessBadge({
 
     if (freshness.status === 'stale') {
       body = (
-        <div
+        <span
           role="status"
           aria-label={ariaLabel}
           className={cn(
-            'inline-flex items-start gap-2.5 rounded-xl border-[1.5px] border-amber-300 bg-amber-100/80 px-3.5 py-2.5 text-amber-900 dark:border-amber-500/60 dark:bg-amber-500/15 dark:text-amber-200',
+            'inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 dark:border-amber-500/60 dark:bg-amber-500/10 dark:text-amber-200',
             className,
           )}
         >
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <div className="flex flex-col gap-0.5 leading-tight">
-            <span className="font-display text-sm font-semibold">Preço pode estar defasado</span>
-            {absolute && (
-              <span className="text-xs tabular-nums text-amber-800/90 dark:text-amber-200/80">
-                Última atualização em {absolute} ({relative})
-              </span>
-            )}
-            <span className="text-[11px] text-amber-800/80 dark:text-amber-200/70">
-              Confirme com o fornecedor antes de fechar o orçamento.
-            </span>
-          </div>
-        </div>
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span className="tabular-nums">
+            {absolute ? `Atualizado em ${absolute}` : 'Preço pode estar defasado'}
+          </span>
+        </span>
       );
     } else if (freshness.status === 'aging' && absolute) {
       body = (
@@ -420,11 +371,7 @@ export function PriceFreshnessBadge({
           )}
         >
           <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className="tabular-nums">
-            Atualizado em {absolute}
-            <span className="text-amber-700/70 dark:text-amber-300/70"> · {relative}</span>
-            {limitSuffix}
-          </span>
+          <span className="tabular-nums">Atualizado em {absolute}</span>
         </span>
       );
     } else if (freshness.status === 'fresh' && absolute) {
@@ -438,11 +385,7 @@ export function PriceFreshnessBadge({
           )}
         >
           <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className="tabular-nums">
-            Atualizado em {absolute}
-            <span className="text-emerald-700/70 dark:text-emerald-400/70"> · {relative}</span>
-            {limitSuffix}
-          </span>
+          <span className="tabular-nums">Atualizado em {absolute}</span>
         </span>
       );
     } else {
@@ -457,29 +400,27 @@ export function PriceFreshnessBadge({
           )}
         >
           <HelpCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span>Data de atualização não informada</span>
+          <span>Data não informada</span>
         </span>
       );
     }
+    // referenced to avoid TS unused warning — detalhes vão no tooltip
+    void relative;
   } else {
-    // `inline` (default) — usado em PDP/Quick View. Mantém o label do util
-    // ("Atualizado há N dias" / "Preço pode estar defasado (há N dias)") e
-    // anexa a data numérica pt-BR no padrão "em DD/MM/AAAA".
+    // `inline` (default) — usado em PDP/Quick View.
+    // Padronizado para exibir apenas "Atualizado em DD/MM/AAAA" (o essencial),
+    // movendo o label relativo e regras para o tooltip.
     const inlineDate = priceUpdatedAt ? formatAbsoluteDate(priceUpdatedAt) : null;
     body = (
       <span
         role="status"
         aria-label={ariaLabel}
-        title={title}
         className={cn('inline-flex items-center gap-1.5 text-xs font-medium', color, className)}
       >
         <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        <span>
-          {freshness.label}
-          {inlineDate && (
-            <span className="tabular-nums text-muted-foreground"> · em {inlineDate}</span>
-          )}
-          {limitSuffix}
+        <span className="tabular-nums">
+          {inlineDate ? `Atualizado em ${inlineDate}` : freshness.label}
+          {limitSuffix && <span className="text-muted-foreground">{limitSuffix}</span>}
         </span>
       </span>
     );

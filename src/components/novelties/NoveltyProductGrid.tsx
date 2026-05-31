@@ -355,7 +355,7 @@ export function NoveltyProductGrid() {
 
     return (
       <VirtualizedNoveltyGrid
-        products={paginatedProducts}
+        products={filteredProducts}
         gridColumns={effectiveCols}
         selectionMode={selectionMode}
         selectedIds={sel.selectedIds}

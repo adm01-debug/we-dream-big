@@ -32,6 +32,7 @@ import {
   Settings,
   MessageCircle,
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { VideoShareWhatsAppDialog } from './VideoShareWhatsAppDialog';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -502,11 +503,92 @@ export function PromoFlixPlayer({
           <div className="flex-1" />
           <div className="flex items-center gap-1 md:gap-1.5">
             <div className="mr-1 flex items-center gap-1 border-r border-white/10 px-1 md:mr-2 md:gap-1.5 md:px-2">
-              <button onClick={toggleRaioX} className={cn('group relative flex items-center justify-center rounded-full p-3 transition-all duration-300 md:p-2', isRaioXActive ? 'bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]' : 'text-white/80 hover:bg-white/15 hover:text-white')} aria-label="Ativar Raio-X" title="Raio-X (X)">{isRaioXActive ? <Zap className="h-6 w-6 fill-current md:h-5 md:w-5" /> : <ZapOff className="h-6 w-6 md:h-5 md:w-5" />}{isRaioXActive && (<span className="absolute -right-0.5 -top-0.5 flex h-3 w-3 md:-right-1 md:-top-1"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span><span className="relative inline-flex h-3 w-3 rounded-full bg-white"></span></span>)}</button>
-              <button onClick={takeScreenshot} className="flex items-center gap-1 rounded-full p-3 text-white/80 transition-colors hover:bg-white/15 hover:text-white md:p-2" aria-label="Capturar frame" title="Foto do frame (S)"><Camera className="h-6 w-6 md:h-5 md:w-5" /></button>
-              {canShareOnWhatsApp && (<button onClick={(e) => { e.stopPropagation(); setShareDialogOpen(true); }} className="flex items-center gap-1 rounded-full p-3 text-white/80 transition-colors hover:bg-[#25D366]/20 hover:text-[#25D366] md:p-2" aria-label="Enviar vídeo pelo WhatsApp" title="Enviar vídeo pelo WhatsApp"><MessageCircle className="h-6 w-6 md:h-5 md:w-5" /></button>)}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={toggleRaioX}
+                  className={cn(
+                    'group relative flex items-center justify-center rounded-full p-3 transition-all duration-300 md:p-2',
+                    isRaioXActive
+                      ? 'bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]'
+                      : 'text-white/80 hover:bg-white/15 hover:text-white',
+                  )}
+                  aria-label="Ativar Raio-X"
+                >
+                  {isRaioXActive ? (
+                    <Zap className="h-6 w-6 fill-current md:h-5 md:w-5" />
+                  ) : (
+                    <ZapOff className="h-6 w-6 md:h-5 md:w-5" />
+                  )}
+                  {isRaioXActive && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3 md:-right-1 md:-top-1">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+                      <span className="relative inline-flex h-3 w-3 rounded-full bg-white"></span>
+                    </span>
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Raio-X (X)</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={takeScreenshot}
+                  className="flex items-center gap-1 rounded-full p-3 text-white/80 transition-colors hover:bg-white/15 hover:text-white md:p-2"
+                  aria-label="Capturar frame"
+                >
+                  <Camera className="h-6 w-6 md:h-5 md:w-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Foto do frame (S)</TooltipContent>
+            </Tooltip>
+              {canShareOnWhatsApp && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShareDialogOpen(true);
+                      }}
+                      className="flex items-center gap-1 rounded-full p-3 text-white/80 transition-colors hover:bg-[#25D366]/20 hover:text-[#25D366] md:p-2"
+                      aria-label="Enviar vídeo pelo WhatsApp"
+                    >
+                      <MessageCircle className="h-6 w-6 md:h-5 md:w-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">Enviar vídeo pelo WhatsApp</TooltipContent>
+                </Tooltip>
+              )}
             </div>
-            <DropdownMenu><DropdownMenuTrigger asChild><button className="flex items-center gap-1 rounded-full px-3 py-3 text-sm font-medium tabular-nums transition-colors hover:bg-white/15 md:px-2.5 md:py-2" aria-label="Velocidade" title="Velocidade (< / >)"><Gauge className="h-6 w-6 md:h-5 md:w-5" /><span className="hidden sm:inline">{playbackRate}x</span></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-32"><DropdownMenuLabel>Velocidade</DropdownMenuLabel><DropdownMenuSeparator />{PLAYBACK_RATES.map((rate) => (<DropdownMenuItem key={rate} onClick={() => setRate(rate)} className={cn(playbackRate === rate && 'font-bold text-primary', 'py-2.5')}>{rate === 1 ? 'Normal (1x)' : `${rate}x`}</DropdownMenuItem>))}</DropdownMenuContent></DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="flex items-center gap-1 rounded-full px-3 py-3 text-sm font-medium tabular-nums transition-colors hover:bg-white/15 md:px-2.5 md:py-2"
+                      aria-label="Velocidade"
+                    >
+                      <Gauge className="h-6 w-6 md:h-5 md:w-5" />
+                      <span className="hidden sm:inline">{playbackRate}x</span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-32">
+                    <DropdownMenuLabel>Velocidade</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {PLAYBACK_RATES.map((rate) => (
+                      <DropdownMenuItem
+                        key={rate}
+                        onClick={() => setRate(rate)}
+                        className={cn(playbackRate === rate && 'font-bold text-primary', 'py-2.5')}
+                      >
+                        {rate === 1 ? 'Normal (1x)' : `${rate}x`}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TooltipTrigger>
+              <TooltipContent side="top">Velocidade (&lt; / &gt;)</TooltipContent>
+            </Tooltip>
             {qualities.length > 0 && (<DropdownMenu><DropdownMenuTrigger asChild><button className="flex items-center gap-1 rounded-full px-3 py-3 text-sm font-medium transition-colors hover:bg-white/15 md:px-2.5 md:py-2" aria-label="Qualidade" title="Qualidade do Vídeo"><Settings className="h-6 w-6 md:h-5 md:w-5" /><span className="hidden sm:inline">{currentQuality === -1 ? 'Auto' : qualities.find((q) => q.id === currentQuality)?.label}</span></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-32"><DropdownMenuLabel>Qualidade</DropdownMenuLabel><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setQuality(-1)} className={cn(currentQuality === -1 && 'font-bold text-primary', 'py-2.5')}>Auto</DropdownMenuItem>{qualities.map((q) => (<DropdownMenuItem key={q.id} onClick={() => setQuality(q.id)} className={cn(currentQuality === q.id && 'font-bold text-primary', 'py-2.5')}>{q.label}</DropdownMenuItem>))}</DropdownMenuContent></DropdownMenu>)}
             <button onClick={togglePip} className="hidden rounded-full p-3 transition-colors hover:bg-white/15 sm:flex md:p-2" aria-label="Picture-in-Picture" title="Picture-in-Picture (P)"><PictureInPicture2 className="h-6 w-6 md:h-5 md:w-5" /></button>
             <button onClick={toggleFullscreen} className="rounded-full p-3 transition-colors hover:bg-white/15 md:p-2" aria-label={isFullscreen ? 'Sair da tela cheia' : 'Tela cheia'} title="Tela cheia (F)">{isFullscreen ? <Minimize className="h-6 w-6 md:h-5 md:w-5" /> : <Maximize className="h-6 w-6 md:h-5 md:w-5" />}</button>

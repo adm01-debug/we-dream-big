@@ -12,11 +12,21 @@ CREATE TABLE IF NOT EXISTS public.smoke_test_runs (
   duration_ms numeric
 );
 
-CREATE INDEX IF NOT EXISTS idx_smoke_test_runs_ran_at
+DO $$
+BEGIN
+  IF (SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='smoke_test_runs' AND column_name IN ('ran_at')) = 1 THEN
+    CREATE INDEX IF NOT EXISTS idx_smoke_test_runs_ran_at
   ON public.smoke_test_runs (ran_at DESC);
+  END IF;
+END $$;
 
-CREATE INDEX IF NOT EXISTS idx_smoke_test_runs_name_ran_at
+DO $$
+BEGIN
+  IF (SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='smoke_test_runs' AND column_name IN ('test_name','ran_at')) = 2 THEN
+    CREATE INDEX IF NOT EXISTS idx_smoke_test_runs_name_ran_at
   ON public.smoke_test_runs (test_name, ran_at DESC);
+  END IF;
+END $$;
 
 ALTER TABLE public.smoke_test_runs ENABLE ROW LEVEL SECURITY;
 
@@ -35,6 +45,11 @@ CREATE POLICY smoke_test_runs_insert_admin
   TO authenticated
   WITH CHECK (public.is_admin_or_above((SELECT auth.uid())));
 
+-- Replay-safe: em preview-branches a função pode já existir como RETURNS TABLE
+-- (criada por 20260525005350/005426); CREATE OR REPLACE não muda o tipo de
+-- retorno → ERROR 42P13. DROP antes garante recriação como RETURNS void.
+-- Sem dependentes de schema em produção (verificado via pg_depend).
+DROP FUNCTION IF EXISTS public.fn_run_and_persist_smoke_tests();
 CREATE OR REPLACE FUNCTION public.fn_run_and_persist_smoke_tests()
 RETURNS void
 LANGUAGE plpgsql

@@ -12,6 +12,7 @@ import {
   Shield,
   MoreHorizontal,
   Palette,
+  BookOpen,
   Tag,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -140,10 +141,11 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
   };
 
   const handleToggleTooltipStyle = () => {
-    setTooltipStyle(tooltipStyle === 'compact' ? 'standard' : 'compact');
+    const nextStyle = tooltipStyle === 'compact' ? 'standard' : 'compact';
+    setTooltipStyle(nextStyle);
     toast({
-      title: `Tooltip: ${tooltipStyle === 'compact' ? 'Standard' : 'Compact'}`,
-      description: `O tamanho dos tooltips foi alterado para ${tooltipStyle === 'compact' ? '13px' : '10px'}.`,
+      title: `Dicas: ${nextStyle === 'compact' ? 'Compacto' : 'Padrão'}`,
+      description: `O tamanho das dicas foi alterado para ${nextStyle === 'compact' ? 'Compacto (10px)' : 'Padrão (13px)'}.`,
     });
   };
 
@@ -365,12 +367,12 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                   className="relative h-8 w-8 rounded-full text-muted-foreground transition-all duration-200 hover:bg-primary/10 hover:text-foreground"
                   aria-label="Alternar tamanho do tooltip"
                 >
-                  <Palette className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                  <BookOpen className="h-[17px] w-[17px]" strokeWidth={1.75} />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                Tamanho Tooltip:{' '}
-                {tooltipStyle === 'compact' ? 'Mudar para Standard' : 'Mudar para Compact'}
+                Altere o tamanho do texto de Dicas para{' '}
+                {tooltipStyle === 'compact' ? 'Padrão' : 'Compacto'}
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -398,8 +400,8 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                Badges dos produtos:{' '}
-                {badgesEnabled ? 'Ativos — clique para ocultar' : 'Ocultos — clique para reativar'}
+                Etiquetas dos Produtos —{' '}
+                {badgesEnabled ? 'Clique para ocultar' : 'Clique para reativar'}
               </TooltipContent>
             </Tooltip>
           </div>
