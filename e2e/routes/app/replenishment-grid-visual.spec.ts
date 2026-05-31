@@ -18,7 +18,7 @@ test.describe('Replenishment Grid Advanced Visual & A11y', () => {
         const header = page.locator('div.flex.items-center.gap-3').first();
         await expect(header).toBeVisible();
         await expect(header.locator('h1')).toHaveText('Reposição');
-        await expect(header.locator('p')).toHaveText('Produtos que voltaram ao estoque dos fornecedores nos últimos 30 dias');
+        await expect(header.locator('[data-testid="replenishment-description"]')).toHaveText('Produtos que voltaram ao estoque dos fornecedores nos últimos 30 dias');
         
         await expect(header).toHaveScreenshot(`header-${viewport.name}.png`);
       });
