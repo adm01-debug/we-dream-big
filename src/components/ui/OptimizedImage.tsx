@@ -44,6 +44,12 @@ export function OptimizedImage({
   const localPlaceholder = useMemo(() => {
     if (lqip || !src) return null;
     
+    // Cloudflare Images (imagedelivery.net)
+    if (src.includes('imagedelivery.net')) {
+      // Replace variant with /thumbnail for a micro-version
+      return src.replace(/\/[^/]+$/, '/thumbnail');
+    }
+
     // If it's an Unsplash image, we can get a tiny version for LQIP
     if (src.includes('unsplash.com')) {
       const url = new URL(src);
@@ -113,7 +119,7 @@ export function OptimizedImage({
               aria-hidden="true"
               className={cn(
                 "absolute inset-0 h-full w-full object-cover transition-opacity duration-300",
-                lqip ? "opacity-100" : "opacity-50"
+                "opacity-100"
               )}
               style={{ 
                 filter: `blur(${blurAmount}px)`,
