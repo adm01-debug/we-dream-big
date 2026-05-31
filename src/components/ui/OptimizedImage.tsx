@@ -71,8 +71,8 @@ export function OptimizedImage({
     // If it's a Supabase storage image, we can try to get a thumbnail if transformations are enabled
     if (src.includes('/storage/v1/object/public/')) {
       const thumbUrl = `${src}${src.includes('?') ? '&' : '?'}width=50&quality=10`;
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[OptimizedImage] Supabase Storage detected. Generated thumbnail: ${thumbUrl}`);
+      if (debug || process.env.NODE_ENV === 'development') {
+        console.info(`[OptimizedImage] Supabase Storage detected. Generated thumbnail: ${thumbUrl}`);
       }
       return thumbUrl;
     }
