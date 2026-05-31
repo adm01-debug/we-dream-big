@@ -372,13 +372,11 @@ export function useProductVideoGallery(productId?: string) {
     async (videoId: string) => {
       try {
         await supabase.from('video_variant_links').delete().eq('video_id', videoId);
-        await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'product_videos',
-            operation: 'update',
-            id: videoId,
-            data: { is_active: false },
-          },
+        await invokeExternalDbBridge({
+          table: 'product_videos',
+          operation: 'update',
+          id: videoId,
+          data: { is_active: false },
         });
         queryClient.invalidateQueries({ queryKey: ['product-videos-ext', productId] });
         queryClient.invalidateQueries({ queryKey: ['video-variant-links', productId] });
