@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Package, Building2, FolderTree, Sparkles } from 'lucide-react';
+import { Package, Building2, FolderTree } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NoveltyBadge } from '@/components/products/NoveltyBadge';
 import { ProductStatusBadge } from '@/components/products/ProductStatusBadge';
@@ -113,9 +113,9 @@ export const NoveltyGridCard = memo(function NoveltyGridCard({
             </div>
           )}
           <div className="absolute left-2 top-2 flex flex-col gap-1">
-            <NoveltyBadge 
-              daysRemaining={product.days_remaining} 
-              size="sm" 
+            <NoveltyBadge
+              daysRemaining={product.days_remaining}
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onStatusClick?.('novelty');
@@ -124,10 +124,10 @@ export const NoveltyGridCard = memo(function NoveltyGridCard({
           </div>
           {fresh && !selectionMode && (
             <div className="absolute right-2 top-2">
-              <ProductStatusBadge 
-                type="novelty" 
-                value="NEW" 
-                size="sm" 
+              <ProductStatusBadge
+                type="novelty"
+                value="NEW"
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onStatusClick?.('novelty');
@@ -267,19 +267,19 @@ export const NoveltyListCard = memo(function NoveltyListCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="mb-0.5 flex items-center gap-2">
-            <NoveltyBadge 
-              daysRemaining={product.days_remaining} 
-              size="sm" 
+            <NoveltyBadge
+              daysRemaining={product.days_remaining}
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onStatusClick?.('novelty');
               }}
             />
             {fresh && (
-              <ProductStatusBadge 
-                type="novelty" 
-                value="NEW" 
-                size="sm" 
+              <ProductStatusBadge
+                type="novelty"
+                value="NEW"
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onStatusClick?.('novelty');
@@ -422,9 +422,9 @@ export function NoveltyTableView({
                   </span>
                 </TableCell>
                 <TableCell className="px-2 py-1.5 text-center">
-                  <NoveltyBadge 
-                    daysRemaining={product.days_remaining} 
-                    size="sm" 
+                  <NoveltyBadge
+                    daysRemaining={product.days_remaining}
+                    size="sm"
                     onClick={() => {}} // placeholder para evitar erro de referência inexistente
                   />
                 </TableCell>

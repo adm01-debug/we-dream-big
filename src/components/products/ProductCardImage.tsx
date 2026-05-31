@@ -3,7 +3,6 @@
  * Extracted from ProductCard.tsx.
  */
 import { memo } from 'react';
-import { Sparkles, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ProductStatusBadge } from './ProductStatusBadge';
@@ -123,10 +122,10 @@ export const ProductCardImage = memo(function ProductCardImage({
         className={cn('h-full w-full object-contain')}
         style={
           imageLoaded
-            ? { 
-                transform: `scale(${computedImageScale})`, 
+            ? {
+                transform: `scale(${computedImageScale})`,
                 willChange: 'transform',
-                transition: 'transform 0.3s ease-out' 
+                transition: 'transform 0.3s ease-out',
               }
             : undefined
         }
@@ -167,44 +166,40 @@ export const ProductCardImage = memo(function ProductCardImage({
       {/* Badges - Top Left */}
       <div className="absolute left-2 top-2 z-10 flex flex-col gap-1 sm:left-3 sm:top-3 sm:gap-1.5">
         {product.featured && (
-          <ProductStatusBadge 
-            type="featured" 
-            size="sm" 
-            onClick={() => onStatusClick?.('featured')} 
+          <ProductStatusBadge
+            type="featured"
+            size="sm"
+            onClick={() => onStatusClick?.('featured')}
           />
         )}
-        
+
         {isNovelty && noveltyDaysRemaining !== undefined ? (
-          <ProductStatusBadge 
-            type="novelty" 
-            daysRemaining={noveltyDaysRemaining} 
-            size="sm" 
+          <ProductStatusBadge
+            type="novelty"
+            daysRemaining={noveltyDaysRemaining}
+            size="sm"
             onClick={() => onStatusClick?.('novelty')}
           />
         ) : (
           product.newArrival && (
-            <ProductStatusBadge 
-              type="novelty" 
-              value="Novo" 
-              size="sm" 
+            <ProductStatusBadge
+              type="novelty"
+              value="Novo"
+              size="sm"
               onClick={() => onStatusClick?.('novelty')}
             />
           )
         )}
 
         {product.isKit && (
-          <ProductStatusBadge 
-            type="kit" 
-            size="sm" 
-            onClick={() => onStatusClick?.('kit')}
-          />
+          <ProductStatusBadge type="kit" size="sm" onClick={() => onStatusClick?.('kit')} />
         )}
 
         {product.onSale && (
-          <ProductStatusBadge 
-            type="promotion" 
-            value="-20%" 
-            size="sm" 
+          <ProductStatusBadge
+            type="promotion"
+            value="-20%"
+            size="sm"
             onClick={() => onStatusClick?.('promotion')}
           />
         )}

@@ -59,7 +59,7 @@ export function OptimizedImage({
       }
       const thumbUrl = baseUrl.replace(/\/[^/]+$/, '/thumbnail');
       if (debug || process.env.NODE_ENV === 'development') {
-        console.info(
+        console.warn(
           `[OptimizedImage] Cloudflare Image detected. Rule: CF_VARIANT_REPLACEMENT. Generated thumbnail: ${thumbUrl}`,
         );
       }
@@ -74,7 +74,7 @@ export function OptimizedImage({
       url.searchParams.set('blur', '10');
       const thumbUrl = url.toString();
       if (debug || process.env.NODE_ENV === 'development') {
-        console.info(
+        console.warn(
           `[OptimizedImage] Unsplash Image detected. Rule: UNSPLASH_PARAMS. Generated thumbnail: ${thumbUrl}`,
         );
       }
@@ -85,7 +85,7 @@ export function OptimizedImage({
     if (src.includes('/storage/v1/object/public/')) {
       const thumbUrl = `${src}${src.includes('?') ? '&' : '?'}width=50&quality=10`;
       if (debug || process.env.NODE_ENV === 'development') {
-        console.info(
+        console.warn(
           `[OptimizedImage] Supabase Storage detected. Rule: SUPABASE_TRANSFORM. Generated thumbnail: ${thumbUrl}`,
         );
       }
@@ -130,9 +130,11 @@ export function OptimizedImage({
     <div
       className={cn('relative overflow-hidden bg-white', containerClassName)}
       data-detection-rule={detectionRule}
-      style={{
-        aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : 'auto',
-      } as React.CSSProperties}
+      style={
+        {
+          aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : 'auto',
+        } as React.CSSProperties
+      }
     >
       {error ? (
         <div
@@ -151,7 +153,7 @@ export function OptimizedImage({
           {/* Low Quality Image Preview (LQIP) or Auto-Generated Placeholder */}
           {(lqip || localPlaceholder) && !isLoaded && !error && (
             <img
-              src={lqip || localPlaceholder!}
+              src={lqip ?? localPlaceholder ?? ''}
               alt=""
               aria-hidden="true"
               className={cn(
@@ -169,9 +171,9 @@ export function OptimizedImage({
           {!isLoaded && !lqip && !localPlaceholder && (
             <div
               aria-hidden
-              className="absolute inset-0 z-10 flex items-center justify-center bg-muted/10 animate-pulse"
+              className="absolute inset-0 z-10 flex animate-pulse items-center justify-center bg-muted/10"
             >
-              <Loader2 className="h-6 w-6 text-muted-foreground/20 animate-spin" />
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/20" />
             </div>
           )}
 
@@ -181,7 +183,7 @@ export function OptimizedImage({
             alt={alt}
             className={cn(
               'h-full w-full transition-all ease-out',
-              isLoaded ? 'opacity-100 scale-100 blur-0' : 'opacity-0',
+              isLoaded ? 'scale-100 opacity-100 blur-0' : 'opacity-0',
               className,
             )}
             style={{
