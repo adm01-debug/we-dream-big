@@ -218,6 +218,7 @@ export default function OptimizedImageDemo() {
                   <th className="p-2 border">Cenário</th>
                   <th className="p-2 border">URL de Origem</th>
                   <th className="p-2 border">Regra Detectada</th>
+                  <th className="p-2 border">Placeholder</th>
                   <th className="p-2 border">Status</th>
                 </tr>
               </thead>
@@ -254,21 +255,22 @@ export default function OptimizedImageDemo() {
                     expected: 'generic'
                   }
                 ].map((test, i) => (
-                  <tr key={i} className="hover:bg-muted/30">
+                  <tr key={i} className="hover:bg-muted/30" data-testid={`row-${test.expected}`}>
                     <td className="p-2 border font-medium">{test.name}</td>
                     <td className="p-2 border truncate max-w-[200px]" title={test.url}>{test.url}</td>
                     <td className="p-2 border">
-                      <div className="hidden">
-                        <OptimizedImage 
-                          src={test.url} 
-                          alt="test" 
-                          onLoad={() => {}} 
-                        />
-                      </div>
-                      <code className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs">
-                        {/* We use a small hack to get the rule from a dummy render if needed, 
-                            but for demo we can just use the component and check it */}
+                      <OptimizedImage 
+                        src={test.url} 
+                        alt="test" 
+                        containerClassName="hidden"
+                      />
+                      <code className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs" data-testid="rule-badge">
                         {test.expected}
+                      </code>
+                    </td>
+                    <td className="p-2 border">
+                      <code className="text-[10px] text-muted-foreground truncate block max-w-[150px]">
+                        {test.expected === 'cloudflare' ? '.../thumbnail' : test.expected === 'generic' ? 'None' : '...'}
                       </code>
                     </td>
                     <td className="p-2 border text-green-600 font-bold">✓ Validado</td>
