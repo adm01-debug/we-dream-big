@@ -19,6 +19,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { invokeExternalDb } from '@/lib/external-db';
 import { logger } from '@/lib/logger';
+import { isRestNativeWriteEligible, tryExecuteRestNativeWrite } from '@/lib/external-db/rest-native';
 import type { InvokeOptions, Operation } from '@/lib/external-db/bridge';
 
 interface BridgeBody {
