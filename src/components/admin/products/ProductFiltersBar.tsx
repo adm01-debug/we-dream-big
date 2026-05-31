@@ -55,14 +55,7 @@ export function ProductFiltersBar({ filters, onChange }: ProductFiltersBarProps)
   const [catSearch, setCatSearch] = useState('');
   const [supSearch, setSupSearch] = useState('');
 
-  // Carregar categorias e fornecedores ao abrir
-  useEffect(() => {
-    if (!isOpen) return;
-    if (categories.length === 0) loadCategories();
-    if (suppliers.length === 0) loadSuppliers();
-  }, [isOpen]);
-
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     setLoadingCats(true);
     try {
       const result = await invokeExternalDb<CategoryOption>({
@@ -78,9 +71,9 @@ export function ProductFiltersBar({ filters, onChange }: ProductFiltersBarProps)
     } finally {
       setLoadingCats(false);
     }
-  };
+  }, []);
 
-  const loadSuppliers = async () => {
+  const loadSuppliers = useCallback(async () => {
     setLoadingSups(true);
     try {
       const result = await invokeExternalDb<SupplierOption>({
@@ -96,7 +89,14 @@ export function ProductFiltersBar({ filters, onChange }: ProductFiltersBarProps)
     } finally {
       setLoadingSups(false);
     }
-  };
+  }, []);
+
+  // Carregar categorias e fornecedores ao abrir
+  useEffect(() => {
+    if (!isOpen) return;
+    if (categories.length === 0) loadCategories();
+    if (suppliers.length === 0) loadSuppliers();
+  }, [isOpen, categories.length, suppliers.length, loadCategories, loadSuppliers]);
 
   const update = useCallback(
     (partial: Partial<ProductFilters>) => {

@@ -33,13 +33,16 @@ export function SkeletonMonitor({
     // Only track if we are in the browser
     if (typeof window === 'undefined') return;
 
+    // Capture the current value of the ref to ensure the same value is used in cleanup
+    const currentStartTime = startTime.current;
+
     const timer = setInterval(() => {
-      setElapsed(Math.round(performance.now() - startTime.current));
+      setElapsed(Math.round(performance.now() - currentStartTime));
     }, 100);
 
     return () => {
       clearInterval(timer);
-      const duration = performance.now() - startTime.current;
+      const duration = performance.now() - currentStartTime;
 
       // Se durou menos de 50ms, ignoramos (provavelmente renderização síncrona/cache)
       if (duration < 50) return;

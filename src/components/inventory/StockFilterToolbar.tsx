@@ -138,7 +138,7 @@ export function StockFilterToolbar({
   useEffect(() => {
     const t = setTimeout(() => onUpdateFilter('search', localSearch), 300);
     return () => clearTimeout(t);
-  }, [localSearch]);
+  }, [localSearch, onUpdateFilter]);
 
   // Debounce quantity
   useEffect(() => {
@@ -147,7 +147,7 @@ export function StockFilterToolbar({
       onUpdateFilter('minQuantityNeeded', num > 0 ? num : undefined);
     }, 500);
     return () => clearTimeout(t);
-  }, [quantityInput]);
+  }, [quantityInput, onUpdateFilter]);
 
   const activeFiltersCount = [
     filters.status !== 'all',

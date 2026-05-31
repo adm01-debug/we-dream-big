@@ -348,7 +348,7 @@ export function useProductsManager() {
       filtered = filtered.filter((p) => p.price <= price_max);
     if (is_kit) filtered = filtered.filter((p) => p.is_kit);
     return filtered;
-  }, [products, advancedFilters.price_min, advancedFilters.price_max, advancedFilters.is_kit]);
+  }, [products, advancedFilters]);
 
   // BUG-27 FIX: pass advancedFilters explicitly so active filters persist when changing pages.
   // Previously relied on closure which could be stale if filters had just been set.
