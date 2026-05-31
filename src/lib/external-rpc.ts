@@ -48,12 +48,10 @@ export async function invokeExternalRpc<T>(
   params: Record<string, unknown>,
 ): Promise<T> {
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-      body: {
-        operation: 'rpc',
-        rpcName,
-        rpcParams: params,
-      },
+    const { data, error } = await invokeExternalDbBridge({
+      operation: 'rpc',
+      rpcName,
+      rpcParams: params,
     });
 
     if (!error && data?.success) {
