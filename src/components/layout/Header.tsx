@@ -412,15 +412,6 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-border" />
-                <DropdownMenuItem onClick={handleToggleTheme} className="cursor-pointer">
-                  {actualTheme === 'dark' ? (
-                    <Sun className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Moon className="mr-2 h-4 w-4" />
-                  )}
-                  {actualTheme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem onClick={handleToggleTooltipStyle} className="cursor-pointer">
                   <Palette className="mr-2 h-4 w-4" />
                   Tooltips: {tooltipStyle === 'compact' ? 'Standard' : 'Compact'}
