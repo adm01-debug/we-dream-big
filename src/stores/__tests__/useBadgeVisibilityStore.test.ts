@@ -2,17 +2,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useBadgeVisibilityStore } from '../useBadgeVisibilityStore';
 
 // Mock the lazy client
-vi.mock('@/integrations/supabase/lazy-client', () => ({
-  getSupabaseClient: vi.fn(() => Promise.resolve({
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: { preferences: {} }, error: null }),
-      maybeSingle: vi.fn().mockResolvedValue({ data: { preferences: {} }, error: null }),
-      update: vi.fn().mockResolvedValue({ error: null }),
-    })),
-  })),
-}));
+vi.mock('@/integrations/supabase/lazy-client', () => {
+  const mockSupabase = {
+    from: vi.fn(() => mockSupabase),
+    select: vi.fn(() => mockSupabase),
+    eq: vi.fn(() => mockSupabase),
+    update: vi.fn(() => mockSupabase),
+    single: vi.fn().mockResolvedValue({ data: { preferences: {} }, error: null }),
+    maybeSingle: vi.fn().mockResolvedValue({ data: { preferences: {} }, error: null }),
+    then: vi.fn((resolve) => resolve({ data: { preferences: {} }, error: null })),
+  };
+  // Ensure that .update().eq() works as expected
+  mockSupabase.update.mockReturnValue(mockSupabase);
+  mockSupabase.eq.mockReturnValue(mockSupabase);
+  
+  return {
+    getSupabaseClient: vi.fn(() => Promise.resolve(mockSupabase)),
+  };
+});
 
 describe('useBadgeVisibilityStore', () => {
   beforeEach(() => {
