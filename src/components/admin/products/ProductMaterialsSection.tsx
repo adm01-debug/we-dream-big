@@ -7,6 +7,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { materialService, type MaterialType } from '@/services/materialService';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import { MaterialBadge } from '@/components/materials/MaterialBadge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -118,13 +119,11 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
   >({
     queryKey: ['product-materials-full', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_materials',
-          operation: 'select',
-          filters: { product_id: productId },
-          limit: 200,
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_materials',
+        operation: 'select',
+        filters: { product_id: productId },
+        limit: 200,
       });
       if (error) throw new Error(error.message);
       return data?.data?.records || [];
