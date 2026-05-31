@@ -39,51 +39,12 @@ const STATUS_LABELS: Record<PriceFreshnessStatus, string> = {
 function buildAccessibleLabel(
   freshness: PriceFreshness,
   priceUpdatedAt?: string | Date | null,
-): { ariaLabel: string; title: string } {
-  const dateValue = priceUpdatedAt
-    ? priceUpdatedAt instanceof Date
-      ? priceUpdatedAt
-      : new Date(priceUpdatedAt)
-    : null;
-  const isValid = dateValue && !Number.isNaN(dateValue.getTime());
-  const longDate = isValid ? formatPriceDateLong(dateValue) : null;
-  const days = freshness.daysSinceUpdate;
-  const relative =
-    days === null ? null : days === 0 ? 'há 0 dias' : days === 1 ? 'há 1 dia' : `há ${days} dias`;
-
+): { ariaLabel: string } {
+...
   // Frase principal lida pelo screen reader (curta e direta).
   let ariaLabel: string;
-  switch (freshness.status) {
-    case 'fresh':
-      ariaLabel = longDate
-        ? `Preço atualizado pelo fornecedor em ${longDate}, ${relative}.`
-        : 'Preço atualizado pelo fornecedor recentemente.';
-      break;
-    case 'aging':
-      ariaLabel = longDate
-        ? `Preço próximo do limite de validade. Última atualização do fornecedor em ${longDate}, ${relative}. Recomendamos confirmar antes de fechar o orçamento.`
-        : 'Preço próximo do limite de validade. Recomendamos confirmar com o fornecedor.';
-      break;
-    case 'stale':
-      ariaLabel = longDate
-        ? `Atenção: preço possivelmente defasado. Última atualização do fornecedor em ${longDate}, ${relative}. Confirme o valor antes de enviar o orçamento ao cliente.`
-        : 'Atenção: preço possivelmente defasado. Confirme com o fornecedor antes de enviar o orçamento.';
-      break;
-    case 'unknown':
-    default: {
-      // Diferencia entre data ausente e data inválida (ambas caem em
-      // `unknown` na utility, mas o `freshness.label` carrega a causa).
-      const isInvalid = /inválida/i.test(freshness.label);
-      ariaLabel = isInvalid
-        ? 'Preço com data de atualização inválida informada pelo fornecedor. Confirme o valor antes de enviar o orçamento.'
-        : 'Preço com data de atualização não informada pelo fornecedor. Confirme o valor antes de enviar o orçamento.';
-    }
-  }
-
-  // `title` espelha o aria-label para que o tooltip nativo do navegador
-  // funcione mesmo quando o Radix Tooltip não estiver disponível (ex.: foco
-  // por teclado em browsers sem suporte a hover).
-  return { ariaLabel, title: ariaLabel };
+...
+  return { ariaLabel };
 }
 
 /** Data + hora exatas no fuso local do usuário (PT-BR). Ex.: "24/04/2026 09:32". */
@@ -361,25 +322,33 @@ export function PriceFreshnessBadge({
     // discreto para que o vendedor consiga conferir sem abrir o tooltip.
     const compactDate = priceUpdatedAt ? formatAbsoluteDate(priceUpdatedAt) : null;
     body = (
-      <span
-        role="status"
-        aria-label={ariaLabel}
-        title={title}
-        tabIndex={0}
-        className={cn(
-          'inline-flex items-center gap-1 text-xs font-medium',
-          color,
-          focusRing,
-          className,
-        )}
-      >
-        <Icon className="h-3 w-3" aria-hidden="true" />
-        <span className="tabular-nums">
-          {formatCompactRelative(freshness.daysSinceUpdate)}
-          {compactDate && <span className="text-muted-foreground"> · em {compactDate}</span>}
-          {limitSuffix && <span className="text-muted-foreground">{limitSuffix}</span>}
-        </span>
-      </span>
+      <TooltipProvider delayDuration={700}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              role="status"
+              aria-label={ariaLabel}
+              tabIndex={0}
+              className={cn(
+                'inline-flex items-center gap-1 text-xs font-medium',
+                color,
+                focusRing,
+                className,
+              )}
+            >
+              <Icon className="h-3 w-3" aria-hidden="true" />
+              <span className="tabular-nums">
+                {formatCompactRelative(freshness.daysSinceUpdate)}
+                {compactDate && <span className="text-muted-foreground"> · em {compactDate}</span>}
+                {limitSuffix && <span className="text-muted-foreground">{limitSuffix}</span>}
+              </span>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <FreshnessTooltipBody freshness={freshness} priceUpdatedAt={priceUpdatedAt} />
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   } else if (variant === 'pdp') {
     const absolute = priceUpdatedAt ? formatAbsoluteDate(priceUpdatedAt) : null;
@@ -467,16 +436,30 @@ export function PriceFreshnessBadge({
     // anexa a data numérica pt-BR no padrão "em DD/MM/AAAA".
     const inlineDate = priceUpdatedAt ? formatAbsoluteDate(priceUpdatedAt) : null;
     body = (
-      <span
-        role="status"
-        aria-label={ariaLabel}
-        title={title}
-        className={cn('inline-flex items-center gap-1.5 text-xs font-medium', color, className)}
-      >
-        <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        <span>
-          {freshness.label}
-          {inlineDate && (
+      <TooltipProvider delayDuration={700}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              role="status"
+              aria-label={ariaLabel}
+              className={cn('inline-flex items-center gap-1.5 text-xs font-medium', color, className)}
+            >
+              <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>
+                {freshness.label}
+                {inlineDate && (
+                  <span className="text-muted-foreground"> · em {inlineDate}</span>
+                )}
+                {limitSuffix && <span className="text-muted-foreground">{limitSuffix}</span>}
+              </span>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <FreshnessTooltipBody freshness={freshness} priceUpdatedAt={priceUpdatedAt} />
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
             <span className="tabular-nums text-muted-foreground"> · em {inlineDate}</span>
           )}
           {limitSuffix}
