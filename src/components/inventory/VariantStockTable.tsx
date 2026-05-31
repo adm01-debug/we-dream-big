@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { type ProductStockSummary, type VariantStock, type StockStatus } from '@/types/stock';
 
 // ============================================
