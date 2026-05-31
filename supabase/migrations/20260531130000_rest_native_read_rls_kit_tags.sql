@@ -78,4 +78,26 @@ BEGIN
       RAISE NOTICE 'Table product_tags not found — skipping policy';
     END IF;
   END IF;
+
+  -- ── tags ──────────────────────────────────────────────────────────────
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename  = 'tags'
+      AND policyname = 'tags_select_public'
+  ) THEN
+    IF EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'tags'
+    ) THEN
+      CREATE POLICY "tags_select_public"
+        ON public.tags
+        FOR SELECT
+        TO anon, authenticated
+        USING (true);
+      RAISE NOTICE 'Created policy tags_select_public';
+    ELSE
+      RAISE NOTICE 'Table tags not found — skipping policy';
+    END IF;
+  END IF;
 END $$;

@@ -574,8 +574,10 @@ jobs:
     name: Critical Flows E2E
     runs-on: ubuntu-latest
     needs: quality
+    permissions:
+      contents: read
     env:
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://doufsxqlfjyuvxuezpln.supabase.co' }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_tjH5qAbZ0e5HTTd872NijQ_s9m6JvYU' }}
       E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
       E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
@@ -590,7 +592,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
       - name: Run Critical E2E
-        if: env.E2E_USER_EMAIL != ''
+        if: env.E2E_USER_EMAIL != '' && env.VITE_SUPABASE_URL != ''
         run: npm run test:e2e:critical
       - name: Upload E2E Report
         if: always()
@@ -611,8 +613,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-gate, detect-changes]
     if: github.event_name != 'pull_request' || needs.detect-changes.outputs.elite_changed == 'true'
+    permissions:
+      contents: read
     env:
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://doufsxqlfjyuvxuezpln.supabase.co' }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_tjH5qAbZ0e5HTTd872NijQ_s9m6JvYU' }}
       E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
       E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
@@ -627,7 +631,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
       - name: Run Elite UI Flows
-        if: env.E2E_USER_EMAIL != ''
+        if: env.E2E_USER_EMAIL != '' && env.VITE_SUPABASE_URL != ''
         run: npx playwright test e2e/flows/elite-ux-validation.spec.ts
       - name: Upload Elite E2E Report
         if: always()

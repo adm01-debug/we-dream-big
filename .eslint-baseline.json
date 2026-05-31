@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-31T14:36:16.760Z",
+  "generatedAt": "2026-05-31T15:01:11.510Z",
   "totalErrors": 80,
   "counts": {
     "src/components/access/DevAccessDeniedPage.tsx": {
@@ -327,9 +327,6 @@
     },
     "src/hooks/admin/useDevGate.ts": {
       "react-hooks/exhaustive-deps": 1
-    },
-    "src/hooks/auth/useAccessSecurity.ts": {
-      "@typescript-eslint/naming-convention": 5
     },
     "src/hooks/common/useSearch.ts": {
       "react-hooks/exhaustive-deps": 2

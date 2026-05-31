@@ -195,6 +195,17 @@ export const useBadgeVisibilityStore = create<BadgeVisibilityStore>()(
         ) {
           const bv = (preferences as Record<string, unknown>).badge_visibility;
           if (bv !== null && typeof bv === 'object' && !Array.isArray(bv)) {
+            const isValidEntry = (v: unknown): v is ThemeSettings =>
+              v !== null &&
+              typeof v === 'object' &&
+              !Array.isArray(v) &&
+              typeof (v as Record<string, unknown>).light === 'boolean' &&
+              typeof (v as Record<string, unknown>).dark === 'boolean';
+            const allValid = Object.values(bv).every(isValidEntry);
+            if (!allValid) {
+              console.warn('[BadgeVisibilityStore] Invalid badge_visibility structure, ignoring.');
+              return;
+            }
             set({
               routeSettings: bv as Record<string, ThemeSettings>,
               syncError: null,
