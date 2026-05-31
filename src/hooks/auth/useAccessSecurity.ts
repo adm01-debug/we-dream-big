@@ -78,7 +78,9 @@ export function useAccessSecurity() {
           .order('country_name', { ascending: true }),
         supabase
           .from('rls_denial_log')
-          .select('id, user_email, ip_address, error_message, operation, table_name, user_agent, created_at')
+          .select(
+            'id, user_email, ip_address, error_message, operation, table_name, user_agent, created_at',
+          )
           .order('created_at', { ascending: false })
           .limit(50),
       ]);
@@ -91,14 +93,16 @@ export function useAccessSecurity() {
       if (ipsRes.data) {
         const now = new Date().toISOString();
         setIps(
-          (ipsRes.data as Array<{
-            id: string;
-            ip_address: string;
-            list_type: string;
-            reason: string | null;
-            expires_at: string | null;
-            created_at: string;
-          }>).map((row) => ({
+          (
+            ipsRes.data as Array<{
+              id: string;
+              ip_address: string;
+              list_type: string;
+              reason: string | null;
+              expires_at: string | null;
+              created_at: string;
+            }>
+          ).map((row) => ({
             ...row,
             is_active: !row.expires_at || row.expires_at > now,
           })),
@@ -133,10 +137,10 @@ export function useAccessSecurity() {
     toast.success('Configurações atualizadas');
   };
 
-  const addIp = async (ip_address: string, reason?: string) => {
+  const addIp = async (ipAddress: string, reason?: string) => {
     const { data, error } = await supabase
       .from('ip_access_control')
-      .insert({ ip_address, list_type: 'allowlist', reason: reason || null })
+      .insert({ ip_address: ipAddress, list_type: 'allowlist', reason: reason || null })
       .select('id, ip_address, list_type, reason, expires_at, created_at')
       .single();
     if (error) {
@@ -153,7 +157,10 @@ export function useAccessSecurity() {
       expires_at: string | null;
       created_at: string;
     };
-    setIps((prev) => [{ ...entry, is_active: !entry.expires_at || entry.expires_at > now }, ...prev]);
+    setIps((prev) => [
+      { ...entry, is_active: !entry.expires_at || entry.expires_at > now },
+      ...prev,
+    ]);
     toast.success('IP adicionado à whitelist');
     return true;
   };
@@ -168,20 +175,22 @@ export function useAccessSecurity() {
     toast.success('IP removido');
   };
 
-  const toggleIp = async (id: string, is_active: boolean) => {
-    const expires_at = is_active ? null : new Date(0).toISOString();
+  const toggleIp = async (id: string, isActive: boolean) => {
+    const expires_at = isActive ? null : new Date(0).toISOString();
     const { error } = await supabase.from('ip_access_control').update({ expires_at }).eq('id', id);
     if (error) {
       toast.error('Erro ao atualizar IP');
       return;
     }
-    setIps((prev) => prev.map((ip) => (ip.id === id ? { ...ip, is_active, expires_at } : ip)));
+    setIps((prev) =>
+      prev.map((ip) => (ip.id === id ? { ...ip, is_active: isActive, expires_at } : ip)),
+    );
   };
 
-  const addCountry = async (country_code: string, country_name: string) => {
+  const addCountry = async (countryCode: string, countryName: string) => {
     const { data, error } = await supabase
       .from('geo_allowed_countries')
-      .insert({ country_code, country_name })
+      .insert({ country_code: countryCode, country_name: countryName })
       .select()
       .single();
     if (error) {
@@ -204,13 +213,16 @@ export function useAccessSecurity() {
     toast.success('País removido');
   };
 
-  const toggleCountry = async (id: string, is_active: boolean) => {
-    const { error } = await supabase.from('geo_allowed_countries').update({ is_active }).eq('id', id);
+  const toggleCountry = async (id: string, isActive: boolean) => {
+    const { error } = await supabase
+      .from('geo_allowed_countries')
+      .update({ is_active: isActive })
+      .eq('id', id);
     if (error) {
       toast.error('Erro ao atualizar país');
       return;
     }
-    setCountries((prev) => prev.map((c) => (c.id === id ? { ...c, is_active } : c)));
+    setCountries((prev) => prev.map((c) => (c.id === id ? { ...c, is_active: isActive } : c)));
   };
 
   return {
@@ -224,8 +236,8 @@ export function useAccessSecurity() {
     addIp,
     removeIp,
     toggleIp,
-    addCity: (city_name: string, state?: string, country_code = 'BR') =>
-      addCountry(country_code, city_name + (state ? `, ${state}` : '')),
+    addCity: (cityName: string, state?: string, countryCode = 'BR') =>
+      addCountry(countryCode, cityName + (state ? `, ${state}` : '')),
     removeCity: removeCountry,
     toggleCity: toggleCountry,
     refetch: fetchAll,

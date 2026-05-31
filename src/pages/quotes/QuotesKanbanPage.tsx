@@ -32,14 +32,15 @@ export default function QuotesKanbanPage() {
     let cancelled = false;
     const fetchClients = async () => {
       try {
-        const companies = await selectCrm<{ id: string; razao_social: string; nome_fantasia: string }>(
-          'companies',
-          {
-            select: 'id, razao_social, nome_fantasia',
-            orderBy: { column: 'nome_fantasia', ascending: true },
-            limit: 500,
-          },
-        );
+        const companies = await selectCrm<{
+          id: string;
+          razao_social: string;
+          nome_fantasia: string;
+        }>('companies', {
+          select: 'id, razao_social, nome_fantasia',
+          orderBy: { column: 'nome_fantasia', ascending: true },
+          limit: 500,
+        });
         if (!cancelled) {
           setClients(
             companies.map((c) => ({ id: c.id, name: c.nome_fantasia || c.razao_social || '' })),
