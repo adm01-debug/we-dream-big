@@ -46,7 +46,7 @@ interface BadgeVisibilityStore {
   /**
    * Inicializa o store a partir das preferências do perfil do usuário.
    */
-  initializeFromProfile: (preferences: any) => void;
+  initializeFromProfile: (preferences: unknown) => void;
 }
 
 /**
@@ -179,8 +179,16 @@ export const useBadgeVisibilityStore = create<BadgeVisibilityStore>()(
       },
 
       initializeFromProfile: (preferences) => {
-        if (preferences?.badge_visibility) {
-          set({ routeSettings: preferences.badge_visibility, syncError: null });
+        if (
+          preferences !== null &&
+          typeof preferences === 'object' &&
+          !Array.isArray(preferences) &&
+          'badge_visibility' in preferences
+        ) {
+          set({
+            routeSettings: preferences.badge_visibility as unknown as Record<string, ThemeSettings>,
+            syncError: null,
+          });
         }
       },
     }),
