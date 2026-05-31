@@ -433,13 +433,11 @@ export function useProductImageGallery({
           // Set new primary
           const newPrimaryExt = extImageMap.get(url);
           if (newPrimaryExt?.id) {
-            await supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id: newPrimaryExt.id,
-                data: { is_primary: true, display_order: 0 },
-              },
+            await invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id: newPrimaryExt.id,
+              data: { is_primary: true, display_order: 0 },
             });
           }
           queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
