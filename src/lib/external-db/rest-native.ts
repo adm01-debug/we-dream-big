@@ -416,7 +416,7 @@ export async function executeRestNativeWrite<T>(options: InvokeOptions): Promise
   const table = resolveWriteTable(options.table);
   const hasScope = !!options.id || (!!options.filters && Object.keys(options.filters).length > 0);
   if ((options.operation === 'update' || options.operation === 'delete') && !hasScope)
-    throw new Error(`rest-native: ${options.operation} on '${table}' without filter/id is forbidden (mass mutation guard).`);
+    throw new Error(`rest-native: ${options.operation} em '${table}' sem filtro/id é proibido (proteção contra mutação em massa).`);
   const client = supabase as unknown as RestWriteClient;
   const tbl = client.from(table);
   const scoped = (b: RestWriteBuilder): RestWriteBuilder => {
