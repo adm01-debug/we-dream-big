@@ -20,13 +20,12 @@ interface ColorMedia {
   videos?: string[];
 }
 
-function ColorThumb({ src, alt, title }: { src: string; alt: string; title: string }) {
+function ColorThumb({ src, alt }: { src: string; alt: string }) {
   const [loaded, setLoaded] = useState(false);
   return (
     <img
       src={src}
       alt={alt}
-      title={title}
       className={cn(
         'h-full w-full object-cover transition-all duration-700 ease-out group-hover/color:scale-110',
         loaded ? 'scale-100 opacity-100 blur-0' : 'scale-105 opacity-40 blur-sm',
@@ -153,11 +152,22 @@ export function GalleryColorVariations({
                           <ColorThumb
                             src={getCdnUrl(color.images?.[0] || color.image || '', 'thumbnail')}
                             alt={color.name}
-                            title={color.name}
                           />
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent>{color.name}</TooltipContent>
+                      <TooltipContent
+                        side="top"
+                        sideOffset={8}
+                        className="border border-border/40 bg-popover/95 px-2.5 py-1 text-xs font-medium text-popover-foreground shadow-md backdrop-blur-sm"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/20"
+                            style={{ backgroundColor: color.hex }}
+                          />
+                          {color.name}
+                        </div>
+                      </TooltipContent>
                     </Tooltip>
                   ) : (
                     <div className="h-full w-full" style={{ backgroundColor: color.hex }} />
