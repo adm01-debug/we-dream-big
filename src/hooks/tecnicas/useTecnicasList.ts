@@ -9,6 +9,7 @@
  */
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import { TECNICAS_QUERY_OPTIONS } from '@/lib/query-config';
 import { TECNICAS_QUERY_KEYS } from '@/hooks/tecnicas/keys';
 import type { TecnicaUnificada, TecnicaResumo, TecnicaFiltros } from '@/types/tecnica-unificada';
