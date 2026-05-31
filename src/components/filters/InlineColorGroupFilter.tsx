@@ -158,7 +158,7 @@ export function InlineColorGroupFilter({
   const toggleExpand = (groupId: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      next.has(groupId) ? next.delete(groupId) : next.add(groupId);
+      if (next.has(groupId)) next.delete(groupId); else next.add(groupId);
       return next;
     });
   };

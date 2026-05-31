@@ -106,10 +106,10 @@ export function StockFilterToolbar({
   filters,
   onUpdateFilter,
   onResetFilters,
-  categories,
+  categories: _categories,
   suppliers,
-  colors,
-  colorGroups,
+  colors: _colors,
+  colorGroups: _colorGroups,
   totalProducts,
   filteredCount,
 }: StockFilterToolbarProps) {

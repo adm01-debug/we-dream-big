@@ -11,7 +11,7 @@ const WINDOW_MS = 5 * 60 * 1000;
 
 export function RealtimeBadge() {
   const [count, setCount] = useState(0);
-  const [events, setEvents] = useState<number[]>([]);
+  const [, setEvents] = useState<number[]>([]);
 
   useEffect(() => {
     const channel = supabase
