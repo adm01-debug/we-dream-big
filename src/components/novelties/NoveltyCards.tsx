@@ -422,7 +422,11 @@ export function NoveltyTableView({
                   </span>
                 </TableCell>
                 <TableCell className="px-2 py-1.5 text-center">
-                  <NoveltyBadge daysRemaining={product.days_remaining} size="sm" />
+                  <NoveltyBadge 
+                    daysRemaining={product.days_remaining} 
+                    size="sm" 
+                    onClick={() => onStatusClick?.('novelty')}
+                  />
                 </TableCell>
                 <TableCell className="px-2 py-1.5 text-center">
                   <span
