@@ -2,8 +2,6 @@ import React, { useEffect, type CSSProperties } from 'react';
 import {
   User,
   Menu,
-  Sun,
-  Moon,
   Heart,
   GitCompare,
   Search,
