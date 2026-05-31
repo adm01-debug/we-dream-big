@@ -916,7 +916,6 @@ export default function Auth() {
           )}
 
           <LegalFooter />
-          <SupabaseConnectionDebug />
         </div>
       </div>
     </main>
