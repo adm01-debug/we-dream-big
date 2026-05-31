@@ -91,8 +91,7 @@ function CommemorativeDateItem({
   date,
   isSelected,
   onSelect,
-  compact: _compact, // Prefixo _ para indicar que não está sendo usado no momento
-}: CommemorativeDateItemProps) {
+}: Omit<CommemorativeDateItemProps, 'compact'>) {
   const daysUntilText = getDaysUntilText(date.days_until);
 
   return (
