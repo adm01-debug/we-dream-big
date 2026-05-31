@@ -28,6 +28,13 @@ interface ProductCardImageProps {
       groupSlug?: string;
       variationSlug?: string;
     }>;
+    // Image configuration per product
+    imageConfig?: {
+      blurAmount?: number;
+      zoomAmount?: number;
+      duration?: number;
+      lqip?: string;
+    };
   };
   cardImageUrl: string;
   cardSrcSet?: string;
@@ -116,9 +123,10 @@ export const ProductCardImage = memo(function ProductCardImage({
         onLoad={onImageLoad}
         containerClassName="h-full w-full"
         priority={priority}
-        blurAmount={20}
-        zoomAmount={1.1}
-        duration={800}
+        blurAmount={product.imageConfig?.blurAmount ?? 10}
+        zoomAmount={product.imageConfig?.zoomAmount ?? 1.05}
+        duration={product.imageConfig?.duration ?? 600}
+        lqip={product.imageConfig?.lqip}
       />
 
       {/* Active color badge (mobile) */}
