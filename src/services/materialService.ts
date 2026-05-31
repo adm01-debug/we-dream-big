@@ -3,11 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 const CANONICAL_URL = 'https://doufsxqlfjyuvxuezpln.supabase.co';
 const CANONICAL_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdWZzeHFsZmp5dXZ4dWV6cGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczODY2NDMsImV4cCI6MjA4Mjk2MjY0M30.nm3WMOBSx5SUnIBmvF_Mj0Y-4hV6UohrBF0sUpuQvPc';
-const SUPABASE_URL =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || CANONICAL_URL;
+const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL || CANONICAL_URL;
 const SUPABASE_PUBLISHABLE_KEY =
-  (typeof import.meta !== 'undefined' &&
-    (import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY)) ||
+  import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env?.VITE_SUPABASE_ANON_KEY ||
   CANONICAL_ANON_KEY;
 
 // Tipos
