@@ -17,11 +17,12 @@ describe('PriceFreshnessBadge Component', () => {
     return render(<TooltipProvider>{ui}</TooltipProvider>);
   };
 
-  it("renders 'Atualizado hoje' for fresh updates in inline variant", () => {
+  it("renders 'Atualizado em DD/MM/AAAA' for fresh updates in inline variant", () => {
     const today = new Date('2026-05-03T09:00:00Z').toISOString();
     renderWithProvider(<PriceFreshnessBadge priceUpdatedAt={today} variant="inline" />);
 
-    expect(screen.getByText(/Atualizado hoje/i)).toBeInTheDocument();
+    // Agora padronizado para exibir apenas a data curta
+    expect(screen.getByText(/Atualizado em 03\/05\/2026/i)).toBeInTheDocument();
   });
 
   it('renders nothing for fresh updates in compact variant (unless alwaysShow is true)', () => {
@@ -42,21 +43,25 @@ describe('PriceFreshnessBadge Component', () => {
     expect(screen.getByText(/há 4m/i)).toBeInTheDocument();
   });
 
-  it("renders 'Atualizado há 45 dias' for aging updates in inline variant", () => {
+  it("renders 'Atualizado em 19/03/2026' for aging updates in inline variant", () => {
     // 2026-05-03 - 45 days ago
     const fortyFiveDaysAgo = new Date('2026-03-19T12:00:00Z').toISOString();
     renderWithProvider(<PriceFreshnessBadge priceUpdatedAt={fortyFiveDaysAgo} variant="inline" />);
 
-    expect(screen.getByText(/Atualizado há 45 dias/i)).toBeInTheDocument();
+    // Antes era "Atualizado há 45 dias", agora é padronizado
+    expect(screen.getByText(/Atualizado em 19\/03\/2026/i)).toBeInTheDocument();
   });
 
-  it('renders PDP variant with warning box for stale updates', () => {
+  it('renders PDP variant with simple date for stale updates', () => {
     const monthsAgo = new Date('2026-01-03T12:00:00Z').toISOString();
     renderWithProvider(<PriceFreshnessBadge priceUpdatedAt={monthsAgo} variant="pdp" />);
 
-    expect(screen.getByText(/Preço pode estar defasado/i)).toBeInTheDocument();
-    expect(screen.getByText(/\(há 120 dias\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/Confirme com o fornecedor/i)).toBeInTheDocument();
+    // No PDP agora mostramos apenas a data curta
+    expect(screen.getByText(/Atualizado em 03\/01\/2026/i)).toBeInTheDocument();
+    
+    // Detalhes como "há 120 dias" ou recomendações não devem estar no badge (vão para o tooltip)
+    expect(screen.queryByText(/\(há 120 dias\)/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Confirme com o fornecedor/i)).not.toBeInTheDocument();
   });
 
   it("shows 'Confirmado' state when confirmedAt is provided", () => {
@@ -94,7 +99,7 @@ describe('PriceFreshnessBadge Component', () => {
     const status = screen.getByRole('status');
     expect(status).toHaveAttribute(
       'aria-label',
-      expect.stringContaining('Preço atualizado pelo fornecedor'),
+      expect.stringContaining('Atualizado hoje'),
     );
   });
 });
