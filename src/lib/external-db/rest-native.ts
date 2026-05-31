@@ -35,7 +35,7 @@ const REST_NATIVE_SAFE_TABLES = new Set<string>([
   'product_relationships', 'product_groups', 'product_group_members',
   'v_price_history_safe',
   'system_kill_switches',
-  'variant_supplier_sources', 'supplier_branches',
+  'variant_supplier_sources', 'supplier_branches', 'categories',
 ]);
 
 const TABLE_ALIASES: Record<string, string> = {
