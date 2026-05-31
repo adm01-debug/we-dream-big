@@ -12,6 +12,7 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   duration?: number;
   lqip?: string;
   debug?: boolean;
+  onDetection?: (rule: string) => void;
 }
 
 /**
@@ -87,6 +88,12 @@ export function OptimizedImage({
 
     return { localPlaceholder: null, detectionRule: 'generic' };
   }, [lqip, src, debug]);
+
+  useEffect(() => {
+    if (onDetection) {
+      onDetection(detectionRule);
+    }
+  }, [detectionRule, onDetection]);
 
   useEffect(() => {
     if (priority) {

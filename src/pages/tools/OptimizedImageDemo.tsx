@@ -7,6 +7,45 @@ import { Button } from '@/components/ui/button';
 import { RefreshCcw, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+function ValidationRow({ test }: { test: any }) {
+  const [detectedRule, setDetectedRule] = useState<string>('detecting...');
+
+  return (
+    <tr className="hover:bg-muted/30" data-testid={`row-${test.expected}`}>
+      <td className="p-2 border font-medium">{test.name}</td>
+      <td className="p-2 border truncate max-w-[200px]" title={test.url}>{test.url}</td>
+      <td className="p-2 border">
+        <div className="flex items-center gap-2">
+          <OptimizedImage 
+            src={test.url} 
+            alt="test" 
+            containerClassName="hidden"
+            onDetection={(rule) => setDetectedRule(rule)}
+          />
+          <code className={cn(
+            "px-2 py-0.5 rounded text-xs",
+            detectedRule === test.expected 
+              ? "bg-green-100 text-green-700" 
+              : "bg-yellow-100 text-yellow-700"
+          )} data-testid="rule-badge">
+            {detectedRule}
+          </code>
+        </div>
+      </td>
+      <td className="p-2 border">
+        {detectedRule === test.expected ? (
+          <span className="text-green-600 font-bold flex items-center gap-1 text-xs">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            ✓ Validado
+          </span>
+        ) : (
+          <span className="text-muted-foreground italic text-xs">Aguardando...</span>
+        )}
+      </td>
+    </tr>
+  );
+}
+
 export default function OptimizedImageDemo() {
   const [blur, setBlur] = useState(20);
   const [zoom, setZoom] = useState(1.1);
@@ -254,28 +293,15 @@ export default function OptimizedImageDemo() {
                     expected: 'generic'
                   }
                 ].map((test, i) => (
-                  <tr key={i} className="hover:bg-muted/30">
-                    <td className="p-2 border font-medium">{test.name}</td>
-                    <td className="p-2 border truncate max-w-[200px]" title={test.url}>{test.url}</td>
-                    <td className="p-2 border">
-                      <div className="hidden">
-                        <OptimizedImage 
-                          src={test.url} 
-                          alt="test" 
-                          onLoad={() => {}} 
-                        />
-                      </div>
-                      <code className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs">
-                        {/* We use a small hack to get the rule from a dummy render if needed, 
-                            but for demo we can just use the component and check it */}
-                        {test.expected}
-                      </code>
-                    </td>
-                    <td className="p-2 border text-green-600 font-bold">✓ Validado</td>
-                  </tr>
+                  <ValidationRow key={i} test={test} />
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-md">
+            <p className="text-xs text-blue-700">
+              <strong>Dica:</strong> Esta tabela valida em tempo real a detecção automática do componente baseada na URL.
+            </p>
           </div>
           <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-md">
             <p className="text-xs text-blue-700">
