@@ -42,6 +42,7 @@ describe('stockFetcher Resilience', () => {
         is: vi.fn().mockReturnThis(),
         in: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
         range: vi.fn().mockResolvedValue({
           data: (mockData as any)[table] || [],
           error: null,
@@ -71,6 +72,7 @@ describe('stockFetcher Resilience', () => {
       eq: vi.fn().mockReturnThis(),
       is: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({ data: [], error: null, count: 0 }),
     } as any);
 

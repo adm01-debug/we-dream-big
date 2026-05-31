@@ -388,6 +388,9 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
   }
   if (options.orderBy) {
     query = query.order(remapOrderByCol(tableName, options.orderBy.column), { ascending: options.orderBy.ascending ?? true });
+  } else {
+    // Phase 6 (2026-05-31): Fallback order by ID for stable pagination
+    query = query.order('id', { ascending: true });
   }
   if (typeof options.limit === 'number') {
     const offset = options.offset ?? 0;
@@ -396,8 +399,13 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
     logger.warn(`[rest-native] PAGINATION WARNING: offset=${options.offset} without limit on table=${tableName}. Capping at ${OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER}.`);
     query = query.range(options.offset, options.offset + OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER);
   }
-  const { data, error, count } = await query;
-  if (error) throw new Error(`rest-native error (${tableName}): ${error.message}`);
+  const { data, error, count, status } = await query;
+  if (error) {
+    if (status === 410) {
+      throw new Error(`O sistema de integração nativa para '${tableName}' retornou 410 Gone (Descontinuado).`);
+    }
+    throw new Error(`rest-native error (${tableName}): ${error.message}`);
+  }
   return { records: mapRows(tableName, data ?? []) as T[], count: typeof count === 'number' ? count : null };
 }
 

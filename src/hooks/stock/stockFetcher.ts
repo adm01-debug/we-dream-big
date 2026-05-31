@@ -113,8 +113,13 @@ export async function fetchPaginatedFromBridge<T extends { id: string }>(
     if (error) {
       // Phase 6: Tratamento específico para 410 Gone (PostgREST ou Edge)
       if (status === 410 || error.message?.includes('410') || error.message?.includes('Gone')) {
-        logger.warn(`[Stock] Tabela ${table} retornou 410 Gone. Caminho PostgREST pode estar incompleto.`);
-        break; // Para a busca mas não quebra o app
+        const friendlyMsg = `A integração de catálogo legado para '${table}' foi descontinuada (410 Gone).`;
+        logger.warn(`[Stock] ${friendlyMsg} Tentando continuar com dados parciais.`);
+        
+        if (all.length === 0) {
+          throw new Error(`O sistema de integração legado foi descontinuado. Por favor, atualize o app para usar a nova conexão nativa.`);
+        }
+        break; // Para a busca mas não quebra se já tivermos alguns dados
       }
       
       const errorMsg = `Erro ao buscar ${table}: ${error.message}`;
