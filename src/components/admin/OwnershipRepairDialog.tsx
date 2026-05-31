@@ -310,7 +310,7 @@ export function OwnershipRepairDialog({ reportId, hasIssues }: Props) {
 function Stat({
   label,
   value,
-  icon: Icon,
+  icon: iconElement,
   tone,
 }: {
   label: string;
@@ -318,6 +318,7 @@ function Stat({
   icon: typeof Trash2;
   tone: 'destructive' | 'warning' | 'muted';
 }) {
+  const Icon = iconElement;
   const toneClass =
     tone === 'destructive'
       ? 'text-destructive'

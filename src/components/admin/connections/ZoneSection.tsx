@@ -44,7 +44,7 @@ const TONE_CLS = {
 
 export function ZoneSection({
   id,
-  icon: Icon,
+  icon: iconElement,
   title,
   description,
   tone = 'primary',
@@ -55,6 +55,7 @@ export function ZoneSection({
   children,
   className,
 }: ZoneSectionProps) {
+  const Icon = iconElement;
   const headingId = `${id}-heading`;
   const contentId = `${id}-content`;
   const tcls = TONE_CLS[tone];

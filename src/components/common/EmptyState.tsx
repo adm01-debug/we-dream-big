@@ -212,13 +212,14 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(func
 // Compact version for inline use
 export function InlineEmptyState({
   message,
-  icon: Icon = Inbox,
+  icon: iconElement = Inbox,
   className,
 }: {
   message: string;
   icon?: typeof Inbox;
   className?: string;
 }) {
+  const Icon = iconElement;
   return (
     <div
       className={cn(
