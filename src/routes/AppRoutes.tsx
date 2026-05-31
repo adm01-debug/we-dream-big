@@ -80,7 +80,7 @@ function RouteSuspenseDone({ children }: { children: ReactNode }) {
  *   - `homeAndClientRoutes` — home, dashboard, clientes, redirects
  * - `notFoundRoute` (`*` catch-all) — PÚBLICO, fora do ProtectedRoute,
  *   para que rotas inexistentes mostrem o 404 mesmo sem sessão.
- *   DEVE ser o ÚTIMO Route (precedência por ordem em react-router-dom).
+ *   DEVE ser o ÚLTIMO Route (precedência por ordem em react-router-dom).
  */
 export function AppRoutes() {
   return (
