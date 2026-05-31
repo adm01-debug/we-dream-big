@@ -11,6 +11,7 @@ export function ColorTooltipContent({ colorName, colorHex, className }: ColorToo
     <div className={cn("flex items-center gap-1.5", className)}>
       <span
         className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/20"
+        data-testid="color-tooltip-swatch"
         style={{ backgroundColor: colorHex }}
       />
       {colorName}
