@@ -58,6 +58,7 @@ interface ProductListItemProps {
   activeColorFilter?: ActiveColorFilter | null;
   isNovelty?: boolean;
   noveltyDaysRemaining?: number;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }
 
 export const ProductListItem = memo(function ProductListItem({
