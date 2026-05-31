@@ -32,11 +32,12 @@ jobs:
       run: npx playwright install --with-deps chromium
 
     - name: Run OptimizedImage E2E tests
-      run: npx playwright test optimized-image-detection.spec.ts optimized-image-visual.spec.ts
+      run: npx playwright test optimized-image-detection.spec.ts optimized-image-visual.spec.ts --project=chromium-public
       env:
         CI: true
         VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
         VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder-anon-key' }}
+
 
     - uses: actions/upload-artifact@v4
       if: always()
