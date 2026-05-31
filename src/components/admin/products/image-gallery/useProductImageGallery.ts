@@ -173,16 +173,14 @@ export function useProductImageGallery({
         return;
       }
       try {
-        const { error } = await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'product_images',
-            operation: 'update',
-            id: ext.id,
-            data: {
-              alt_text: data.alt_text.trim() || null,
-              image_type: data.image_type || 'main',
-              caption: data.caption.trim() || null,
-            },
+        const { error } = await invokeExternalDbBridge({
+          table: 'product_images',
+          operation: 'update',
+          id: ext.id,
+          data: {
+            alt_text: data.alt_text.trim() || null,
+            image_type: data.image_type || 'main',
+            caption: data.caption.trim() || null,
           },
         });
         if (error) throw new Error(error.message);
