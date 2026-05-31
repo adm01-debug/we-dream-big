@@ -204,13 +204,11 @@ export function useMultipleTechniquePricing(techniqueCodes: string[]) {
       await Promise.all(
         codes.map(async (code) => {
           try {
-            const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'customization_price_tables',
-                operation: 'select',
-                filters: { table_code: code },
-                limit: 100,
-              },
+            const { data, error } = await invokeExternalDbBridge({
+              table: 'customization_price_tables',
+              operation: 'select',
+              filters: { table_code: code },
+              limit: 100,
             });
 
             if (!error && data?.success && data?.data?.records) {
