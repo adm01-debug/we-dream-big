@@ -67,6 +67,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: quality-gate
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
       
@@ -98,10 +102,15 @@ jobs:
         if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests (Critical & Visual)
+      - name: Run Playwright tests (Sharded Parallel)
         run: |
-          npm run test:e2e:critical
-          npx playwright test e2e/routes/app/replenishment-grid-visual.spec.ts --project=routes-authed
+          npx playwright test --shard=${{ matrix.shard }}/2 \
+            e2e/catalog.spec.ts \
+            e2e/kit-builder.spec.ts \
+            e2e/login.spec.ts \
+            e2e/mockup-generate.spec.ts \
+            e2e/routes/app/replenishment-grid-visual.spec.ts \
+            --project=routes-authed
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://doufsxqlfjyuvxuezpln.supabase.co' }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_tjH5qAbZ0e5HTTd872NijQ_s9m6JvYU' }}
@@ -110,7 +119,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-visual-regression-artifacts
+          name: playwright-artifacts-shard-${{ matrix.shard }}
           path: |
             playwright-report/
             e2e-artifacts/
@@ -120,9 +129,10 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-shard-${{ matrix.shard }}
           path: playwright-report/
           retention-days: 7
+
 
 
   audit-report:
