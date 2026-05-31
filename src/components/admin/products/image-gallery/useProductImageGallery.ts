@@ -748,13 +748,11 @@ export function useProductImageGallery({
               .replace('{tipo}', typeLabel)
               .replace('{cor}', variantLabel)
               .replace('{n}', String(i + 1));
-            return supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id: ext.id,
-                data: { alt_text: altText.trim() || null },
-              },
+            return invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id: ext.id,
+              data: { alt_text: altText.trim() || null },
             });
           }),
         );
