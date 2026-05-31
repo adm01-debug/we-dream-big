@@ -11,6 +11,7 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   zoomAmount?: number;
   duration?: number;
   lqip?: string;
+  debug?: boolean;
 }
 
 /**
