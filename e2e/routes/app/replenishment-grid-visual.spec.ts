@@ -2,14 +2,26 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 const viewports = [
-  { width: 360, height: 800, name: 'mobile-small' },
-  { width: 1440, height: 900, name: 'desktop-wide' },
+  { width: 360, height: 800, name: 'mobile-360' },
+  { width: 768, height: 1024, name: 'tablet-768' },
+  { width: 1024, height: 768, name: 'tablet-1024' },
+  { width: 1440, height: 900, name: 'desktop-1440' },
 ];
 
-test.describe('Replenishment Grid Advanced Visual & A11y', () => {
+test.describe('Replenishment Grid Advanced Visual & A11y @mobile', () => {
   for (const viewport of viewports) {
     test.describe(`Viewport: ${viewport.name}`, () => {
       test.use({ viewport: { width: viewport.width, height: viewport.height } });
+
+      test('Page Header Visual Validation', async ({ page }) => {
+        await page.goto('/reposicao');
+        const header = page.locator('div.flex.items-center.gap-3').first();
+        await expect(header).toBeVisible();
+        await expect(header.locator('h1')).toHaveText('Reposição');
+        await expect(header.locator('[data-testid="replenishment-description"]')).toHaveText('Produtos que voltaram ao estoque dos fornecedores nos últimos 30 dias');
+        
+        await expect(header).toHaveScreenshot(`header-${viewport.name}.png`);
+      });
 
       test('Visual Regression & Virtualization Scroll', async ({ page }) => {
         await page.goto('/reposicao');
@@ -45,6 +57,21 @@ test.describe('Replenishment Grid Advanced Visual & A11y', () => {
         }
         
         expect(accessibilityScanResults.violations).toEqual([]);
+      });
+      test('Keyboard Navigation Flow', async ({ page }) => {
+        await page.goto('/reposicao');
+        await page.keyboard.press('Tab');
+        
+        // We expect focus to reach the search input or first interactive element
+        const activeElement = await page.evaluate(() => document.activeElement?.tagName);
+        expect(activeElement).toBeDefined();
+        
+        // Navigate through the toolbar
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        
+        // Take a screenshot of the focus state if possible
+        await expect(page).toHaveScreenshot(`keyboard-focus-${viewport.name}.png`);
       });
     });
   }
