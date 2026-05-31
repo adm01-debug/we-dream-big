@@ -90,13 +90,11 @@ function bridgeToTecnicaUnificada(row: TecnicaBridgeResponse): TecnicaUnificada 
  * Busca técnicas do BD EXTERNO via edge function (já passa por adapter).
  */
 async function fetchTecnicasExterno(): Promise<TecnicaBridgeResponse[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table: 'tecnica_gravacao',
-      operation: 'select',
-      orderBy: { column: 'ordem_exibicao', ascending: true },
-      limit: 200,
-    },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'tecnica_gravacao',
+    operation: 'select',
+    orderBy: { column: 'ordem_exibicao', ascending: true },
+    limit: 200,
   });
 
   if (error) {
