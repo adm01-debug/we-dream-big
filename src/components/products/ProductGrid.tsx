@@ -31,6 +31,7 @@ export interface ProductGridProps {
   selectionMode?: boolean;
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }
 
 function ProductCardWrapper({
