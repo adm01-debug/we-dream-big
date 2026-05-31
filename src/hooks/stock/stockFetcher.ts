@@ -78,46 +78,47 @@ export async function fetchPaginatedFromBridge<T extends { id: string }>(
   maxRecords = 100000,
   filters?: Record<string, unknown>,
 ): Promise<T[]> {
+  // PostgREST nativo (Caminho B). A `external-db-bridge` foi descontinuada (410 Gone).
   const all: T[] = [];
   let offset = 0;
-  let lastFirstId: string | undefined;
   let totalCount: number | null = null;
+  let lastFirstId: string | undefined;
+
+  // Aliases: tabelas expostas via views públicas.
+  const TABLE_ALIASES: Record<string, string> = {
+    products: 'v_products_public',
+    suppliers: 'v_suppliers_public',
+  };
+  const resolvedTable = TABLE_ALIASES[table] ?? table;
 
   while (all.length < maxRecords) {
-    // Always request countMode on first page to know total records
-    const body: Record<string, unknown> = {
-      table,
-      operation: 'select',
-      select,
-      limit: pageSize,
-      offset,
-      filters,
-    };
-    if (offset === 0) {
-      body.countMode = 'exact';
+    let query = supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .from(resolvedTable as any)
+      .select(select, offset === 0 ? { count: 'exact' } : undefined);
+
+    if (filters) {
+      for (const [col, val] of Object.entries(filters)) {
+        if (val === null) query = query.is(col, null);
+        else if (Array.isArray(val)) query = query.in(col, val);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        else query = query.eq(col, val as any);
+      }
     }
 
-    const { data, error } = await supabase.functions.invoke('external-db-bridge', { body });
+    query = query.range(offset, offset + pageSize - 1);
 
+    const { data, error, count } = await query;
     if (error) {
-      const isGone = error.message?.includes('410') || error.message?.includes('Gone');
-      const errorMsg = isGone
-        ? 'Erro de Conectividade (410): O serviço de ponte legado foi desativado. Por favor, contate o suporte.'
-        : `Erro ao buscar ${table}: ${error.message}`;
+      const errorMsg = `Erro ao buscar ${table}: ${error.message}`;
       console.error(`[Stock] ${errorMsg}`, error);
       throw new Error(errorMsg);
     }
 
-    const records = (data?.data?.records ?? []) as T[];
-    const count = data?.data?.count as number | null;
-
-    // Capture total count from first request
-    if (offset === 0 && count !== null) {
-      totalCount = count;
-    }
+    const records = (data ?? []) as unknown as T[];
+    if (offset === 0 && typeof count === 'number') totalCount = count;
 
     if (records.length === 0) break;
-
     if (records[0]?.id === lastFirstId) {
       logger.warn(`[Stock] Paginacao ignorando offset em ${table}; parando.`);
       break;
@@ -127,13 +128,8 @@ export async function fetchPaginatedFromBridge<T extends { id: string }>(
     all.push(...records);
     offset += records.length;
 
-    // Use totalCount (from first page) to know when we're done
     if (totalCount !== null && offset >= totalCount) break;
-    // BUG-STOCK-03 FIX: if no count available, break on partial page to avoid extra call.
-    // A partial page (<pageSize) means we've reached the end of the dataset.
     if (totalCount === null && records.length < pageSize) break;
-    // Safety fallback: if records is empty (should not happen after the check above)
-    if (totalCount === null && records.length === 0) break;
   }
 
   logger.log(`[Stock] ${table}: carregados ${all.length}/${totalCount ?? '?'} registros`);
