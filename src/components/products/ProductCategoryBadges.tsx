@@ -199,7 +199,8 @@ export function ProductCategoryBadges({
                 'cursor-pointer px-2.5 py-1 text-sm font-medium',
                 'border-success/50 bg-success/15 hover:bg-success/25',
                 'text-success hover:text-success/80',
-                'transition-all duration-200 hover:scale-105 hover:border-success',
+                'transition-all duration-300 hover:scale-105 hover:border-success group-hover:shadow-md',
+                'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full hover:before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent',
               )}
             >
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
