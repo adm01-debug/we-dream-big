@@ -87,35 +87,35 @@ export function ProductTagsSection({ productId }: ProductTagsSectionProps) {
         if (isLinked) {
           const record = productTags.find((pt) => pt.tag_id === tagId);
           if (!record?.id) {
-            const { data: findData } = await supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_tags',
-                operation: 'select',
-                filters: { product_id: productId, tag_id: tagId },
-                limit: 1,
-              },
+            const { data: findData } = await invokeExternalDbBridge({
+              table: 'product_tags',
+              operation: 'select',
+              filters: { product_id: productId, tag_id: tagId },
+              limit: 1,
             });
             const found = findData?.data?.records?.[0];
             if (!found?.id) {
               toast.error('Registro não encontrado');
               return;
             }
-            await supabase.functions.invoke('external-db-bridge', {
-              body: { table: 'product_tags', operation: 'delete', id: found.id },
+            await invokeExternalDbBridge({
+              table: 'product_tags',
+              operation: 'delete',
+              id: found.id,
             });
           } else {
-            await supabase.functions.invoke('external-db-bridge', {
-              body: { table: 'product_tags', operation: 'delete', id: record.id },
+            await invokeExternalDbBridge({
+              table: 'product_tags',
+              operation: 'delete',
+              id: record.id,
             });
           }
           toast.success('Tag removida');
         } else {
-          await supabase.functions.invoke('external-db-bridge', {
-            body: {
-              table: 'product_tags',
-              operation: 'insert',
-              data: { product_id: productId, tag_id: tagId },
-            },
+          await invokeExternalDbBridge({
+            table: 'product_tags',
+            operation: 'insert',
+            data: { product_id: productId, tag_id: tagId },
           });
           toast.success('Tag adicionada');
         }
