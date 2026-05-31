@@ -35,6 +35,10 @@ export function ProductStatusBadge({
   className,
   showTooltip = true,
 }: ProductStatusBadgeProps) {
+  const badgesEnabled = useBadgeVisibilityStore((s) => s.badgesEnabled);
+  
+  // Hide all status badges when user has disabled them (urgency badges always show as they're contextual)
+  if (!badgesEnabled && type !== 'urgency') return null;
   
   const isClickable = !!onClick;
 
