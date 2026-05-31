@@ -156,18 +156,18 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
             toast.error('Registro não encontrado');
             return;
           }
-          const { error: delError } = await supabase.functions.invoke('external-db-bridge', {
-            body: { table: 'product_materials', operation: 'delete', id: linked.id },
+          const { error: delError } = await invokeExternalDbBridge({
+            table: 'product_materials',
+            operation: 'delete',
+            id: linked.id,
           });
           if (delError) throw new Error(delError.message);
           toast.success('Material removido');
         } else {
-          const { error } = await supabase.functions.invoke('external-db-bridge', {
-            body: {
-              table: 'product_materials',
-              operation: 'insert',
-              data: { product_id: productId, material_id: materialId },
-            },
+          const { error } = await invokeExternalDbBridge({
+            table: 'product_materials',
+            operation: 'insert',
+            data: { product_id: productId, material_id: materialId },
           });
           if (error) throw new Error(error.message);
           toast.success('Material adicionado');
@@ -189,16 +189,14 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
       if (!linked?.id) return;
 
       try {
-        const { error } = await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'product_materials',
-            operation: 'update',
-            id: linked.id,
-            data: {
-              part: data.part.trim() || null,
-              percentage: data.percentage,
-              notes: data.notes.trim() || null,
-            },
+        const { error } = await invokeExternalDbBridge({
+          table: 'product_materials',
+          operation: 'update',
+          id: linked.id,
+          data: {
+            part: data.part.trim() || null,
+            percentage: data.percentage,
+            notes: data.notes.trim() || null,
           },
         });
         if (error) throw new Error(error.message);
