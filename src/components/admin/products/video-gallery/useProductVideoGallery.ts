@@ -246,23 +246,21 @@ export function useProductVideoGallery(productId?: string) {
       if (!productId) return null;
       const nextOrder =
         videos.length > 0 ? Math.max(...videos.map((v) => v.display_order || 0)) + 1 : 0;
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_videos',
-          operation: 'insert',
-          data: {
-            product_id: productId,
-            url_original: url,
-            url_stream: url,
-            url_thumbnail: thumbnailUrl,
-            source_youtube_id: youtubeId || null,
-            video_type: uploadVideoType,
-            display_order: nextOrder,
-            is_primary: videos.length === 0,
-            is_active: true,
-            title: fileName,
-            file_size_bytes: fileSize,
-          },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_videos',
+        operation: 'insert',
+        data: {
+          product_id: productId,
+          url_original: url,
+          url_stream: url,
+          url_thumbnail: thumbnailUrl,
+          source_youtube_id: youtubeId || null,
+          video_type: uploadVideoType,
+          display_order: nextOrder,
+          is_primary: videos.length === 0,
+          is_active: true,
+          title: fileName,
+          file_size_bytes: fileSize,
         },
       });
       if (error || !data?.success) return null;
