@@ -6,14 +6,12 @@ import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import type { KitComponent, PrintArea } from './types';
 
 export async function fetchKitComponents(productId: string): Promise<KitComponent[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table: 'product_kit_components',
-      operation: 'select',
-      filters: { kit_product_id: productId },
-      limit: 100,
-      orderBy: { column: 'display_order', ascending: true },
-    },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'product_kit_components',
+    operation: 'select',
+    filters: { kit_product_id: productId },
+    limit: 100,
+    orderBy: { column: 'display_order', ascending: true },
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao buscar componentes');
