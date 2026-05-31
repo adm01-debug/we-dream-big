@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 import { Sparkles, Package, TrendingUp, Clock, Tag } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useBadgeVisibilityStore } from '@/stores/useBadgeVisibilityStore';
+import { useLocation } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export type ProductStatusBadgeType = 
   | 'novelty' 
@@ -35,7 +37,16 @@ export function ProductStatusBadge({
   className,
   showTooltip = true,
 }: ProductStatusBadgeProps) {
-  const badgesEnabled = useBadgeVisibilityStore((s) => s.badgesEnabled);
+  const location = useLocation();
+  const { actualTheme } = useTheme();
+  
+  const badgesEnabled = useBadgeVisibilityStore((s) => {
+    const settings = s.routeSettings[location.pathname];
+    if (settings) {
+      return actualTheme === 'dark' ? settings.dark : settings.light;
+    }
+    return s.badgesEnabled;
+  });
   
   // Hide all status badges when user has disabled them (urgency badges always show as they're contextual)
   if (!badgesEnabled && type !== 'urgency') return null;
