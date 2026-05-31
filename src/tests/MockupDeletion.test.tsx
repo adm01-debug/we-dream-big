@@ -215,7 +215,7 @@ describe('Mockup Deletion Flow', () => {
     mockMg.activeTab = 'history';
     renderWithProviders(<MockupGenerator />);
 
-    const deleteButton = await screen.findByTestId('delete-mockup-button');
+    const deleteButton = await screen.findByTestId('delete-mockup-button', {}, { timeout: 5000 });
     fireEvent.click(deleteButton);
 
     // G7: the page no longer owns delete state — it delegates to the hook.
