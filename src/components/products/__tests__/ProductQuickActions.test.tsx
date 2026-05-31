@@ -4,13 +4,18 @@ import { ProductQuickActions } from '../ProductQuickActions';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Mock Lucide icons
-vi.mock('lucide-react', () => ({
-  TableProperties: () => <div data-testid="icon-table" />,
-  Palette: () => <div data-testid="icon-palette" />,
-  Target: () => <div data-testid="icon-target" />,
-  Layers: () => <div data-testid="icon-layers" />,
-  Share2: () => <div data-testid="icon-share" />,
-}));
+vi.mock('lucide-react', async () => {
+  const actual = await vi.importActual('lucide-react');
+  return {
+    ...actual,
+    TableProperties: () => <div data-testid="icon-table" />,
+    Palette: () => <div data-testid="icon-palette" />,
+    Target: () => <div data-testid="icon-target" />,
+    Layers: () => <div data-testid="icon-layers" />,
+    Share2: () => <div data-testid="icon-share" />,
+    X: () => <div data-testid="icon-x" />,
+  };
+});
 
 describe('ProductQuickActions Tooltips', () => {
   const defaultProps = {
