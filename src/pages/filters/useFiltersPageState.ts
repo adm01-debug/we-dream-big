@@ -162,6 +162,7 @@ export function useFiltersPageState() {
     if (filters.featured) params.set('featured', '1');
     if (filters.isNew) params.set('isNew', '1');
     if (filters.hasPersonalization) params.set('hasPersonalization', '1');
+    if (filters.onSale) params.set('onSale', '1');
     if (filters.hasCommercialPackaging) params.set('hasCommercialPackaging', '1');
     if (filters.sortBy && filters.sortBy !== 'name') params.set('sortBy', filters.sortBy);
     setSearchParams(params, { replace: true });
