@@ -68,6 +68,9 @@ describe('stockFetcher Resilience', () => {
     // Simular retorno vazio do banco
     vi.spyOn(supabase, 'from').mockReturnValue({
       select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({ data: [], error: null, count: 0 }),
     } as any);
 
