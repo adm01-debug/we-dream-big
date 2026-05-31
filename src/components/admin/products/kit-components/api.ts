@@ -40,8 +40,10 @@ export async function updateComponent(id: string, payload: Record<string, unknow
 }
 
 export async function deleteComponent(id: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'product_kit_components', operation: 'delete', id },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'product_kit_components',
+    operation: 'delete',
+    id,
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao excluir componente');
