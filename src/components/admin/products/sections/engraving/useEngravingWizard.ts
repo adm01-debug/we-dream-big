@@ -301,12 +301,10 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
         _techData: _td,
         ...areaData
       } = area as typeof area & { _techData?: ExternalTechnique };
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'print_area_techniques',
-          operation: 'insert',
-          data: { ...areaData, product_id: realProductId },
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'print_area_techniques',
+        operation: 'insert',
+        data: { ...areaData, product_id: realProductId },
       });
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || 'Erro ao salvar área de personalização');
