@@ -257,18 +257,6 @@ export function buildActions({
       keywords: ['configurações', 'settings', 'preferências'],
       category: 'settings',
     },
-    {
-      id: 'theme-toggle',
-      label: actualTheme === 'dark' ? 'Modo Claro' : 'Modo Escuro',
-      description: 'Alternar tema do sistema',
-      icon: actualTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />,
-      shortcut: '⌘D',
-      action: () => {
-        setTheme(actualTheme === 'dark' ? 'light' : 'dark');
-      },
-      keywords: ['tema', 'theme', 'dark', 'light', 'escuro', 'claro'],
-      category: 'settings',
-    },
     // Help
     {
       id: 'help',
