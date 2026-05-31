@@ -102,8 +102,10 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
 
   const createMutation = useMutation({
     mutationFn: async (area: Omit<PrintAreaTechnique, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: { table: 'print_area_techniques', operation: 'insert', data: area },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'print_area_techniques',
+        operation: 'insert',
+        data: area,
       });
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || 'Erro ao criar área');
