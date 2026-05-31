@@ -106,7 +106,8 @@ export async function fetchPaginatedFromBridge<T extends { id: string }>(
       }
     }
 
-    query = query.range(offset, offset + pageSize - 1);
+    // Ordenação determinística por ID é essencial para paginação estável
+    query = query.order('id', { ascending: true }).range(offset, offset + pageSize - 1);
 
     const { data, error, count, status } = await query;
     if (error) {
