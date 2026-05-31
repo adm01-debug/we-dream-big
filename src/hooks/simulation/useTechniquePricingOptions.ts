@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 
 interface PriceTableEntry {
   id: string;
