@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import type { Product } from '@/hooks/products';
 import { PriceFreshnessBadge } from './PriceFreshnessBadge';
+import { ProductStatusBadge, UrgencyType } from './ProductStatusBadge';
 
 interface EnhancedProductCardProps {
   product: Product;
