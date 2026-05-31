@@ -423,13 +423,11 @@ export function useProductImageGallery({
           // Clear is_primary from all images for this product
           const currentPrimary = externalImages.find((img) => img.is_primary);
           if (currentPrimary?.id) {
-            await supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id: currentPrimary.id,
-                data: { is_primary: false },
-              },
+            await invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id: currentPrimary.id,
+              data: { is_primary: false },
             });
           }
           // Set new primary
