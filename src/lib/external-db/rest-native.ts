@@ -399,8 +399,13 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
     logger.warn(`[rest-native] PAGINATION WARNING: offset=${options.offset} without limit on table=${tableName}. Capping at ${OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER}.`);
     query = query.range(options.offset, options.offset + OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER);
   }
-  const { data, error, count } = await query;
-  if (error) throw new Error(`rest-native error (${tableName}): ${error.message}`);
+  const { data, error, count, status } = await query;
+  if (error) {
+    if (status === 410) {
+      throw new Error(`410 Gone: A integração REST nativa para '${tableName}' retornou erro de descontinuação.`);
+    }
+    throw new Error(`rest-native error (${tableName}): ${error.message}`);
+  }
   return { records: mapRows(tableName, data ?? []) as T[], count: typeof count === 'number' ? count : null };
 }
 
