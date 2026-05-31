@@ -983,6 +983,20 @@ html[data-scroll-locked] body {
   }
 }
 
+/* Shimmer cinza-claro para placeholder de imagem do produto */
+.image-shimmer {
+  background-image: linear-gradient(
+    100deg,
+    hsl(0 0% 90%) 0%,
+    hsl(0 0% 95%) 40%,
+    hsl(0 0% 98%) 50%,
+    hsl(0 0% 95%) 60%,
+    hsl(0 0% 90%) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
 @keyframes stagger-fade-in {
   0% {
     opacity: 0;
