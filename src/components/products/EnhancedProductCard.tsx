@@ -94,13 +94,14 @@ export function EnhancedProductCard({
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="absolute left-3 top-3 z-20 pointer-events-none"
+        className="absolute left-3 top-3 z-20"
       >
         <ProductStatusBadge 
           type="urgency" 
           urgencyType={urgencyType} 
           value={urgencyText}
           size="sm"
+          onClick={() => onStatusClick?.('urgency', urgencyType)}
         />
       </motion.div>
     );
