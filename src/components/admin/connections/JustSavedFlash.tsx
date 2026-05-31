@@ -4,23 +4,23 @@ import { cn } from '@/lib/utils';
 import { formatMaskedSuffix } from '@/lib/masked-suffix';
 
 interface Props {
-  masked_suffix: string | null;
+  maskedSuffix: string | null;
   length: number;
   action: 'set' | 'rotate';
-  was_update?: boolean;
+  wasUpdate?: boolean;
   /** ms before the flash auto-hides */
   duration?: number;
   /** When true, append "agora vem do banco" to indicate env→db migration. */
-  was_env_fallback?: boolean;
+  wasEnvFallback?: boolean;
 }
 
 export function JustSavedFlash({
-  masked_suffix,
+  maskedSuffix,
   length,
   action,
-  was_update,
+  wasUpdate,
   duration = 2400,
-  was_env_fallback,
+  wasEnvFallback,
 }: Props) {
   const [visible, setVisible] = useState(true);
 
@@ -31,8 +31,8 @@ export function JustSavedFlash({
 
   if (!visible) return null;
 
-  const verb = action === 'rotate' ? 'Rotacionado' : was_update ? 'Atualizado' : 'Salvo';
-  const suffixText = formatMaskedSuffix(masked_suffix);
+  const verb = action === 'rotate' ? 'Rotacionado' : wasUpdate ? 'Atualizado' : 'Salvo';
+  const suffixText = formatMaskedSuffix(maskedSuffix);
 
   return (
     <p
@@ -45,7 +45,7 @@ export function JustSavedFlash({
       <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
       <span>
         {verb} • {suffixText} • {length} chars •{' '}
-        {was_env_fallback ? 'agora vem do banco' : 'atualizado agora'}
+        {wasEnvFallback ? 'agora vem do banco' : 'atualizado agora'}
       </span>
     </p>
   );
