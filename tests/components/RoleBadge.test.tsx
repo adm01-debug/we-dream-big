@@ -4,8 +4,8 @@ import { RoleBadge } from '@/components/RoleBadge';
 
 describe('RoleBadge Component', () => {
   it('renders correctly with role label', () => {
-    render(<RoleBadge role="admin" />);
-    expect(screen.getByText(/Administrador/i)).toBeInTheDocument();
+    render(<RoleBadge role="dev" />);
+    expect(screen.getByText(/Dev/i)).toBeInTheDocument();
   });
 
   it('does not have a native title attribute', () => {
