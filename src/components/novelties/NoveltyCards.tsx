@@ -338,6 +338,7 @@ export function NoveltyTableView({
   selectionMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }) {
   return (
     <div className="overflow-hidden rounded-lg border border-border/50">
