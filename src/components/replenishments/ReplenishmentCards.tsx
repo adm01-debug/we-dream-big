@@ -129,7 +129,7 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
         </div>
 
         {/* Content Section */}
-        <div className="relative space-y-2 bg-card p-2.5 sm:space-y-3 sm:p-4">
+        <div className={productCardStyles.infoSection}>
           {/* SKU + Supplier */}
           <div className="flex items-center justify-between gap-2">
             {product.product_sku && (
@@ -146,13 +146,13 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
           </div>
 
           {/* Name */}
-          <h3 className="line-clamp-2 min-h-[2.25rem] font-display text-sm font-semibold leading-snug text-foreground transition-colors duration-300 group-hover:text-primary sm:min-h-[2.75rem] sm:text-base">
+          <h3 className={productCardStyles.title}>
             {product.product_name}
           </h3>
 
           {/* Price + Stock */}
-          <div className="flex items-end justify-between pt-0.5 sm:pt-1">
-            <div className="min-h-[3rem] sm:min-h-[3.5rem] flex flex-col justify-end">
+          <div className={productCardStyles.priceStockSection}>
+            <div className={productCardStyles.priceContainer}>
               {product.base_price !== null && product.base_price > 0 ? (
                 <>
                   <p className="mb-0.5 text-[10px] text-muted-foreground sm:text-xs">A partir de</p>
@@ -164,6 +164,7 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
                 <span className="text-xs text-muted-foreground">Preço sob consulta</span>
               )}
             </div>
+
             <div className="flex flex-col items-end gap-0.5 sm:gap-1">
               <span className={cn('stock-indicator text-[10px] sm:text-xs', stockConfig.className)}>
                 <Package className="h-2.5 w-2.5 sm:h-3 sm:w-3" aria-hidden="true" />
