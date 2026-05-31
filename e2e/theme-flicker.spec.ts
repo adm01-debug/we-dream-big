@@ -13,8 +13,8 @@ test.describe('Flash de Tema Claro (FOUC) Prevention', () => {
     const bodyBg = await page.evaluate(() => {
       return window.getComputedStyle(document.body).backgroundColor;
     });
-    // rgb(2, 6, 23) é o correspondente para #020617
-    expect(bodyBg).toBe('rgb(2, 6, 23)');
+    // rgb(10, 10, 10) é o correspondente para #0a0a0a
+    expect(bodyBg).toBe('rgb(10, 10, 10)');
   });
 
   test('não deve haver botões de alternância de tema na interface', async ({ page }) => {
