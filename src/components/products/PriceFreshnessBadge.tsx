@@ -322,25 +322,33 @@ export function PriceFreshnessBadge({
     // discreto para que o vendedor consiga conferir sem abrir o tooltip.
     const compactDate = priceUpdatedAt ? formatAbsoluteDate(priceUpdatedAt) : null;
     body = (
-      <span
-        role="status"
-        aria-label={ariaLabel}
-        title={title}
-        tabIndex={0}
-        className={cn(
-          'inline-flex items-center gap-1 text-xs font-medium',
-          color,
-          focusRing,
-          className,
-        )}
-      >
-        <Icon className="h-3 w-3" aria-hidden="true" />
-        <span className="tabular-nums">
-          {formatCompactRelative(freshness.daysSinceUpdate)}
-          {compactDate && <span className="text-muted-foreground"> · em {compactDate}</span>}
-          {limitSuffix && <span className="text-muted-foreground">{limitSuffix}</span>}
-        </span>
-      </span>
+      <TooltipProvider delayDuration={700}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              role="status"
+              aria-label={ariaLabel}
+              tabIndex={0}
+              className={cn(
+                'inline-flex items-center gap-1 text-xs font-medium',
+                color,
+                focusRing,
+                className,
+              )}
+            >
+              <Icon className="h-3 w-3" aria-hidden="true" />
+              <span className="tabular-nums">
+                {formatCompactRelative(freshness.daysSinceUpdate)}
+                {compactDate && <span className="text-muted-foreground"> · em {compactDate}</span>}
+                {limitSuffix && <span className="text-muted-foreground">{limitSuffix}</span>}
+              </span>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <FreshnessTooltipBody freshness={freshness} priceUpdatedAt={priceUpdatedAt} />
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   } else if (variant === 'pdp') {
     const absolute = priceUpdatedAt ? formatAbsoluteDate(priceUpdatedAt) : null;
