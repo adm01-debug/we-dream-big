@@ -571,13 +571,11 @@ export function useProductImageGallery({
         const missingUrls = selectedList.filter((url) => !extImageMap.get(url)?.id);
         await Promise.all(
           updates.map((ext) =>
-            supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id: ext.id,
-                data: { image_type: newType },
-              },
+            invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id: ext.id,
+              data: { image_type: newType },
             }),
           ),
         );
