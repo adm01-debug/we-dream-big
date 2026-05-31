@@ -65,14 +65,12 @@ export const EMPTY_FORM: VariantFormData = {
 // ── API helpers ──
 
 async function fetchProductVariants(productId: string): Promise<ProductVariant[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table: 'product_variants',
-      operation: 'select',
-      filters: { product_id: productId, is_active: true },
-      limit: 200,
-      orderBy: { column: 'name', ascending: true },
-    },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'product_variants',
+    operation: 'select',
+    filters: { product_id: productId, is_active: true },
+    limit: 200,
+    orderBy: { column: 'name', ascending: true },
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao buscar variações');
