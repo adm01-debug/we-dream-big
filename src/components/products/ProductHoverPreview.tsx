@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Package, Tag, Palette, Truck } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -102,12 +103,15 @@ export function ProductHoverPreview({
           {product.colors.length > 0 && (
             <div className="flex items-center gap-1.5 pt-1">
               {product.colors.slice(0, 8).map((color, idx) => (
-                <div
-                  key={`${color.hex}-${idx}`}
-                  className="h-4 w-4 rounded-full border border-border/50 shadow-sm"
-                  style={{ backgroundColor: color.hex }}
-                  title={color.name}
-                />
+                <Tooltip key={`${color.hex}-${idx}`}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className="h-4 w-4 rounded-full border border-border/50 shadow-sm"
+                      style={{ backgroundColor: color.hex }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>{color.name}</TooltipContent>
+                </Tooltip>
               ))}
               {product.colors.length > 8 && (
                 <span className="ml-1 text-xs text-muted-foreground">
