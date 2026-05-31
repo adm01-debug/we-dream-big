@@ -674,13 +674,11 @@ export function useProductImageGallery({
         .filter((ext): ext is ExternalImage => !!ext?.id);
       await Promise.all(
         extUpdates.map((ext) =>
-          supabase.functions.invoke('external-db-bridge', {
-            body: {
-              table: 'product_images',
-              operation: 'update',
-              id: ext.id,
-              data: { is_active: false },
-            },
+          invokeExternalDbBridge({
+            table: 'product_images',
+            operation: 'update',
+            id: ext.id,
+            data: { is_active: false },
           }),
         ),
       );
