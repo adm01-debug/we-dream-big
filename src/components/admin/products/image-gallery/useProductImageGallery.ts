@@ -623,15 +623,13 @@ export function useProductImageGallery({
         const missingUrls = selectedList.filter((url) => !extImageMap.get(url)?.id);
         await Promise.all(
           updates.map((ext) =>
-            supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id: ext.id,
-                data: {
-                  supplier_code: variant?.supplier_code || null,
-                  variant_id: variant?.id || null,
-                },
+            invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id: ext.id,
+              data: {
+                supplier_code: variant?.supplier_code || null,
+                variant_id: variant?.id || null,
               },
             }),
           ),
