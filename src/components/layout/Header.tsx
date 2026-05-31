@@ -12,6 +12,8 @@ import {
   Shield,
   MoreHorizontal,
   Palette,
+  Tag,
+  TagsIcon,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
