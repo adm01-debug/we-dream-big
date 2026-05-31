@@ -425,11 +425,33 @@ export const ProductListItem = memo(function ProductListItem({
         <div className="min-w-0 flex-1 py-0.5">
           {/* Top meta row */}
           <div className="mb-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground sm:text-xs">
+            {product.featured && (
+              <ProductStatusBadge 
+                type="featured" 
+                size="sm" 
+                onClick={() => handleStatusClick('featured')}
+              />
+            )}
             {isNovelty && noveltyDaysRemaining !== undefined && (
               <NoveltyBadge 
                 daysRemaining={noveltyDaysRemaining} 
                 size="sm" 
                 onClick={() => handleStatusClick('novelty')}
+              />
+            )}
+            {product.onSale && (
+              <ProductStatusBadge 
+                type="promotion" 
+                value="-20%" 
+                size="sm" 
+                onClick={() => handleStatusClick('promotion')}
+              />
+            )}
+            {product.isKit && (
+              <ProductStatusBadge 
+                type="kit" 
+                size="sm" 
+                onClick={() => handleStatusClick('kit')}
               />
             )}
             <span className="max-w-[120px] truncate">
