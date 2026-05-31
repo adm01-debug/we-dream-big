@@ -73,7 +73,7 @@ export function KitBuilderHeader({
   onAIApply,
   kitState,
   templateId,
-  currentKitId,
+  currentKitId: _currentKitId,
 }: KitBuilderHeaderProps) {
   const navigate = useNavigate();
   const { isAdmin } = useRBAC();

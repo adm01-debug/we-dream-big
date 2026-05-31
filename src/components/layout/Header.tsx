@@ -13,7 +13,7 @@ import {
   MoreHorizontal,
   Palette,
   Tag,
-  TagsIcon,
+  Tag,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -62,7 +62,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
   const compareCount = useComparisonStore((s) => s.compareCount);
   const { user, profile, role, signOut, rolesLoaded } = useAuth();
   
-  const isBadgeEnabled = useBadgeVisibilityStore((s) => s.isBadgeEnabled);
+  const _isBadgeEnabled = useBadgeVisibilityStore((s) => s.isBadgeEnabled);
   const toggleBadges = useBadgeVisibilityStore((s) => s.toggleBadges);
   const initializeFromProfile = useBadgeVisibilityStore((s) => s.initializeFromProfile);
   
