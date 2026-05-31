@@ -286,6 +286,7 @@ export function ProductGrid({
             selectionMode={selectionMode}
             selectedIds={selectedIds}
             onToggleSelect={onToggleSelect}
+            onStatusClick={onStatusClick}
           />
         ),
       )}
