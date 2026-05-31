@@ -419,7 +419,7 @@ export const ProductCard = memo(
             setImageLoaded(false);
           }}
           priority={priority}
-          onStatusClick={onStatusClick}
+          onStatusClick={handleStatusClick}
         />
 
         {/* Quick Actions FAB */}
