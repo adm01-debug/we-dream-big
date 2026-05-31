@@ -137,10 +137,6 @@ export default defineConfig({
         /flows\//,
         /routes\//,
         /theme-validation\.spec\.ts/,
-        // OptimizedImage specs run exclusively in routes-public to prevent
-        // double-execution and baseline screenshot conflicts.
-        /optimized-image-visual\.spec\.ts/,
-        /optimized-image-detection\.spec\.ts/,
       ],
       grepInvert: /@smoke/,
     },
@@ -192,15 +188,9 @@ export default defineConfig({
     },
     {
       // Specs por rota — área pública (sem auth). Ex.: routes/public/*.spec.ts
-      // Também recebe os OptimizedImage specs (são specs de ferramenta interna,
-      // não requerem cross-browser; concentramos em chromium para velocidade).
       name: 'routes-public',
       use: { ...devices['Desktop Chrome'] },
-      testMatch: [
-        /routes\/public\/.*\.spec\.ts/,
-        /optimized-image-visual\.spec\.ts/,
-        /optimized-image-detection\.spec\.ts/,
-      ],
+      testMatch: [/routes\/public\/.*\.spec\.ts/, /optimized-image-visual\.spec\.ts/],
       grepInvert: /@smoke/,
     },
     {
@@ -224,28 +214,17 @@ export default defineConfig({
       name: 'webkit-desktop',
       use: { ...devices['Desktop Safari'] },
       testMatch: /.*\.spec\.ts/,
-      testIgnore: [
-        /fixtures\/auth\.setup\.ts/,
-        // OptimizedImage specs: CDN detection is JS logic, not browser-specific.
-        // No cross-browser value; running in chromium only via routes-public.
-        /optimized-image-visual\.spec\.ts/,
-        /optimized-image-detection\.spec\.ts/,
-      ],
+      testIgnore: [/fixtures\/auth\.setup\.ts/],
       grepInvert: /@smoke/,
     },
     {
       name: 'firefox-desktop',
       use: { ...devices['Desktop Firefox'] },
       testMatch: /.*\.spec\.ts/,
-      testIgnore: [
-        /fixtures\/auth\.setup\.ts/,
-        // OptimizedImage specs: CDN detection is JS logic, not browser-specific.
-        // No cross-browser value; running in chromium only via routes-public.
-        /optimized-image-visual\.spec\.ts/,
-        /optimized-image-detection\.spec\.ts/,
-      ],
+      testIgnore: [/fixtures\/auth\.setup\.ts/],
       grepInvert: /@smoke/,
     },
+
   ],
   webServer: process.env.E2E_BASE_URL
     ? undefined
