@@ -119,8 +119,11 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...payload }: { id: string } & Record<string, unknown>) => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: { table: 'print_area_techniques', operation: 'update', id, data: payload },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'print_area_techniques',
+        operation: 'update',
+        id,
+        data: payload,
       });
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || 'Erro ao atualizar área');
