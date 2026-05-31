@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import { toTitleCase } from '@/lib/textUtils';
 
 // Categorias ocultas que não devem aparecer na navegação
