@@ -267,11 +267,24 @@ export const NoveltyListCard = memo(function NoveltyListCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="mb-0.5 flex items-center gap-2">
-            <NoveltyBadge daysRemaining={product.days_remaining} size="sm" />
+            <NoveltyBadge 
+              daysRemaining={product.days_remaining} 
+              size="sm" 
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusClick?.('novelty');
+              }}
+            />
             {fresh && (
-              <Badge className="border-0 bg-success/90 px-1 py-0 text-[9px] text-success-foreground">
-                NEW
-              </Badge>
+              <ProductStatusBadge 
+                type="novelty" 
+                value="NEW" 
+                size="sm" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusClick?.('novelty');
+                }}
+              />
             )}
           </div>
           <h4 className="line-clamp-1 text-sm font-medium transition-colors group-hover:text-primary">
