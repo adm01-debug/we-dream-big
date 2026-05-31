@@ -84,8 +84,10 @@ export async function updatePrintArea(id: string, payload: Record<string, unknow
 }
 
 export async function deletePrintArea(id: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'kit_component_print_areas', operation: 'delete', id },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'kit_component_print_areas',
+    operation: 'delete',
+    id,
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao excluir área');
