@@ -138,7 +138,7 @@ export const NoveltyGridCard = memo(function NoveltyGridCard({
         </div>
 
         {/* Info section — matching catalog ProductCard */}
-        <div className="relative space-y-2 bg-card p-2.5 sm:space-y-3 sm:p-4">
+        <div className={productCardStyles.infoSection}>
           {/* SKU + Supplier */}
           <div className="flex items-center justify-between gap-2">
             {product.product_sku && (
@@ -155,13 +155,13 @@ export const NoveltyGridCard = memo(function NoveltyGridCard({
           </div>
 
           {/* Product name */}
-          <h3 className="line-clamp-2 min-h-[2.25rem] font-display text-sm font-semibold leading-snug text-foreground transition-colors duration-300 group-hover:text-primary sm:min-h-[2.75rem] sm:text-base">
+          <h3 className={productCardStyles.title}>
             {product.product_name}
           </h3>
 
           {/* Price + Stock */}
-          <div className="flex items-end justify-between pt-0.5 sm:pt-1">
-            <div>
+          <div className={productCardStyles.priceStockSection}>
+            <div className={productCardStyles.priceContainer}>
               {product.base_price !== null && product.base_price > 0 ? (
                 <>
                   <p className="mb-0.5 text-[10px] text-muted-foreground sm:text-xs">A partir de</p>
@@ -173,6 +173,7 @@ export const NoveltyGridCard = memo(function NoveltyGridCard({
                 <span className="text-xs text-muted-foreground">Preço sob consulta</span>
               )}
             </div>
+
             <div className="flex flex-col items-end gap-0.5 sm:gap-1">
               <span
                 className={cn(
