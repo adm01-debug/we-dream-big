@@ -428,16 +428,30 @@ export function PriceFreshnessBadge({
     // anexa a data numérica pt-BR no padrão "em DD/MM/AAAA".
     const inlineDate = priceUpdatedAt ? formatAbsoluteDate(priceUpdatedAt) : null;
     body = (
-      <span
-        role="status"
-        aria-label={ariaLabel}
-        title={title}
-        className={cn('inline-flex items-center gap-1.5 text-xs font-medium', color, className)}
-      >
-        <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        <span>
-          {freshness.label}
-          {inlineDate && (
+      <TooltipProvider delayDuration={700}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              role="status"
+              aria-label={ariaLabel}
+              className={cn('inline-flex items-center gap-1.5 text-xs font-medium', color, className)}
+            >
+              <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>
+                {freshness.label}
+                {inlineDate && (
+                  <span className="text-muted-foreground"> · em {inlineDate}</span>
+                )}
+                {limitSuffix && <span className="text-muted-foreground">{limitSuffix}</span>}
+              </span>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <FreshnessTooltipBody freshness={freshness} priceUpdatedAt={priceUpdatedAt} />
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
             <span className="tabular-nums text-muted-foreground"> · em {inlineDate}</span>
           )}
           {limitSuffix}
