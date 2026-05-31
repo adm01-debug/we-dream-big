@@ -23,7 +23,6 @@ export function RoleBadge({ role, iconOnly = false, hideIcon = false, className 
     <Badge
       variant={visual.variant}
       className={cn('gap-1 font-medium', visual.className, className)}
-      title={visual.description}
       aria-label={visual.label}
     >
       {!hideIcon && <Icon className="h-3 w-3" aria-hidden="true" />}
