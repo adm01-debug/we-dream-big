@@ -261,23 +261,21 @@ export function useProductImageGallery({
           externalImages.length > 0
             ? Math.max(...externalImages.map((i) => i.display_order || 0)) + 1
             : 0;
-        const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'product_images',
-            operation: 'insert',
-            data: {
-              product_id: productId,
-              url_cdn: url,
-              url_original: url,
-              image_type: imageType,
-              is_primary: shouldBePrimary,
-              is_og_image: false,
-              display_order: nextOrder,
-              is_active: true,
-              supplier_code: variant?.supplier_code || null,
-              variant_id: variant?.id || null,
-              alt_text: null,
-            },
+        const { data, error } = await invokeExternalDbBridge({
+          table: 'product_images',
+          operation: 'insert',
+          data: {
+            product_id: productId,
+            url_cdn: url,
+            url_original: url,
+            image_type: imageType,
+            is_primary: shouldBePrimary,
+            is_og_image: false,
+            display_order: nextOrder,
+            is_active: true,
+            supplier_code: variant?.supplier_code || null,
+            variant_id: variant?.id || null,
+            alt_text: null,
           },
         });
         if (error) throw new Error(error.message || 'Falha ao registrar imagem no banco externo');
