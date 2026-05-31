@@ -13,6 +13,16 @@ test.describe('Replenishment Grid Advanced Visual & A11y', () => {
     test.describe(`Viewport: ${viewport.name}`, () => {
       test.use({ viewport: { width: viewport.width, height: viewport.height } });
 
+      test('Page Header Visual Validation', async ({ page }) => {
+        await page.goto('/reposicao');
+        const header = page.locator('div.flex.items-center.gap-3').first();
+        await expect(header).toBeVisible();
+        await expect(header.locator('h1')).toHaveText('Reposição');
+        await expect(header.locator('p')).toHaveText('Produtos que voltaram ao estoque dos fornecedores nos últimos 30 dias');
+        
+        await expect(header).toHaveScreenshot(`header-${viewport.name}.png`);
+      });
+
       test('Visual Regression & Virtualization Scroll', async ({ page }) => {
         await page.goto('/reposicao');
         const grid = page.locator('div[role="list"]');
