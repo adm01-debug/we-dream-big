@@ -52,9 +52,8 @@ describe('ProductColorSelector Tooltip', () => {
     const tooltipContent = screen.getByText('Vermelho').parentElement;
     const swatch = tooltipContent?.querySelector('span');
     expect(swatch).toBeTruthy();
-    // Use toBe instead of toHaveStyle for better error message if it fails
-    const style = window.getComputedStyle(swatch!).backgroundColor;
-    expect(style).toBe('rgb(255, 0, 0)');
+    // Use style object directly as JSDOM might not reflect it in getComputedStyle correctly for all properties
+    expect(swatch?.style.backgroundColor).toBe('rgb(255, 0, 0)');
 
     // Leave
     fireEvent.mouseLeave(firstSwatch);
