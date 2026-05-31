@@ -70,7 +70,7 @@ const FIELD_MAP: DataSourceMap[] = [
     field: 'Lista de produtos (catálogo)',
     description: 'Dados do banco Promobrind',
     source: 'integration_credentials',
-    notes: 'URL/key consumidos pelo `external-db-bridge` em runtime',
+    notes: 'URL/key consumidos pela camada de conexão nativa em runtime',
   },
 ];
 
