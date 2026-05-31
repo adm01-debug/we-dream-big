@@ -71,6 +71,7 @@ export function VirtualizedProductGrid({
   selectionMode = false,
   selectedIds,
   onToggleSelect,
+  onStatusClick,
 }: VirtualizedProductGridProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const [loadingMore, setLoadingMore] = useState(false);
