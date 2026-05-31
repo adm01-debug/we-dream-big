@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import {
   IMAGE_TYPES,
   type ExternalImage,
@@ -57,14 +58,12 @@ export function useProductImageGallery({
   const { data: externalImages = [], isLoading: isLoadingExt } = useQuery<ExternalImage[]>({
     queryKey: ['product-images-ext', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_images',
-          operation: 'select',
-          filters: { product_id: productId },
-          limit: 200,
-          orderBy: { column: 'display_order', ascending: true },
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_images',
+        operation: 'select',
+        filters: { product_id: productId },
+        limit: 200,
+        orderBy: { column: 'display_order', ascending: true },
       });
       if (error) return [];
       return data?.data?.records || [];
@@ -77,15 +76,13 @@ export function useProductImageGallery({
   const { data: variants = [] } = useQuery<VariantInfo[]>({
     queryKey: ['product-variants-for-gallery', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_variants',
-          operation: 'select',
-          select: 'id, name, color_name, color_hex, color_code',
-          filters: { product_id: productId, is_active: true },
-          limit: 200,
-          orderBy: { column: 'name', ascending: true },
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_variants',
+        operation: 'select',
+        select: 'id, name, color_name, color_hex, color_code',
+        filters: { product_id: productId, is_active: true },
+        limit: 200,
+        orderBy: { column: 'name', ascending: true },
       });
       if (error) return [];
       const records = data?.data?.records || [];
@@ -176,16 +173,14 @@ export function useProductImageGallery({
         return;
       }
       try {
-        const { error } = await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'product_images',
-            operation: 'update',
-            id: ext.id,
-            data: {
-              alt_text: data.alt_text.trim() || null,
-              image_type: data.image_type || 'main',
-              caption: data.caption.trim() || null,
-            },
+        const { error } = await invokeExternalDbBridge({
+          table: 'product_images',
+          operation: 'update',
+          id: ext.id,
+          data: {
+            alt_text: data.alt_text.trim() || null,
+            image_type: data.image_type || 'main',
+            caption: data.caption.trim() || null,
           },
         });
         if (error) throw new Error(error.message);
@@ -266,23 +261,21 @@ export function useProductImageGallery({
           externalImages.length > 0
             ? Math.max(...externalImages.map((i) => i.display_order || 0)) + 1
             : 0;
-        const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'product_images',
-            operation: 'insert',
-            data: {
-              product_id: productId,
-              url_cdn: url,
-              url_original: url,
-              image_type: imageType,
-              is_primary: shouldBePrimary,
-              is_og_image: false,
-              display_order: nextOrder,
-              is_active: true,
-              supplier_code: variant?.supplier_code || null,
-              variant_id: variant?.id || null,
-              alt_text: null,
-            },
+        const { data, error } = await invokeExternalDbBridge({
+          table: 'product_images',
+          operation: 'insert',
+          data: {
+            product_id: productId,
+            url_cdn: url,
+            url_original: url,
+            image_type: imageType,
+            is_primary: shouldBePrimary,
+            is_og_image: false,
+            display_order: nextOrder,
+            is_active: true,
+            supplier_code: variant?.supplier_code || null,
+            variant_id: variant?.id || null,
+            alt_text: null,
           },
         });
         if (error) throw new Error(error.message || 'Falha ao registrar imagem no banco externo');
@@ -396,13 +389,11 @@ export function useProductImageGallery({
       const ext = extImageMap.get(url);
       if (ext?.id && productId) {
         try {
-          await supabase.functions.invoke('external-db-bridge', {
-            body: {
-              table: 'product_images',
-              operation: 'update',
-              id: ext.id,
-              data: { is_active: false },
-            },
+          await invokeExternalDbBridge({
+            table: 'product_images',
+            operation: 'update',
+            id: ext.id,
+            data: { is_active: false },
           });
           queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
         } catch (err) {
@@ -432,25 +423,21 @@ export function useProductImageGallery({
           // Clear is_primary from all images for this product
           const currentPrimary = externalImages.find((img) => img.is_primary);
           if (currentPrimary?.id) {
-            await supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id: currentPrimary.id,
-                data: { is_primary: false },
-              },
+            await invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id: currentPrimary.id,
+              data: { is_primary: false },
             });
           }
           // Set new primary
           const newPrimaryExt = extImageMap.get(url);
           if (newPrimaryExt?.id) {
-            await supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id: newPrimaryExt.id,
-                data: { is_primary: true, display_order: 0 },
-              },
+            await invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id: newPrimaryExt.id,
+              data: { is_primary: true, display_order: 0 },
             });
           }
           queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
@@ -475,13 +462,11 @@ export function useProductImageGallery({
       try {
         await Promise.all(
           updates.map(({ id, display_order: displayOrder }) =>
-            supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id,
-                data: { display_order: displayOrder },
-              },
+            invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id,
+              data: { display_order: displayOrder },
             }),
           ),
         );
@@ -547,23 +532,21 @@ export function useProductImageGallery({
       const results = await Promise.all(
         urls.map((url) => {
           const d = resolveData(url);
-          return supabase.functions.invoke('external-db-bridge', {
-            body: {
-              table: 'product_images',
-              operation: 'insert',
-              data: {
-                product_id: productId,
-                url_cdn: url,
-                url_original: url,
-                image_type: d.image_type,
-                is_primary: Math.max(images.indexOf(url), 0) === 0,
-                is_og_image: false,
-                display_order: Math.max(images.indexOf(url), 0),
-                is_active: true,
-                supplier_code: d.supplier_code,
-                variant_id: d.variant_id,
-                alt_text: null,
-              },
+          return invokeExternalDbBridge({
+            table: 'product_images',
+            operation: 'insert',
+            data: {
+              product_id: productId,
+              url_cdn: url,
+              url_original: url,
+              image_type: d.image_type,
+              is_primary: Math.max(images.indexOf(url), 0) === 0,
+              is_og_image: false,
+              display_order: Math.max(images.indexOf(url), 0),
+              is_active: true,
+              supplier_code: d.supplier_code,
+              variant_id: d.variant_id,
+              alt_text: null,
             },
           });
         }),
@@ -588,13 +571,11 @@ export function useProductImageGallery({
         const missingUrls = selectedList.filter((url) => !extImageMap.get(url)?.id);
         await Promise.all(
           updates.map((ext) =>
-            supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id: ext.id,
-                data: { image_type: newType },
-              },
+            invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id: ext.id,
+              data: { image_type: newType },
             }),
           ),
         );
@@ -642,15 +623,13 @@ export function useProductImageGallery({
         const missingUrls = selectedList.filter((url) => !extImageMap.get(url)?.id);
         await Promise.all(
           updates.map((ext) =>
-            supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id: ext.id,
-                data: {
-                  supplier_code: variant?.supplier_code || null,
-                  variant_id: variant?.id || null,
-                },
+            invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id: ext.id,
+              data: {
+                supplier_code: variant?.supplier_code || null,
+                variant_id: variant?.id || null,
               },
             }),
           ),
@@ -695,13 +674,11 @@ export function useProductImageGallery({
         .filter((ext): ext is ExternalImage => !!ext?.id);
       await Promise.all(
         extUpdates.map((ext) =>
-          supabase.functions.invoke('external-db-bridge', {
-            body: {
-              table: 'product_images',
-              operation: 'update',
-              id: ext.id,
-              data: { is_active: false },
-            },
+          invokeExternalDbBridge({
+            table: 'product_images',
+            operation: 'update',
+            id: ext.id,
+            data: { is_active: false },
           }),
         ),
       );
@@ -771,13 +748,11 @@ export function useProductImageGallery({
               .replace('{tipo}', typeLabel)
               .replace('{cor}', variantLabel)
               .replace('{n}', String(i + 1));
-            return supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id: ext.id,
-                data: { alt_text: altText.trim() || null },
-              },
+            return invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id: ext.id,
+              data: { alt_text: altText.trim() || null },
             });
           }),
         );

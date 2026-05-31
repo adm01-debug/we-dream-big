@@ -4,6 +4,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 
 export interface ProdutoRamo {
   ramo_id: string;
@@ -17,12 +18,10 @@ export function useProdutoRamoAtividade(productId: string | null | undefined) {
     queryKey: ['produto-ramo-atividade', productId],
     enabled: !!productId,
     queryFn: async (): Promise<ProdutoRamo[]> => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          operation: 'select',
-          table: 'produto_ramo_atividade',
-          filters: { product_id: productId },
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        operation: 'select',
+        table: 'produto_ramo_atividade',
+        filters: { product_id: productId },
       });
       if (error) throw error;
       return (data?.rows || []) as ProdutoRamo[];

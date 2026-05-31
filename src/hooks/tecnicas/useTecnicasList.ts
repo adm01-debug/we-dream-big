@@ -9,6 +9,7 @@
  */
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import { TECNICAS_QUERY_OPTIONS } from '@/lib/query-config';
 import { TECNICAS_QUERY_KEYS } from '@/hooks/tecnicas/keys';
 import type { TecnicaUnificada, TecnicaResumo, TecnicaFiltros } from '@/types/tecnica-unificada';
@@ -89,13 +90,11 @@ function bridgeToTecnicaUnificada(row: TecnicaBridgeResponse): TecnicaUnificada 
  * Busca técnicas do BD EXTERNO via edge function (já passa por adapter).
  */
 async function fetchTecnicasExterno(): Promise<TecnicaBridgeResponse[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table: 'tecnica_gravacao',
-      operation: 'select',
-      orderBy: { column: 'ordem_exibicao', ascending: true },
-      limit: 200,
-    },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'tecnica_gravacao',
+    operation: 'select',
+    orderBy: { column: 'ordem_exibicao', ascending: true },
+    limit: 200,
   });
 
   if (error) {
@@ -202,13 +201,11 @@ export function useTecnicaById(id: string | undefined) {
     queryFn: async (): Promise<TecnicaUnificada | null> => {
       if (!id) return null;
 
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'tecnica_gravacao',
-          operation: 'select',
-          filters: { id },
-          limit: 1,
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'tecnica_gravacao',
+        operation: 'select',
+        filters: { id },
+        limit: 1,
       });
 
       if (error) throw error;
@@ -229,13 +226,11 @@ export function useTecnicaByCodigo(codigo: string | undefined) {
     queryFn: async (): Promise<TecnicaUnificada | null> => {
       if (!codigo) return null;
 
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'tecnica_gravacao',
-          operation: 'select',
-          filters: { codigo },
-          limit: 1,
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'tecnica_gravacao',
+        operation: 'select',
+        filters: { codigo },
+        limit: 1,
       });
 
       if (error) throw error;

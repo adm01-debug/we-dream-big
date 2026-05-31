@@ -10,6 +10,7 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { invokeExternalDbBridge } from './bridge-compat';
 import { emitBridgeStatus, isColdStartSignal } from './bridge-status-events';
 import { ensureCloudReady, CloudNotReadyError, getCachedCloudStatus } from '@/lib/cloud-status';
 import {
@@ -232,10 +233,7 @@ export async function invokeWithRetry(
   }
 
   for (let attempt = 0; attempt <= retries; attempt++) {
-    const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-      body,
-      headers: { [REQUEST_ID_HEADER]: requestId },
-    });
+    const { data, error } = await invokeExternalDbBridge(body);
 
     if (!error) {
       if (sawColdStart) emitBridgeStatus({ type: 'recovered' });

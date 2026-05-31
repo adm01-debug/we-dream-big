@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,8 +39,10 @@ function toArray(value: unknown): string[] {
 }
 
 async function fetchProductTags(productId: string): Promise<ProductTags> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'products', operation: 'select', id: productId },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'products',
+    operation: 'select',
+    id: productId,
   });
   if (error) throw new Error(error.message);
 
@@ -72,8 +75,11 @@ async function saveProductTags(productId: string, tags: ProductTags): Promise<vo
     datas_comemorativas: tags.datasComemorativas,
   };
 
-  const { error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'products', operation: 'update', id: productId, data: { tags: payload } },
+  const { error } = await invokeExternalDbBridge({
+    table: 'products',
+    operation: 'update',
+    id: productId,
+    data: { tags: payload },
   });
   if (error) throw new Error(error.message);
 }

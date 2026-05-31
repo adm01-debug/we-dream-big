@@ -209,10 +209,8 @@ export async function invokeBridge<T>(body: Record<string, unknown>): Promise<Br
   const headers: Record<string, string> = {};
   if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
   for (let attempt = 1; attempt <= BOOT_RETRY_ATTEMPTS; attempt++) {
-    const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-      body,
-      headers,
-    });
+    const { invokeExternalDbBridge } = await import('./bridge-compat');
+    const { data, error } = await invokeExternalDbBridge(body);
     if (error) {
       const parsed = await buildBridgeError(error);
       if (isCorsOrNetworkBridgeError(parsed.message)) {

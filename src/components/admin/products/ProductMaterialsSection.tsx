@@ -7,6 +7,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { materialService, type MaterialType } from '@/services/materialService';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import { MaterialBadge } from '@/components/materials/MaterialBadge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -118,13 +119,11 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
   >({
     queryKey: ['product-materials-full', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_materials',
-          operation: 'select',
-          filters: { product_id: productId },
-          limit: 200,
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_materials',
+        operation: 'select',
+        filters: { product_id: productId },
+        limit: 200,
       });
       if (error) throw new Error(error.message);
       return data?.data?.records || [];
@@ -157,18 +156,18 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
             toast.error('Registro não encontrado');
             return;
           }
-          const { error: delError } = await supabase.functions.invoke('external-db-bridge', {
-            body: { table: 'product_materials', operation: 'delete', id: linked.id },
+          const { error: delError } = await invokeExternalDbBridge({
+            table: 'product_materials',
+            operation: 'delete',
+            id: linked.id,
           });
           if (delError) throw new Error(delError.message);
           toast.success('Material removido');
         } else {
-          const { error } = await supabase.functions.invoke('external-db-bridge', {
-            body: {
-              table: 'product_materials',
-              operation: 'insert',
-              data: { product_id: productId, material_id: materialId },
-            },
+          const { error } = await invokeExternalDbBridge({
+            table: 'product_materials',
+            operation: 'insert',
+            data: { product_id: productId, material_id: materialId },
           });
           if (error) throw new Error(error.message);
           toast.success('Material adicionado');
@@ -190,16 +189,14 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
       if (!linked?.id) return;
 
       try {
-        const { error } = await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'product_materials',
-            operation: 'update',
-            id: linked.id,
-            data: {
-              part: data.part.trim() || null,
-              percentage: data.percentage,
-              notes: data.notes.trim() || null,
-            },
+        const { error } = await invokeExternalDbBridge({
+          table: 'product_materials',
+          operation: 'update',
+          id: linked.id,
+          data: {
+            part: data.part.trim() || null,
+            percentage: data.percentage,
+            notes: data.notes.trim() || null,
           },
         });
         if (error) throw new Error(error.message);

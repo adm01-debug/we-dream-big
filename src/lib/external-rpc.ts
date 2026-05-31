@@ -9,6 +9,7 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 800;
@@ -47,12 +48,10 @@ export async function invokeExternalRpc<T>(
   params: Record<string, unknown>,
 ): Promise<T> {
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-      body: {
-        operation: 'rpc',
-        rpcName,
-        rpcParams: params,
-      },
+    const { data, error } = await invokeExternalDbBridge({
+      operation: 'rpc',
+      rpcName,
+      rpcParams: params,
     });
 
     if (!error && data?.success) {
