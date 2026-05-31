@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ImageOff } from 'lucide-react';
@@ -39,6 +39,13 @@ export function OptimizedImage({
   const [error, setError] = useState(false);
   const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
+
+  // Generate a local blurred placeholder if no lqip is provided
+  // This is a simple SVG data URL that mimics a blurred version of the container
+  const localPlaceholder = useMemo(() => {
+    if (lqip) return null;
+    return `data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Crect width='400' height='500' fill='%23f3f4f6'/%3E%3C/svg%3E`;
+  }, [lqip]);
 
   useEffect(() => {
     if (priority) {
@@ -83,13 +90,16 @@ export function OptimizedImage({
         </div>
       ) : (
         <>
-          {/* Low Quality Image Preview (LQIP) */}
-          {lqip && !isLoaded && !error && (
+          {/* Low Quality Image Preview (LQIP) or Local Fallback */}
+          {(lqip || localPlaceholder) && !isLoaded && !error && (
             <img
-              src={lqip}
+              src={lqip || localPlaceholder!}
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover scale-105"
+              className={cn(
+                "absolute inset-0 h-full w-full object-cover transition-opacity duration-300",
+                lqip ? "opacity-100" : "opacity-50"
+              )}
               style={{ 
                 filter: `blur(${blurAmount}px)`,
                 transform: `scale(${zoomAmount})`,
