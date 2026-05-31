@@ -4,13 +4,26 @@
 -- MIGRATION: sync user_organizations → organization_members
 -- ============================================================
 
-INSERT INTO public.organization_members (organization_id, user_id, role, joined_at, created_at, updated_at)
-SELECT uo.organization_id, uo.user_id, uo.role, uo.created_at AS joined_at, uo.created_at, uo.updated_at
-FROM public.user_organizations uo
-WHERE NOT EXISTS (
-  SELECT 1 FROM public.organization_members om
-  WHERE om.organization_id = uo.organization_id AND om.user_id = uo.user_id
-);
+-- Replay-safe: em preview-branches a coluna user_organizations.updated_at pode
+-- ainda não existir neste ponto da sequência (drift de ordem de aplicação) → 42703.
+-- O backfill só roda quando a coluna existe (em prod ela existe → roda normal); no
+-- preview, organization_members já vem populado do clone, então é no-op de qualquer
+-- forma. O IF EXISTS só planeja o INSERT quando o ramo é tomado (evita o 42703).
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'user_organizations' AND column_name = 'updated_at'
+  ) THEN
+    INSERT INTO public.organization_members (organization_id, user_id, role, joined_at, created_at, updated_at)
+    SELECT uo.organization_id, uo.user_id, uo.role, uo.created_at AS joined_at, uo.created_at, uo.updated_at
+    FROM public.user_organizations uo
+    WHERE NOT EXISTS (
+      SELECT 1 FROM public.organization_members om
+      WHERE om.organization_id = uo.organization_id AND om.user_id = uo.user_id
+    );
+  END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION public.sync_user_org_to_org_members()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
