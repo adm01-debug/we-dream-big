@@ -5,6 +5,7 @@ on:
     paths:
       - 'src/components/ui/OptimizedImage.tsx'
       - 'src/pages/tools/OptimizedImageDemo.tsx'
+      - 'src/routes/AppRoutes.tsx'
       - 'e2e/optimized-image-*.spec.ts'
       - '.github/workflows/optimized-image-e2e.yml'
   pull_request:
@@ -12,6 +13,7 @@ on:
     paths:
       - 'src/components/ui/OptimizedImage.tsx'
       - 'src/pages/tools/OptimizedImageDemo.tsx'
+      - 'src/routes/AppRoutes.tsx'
       - 'e2e/optimized-image-*.spec.ts'
 
 jobs:
@@ -31,17 +33,10 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps chromium
 
-    # TODO(auth): /debug/images está atrás de ProtectedRoute.
-    # Estes testes requerem autenticação para passar completamente.
-    # Opções para resolver:
-    #   (A) Adicionar step de auth setup com secrets E2E_USER_EMAIL/PASSWORD
-    #       e mudar --project para chromium-authed
-    #   (B) Mover a rota /debug/images para fora do ProtectedRoute no App.tsx
-    # continue-on-error: true previne que este workflow bloqueie o CI
-    # enquanto a autenticação não está configurada.
+    # /debug/images is now a public route (outside ProtectedRoute) —
+    # no auth setup required. Tests run cleanly against routes-public project.
     - name: Run OptimizedImage E2E tests
       run: npx playwright test optimized-image-detection.spec.ts optimized-image-visual.spec.ts --project=routes-public
-      continue-on-error: true
       env:
         CI: true
         VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}

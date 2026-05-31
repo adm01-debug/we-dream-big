@@ -4,14 +4,10 @@ import { test, expect } from '@playwright/test';
  * E2E tests for OptimizedImage detection logic and placeholder generation.
  * Validates Cloudflare imagedelivery.net handling and other CDN providers.
  *
- * TODO(auth): a rota /debug/images está atrás de ProtectedRoute.
- * Para estes testes passarem completamente é necessário:
- *   (A) Usar o project chromium-authed com storageState + secrets E2E_USER_*
- *   (B) Mover a rota para fora do ProtectedRoute no App.tsx
- * Enquanto isso, o workflow usa continue-on-error: true.
+ * A rota /debug/images é pública (sem ProtectedRoute) em todos os ambientes.
+ * Executa exclusivamente no project routes-public (chromium).
  */
 test.describe('OptimizedImage Detection & Placeholders', () => {
-  // Corrigido: era '/tools/OptimizedImageDemo' (rota inexistente)
   const DEMO_URL = '/debug/images';
 
   test.beforeEach(async ({ page }) => {

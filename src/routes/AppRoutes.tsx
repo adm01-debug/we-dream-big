@@ -12,6 +12,7 @@ import { productRoutes } from './product-routes';
 import { publicRoutes } from './public-routes';
 import { quoteRoutes } from './quote-routes';
 import { toolsRoutes } from './tools-routes';
+import { OptimizedImageDemo } from './lazy-pages';
 
 // NProgress configuration
 NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.1 });
@@ -70,6 +71,7 @@ function RouteSuspenseDone({ children }: { children: ReactNode }) {
  *
  * Composition:
  * - `publicRoutes` (login, reset, callback, unauthorized) — no auth required
+ * - `debugRoutes` — dev/QA tools, no auth, publicly accessible in all envs
  * - `<ProtectedRoute />` wrapper, with sub-groups inside:
  *   - `productRoutes` — products, filters, novelties, favorites, etc
  *   - `quoteRoutes` — orçamentos
@@ -78,13 +80,21 @@ function RouteSuspenseDone({ children }: { children: ReactNode }) {
  *   - `homeAndClientRoutes` — home, dashboard, clientes, redirects
  * - `notFoundRoute` (`*` catch-all) — PÚBLICO, fora do ProtectedRoute,
  *   para que rotas inexistentes mostrem o 404 mesmo sem sessão.
- *   DEVE ser o ÚLTIMO Route (precedência por ordem em react-router-dom).
+ *   DEVE ser o ÚTIMO Route (precedência por ordem em react-router-dom).
  */
 export function AppRoutes() {
   return (
     <RouteSuspense>
       <Routes>
         {publicRoutes}
+
+        {/* Debug / QA routes — no auth required in any environment.
+            These pages do not expose sensitive user data and must be
+            accessible to E2E tests (Playwright routes-public project)
+            and to local development tooling without a logged-in session.
+            /debug/images was previously inside toolsRoutes (ProtectedRoute)
+            which caused E2E specs to fail with auth redirect. */}
+        <Route path="/debug/images" element={<OptimizedImageDemo />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<ProtectedAppLayout />}>

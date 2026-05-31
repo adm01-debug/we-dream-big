@@ -4,18 +4,14 @@ import { test, expect } from '@playwright/test';
  * Testes de Regressão Visual para OptimizedImage.
  * Valida o efeito blur-up, fade-in e estado de erro em diferentes viewports.
  *
- * TODO(auth): a rota /debug/images está atrás de ProtectedRoute.
- * Para estes testes passarem completamente é necessário:
- *   (A) Usar o project chromium-authed com storageState + secrets E2E_USER_*
- *   (B) Mover a rota para fora do ProtectedRoute no App.tsx
- * Enquanto isso, o workflow usa continue-on-error: true.
+ * A rota /debug/images é pública (sem ProtectedRoute) em todos os ambientes.
+ * Executa exclusivamente no project routes-public (chromium).
  */
 test.describe('OptimizedImage Visual Regression', () => {
   const DEBUG_URL = '/debug/images';
 
   test.beforeEach(async ({ page }) => {
     await page.goto(DEBUG_URL);
-    // Título real da página — corrigido de 'Ferramentas de Debug: OptimizedImage'
     await expect(page.getByText('OptimizedImage Demo')).toBeVisible();
   });
 
