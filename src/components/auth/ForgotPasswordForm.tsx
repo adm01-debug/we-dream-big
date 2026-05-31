@@ -33,7 +33,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
   const { createRequest } = usePasswordResetRequests();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [requestSent, setRequestSent] = useState(false);
+  const [requestSent] = useState(false);
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
