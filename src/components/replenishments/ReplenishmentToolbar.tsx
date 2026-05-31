@@ -100,7 +100,12 @@ export function ReplenishmentToolbar({
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <RefreshCw className="h-4 w-4 shrink-0 text-info" aria-hidden="true" />
-          <h2 className="whitespace-nowrap text-base font-semibold sm:text-lg">Reposição</h2>
+          <div className="flex flex-col">
+            <h2 className="whitespace-nowrap text-base font-semibold sm:text-lg">Reposição</h2>
+            <p className="hidden text-[10px] text-muted-foreground lg:block">
+              Produtos repostos nos últimos 30 dias
+            </p>
+          </div>
           <Badge variant="secondary" className="shrink-0 px-1.5 text-[10px] tabular-nums">
             {isLoading && totalCount === 0 ? (
               <span className="flex items-center gap-1">
