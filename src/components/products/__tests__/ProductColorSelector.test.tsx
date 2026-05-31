@@ -49,8 +49,12 @@ describe('ProductColorSelector Tooltip', () => {
     }, { timeout: 2000 });
 
     // Check if it has the swatch inside the tooltip (the circle)
-    const tooltipSwatch = screen.getByText('Vermelho').previousSibling;
-    expect(tooltipSwatch).toHaveStyle('background-color: rgb(255, 0, 0)');
+    const tooltipContent = screen.getByText('Vermelho').parentElement;
+    const swatch = tooltipContent?.querySelector('span');
+    expect(swatch).toBeTruthy();
+    // Use toBe instead of toHaveStyle for better error message if it fails
+    const style = window.getComputedStyle(swatch!).backgroundColor;
+    expect(style).toBe('rgb(255, 0, 0)');
 
     // Leave
     fireEvent.mouseLeave(firstSwatch);
