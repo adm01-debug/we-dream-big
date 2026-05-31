@@ -43,16 +43,24 @@ export function OptimizedImage({
   const imgRef = useRef<HTMLImageElement>(null);
 
   // Generate a local blurred placeholder if no lqip is provided
-  const localPlaceholder = useMemo(() => {
-    if (lqip || !src) return null;
+  const { localPlaceholder, detectionRule } = useMemo(() => {
+    if (lqip || !src) return { localPlaceholder: null, detectionRule: 'none' };
     
     // Cloudflare Images (imagedelivery.net)
     if (src.includes('imagedelivery.net')) {
-      const thumbUrl = src.replace(/\/[^/]+$/, '/thumbnail');
-      if (debug || process.env.NODE_ENV === 'development') {
-        console.info(`[OptimizedImage] Cloudflare Image detected. Generated thumbnail: ${thumbUrl}`);
+      // Handle URLs with query strings or trailing slashes
+      // Standard: https://imagedelivery.net/<hash>/<id>/<variant>
+      let baseUrl = src.split('?')[0];
+      if (baseUrl.endsWith('/')) {
+        baseUrl = baseUrl.slice(0, -1);
       }
-      return thumbUrl;
+      
+      const thumbUrl = baseUrl.replace(/\/[^/]+$/, '/thumbnail');
+      
+      if (debug || process.env.NODE_ENV === 'development') {
+        console.info(`[OptimizedImage] Cloudflare Image detected. Rule: CF_VARIANT_REPLACEMENT. Generated thumbnail: ${thumbUrl}`);
+      }
+      return { localPlaceholder: thumbUrl, detectionRule: 'cloudflare' };
     }
 
     // If it's an Unsplash image, we can get a tiny version for LQIP
@@ -63,23 +71,22 @@ export function OptimizedImage({
       url.searchParams.set('blur', '10');
       const thumbUrl = url.toString();
       if (debug || process.env.NODE_ENV === 'development') {
-        console.info(`[OptimizedImage] Unsplash Image detected. Generated thumbnail: ${thumbUrl}`);
+        console.info(`[OptimizedImage] Unsplash Image detected. Rule: UNSPLASH_PARAMS. Generated thumbnail: ${thumbUrl}`);
       }
-      return thumbUrl;
+      return { localPlaceholder: thumbUrl, detectionRule: 'unsplash' };
     }
     
-    // If it's a Supabase storage image, we can try to get a thumbnail if transformations are enabled
+    // If it's a Supabase storage image
     if (src.includes('/storage/v1/object/public/')) {
       const thumbUrl = `${src}${src.includes('?') ? '&' : '?'}width=50&quality=10`;
       if (debug || process.env.NODE_ENV === 'development') {
-        console.info(`[OptimizedImage] Supabase Storage detected. Generated thumbnail: ${thumbUrl}`);
+        console.info(`[OptimizedImage] Supabase Storage detected. Rule: SUPABASE_TRANSFORM. Generated thumbnail: ${thumbUrl}`);
       }
-      return thumbUrl;
+      return { localPlaceholder: thumbUrl, detectionRule: 'supabase' };
     }
 
-    // No local preview for other sources
-    return null;
-  }, [lqip, src]);
+    return { localPlaceholder: null, detectionRule: 'generic' };
+  }, [lqip, src, debug]);
 
   useEffect(() => {
     if (priority) {
@@ -106,6 +113,7 @@ export function OptimizedImage({
   return (
     <div 
       className={cn('relative overflow-hidden bg-white', containerClassName)}
+      data-detection-rule={detectionRule}
       style={{ 
         aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : 'auto'
       } as React.CSSProperties}
