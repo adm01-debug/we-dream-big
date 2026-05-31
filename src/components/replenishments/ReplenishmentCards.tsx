@@ -14,6 +14,8 @@ import { ProductSparkline } from '@/components/products/ProductSparkline';
 import { SelectionCheckbox } from '@/components/common/SelectionCheckbox';
 import { cn } from '@/lib/utils';
 import type { ReplenishmentWithDetails, StockStatus } from '@/hooks/products';
+import { productCardStyles } from '@/components/products/product-card-styles';
+
 
 // ─── Helpers ─────────────────────────────────────────────────────
 
