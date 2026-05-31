@@ -12,6 +12,7 @@ import { useState, useCallback, useMemo, useRef } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { invokeExternalDb } from '@/lib/external-db';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import { toast } from 'sonner';
 import { sanitizeError } from '@/lib/security/sanitize-error';
 import {
