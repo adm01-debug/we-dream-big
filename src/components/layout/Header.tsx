@@ -12,6 +12,8 @@ import {
   Shield,
   MoreHorizontal,
   Palette,
+  Tag,
+  TagsIcon,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
@@ -28,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useComparisonStore } from '@/stores/useComparisonStore';
+import { useBadgeVisibilityStore } from '@/stores/useBadgeVisibilityStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrentSection } from '@/hooks/ui/useCurrentSection';
 import { useIsScrolled } from '@/hooks/ui/useScroll';
@@ -56,6 +59,8 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
   const { toast } = useToast();
   const favoriteCount = useFavoritesStore((s) => s.favoriteCount);
   const compareCount = useComparisonStore((s) => s.compareCount);
+  const badgesEnabled = useBadgeVisibilityStore((s) => s.badgesEnabled);
+  const toggleBadges = useBadgeVisibilityStore((s) => s.toggleBadges);
   const { user, profile, role, signOut, rolesLoaded } = useAuth();
   const currentSection = useCurrentSection();
   const { restartTour } = useOnboardingContext();
@@ -338,6 +343,32 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                 Tamanho Tooltip: {tooltipStyle === 'compact' ? 'Mudar para Standard' : 'Mudar para Compact'}
               </TooltipContent>
             </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleBadges}
+                  aria-label={badgesEnabled ? 'Ocultar badges dos produtos' : 'Exibir badges dos produtos'}
+                  aria-pressed={badgesEnabled}
+                  className={cn(
+                    'relative h-8 w-8 rounded-full transition-all duration-200 hover:bg-primary/10 hover:text-foreground',
+                    badgesEnabled ? 'text-muted-foreground' : 'text-muted-foreground/40',
+                  )}
+                >
+                  <Tag className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                  {!badgesEnabled && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-1/2 top-1/2 h-[1.5px] w-5 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-full bg-current"
+                    />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Badges dos produtos: {badgesEnabled ? 'Ativos — clique para ocultar' : 'Ocultos — clique para reativar'}
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* ── Mobile overflow menu (#8) ── */}
@@ -385,6 +416,10 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
                 <DropdownMenuItem onClick={handleToggleTooltipStyle} className="cursor-pointer">
                   <Palette className="mr-2 h-4 w-4" />
                   Tooltips: {tooltipStyle === 'compact' ? 'Standard' : 'Compact'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={toggleBadges} className="cursor-pointer">
+                  <Tag className="mr-2 h-4 w-4" />
+                  Badges: {badgesEnabled ? 'Ocultar' : 'Exibir'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
