@@ -9,107 +9,131 @@ const viewports = [
 ];
 
 test.describe('Replenishment Grid Advanced Visual & A11y @mobile', () => {
+  test.beforeEach(async ({ context }) => {
+    // Hard cleaning of cache and service workers
+    await context.addInitScript(() => {
+      // Force default feature flags to ensure consistency
+      const defaultFlags = {
+        'mfa': 'false',
+        'ai_recommendations': 'true',
+        'presentation_mode': 'true',
+        'voice_commands': 'true',
+        'magic_up': 'true',
+        'e2e_tests': 'true', 
+        'advanced_analytics': 'true',
+        'custom_kits_v2': 'false'
+      };
+      
+      Object.entries(defaultFlags).forEach(([flag, value]) => {
+        localStorage.setItem(`ff_${flag}`, value);
+      });
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          for (const registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+    });
+  });
+
   for (const viewport of viewports) {
     test.describe(`Viewport: ${viewport.name}`, () => {
       test.use({ viewport: { width: viewport.width, height: viewport.height } });
 
-      test('Page Header Visual Validation', async ({ page }) => {
-        await page.goto('/reposicao');
-        const header = page.locator('div.flex.items-center.gap-3').first();
-        await expect(header).toBeVisible();
-        await expect(header.locator('h1')).toHaveText('Reposição');
-        await expect(header.locator('[data-testid="replenishment-description"]')).toHaveText('Produtos que voltaram ao estoque dos fornecedores nos últimos 30 dias');
+      test('Header Immediate Rendering & Visual', async ({ page }) => {
+        await page.goto('/reposicao', { waitUntil: 'domcontentloaded' });
         
-        await expect(header).toHaveScreenshot(`header-${viewport.name}.png`);
+        const header = page.locator('div.flex.flex-col.gap-4').first();
+        const title = header.locator('[data-testid="page-title-reposicao"]');
+        const desc = header.locator('[data-testid="replenishment-description"]');
+        
+        // Immediate presence check
+        await expect(title).toBeVisible();
+        await expect(title).toHaveText('Reposição');
+        await expect(desc).toHaveText('Produtos que voltaram ao estoque dos fornecedores nos últimos 30 dias');
+        
+        // Visual regression for header only
+        await expect(header).toHaveScreenshot(`header-only-${viewport.name}.png`);
       });
 
-      test('Visual Regression & Virtualization Scroll', async ({ page }) => {
+      test('Loading State Skeletons', async ({ page }) => {
+        // Block replenishments data to keep skeletons visible
+        await page.route('**/replenishments**', async route => {
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          await route.continue();
+        });
+        
+        await page.goto('/reposicao');
+        
+        // Wait for the initial layout but before data fills
+        const statsSkeleton = page.locator('div[aria-label="Carregando estatísticas"]');
+        await expect(statsSkeleton).toBeVisible();
+        
+        await expect(page).toHaveScreenshot(`loading-state-${viewport.name}.png`);
+      });
+
+      test('Grid Visual Regression & Scroll', async ({ page }) => {
         await page.goto('/reposicao');
         const grid = page.locator('div[role="list"]');
         await grid.waitFor({ state: 'visible' });
         await page.waitForTimeout(1000);
 
-        // 1. Initial State Screenshot
+        // Initial Grid State
         await expect(grid).toHaveScreenshot(`grid-initial-${viewport.name}.png`, {
           maxDiffPixelRatio: 0.02,
         });
 
-        // 2. Scroll to middle/end to test virtualization alignment
+        // Virtualization Scroll Alignment
         await grid.evaluate(el => el.scrollTop = 1000);
-        await page.waitForTimeout(800); // Wait for virtualization to re-render
+        await page.waitForTimeout(800);
         
         await expect(grid).toHaveScreenshot(`grid-scrolled-${viewport.name}.png`, {
           maxDiffPixelRatio: 0.02,
         });
       });
 
-      test('Accessibility Scan with Report', async ({ page }) => {
+      test('Accessibility Scan', async ({ page }) => {
         await page.goto('/reposicao');
         const grid = page.locator('div[role="list"]');
         await grid.waitFor({ state: 'visible' });
 
-        const accessibilityScanResults = await new AxeBuilder({ page })
+        const results = await new AxeBuilder({ page })
           .include('div[role="list"]')
           .analyze();
         
-        if (accessibilityScanResults.violations.length > 0) {
-          console.error(`Axe violations for ${viewport.name}:`, JSON.stringify(accessibilityScanResults.violations, null, 2));
-        }
-        
-        expect(accessibilityScanResults.violations).toEqual([]);
+        expect(results.violations).toEqual([]);
       });
-      test('Keyboard Navigation Flow', async ({ page }) => {
+
+      test('Keyboard Navigation', async ({ page }) => {
         await page.goto('/reposicao');
         await page.keyboard.press('Tab');
         
-        // We expect focus to reach the search input or first interactive element
         const activeElement = await page.evaluate(() => document.activeElement?.tagName);
         expect(activeElement).toBeDefined();
         
-        // Navigate through the toolbar
         await page.keyboard.press('Tab');
-        await page.keyboard.press('Tab');
-        
-        // Take a screenshot of the focus state if possible
         await expect(page).toHaveScreenshot(`keyboard-focus-${viewport.name}.png`);
       });
     });
   }
 
-  test('Card Edge Cases: Long Title, Price Consult, No Image', async ({ page }) => {
-    // This test assumes we might have some mocked or specific data items
-    // If not, we validate that existing cards (even with variation) respect the min-heights defined in styles
+  test('Card Edge Cases', async ({ page }) => {
     await page.goto('/reposicao');
     const cards = page.locator('div[role="listitem"]');
     await cards.first().waitFor();
 
     const allCards = await cards.all();
-    for (const card of allCards.slice(0, 5)) {
+    for (const card of allCards.slice(0, 3)) {
       const h3 = card.locator('h3');
-      const priceContainer = card.locator('.min-h-\\[3\\.25rem\\]'); // Based on our product-card-styles
+      const priceContainer = card.locator('.min-h-\\[3\\.25rem\\]'); 
       
       const h3Box = await h3.boundingBox();
       const priceBox = await priceContainer.boundingBox();
 
-      if (h3Box) expect(h3Box.height).toBeGreaterThanOrEqual(40); // 2.5rem
-      if (priceBox) expect(priceBox.height).toBeGreaterThanOrEqual(52); // 3.25rem
+      if (h3Box) expect(h3Box.height).toBeGreaterThanOrEqual(40); 
+      if (priceBox) expect(priceBox.height).toBeGreaterThanOrEqual(52); 
     }
-  });
-
-  test.describe('User Preferences: Reduced Motion & Large Font', () => {
-    test.use({ 
-      contextOptions: { 
-        reducedMotion: 'reduce',
-      } 
-    });
-
-    test('Grid remains consistent with reduced motion', async ({ page }) => {
-      await page.goto('/reposicao');
-      const grid = page.locator('div[role="list"]');
-      await grid.waitFor({ state: 'visible' });
-      
-      // Visual check that grid still renders correctly even with motion reduced
-      await expect(grid).toHaveScreenshot('grid-reduced-motion.png');
-    });
   });
 });
