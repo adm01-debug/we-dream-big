@@ -2,8 +2,10 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 const viewports = [
-  { width: 360, height: 800, name: 'mobile-small' },
-  { width: 1440, height: 900, name: 'desktop-wide' },
+  { width: 360, height: 800, name: 'mobile-360' },
+  { width: 768, height: 1024, name: 'tablet-768' },
+  { width: 1024, height: 768, name: 'tablet-1024' },
+  { width: 1440, height: 900, name: 'desktop-1440' },
 ];
 
 test.describe('Replenishment Grid Advanced Visual & A11y', () => {
