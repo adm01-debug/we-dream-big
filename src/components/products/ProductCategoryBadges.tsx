@@ -225,7 +225,8 @@ export function ProductCategoryBadges({
                 'cursor-pointer px-2.5 py-1 text-sm font-medium',
                 'border-warning/50 bg-warning/15 hover:bg-warning/25',
                 'text-warning hover:text-warning',
-                'transition-all duration-200 hover:scale-105 hover:border-warning',
+                'transition-all duration-300 hover:scale-105 hover:border-warning group-hover:shadow-md',
+                'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full hover:before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent',
               )}
             >
               <Package className="mr-1.5 h-3.5 w-3.5" />
