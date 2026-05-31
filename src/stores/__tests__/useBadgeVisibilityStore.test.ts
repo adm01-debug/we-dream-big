@@ -1,36 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useBadgeVisibilityStore } from '../useBadgeVisibilityStore';
 
+// Define the mock structure
+const mockSupabase = {
+  from: vi.fn().mockReturnThis(),
+  select: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockReturnThis(),
+  update: vi.fn().mockReturnThis(),
+  maybeSingle: vi.fn().mockResolvedValue({ data: { preferences: {} }, error: null }),
+};
+
 // Mock the lazy client
-vi.mock('@/integrations/supabase/lazy-client', () => {
-  const mockSupabase = {
-    from: vi.fn(() => mockSupabase),
-    select: vi.fn(() => mockSupabase),
-    eq: vi.fn(() => mockSupabase),
-    update: vi.fn(() => mockSupabase),
-    single: vi.fn().mockResolvedValue({ data: { preferences: {} }, error: null }),
-    maybeSingle: vi.fn().mockResolvedValue({ data: { preferences: {} }, error: null }),
-    then: vi.fn((resolve) => resolve({ data: { preferences: {} }, error: null })),
-  };
-  // Ensure that .update().eq() works as expected
-  mockSupabase.update.mockReturnValue(mockSupabase);
-  mockSupabase.eq.mockReturnValue(mockSupabase);
-  
-  return {
-    getSupabaseClient: vi.fn(() => Promise.resolve(mockSupabase)),
-  };
-});
+vi.mock('@/integrations/supabase/lazy-client', () => ({
+  getSupabaseClient: vi.fn(() => Promise.resolve(mockSupabase)),
+}));
 
 describe('useBadgeVisibilityStore', () => {
   beforeEach(() => {
     // Reset store state before each test
-    const store = useBadgeVisibilityStore.getState();
     useBadgeVisibilityStore.setState({
       routeSettings: {},
       badgesEnabled: true,
       syncError: null,
     });
     vi.clearAllMocks();
+    
+    // Default success mock for each test
+    mockSupabase.maybeSingle.mockResolvedValue({ data: { preferences: {} }, error: null });
+    mockSupabase.update.mockReturnValue(mockSupabase);
+    // Since we await the result of the whole chain, the last call should be thenable
+    // or we can mock the whole chain to resolve to the error object.
+    // In our case, the last calls are maybeSingle() or the whole update().eq() chain.
+    // update().eq() is awaited, so we need to make it return a promise.
+    (mockSupabase.eq as any).mockImplementation(() => Promise.resolve({ error: null }));
   });
 
   it('should initialize with default values', () => {
@@ -46,7 +48,7 @@ describe('useBadgeVisibilityStore', () => {
     await toggleBadges('/home', 'light');
     
     expect(isBadgeEnabled('/home', 'light')).toBe(false);
-    expect(isBadgeEnabled('/home', 'dark')).toBe(true); // Default was true
+    expect(isBadgeEnabled('/home', 'dark')).toBe(true);
   });
 
   it('should toggle badges for a specific route and theme (dark)', async () => {
@@ -71,19 +73,13 @@ describe('useBadgeVisibilityStore', () => {
     const success = await toggleBadges('/home', 'light', 'user-123');
     
     expect(success).toBe(true);
-    const { getSupabaseClient } = await import('@/integrations/supabase/lazy-client');
-    expect(getSupabaseClient).toHaveBeenCalled();
+    expect(mockSupabase.from).toHaveBeenCalledWith('profiles');
+    expect(mockSupabase.update).toHaveBeenCalled();
   });
 
   it('should handle backend sync failure and set syncError', async () => {
-    const { getSupabaseClient } = await import('@/integrations/supabase/lazy-client');
-    vi.mocked(getSupabaseClient).mockResolvedValueOnce({
-      from: vi.fn(() => ({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: new Error('Network error') }),
-      })),
-    } as any);
+    // Force failure on maybeSingle
+    mockSupabase.maybeSingle.mockResolvedValueOnce({ data: null, error: new Error('Network error') });
 
     const { toggleBadges } = useBadgeVisibilityStore.getState();
     const success = await toggleBadges('/home', 'light', 'user-123');
