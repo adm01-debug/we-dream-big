@@ -142,35 +142,33 @@ export const ProductCardImage = memo(function ProductCardImage({
       )}
 
       {/* Badges - Top Left */}
-      <div className="absolute left-2 top-2 z-10 flex flex-col gap-1 sm:left-3 sm:top-3 sm:gap-1.5">
+      <div className="absolute left-2 top-2 z-10 flex flex-col gap-1 sm:left-3 sm:top-3 sm:gap-1.5 pointer-events-none">
         {product.featured && (
-          <Badge className="animate-glow-pulse bg-gradient-to-r from-primary to-primary-glow px-1.5 py-0.5 text-[10px] text-primary-foreground shadow-lg sm:px-2 sm:text-xs">
-            <Sparkles className="mr-0.5 h-2.5 w-2.5 sm:mr-1 sm:h-3 sm:w-3" />
-            <span className="hidden sm:inline">Destaque</span>
-            <span className="sm:hidden">★</span>
-          </Badge>
+          <ProductStatusBadge type="featured" size="sm" />
         )}
+        
         {isNovelty && noveltyDaysRemaining !== undefined ? (
-          <NoveltyBadge daysRemaining={noveltyDaysRemaining} size="sm" />
+          <ProductStatusBadge 
+            type="novelty" 
+            daysRemaining={noveltyDaysRemaining} 
+            size="sm" 
+          />
         ) : (
           product.newArrival && (
-            <Badge className="bg-gradient-to-r from-info to-info/80 px-1.5 py-0.5 text-[10px] text-info-foreground shadow-md sm:px-2 sm:text-xs">
-              <span className="hidden sm:inline">Novidade</span>
-              <span className="sm:hidden">Novo</span>
-            </Badge>
+            <ProductStatusBadge type="novelty" value="Novo" size="sm" />
           )
         )}
+
         {product.isKit && (
-          <Badge className="bg-gradient-to-r from-warning to-warning/80 px-1.5 py-0.5 text-[10px] text-warning-foreground shadow-md sm:px-2 sm:text-xs">
-            <Package className="mr-0.5 h-2.5 w-2.5 sm:mr-1 sm:h-3 sm:w-3" />
-            Kit
-          </Badge>
+          <ProductStatusBadge type="kit" size="sm" />
         )}
+
         {product.onSale && (
-          <Badge className="animate-pulse bg-gradient-to-r from-destructive to-destructive/80 px-1.5 py-0.5 text-[10px] text-destructive-foreground shadow-md sm:px-2 sm:text-xs">
-            <span className="hidden sm:inline">Promoção</span>
-            <span className="sm:hidden">%</span>
-          </Badge>
+          <ProductStatusBadge 
+            type="promotion" 
+            value="-20%" 
+            size="sm" 
+          />
         )}
       </div>
 
