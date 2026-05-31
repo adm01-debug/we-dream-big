@@ -267,6 +267,12 @@ export function NoveltyProductGrid() {
           selectionMode={selectionMode}
           selectedIds={sel.selectedIds}
           onToggleSelect={sel.toggleSelect}
+          onStatusClick={(type) => {
+            if (type === 'novelty') return; // already on novelty page
+            if (type === 'promotion') navigate('/filtros?onSale=1');
+            if (type === 'featured') navigate('/filtros?featured=1');
+            if (type === 'kit') navigate('/filtros?isKit=1');
+          }}
         />
       );
     const effectiveCols = Math.min(gridColumns, filteredProducts.length) as ColumnCount;
