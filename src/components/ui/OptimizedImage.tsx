@@ -49,8 +49,8 @@ export function OptimizedImage({
     // Cloudflare Images (imagedelivery.net)
     if (src.includes('imagedelivery.net')) {
       const thumbUrl = src.replace(/\/[^/]+$/, '/thumbnail');
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[OptimizedImage] Cloudflare Image detected. Generated thumbnail: ${thumbUrl}`);
+      if (debug || process.env.NODE_ENV === 'development') {
+        console.info(`[OptimizedImage] Cloudflare Image detected. Generated thumbnail: ${thumbUrl}`);
       }
       return thumbUrl;
     }
