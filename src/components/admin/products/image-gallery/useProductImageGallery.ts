@@ -58,14 +58,12 @@ export function useProductImageGallery({
   const { data: externalImages = [], isLoading: isLoadingExt } = useQuery<ExternalImage[]>({
     queryKey: ['product-images-ext', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'product_images',
-          operation: 'select',
-          filters: { product_id: productId },
-          limit: 200,
-          orderBy: { column: 'display_order', ascending: true },
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'product_images',
+        operation: 'select',
+        filters: { product_id: productId },
+        limit: 200,
+        orderBy: { column: 'display_order', ascending: true },
       });
       if (error) return [];
       return data?.data?.records || [];
