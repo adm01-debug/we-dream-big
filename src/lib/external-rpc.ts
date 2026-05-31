@@ -9,6 +9,7 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 800;
