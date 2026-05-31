@@ -23,8 +23,18 @@ test.describe('ProductQuickActions Tooltips E2E', () => {
       // Hover over the button
       await button.hover();
       
-      // Check if tooltip content is visible
+      // Check if tooltip content is visible exactly after the delay
       const tooltip = page.getByText(action.description);
+      
+      // Should NOT be visible immediately
+      await expect(tooltip).not.toBeVisible();
+      
+      // Wait for the centralized delay (1000ms)
+      // We wait slightly less than 1000ms first to ensure it's still hidden
+      await page.waitForTimeout(800);
+      await expect(tooltip).not.toBeVisible();
+      
+      // Now it should become visible after 1000ms
       await expect(tooltip).toBeVisible();
       
       // Move mouse away
