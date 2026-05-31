@@ -78,7 +78,7 @@ describe('PriceFreshnessBadge Component', () => {
   it('handles unknown status (missing date)', () => {
     renderWithProvider(<PriceFreshnessBadge priceUpdatedAt={null} variant="inline" />);
 
-    expect(screen.getByText(/Sem informação/i)).toBeInTheDocument();
+    expect(screen.getByText(/Data de atualização não informada/i)).toBeInTheDocument();
   });
 
   it('includes explicit threshold in compact label if provided', () => {
