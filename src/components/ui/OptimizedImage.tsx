@@ -90,6 +90,12 @@ export function OptimizedImage({
   }, [lqip, src, debug]);
 
   useEffect(() => {
+    if (onDetection) {
+      onDetection(detectionRule);
+    }
+  }, [detectionRule, onDetection]);
+
+  useEffect(() => {
     if (priority) {
       setIsInView(true);
       return;
