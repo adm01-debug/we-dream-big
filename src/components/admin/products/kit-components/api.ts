@@ -107,14 +107,12 @@ export interface ComponentMedia {
 }
 
 export async function fetchComponentMedia(componentId: string): Promise<ComponentMedia[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table: 'kit_component_media',
-      operation: 'select',
-      filters: { kit_component_id: componentId },
-      limit: 100,
-      orderBy: { column: 'sort_order', ascending: true },
-    },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'kit_component_media',
+    operation: 'select',
+    filters: { kit_component_id: componentId },
+    limit: 100,
+    orderBy: { column: 'sort_order', ascending: true },
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao buscar mídia');
