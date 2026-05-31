@@ -88,8 +88,11 @@ async function createVariantApi(payload: Record<string, unknown>): Promise<void>
 }
 
 async function updateVariantApi(id: string, payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'product_variants', operation: 'update', id, data: payload },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'product_variants',
+    operation: 'update',
+    id,
+    data: payload,
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao atualizar variação');
