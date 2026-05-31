@@ -216,6 +216,7 @@ export function isRestNativeEligible(options: InvokeOptions): boolean {
 
 // ── PostgREST operator parsing ──────────────────────────────────────────────────────
 const POSTGREST_OP_REGEX = /^(eq|neq|gt|gte|lt|lte|like|ilike|is|in|not)\.(.+)$/;
+const POSTGREST_NOT_INNER_OPS = new Set(['eq','neq','gt','gte','lt','lte','like','ilike','is','in']);
 function parsePostgrestString(query: RestQuery, col: string, raw: string): RestQuery {
   const match = raw.match(POSTGREST_OP_REGEX);
   if (!match) return query.eq(col, raw);
@@ -234,7 +235,20 @@ function parsePostgrestString(query: RestQuery, col: string, raw: string): RestQ
       const inner = rest.replace(/^\(/, '').replace(/\)$/, '');
       return query.in(col, inner.split(',').map((v) => v.trim()).filter(Boolean));
     }
-    case 'not': return query.not(col, op, rest);
+    case 'not': {
+      const dotIdx = rest.indexOf('.');
+      if (dotIdx <= 0 || dotIdx === rest.length - 1) {
+        logger.warn(`[rest-native] Malformed not.* filter for '${col}': '${raw}'`);
+        return query.eq(col, raw);
+      }
+      const innerOp = rest.slice(0, dotIdx);
+      const innerVal = rest.slice(dotIdx + 1);
+      if (!POSTGREST_NOT_INNER_OPS.has(innerOp)) {
+        logger.warn(`[rest-native] Unsupported not.* inner op '${innerOp}' for '${col}', treating as eq`);
+        return query.eq(col, raw);
+      }
+      return query.not(col, innerOp, innerVal);
+    }
     default:
       logger.warn(`[rest-native] Unknown PostgREST op '${op}' for '${col}', treating as eq`);
       return query.eq(col, raw);
