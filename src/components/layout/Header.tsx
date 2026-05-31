@@ -142,7 +142,7 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
     setTooltipStyle(tooltipStyle === 'compact' ? 'standard' : 'compact');
     toast({
       title: `Tooltip: ${tooltipStyle === 'compact' ? 'Standard' : 'Compact'}`,
-      description: `O tamanho dos tooltips foi alterado para ${tooltipStyle === 'compact' ? '9px' : '6px'}.`,
+      description: `O tamanho dos tooltips foi alterado para ${tooltipStyle === 'compact' ? '13px' : '10px'}.`,
     });
   };
 
