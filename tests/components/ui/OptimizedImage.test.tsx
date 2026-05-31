@@ -24,31 +24,28 @@ describe('OptimizedImage', () => {
     vi.clearAllMocks();
   });
 
-  it('renders a skeleton or shimmer initially when not in view', () => {
+  it('does not have src initially when not in view', () => {
     render(<OptimizedImage {...defaultProps} />);
-    // Por padrão priority=false, então não deve carregar a imagem real imediatamente se o IntersectionObserver não disparar
-    const img = screen.queryByRole('img', { name: /test image/i });
-    // O src deve estar undefined até entrar em visão
-    expect(img).toHaveAttribute('src', undefined);
+    const img = screen.getByRole('img', { name: /test image/i });
+    expect(img).not.toHaveAttribute('src');
   });
 
   it('shows the image after entering view and loading', async () => {
-    // Simula entrar em visão
     let intersectCallback: any;
     mockIntersectionObserver.mockImplementation((callback) => {
       intersectCallback = callback;
-      return { observe: vi.fn(), disconnect: vi.fn() };
+      return { observe: vi.fn(), unobserve: vi.fn(), disconnect: vi.fn() };
     });
 
     render(<OptimizedImage {...defaultProps} />);
     
-    // Simula a interseção
-    intersectCallback([{ isIntersecting: true }]);
+    act(() => {
+      intersectCallback([{ isIntersecting: true }]);
+    });
 
     const img = screen.getByRole('img', { name: /test image/i });
     expect(img).toHaveAttribute('src', defaultProps.src);
 
-    // Simula o onLoad
     fireEvent.load(img);
 
     await waitFor(() => {
