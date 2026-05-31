@@ -6,6 +6,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeExternalDbBridge } from '@/lib/external-db/bridge-compat';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -32,14 +33,12 @@ interface ProductTag {
 }
 
 async function fetchTags(): Promise<ExternalTag[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table: 'tags',
-      operation: 'select',
-      limit: 500,
-      orderBy: { column: 'name', ascending: true },
-      countMode: 'none',
-    },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'tags',
+    operation: 'select',
+    limit: 500,
+    orderBy: { column: 'name', ascending: true },
+    countMode: 'none',
   });
   if (error) throw new Error(error.message);
   return data?.data?.records || [];
