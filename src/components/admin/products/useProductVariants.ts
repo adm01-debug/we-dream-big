@@ -99,8 +99,11 @@ async function updateVariantApi(id: string, payload: Record<string, unknown>): P
 }
 
 async function deleteVariantApi(id: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'product_variants', operation: 'update', id, data: { is_active: false } },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'product_variants',
+    operation: 'update',
+    id,
+    data: { is_active: false },
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao excluir variação');
