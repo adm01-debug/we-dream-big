@@ -62,6 +62,7 @@ export interface NoveltyCardProps {
   selectionMode: boolean;
   isSelected: boolean;
   onToggleSelect: () => void;
+  onStatusClick?: (type: string, value?: string | number) => void;
 }
 
 export const NoveltyGridCard = memo(function NoveltyGridCard({
