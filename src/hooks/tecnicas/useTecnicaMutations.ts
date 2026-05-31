@@ -4,10 +4,12 @@
  * Responsável por: CRUD operations (create, update, delete, toggle)
  */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invokeExternalDbSingle } from '@/lib/external-db';
+import { supabase, resolveTable } from '@/lib/supabase-direct';
 import { TECNICAS_QUERY_KEYS } from '@/hooks/tecnicas/keys';
 import type { PersonalizationTechniqueRaw } from '@/types/tecnica-unificada';
 import { toast } from 'sonner';
+
+const TABLE = 'personalization_techniques';
 
 /**
  * Todas as mutations para técnicas em um único hook
@@ -18,12 +20,13 @@ export function useTecnicaMutations() {
   // Toggle status
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, ativo }: { id: string; ativo: boolean }) => {
-      await invokeExternalDbSingle({
-        table: 'personalization_techniques',
-        operation: 'update',
-        id,
-        data: { is_active: ativo },
-      });
+      const { error } = await supabase
+        .from(resolveTable(TABLE))
+        .update({ is_active: ativo })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
     },
     onSuccess: (_, { ativo }) => {
       queryClient.invalidateQueries({ queryKey: TECNICAS_QUERY_KEYS.all });
@@ -37,11 +40,8 @@ export function useTecnicaMutations() {
   // Create
   const createMutation = useMutation({
     mutationFn: async (data: Partial<PersonalizationTechniqueRaw>) => {
-      await invokeExternalDbSingle({
-        table: 'personalization_techniques',
-        operation: 'insert',
-        data,
-      });
+      const { error } = await supabase.from(resolveTable(TABLE)).insert(data).select().single();
+      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TECNICAS_QUERY_KEYS.all });
@@ -55,12 +55,13 @@ export function useTecnicaMutations() {
   // Update
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...data }: { id: string } & Partial<PersonalizationTechniqueRaw>) => {
-      await invokeExternalDbSingle({
-        table: 'personalization_techniques',
-        operation: 'update',
-        id,
-        data,
-      });
+      const { error } = await supabase
+        .from(resolveTable(TABLE))
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TECNICAS_QUERY_KEYS.all });
@@ -74,11 +75,8 @@ export function useTecnicaMutations() {
   // Delete
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await invokeExternalDbSingle({
-        table: 'personalization_techniques',
-        operation: 'delete',
-        id,
-      });
+      const { error } = await supabase.from(resolveTable(TABLE)).delete().eq('id', id);
+      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TECNICAS_QUERY_KEYS.all });

@@ -1,5 +1,5 @@
 /**
- * useSimilarProducts — Fetches similar products via the external DB.
+ * useSimilarProducts — Fetches similar products via direct Supabase PostgREST.
  *
  * Strategy:
  * 1. Query `product_relationships` (107k+ cross-supplier pairs) for direct similar matches
@@ -9,7 +9,7 @@
  * All levels use lightweight batch queries (no individual product detail fetches).
  */
 import { useQuery } from '@tanstack/react-query';
-import { invokeExternalDb } from '@/lib/external-db';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 import type { Product } from '@/types/product-catalog';
 import { logger } from '@/lib/logger';
 
@@ -61,15 +61,21 @@ function mapLightweightToSimilarItem(p: LightweightProduct): SimilarProductItem 
 async function fetchProductsByIds(ids: string[]): Promise<SimilarProductItem[]> {
   if (ids.length === 0) return [];
 
-  const { records } = await invokeExternalDb<LightweightProduct>({
-    table: 'products',
-    operation: 'select',
-    select: SIMILAR_PRODUCT_SELECT,
-    filters: { id: ids, active: true },
-    limit: ids.length,
-  });
+  const { data, error } = await supabase
+    .from(resolveTable('products'))
+    .select(SIMILAR_PRODUCT_SELECT)
+    .in('id', ids)
+    .eq('active', true)
+    .limit(ids.length);
 
-  return (records || []).filter((p) => p.sale_price > 0).map(mapLightweightToSimilarItem);
+  if (error) {
+    handleQueryError('useSimilarProducts', 'products', error);
+    return [];
+  }
+
+  return ((data as LightweightProduct[]) || [])
+    .filter((p) => p.sale_price > 0)
+    .map(mapLightweightToSimilarItem);
 }
 
 export function useSimilarProducts(product: Product | null | undefined) {
@@ -84,18 +90,16 @@ export function useSimilarProducts(product: Product | null | undefined) {
 
       // 1. Try product_relationships (direct pairs — fastest, 107k+ records)
       try {
-        const { records: relationships } = await invokeExternalDb<{
-          related_product_id: string;
-        }>({
-          table: 'product_relationships',
-          operation: 'select',
-          select: 'related_product_id',
-          filters: {
-            product_id: productId,
-            relationship_type: 'similar',
-          },
-          limit: 50,
-        });
+        const { data: relationships, error: relError } = await supabase
+          .from(resolveTable('product_relationships'))
+          .select('related_product_id')
+          .eq('product_id', productId)
+          .eq('relationship_type', 'similar')
+          .limit(50);
+
+        if (relError) {
+          handleQueryError('useSimilarProducts', 'product_relationships', relError);
+        }
 
         if (relationships && relationships.length > 0) {
           const relatedIds = relationships.map((r) => r.related_product_id);
@@ -109,31 +113,29 @@ export function useSimilarProducts(product: Product | null | undefined) {
       // 2. Try product_group_members (group-based siblings)
       // NOTE: a coluna correta no BD externo é `product_group_id` (não `group_id`).
       try {
-        const { records: memberships } = await invokeExternalDb<{
-          product_group_id: string;
-        }>({
-          table: 'product_group_members',
-          operation: 'select',
-          select: 'product_group_id',
-          filters: { product_id: productId },
-          limit: 10,
-        });
+        const { data: memberships, error: memberError } = await supabase
+          .from(resolveTable('product_group_members'))
+          .select('product_group_id')
+          .eq('product_id', productId)
+          .limit(10);
+
+        if (memberError) {
+          handleQueryError('useSimilarProducts', 'product_group_members', memberError);
+        }
 
         if (memberships && memberships.length > 0) {
           const groupIds = [...new Set(memberships.map((m) => m.product_group_id))].filter(Boolean);
           if (groupIds.length === 0) throw new Error('No valid group IDs');
 
-          const { records: allMembers } = await invokeExternalDb<{
-            product_id: string;
-          }>({
-            table: 'product_group_members',
-            operation: 'select',
-            select: 'product_id',
-            filters: {
-              product_group_id: `in.(${groupIds.join(',')})`,
-            },
-            limit: 100,
-          });
+          const { data: allMembers, error: allMembersError } = await supabase
+            .from(resolveTable('product_group_members'))
+            .select('product_id')
+            .in('product_group_id', groupIds)
+            .limit(100);
+
+          if (allMembersError) {
+            handleQueryError('useSimilarProducts', 'product_group_members', allMembersError);
+          }
 
           const siblingIds = [
             ...new Set(
@@ -155,24 +157,29 @@ export function useSimilarProducts(product: Product | null | undefined) {
 
       // 3. Fallback: fetch related products from same supplier or category (lightweight)
       try {
-        const fallbackFilters: Record<string, unknown> = { active: true };
+        let query = supabase
+          .from(resolveTable('products'))
+          .select(SIMILAR_PRODUCT_SELECT)
+          .eq('active', true)
+          .neq('id', productId)
+          .order('name', { ascending: true })
+          .limit(30);
+
         if (supplierId && supplierId !== 'unknown') {
-          fallbackFilters.supplier_id = supplierId;
+          query = query.eq('supplier_id', supplierId);
         } else if (categoryId) {
-          fallbackFilters.main_category_id = categoryId;
+          query = query.eq('main_category_id', categoryId);
         }
 
-        const { records: fallbackProducts } = await invokeExternalDb<LightweightProduct>({
-          table: 'products',
-          operation: 'select',
-          select: SIMILAR_PRODUCT_SELECT,
-          filters: fallbackFilters,
-          limit: 30,
-          orderBy: { column: 'name', ascending: true },
-        });
+        const { data: fallbackProducts, error: fallbackError } = await query;
 
-        return (fallbackProducts || [])
-          .filter((p) => p.id !== productId && p.sale_price > 0)
+        if (fallbackError) {
+          handleQueryError('useSimilarProducts', 'products', fallbackError);
+          return [];
+        }
+
+        return ((fallbackProducts as LightweightProduct[]) || [])
+          .filter((p) => p.sale_price > 0)
           .map(mapLightweightToSimilarItem);
       } catch (err) {
         logger.warn('[useSimilarProducts] Fallback query failed:', err);

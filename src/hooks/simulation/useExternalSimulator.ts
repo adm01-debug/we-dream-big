@@ -1,7 +1,7 @@
 // Hook para buscar dados do simulador do banco externo Promobrind
 import { useQuery } from '@tanstack/react-query';
 import Fuse from 'fuse.js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 import { logger } from '@/lib/logger';
 import {
   createProductFuseOptions,
@@ -85,34 +85,6 @@ interface ProductImageRecord {
 }
 
 // ============================================
-// FUNÇÕES AUXILIARES
-// ============================================
-
-async function invokeExternalDb<T>(
-  table: string,
-  operation: 'select',
-  options?: {
-    filters?: Record<string, unknown>;
-    select?: string;
-    orderBy?: { column: string; ascending?: boolean };
-    limit?: number;
-  },
-): Promise<{ records: T[]; count: number }> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table,
-      operation,
-      ...options,
-    },
-  });
-
-  if (error) throw new Error(error.message);
-  if (!data.success) throw new Error(data.error || 'Erro desconhecido');
-
-  return data.data as { records: T[]; count: number };
-}
-
-// ============================================
 // HOOKS
 // ============================================
 
@@ -130,28 +102,36 @@ export function useExternalProductSearch(searchQuery: string) {
       const normalizedSearch = searchQuery.trim();
       if (!normalizedSearch || normalizedSearch.length < 2) return [];
 
-      const [prefixResult, broadResult] = await Promise.all([
-        invokeExternalDb<ExternalProduct>('products', 'select', {
-          filters: {
-            _name_prefix: normalizedSearch,
-            active: true,
-          },
-          select: PRODUCT_SELECT,
-          limit: 200,
-          orderBy: { column: 'name', ascending: true },
-        }),
-        invokeExternalDb<ExternalProduct>('products', 'select', {
-          filters: {
-            _search: normalizedSearch,
-            active: true,
-          },
-          select: PRODUCT_SELECT,
-          limit: 500,
-          orderBy: { column: 'name', ascending: true },
-        }),
+      const productsTable = resolveTable('products');
+
+      const [prefixRes, broadRes] = await Promise.all([
+        supabase
+          .from(productsTable)
+          .select(PRODUCT_SELECT)
+          .eq('active', true)
+          .ilike('name', `${normalizedSearch}%`)
+          .order('name', { ascending: true })
+          .limit(200),
+        supabase
+          .from(productsTable)
+          .select(PRODUCT_SELECT)
+          .eq('active', true)
+          .or(
+            `name.ilike.%${normalizedSearch}%,sku.ilike.%${normalizedSearch}%,supplier_reference.ilike.%${normalizedSearch}%`,
+          )
+          .order('name', { ascending: true })
+          .limit(500),
       ]);
 
-      const mergedProducts = dedupeById([...prefixResult.records, ...broadResult.records]);
+      if (prefixRes.error)
+        return handleQueryError('useExternalSimulator', 'products', prefixRes.error);
+      if (broadRes.error)
+        return handleQueryError('useExternalSimulator', 'products', broadRes.error);
+
+      const prefixRecords = (prefixRes.data ?? []) as unknown as ExternalProduct[];
+      const broadRecords = (broadRes.data ?? []) as unknown as ExternalProduct[];
+
+      const mergedProducts = dedupeById([...prefixRecords, ...broadRecords]);
       const fuse = new Fuse(mergedProducts, createProductFuseOptions<ExternalProduct>());
       const products = rankProductSearchResults(mergedProducts, normalizedSearch, fuse);
 
@@ -160,44 +140,48 @@ export function useExternalProductSearch(searchQuery: string) {
         const productIds = products.map((p) => p.id);
 
         try {
-          const imagesResult = await invokeExternalDb<ProductImageRecord>(
-            'product_images',
-            'select',
-            {
-              filters: { product_id: productIds, is_active: true },
-              select: 'product_id, url_cdn, image_type, is_primary, display_order',
-              orderBy: { column: 'display_order', ascending: true },
-              limit: Math.max(productIds.length * 8, 100),
-            },
-          );
+          const { data: imagesData, error: imagesError } = await supabase
+            .from(resolveTable('product_images'))
+            .select('product_id, url_cdn, image_type, is_primary, display_order')
+            .in('product_id', productIds)
+            .eq('is_active', true)
+            .order('display_order', { ascending: true })
+            .limit(Math.max(productIds.length * 8, 100));
 
-          // Agrupar imagens por product_id
-          const imagesByProduct = new Map<string, ProductImageRecord[]>();
-          const productIdSet = new Set(productIds);
+          if (imagesError) {
+            logger.warn('Não foi possível buscar imagens da tabela product_images:', imagesError);
+          } else {
+            const records = (imagesData ?? []) as unknown as ProductImageRecord[];
 
-          imagesResult.records.forEach((img) => {
-            if (!productIdSet.has(img.product_id)) return;
+            // Agrupar imagens por product_id
+            const imagesByProduct = new Map<string, ProductImageRecord[]>();
+            const productIdSet = new Set(productIds);
 
-            const productImages = imagesByProduct.get(img.product_id) ?? [];
-            imagesByProduct.set(img.product_id, productImages);
-            productImages.push(img);
-          });
+            records.forEach((img) => {
+              if (!productIdSet.has(img.product_id)) return;
 
-          // Enriquecer produtos com imagens
-          products.forEach((product) => {
-            const productImages = imagesByProduct.get(product.id);
-            if (productImages && productImages.length > 0) {
-              productImages.sort((a, b) => a.display_order - b.display_order);
+              const productImages = imagesByProduct.get(img.product_id) ?? [];
+              imagesByProduct.set(img.product_id, productImages);
+              productImages.push(img);
+            });
 
-              const primaryImage = productImages.find((img) => img.is_primary) || productImages[0];
-              if (primaryImage) {
-                product.primary_image_url = primaryImage.url_cdn;
-                product.image_url = primaryImage.url_cdn;
+            // Enriquecer produtos com imagens
+            products.forEach((product) => {
+              const productImages = imagesByProduct.get(product.id);
+              if (productImages && productImages.length > 0) {
+                productImages.sort((a, b) => a.display_order - b.display_order);
+
+                const primaryImage =
+                  productImages.find((img) => img.is_primary) || productImages[0];
+                if (primaryImage) {
+                  product.primary_image_url = primaryImage.url_cdn;
+                  product.image_url = primaryImage.url_cdn;
+                }
+
+                product.images = productImages.map((img) => img.url_cdn);
               }
-
-              product.images = productImages.map((img) => img.url_cdn);
-            }
-          });
+            });
+          }
         } catch (err) {
           logger.warn('Não foi possível buscar imagens da tabela product_images:', err);
         }
@@ -219,40 +203,43 @@ export function useExternalProduct(productId: string | null) {
     queryFn: async () => {
       if (!productId) return null;
 
-      const result = await invokeExternalDb<ExternalProduct>('products', 'select', {
-        filters: { id: productId },
-        select: PRODUCT_SELECT,
-        limit: 1,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('products'))
+        .select(PRODUCT_SELECT)
+        .eq('id', productId)
+        .limit(1);
 
-      const product = result.records[0] || null;
+      if (error) return handleQueryError('useExternalSimulator', 'products', error);
+
+      const product = ((data ?? [])[0] as unknown as ExternalProduct) || null;
 
       // Buscar imagens da nova tabela product_images
       if (product) {
         try {
-          const imagesResult = await invokeExternalDb<ProductImageRecord>(
-            'product_images',
-            'select',
-            {
-              filters: { product_id: productId, is_active: true },
-              select: 'product_id, url_cdn, image_type, is_primary, display_order',
-              orderBy: { column: 'display_order', ascending: true },
-              limit: 100,
-            },
-          );
+          const { data: imagesData, error: imagesError } = await supabase
+            .from(resolveTable('product_images'))
+            .select('product_id, url_cdn, image_type, is_primary, display_order')
+            .eq('product_id', productId)
+            .eq('is_active', true)
+            .order('display_order', { ascending: true })
+            .limit(100);
 
-          if (imagesResult.records.length > 0) {
-            const sortedImages = imagesResult.records.sort(
-              (a, b) => a.display_order - b.display_order,
-            );
+          if (imagesError) {
+            logger.warn('Não foi possível buscar imagens da tabela product_images:', imagesError);
+          } else {
+            const records = (imagesData ?? []) as unknown as ProductImageRecord[];
 
-            const primaryImage = sortedImages.find((img) => img.is_primary) || sortedImages[0];
-            if (primaryImage) {
-              product.primary_image_url = primaryImage.url_cdn;
-              product.image_url = primaryImage.url_cdn;
+            if (records.length > 0) {
+              const sortedImages = records.sort((a, b) => a.display_order - b.display_order);
+
+              const primaryImage = sortedImages.find((img) => img.is_primary) || sortedImages[0];
+              if (primaryImage) {
+                product.primary_image_url = primaryImage.url_cdn;
+                product.image_url = primaryImage.url_cdn;
+              }
+
+              product.images = sortedImages.map((img) => img.url_cdn);
             }
-
-            product.images = sortedImages.map((img) => img.url_cdn);
           }
         } catch (err) {
           logger.warn('Não foi possível buscar imagens da tabela product_images:', err);
@@ -338,60 +325,64 @@ export function useExternalProductsList(options?: {
   return useQuery({
     queryKey: ['external-products-list', options],
     queryFn: async () => {
-      const result = await invokeExternalDb<ExternalProduct>('products', 'select', {
-        filters: {
-          active: true,
-        },
-        select: 'id, name, sku, sale_price, primary_image_url, supplier_reference, brand',
-        limit: options?.limit || 100,
-        orderBy: { column: 'name', ascending: true },
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('products'))
+        .select('id, name, sku, sale_price, primary_image_url, supplier_reference, brand')
+        .eq('active', true)
+        .order('name', { ascending: true })
+        .limit(options?.limit || 100);
 
-      const products = result.records;
+      if (error) return handleQueryError('useExternalSimulator', 'products', error);
+
+      const products = (data ?? []) as unknown as ExternalProduct[];
 
       // Buscar imagens da nova tabela product_images
       if (products.length > 0) {
         const productIds = products.map((p) => p.id);
 
         try {
-          const imagesResult = await invokeExternalDb<ProductImageRecord>(
-            'product_images',
-            'select',
-            {
-              filters: { is_active: true },
-              select: 'product_id, url_cdn, image_type, is_primary, display_order',
-              orderBy: { column: 'display_order', ascending: true },
-              limit: 2000,
-            },
-          );
+          const { data: imagesData, error: imagesError } = await supabase
+            .from(resolveTable('product_images'))
+            .select('product_id, url_cdn, image_type, is_primary, display_order')
+            .in('product_id', productIds)
+            .eq('is_active', true)
+            .order('display_order', { ascending: true })
+            .limit(2000);
 
-          // Agrupar imagens por product_id
-          const imagesByProduct = new Map<string, ProductImageRecord[]>();
-          const productIdSet = new Set(productIds);
+          if (imagesError) {
+            logger.warn('Não foi possível buscar imagens da tabela product_images:', imagesError);
+          } else {
+            const records = (imagesData ?? []) as unknown as ProductImageRecord[];
 
-          imagesResult.records.forEach((img) => {
-            if (!productIdSet.has(img.product_id)) return;
+            // Agrupar imagens por product_id
+            const imagesByProduct = new Map<string, ProductImageRecord[]>();
+            const productIdSet = new Set(productIds);
 
-            const productImages = imagesByProduct.get(img.product_id) ?? [];
-            imagesByProduct.set(img.product_id, productImages);
-            productImages.push(img);
-          });
+            records.forEach((img) => {
+              if (!productIdSet.has(img.product_id)) return;
 
-          // Enriquecer produtos com imagens
-          products.forEach((product) => {
-            const productImages = imagesByProduct.get(product.id);
-            if (productImages && productImages.length > 0) {
-              productImages.sort((a, b) => a.display_order - b.display_order);
+              const productImages = imagesByProduct.get(img.product_id) ?? [];
+              imagesByProduct.set(img.product_id, productImages);
+              productImages.push(img);
+            });
 
-              const primaryImage = productImages.find((img) => img.is_primary) || productImages[0];
-              if (primaryImage) {
-                product.primary_image_url = primaryImage.url_cdn;
-                product.image_url = primaryImage.url_cdn;
+            // Enriquecer produtos com imagens
+            products.forEach((product) => {
+              const productImages = imagesByProduct.get(product.id);
+              if (productImages && productImages.length > 0) {
+                productImages.sort((a, b) => a.display_order - b.display_order);
+
+                const primaryImage =
+                  productImages.find((img) => img.is_primary) || productImages[0];
+                if (primaryImage) {
+                  product.primary_image_url = primaryImage.url_cdn;
+                  product.image_url = primaryImage.url_cdn;
+                }
+
+                product.images = productImages.map((img) => img.url_cdn);
               }
-
-              product.images = productImages.map((img) => img.url_cdn);
-            }
-          });
+            });
+          }
         } catch (err) {
           logger.warn('Não foi possível buscar imagens da tabela product_images:', err);
         }

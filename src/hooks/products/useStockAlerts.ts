@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { invokeExternalDb } from '@/lib/external-db/bridge';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 import { getProductImageUrl, type PromobrindProduct } from '@/lib/external-db/product-types';
 
 export type AlertLevel = 'low' | 'critical' | 'out';
@@ -22,19 +22,21 @@ export function useStockAlerts(lowStockThreshold = 50, criticalStockThreshold = 
   return useQuery<StockAlert[], Error>({
     queryKey: ['stock-alerts', lowStockThreshold, criticalStockThreshold],
     queryFn: async () => {
-      const result = await invokeExternalDb<PromobrindProduct>({
-        table: 'products',
-        operation: 'select',
-        select: STOCK_ALERT_SELECT,
-        filters: {
-          is_active: true,
-          stock_quantity: `lt.${lowStockThreshold}`,
-        },
-        orderBy: { column: 'stock_quantity', ascending: true },
-        limit: 50,
-      });
+      const table = resolveTable('products');
+      const { data, error } = await supabase
+        .from(table)
+        .select(STOCK_ALERT_SELECT)
+        .eq('is_active', true)
+        .lt('stock_quantity', lowStockThreshold)
+        .order('stock_quantity', { ascending: true })
+        .limit(50);
 
-      return result.records.map((p) => {
+      if (error) {
+        handleQueryError('useStockAlerts', table, error);
+        return [];
+      }
+
+      return ((data ?? []) as unknown as PromobrindProduct[]).map((p) => {
         const stock = p.stock_quantity ?? 0;
         let alertLevel: AlertLevel = 'low';
         if (stock === 0) alertLevel = 'out';

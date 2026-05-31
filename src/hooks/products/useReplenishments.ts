@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { invokeExternalDb } from '@/lib/external-db/bridge';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 
 /** Window in days for considering a product as "replenished" */
 const REPLENISHMENT_WINDOW_DAYS = 30;
@@ -172,28 +172,32 @@ async function enrichReplenishments(
 
   const [catResult, supResult] = await Promise.all([
     categoryIds.length > 0
-      ? invokeExternalDb<CategoryRecord>({
-          table: 'categories',
-          operation: 'select',
-          select: 'id, name',
-          filters: { id: `in.(${categoryIds.join(',')})` },
-          limit: 500,
-        })
-      : { records: [] as CategoryRecord[] },
+      ? (async () => {
+          const { data, error } = await supabase
+            .from(resolveTable('categories'))
+            .select('id, name')
+            .in('id', categoryIds)
+            .range(0, 499);
+          if (error) return handleQueryError('useReplenishments', 'categories', error);
+          return (data ?? []) as CategoryRecord[];
+        })()
+      : ([] as CategoryRecord[]),
     supplierIds.length > 0
-      ? invokeExternalDb<SupplierRecord>({
-          table: 'suppliers',
-          operation: 'select',
-          select: 'id, name, code',
-          filters: { id: `in.(${supplierIds.join(',')})` },
-          limit: 200,
-        })
-      : { records: [] as SupplierRecord[] },
+      ? (async () => {
+          const { data, error } = await supabase
+            .from(resolveTable('suppliers'))
+            .select('id, name, code')
+            .in('id', supplierIds)
+            .range(0, 199);
+          if (error) return handleQueryError('useReplenishments', 'suppliers', error);
+          return (data ?? []) as SupplierRecord[];
+        })()
+      : ([] as SupplierRecord[]),
   ]);
 
-  const catMap = new Map(catResult.records.map((c) => [c.id, c.name]));
+  const catMap = new Map((catResult as CategoryRecord[]).map((c) => [c.id, c.name]));
   const supMap = new Map(
-    supResult.records.map((s) => [s.id, { name: s.name, code: s.code ?? null }]),
+    (supResult as SupplierRecord[]).map((s) => [s.id, { name: s.name, code: s.code ?? null }]),
   );
 
   return items.map((n) => ({
@@ -219,16 +223,17 @@ export function useReplenishmentsWithDetails(options: UseReplenishmentsOptions =
     queryFn: async () => {
       const cutoff = getCutoffDate();
 
-      const result = await invokeExternalDb<RawProduct>({
-        table: 'products',
-        operation: 'select',
-        select: REPLENISHMENT_SELECT,
-        filters: { is_active: true, updated_at: `gte.${cutoff}` },
-        orderBy: { column: 'updated_at', ascending: false },
-        limit,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('products'))
+        .select(REPLENISHMENT_SELECT)
+        .eq('is_active', true)
+        .gte('updated_at', cutoff)
+        .order('updated_at', { ascending: false })
+        .range(0, limit - 1);
+      if (error) return handleQueryError('useReplenishments', 'products', error);
+      const records = (data ?? []) as unknown as RawProduct[];
 
-      let items = result.records
+      let items = records
         .filter(isReplenishment)
         .map(toReplenishment)
         .filter((n) => n.is_active);
@@ -250,31 +255,33 @@ export function useReplenishmentStats() {
     queryFn: async () => {
       const cutoff = getCutoffDate();
 
-      const [repResult, totalResult] = await Promise.all([
-        invokeExternalDb<RawProduct>({
-          table: 'products',
-          operation: 'select',
-          select: 'id, created_at, updated_at, supplier_id',
-          filters: { is_active: true, updated_at: `gte.${cutoff}` },
-          limit: 500,
-          countMode: 'exact',
-        }),
-        invokeExternalDb<{ id: string }>({
-          table: 'products',
-          operation: 'select',
-          select: 'id',
-          filters: { is_active: true },
-          limit: 1,
-          countMode: 'exact',
-        }),
+      const [repResponse, totalResponse] = await Promise.all([
+        supabase
+          .from(resolveTable('products'))
+          .select('id, created_at, updated_at, supplier_id', { count: 'exact' })
+          .eq('is_active', true)
+          .gte('updated_at', cutoff)
+          .range(0, 499),
+        supabase
+          .from(resolveTable('products'))
+          .select('id', { count: 'exact' })
+          .eq('is_active', true)
+          .range(0, 0),
       ]);
+
+      if (repResponse.error)
+        return handleQueryError('useReplenishments', 'products', repResponse.error);
+      if (totalResponse.error)
+        return handleQueryError('useReplenishments', 'products', totalResponse.error);
+
+      const repRecords = (repResponse.data ?? []) as unknown as RawProduct[];
 
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
       const weekStart = todayStart - 6 * 86_400_000;
       const fifteenDaysStart = todayStart - 14 * 86_400_000;
 
-      const replenishments = repResult.records.filter(isReplenishment).map((p) => ({
+      const replenishments = repRecords.filter(isReplenishment).map((p) => ({
         daysRemaining: calcDaysRemaining(p.updated_at),
         updatedTime: new Date(p.updated_at).getTime(),
         supplierId: p.supplier_id,
@@ -285,7 +292,7 @@ export function useReplenishmentStats() {
       const restockedToday = active.filter((n) => n.updatedTime >= todayStart).length;
       const restockedThisWeek = active.filter((n) => n.updatedTime >= weekStart).length;
       const restockedLast15Days = active.filter((n) => n.updatedTime >= fifteenDaysStart).length;
-      const totalProducts = totalResult.count ?? 0;
+      const totalProducts = totalResponse.count ?? 0;
       const activeCount = active.length;
 
       // Find top supplier
@@ -308,14 +315,14 @@ export function useReplenishmentStats() {
       let topSupplierName: string | null = null;
       if (topSupplierId) {
         try {
-          const supResult = await invokeExternalDb<{ name: string }>({
-            table: 'suppliers',
-            operation: 'select',
-            select: 'name',
-            filters: { id: topSupplierId },
-            limit: 1,
-          });
-          topSupplierName = supResult.records[0]?.name ?? null;
+          const { data: supData, error: supError } = await supabase
+            .from(resolveTable('suppliers'))
+            .select('name')
+            .eq('id', topSupplierId)
+            .range(0, 0);
+          if (!supError && supData && supData.length > 0) {
+            topSupplierName = (supData[0] as { name: string }).name ?? null;
+          }
         } catch {
           // Graceful fallback — supplier name unavailable
         }
@@ -345,15 +352,16 @@ export function useReplenishmentCount() {
     queryFn: async () => {
       const cutoff = getCutoffDate();
 
-      const result = await invokeExternalDb<RawProduct>({
-        table: 'products',
-        operation: 'select',
-        select: 'id, created_at, updated_at',
-        filters: { is_active: true, updated_at: `gte.${cutoff}` },
-        limit: 500,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('products'))
+        .select('id, created_at, updated_at')
+        .eq('is_active', true)
+        .gte('updated_at', cutoff)
+        .range(0, 499);
+      if (error) return handleQueryError('useReplenishments', 'products', error);
+      const records = (data ?? []) as unknown as RawProduct[];
 
-      return result.records.filter(isReplenishment).length;
+      return records.filter(isReplenishment).length;
     },
     staleTime: 2 * 60 * 1000,
     retry: 2,

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { invokeExternalDb } from '@/lib/external-db/bridge';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 
 const NOVELTY_WINDOW_DAYS = 30;
 const NOVELTY_SELECT =
@@ -187,29 +187,33 @@ async function enrichNovelties(novelties: NoveltyWithDetails[]): Promise<Novelty
   // Fallback para mock se os IDs forem do mock
   const isMock = novelties.some((n) => n.product_id.startsWith('mock-'));
 
-  const [catResult, supResult] = await Promise.all([
+  const [catRecords, supRecords] = await Promise.all([
     !isMock && categoryIds.length > 0
-      ? invokeExternalDb<CategoryRecord>({
-          table: 'categories',
-          operation: 'select',
-          select: 'id, name',
-          filters: { id: `in.(${categoryIds.join(',')})` },
-          limit: 500,
-        })
-      : { records: isMock ? MOCK_CATEGORIES : ([] as CategoryRecord[]) },
+      ? (async () => {
+          const { data, error } = await supabase
+            .from(resolveTable('categories'))
+            .select('id, name')
+            .in('id', categoryIds)
+            .range(0, 499);
+          if (error) return handleQueryError('useNovelties', 'categories', error);
+          return data ?? [];
+        })()
+      : Promise.resolve(isMock ? MOCK_CATEGORIES : ([] as CategoryRecord[])),
     !isMock && supplierIds.length > 0
-      ? invokeExternalDb<SupplierRecord>({
-          table: 'suppliers',
-          operation: 'select',
-          select: 'id, name, code',
-          filters: { id: `in.(${supplierIds.join(',')})` },
-          limit: 200,
-        })
-      : { records: isMock ? MOCK_SUPPLIERS : ([] as SupplierRecord[]) },
+      ? (async () => {
+          const { data, error } = await supabase
+            .from(resolveTable('suppliers'))
+            .select('id, name, code')
+            .in('id', supplierIds)
+            .range(0, 199);
+          if (error) return handleQueryError('useNovelties', 'suppliers', error);
+          return data ?? [];
+        })()
+      : Promise.resolve(isMock ? MOCK_SUPPLIERS : ([] as SupplierRecord[])),
   ]);
 
-  const catMap = new Map(catResult.records.map((c) => [c.id, c.name]));
-  const supMap = new Map(supResult.records.map((s) => [s.id, { name: s.name, code: s.code }]));
+  const catMap = new Map(catRecords.map((c) => [c.id, c.name]));
+  const supMap = new Map(supRecords.map((s) => [s.id, { name: s.name, code: s.code }]));
 
   return novelties.map((n) => ({
     ...n,
@@ -275,16 +279,16 @@ export function useNoveltiesWithDetails(options: UseNoveltiesOptions = {}) {
     queryFn: async () => {
       const cutoff = getCutoffDate();
 
-      const result = await invokeExternalDb<RawProduct>({
-        table: 'products',
-        operation: 'select',
-        select: NOVELTY_SELECT,
-        filters: { is_active: true, created_at: `gte.${cutoff}` },
-        orderBy: { column: 'created_at', ascending: false },
-        limit,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('products'))
+        .select(NOVELTY_SELECT)
+        .eq('is_active', true)
+        .gte('created_at', cutoff)
+        .order('created_at', { ascending: false })
+        .range(0, limit - 1);
+      if (error) return handleQueryError('useNovelties', 'products', error);
 
-      let records = result.records;
+      let records: RawProduct[] = data ?? [];
 
       // Fallback para MOCK se o banco estiver vazio
       if (records.length === 0) {
@@ -315,16 +319,16 @@ export function useExpiringNovelties(maxDays: number = 7) {
       // Buscar todas as novidades dos últimos 30 dias
       const cutoff = getCutoffDate();
 
-      const result = await invokeExternalDb<RawProduct>({
-        table: 'products',
-        operation: 'select',
-        select: NOVELTY_SELECT,
-        filters: { is_active: true, created_at: `gte.${cutoff}` },
-        orderBy: { column: 'created_at', ascending: true },
-        limit: 200,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('products'))
+        .select(NOVELTY_SELECT)
+        .eq('is_active', true)
+        .gte('created_at', cutoff)
+        .order('created_at', { ascending: true })
+        .range(0, 199);
+      if (error) return handleQueryError('useNovelties', 'products', error);
 
-      return result.records
+      return (data ?? [])
         .map(toNovelty)
         .filter((n) => n.is_active && n.days_remaining <= maxDays)
         .sort((a, b) => a.days_remaining - b.days_remaining);
@@ -343,32 +347,30 @@ export function useNoveltyStats() {
     queryFn: async () => {
       const cutoff = getCutoffDate();
 
-      const [noveltiesResult, totalResult] = await Promise.all([
-        invokeExternalDb<RawProduct & { supplier_id: string | null }>({
-          table: 'products',
-          operation: 'select',
-          select: 'id, created_at, supplier_id',
-          filters: { is_active: true, created_at: `gte.${cutoff}` },
-          limit: 500,
-          countMode: 'exact',
-        }),
-        invokeExternalDb<{ id: string }>({
-          table: 'products',
-          operation: 'select',
-          select: 'id',
-          filters: { is_active: true },
-          limit: 1,
-          countMode: 'exact',
-        }),
+      const [noveltiesRes, totalRes] = await Promise.all([
+        supabase
+          .from(resolveTable('products'))
+          .select('id, created_at, supplier_id', { count: 'exact' })
+          .eq('is_active', true)
+          .gte('created_at', cutoff)
+          .range(0, 499),
+        supabase
+          .from(resolveTable('products'))
+          .select('id', { count: 'exact' })
+          .eq('is_active', true)
+          .range(0, 0),
       ]);
+      if (noveltiesRes.error)
+        return handleQueryError('useNovelties', 'products', noveltiesRes.error);
+      if (totalRes.error) return handleQueryError('useNovelties', 'products', totalRes.error);
 
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
       const weekStart = todayStart - 6 * 86400000;
       const fifteenDaysStart = todayStart - 14 * 86400000;
 
-      let records = noveltiesResult.records;
-      let totalProducts = totalResult.count || 0;
+      let records = (noveltiesRes.data ?? []) as (RawProduct & { supplier_id: string | null })[];
+      let totalProducts = totalRes.count || 0;
 
       // Fallback para MOCK se o banco estiver vazio
       if (records.length === 0 && totalProducts === 0) {
@@ -415,14 +417,14 @@ export function useNoveltyStats() {
           topSupplierName = MOCK_SUPPLIERS.find((s) => s.id === topSupplierId)?.name || null;
         } else {
           try {
-            const supResult = await invokeExternalDb<{ name: string }>({
-              table: 'suppliers',
-              operation: 'select',
-              select: 'name',
-              filters: { id: topSupplierId },
-              limit: 1,
-            });
-            topSupplierName = supResult.records[0]?.name || null;
+            const { data: supData, error: supError } = await supabase
+              .from(resolveTable('suppliers'))
+              .select('name')
+              .eq('id', topSupplierId)
+              .range(0, 0);
+            if (!supError && supData && supData.length > 0) {
+              topSupplierName = supData[0].name || null;
+            }
           } catch {
             /* fallback */
           }
@@ -459,32 +461,37 @@ export function useNovelties(
     queryKey: ['novelties-rpc', supplierCode, limit, maxDays],
     queryFn: async () => {
       const cutoff = getCutoffDate();
-      const filters: Record<string, unknown> = { is_active: true, created_at: `gte.${cutoff}` };
+      let supplierId: string | undefined;
 
       if (supplierCode) {
         // Precisa buscar o supplier_id pelo code
-        const supplierResult = await invokeExternalDb<{ id: string }>({
-          table: 'suppliers',
-          operation: 'select',
-          select: 'id',
-          filters: { code: supplierCode },
-          limit: 1,
-        });
-        if (supplierResult.records.length > 0) {
-          filters.supplier_id = supplierResult.records[0].id;
+        const { data: supData, error: supError } = await supabase
+          .from(resolveTable('suppliers'))
+          .select('id')
+          .eq('code', supplierCode)
+          .range(0, 0);
+        if (supError) return handleQueryError('useNovelties', 'suppliers', supError);
+        if (supData && supData.length > 0) {
+          supplierId = supData[0].id;
         }
       }
 
-      const result = await invokeExternalDb<RawProduct>({
-        table: 'products',
-        operation: 'select',
-        select: NOVELTY_SELECT,
-        filters,
-        orderBy: { column: 'created_at', ascending: false },
-        limit,
-      });
+      let query = supabase
+        .from(resolveTable('products'))
+        .select(NOVELTY_SELECT)
+        .eq('is_active', true)
+        .gte('created_at', cutoff)
+        .order('created_at', { ascending: false })
+        .range(0, limit - 1);
 
-      let novelties = result.records.map(toNovelty).filter((n) => n.is_active);
+      if (supplierId) {
+        query = query.eq('supplier_id', supplierId);
+      }
+
+      const { data, error } = await query;
+      if (error) return handleQueryError('useNovelties', 'products', error);
+
+      let novelties = (data ?? []).map(toNovelty).filter((n) => n.is_active);
 
       if (maxDays) {
         novelties = novelties.filter((n) => n.days_remaining >= NOVELTY_WINDOW_DAYS - maxDays);
@@ -506,16 +513,15 @@ export function useNoveltyCount() {
     queryFn: async () => {
       const cutoff = getCutoffDate();
 
-      const result = await invokeExternalDb<{ id: string }>({
-        table: 'products',
-        operation: 'select',
-        select: 'id',
-        filters: { is_active: true, created_at: `gte.${cutoff}` },
-        limit: 1,
-        countMode: 'exact',
-      });
+      const { count, error } = await supabase
+        .from(resolveTable('products'))
+        .select('id', { count: 'exact' })
+        .eq('is_active', true)
+        .gte('created_at', cutoff)
+        .range(0, 0);
+      if (error) return handleQueryError('useNovelties', 'products', error);
 
-      return result.count || 0;
+      return count || 0;
     },
     staleTime: 2 * 60 * 1000,
     retry: 2,
@@ -529,19 +535,19 @@ export function useIsProductNovelty(productId: string) {
   return useQuery<{ isNovelty: boolean; daysRemaining: number | null }>({
     queryKey: ['is-novelty', productId],
     queryFn: async () => {
-      const result = await invokeExternalDb<RawProduct>({
-        table: 'products',
-        operation: 'select',
-        select: 'id, created_at',
-        filters: { id: productId, is_active: true },
-        limit: 1,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('products'))
+        .select('id, created_at')
+        .eq('id', productId)
+        .eq('is_active', true)
+        .range(0, 0);
+      if (error) return handleQueryError('useNovelties', 'products', error);
 
-      if (!result.records.length) {
+      if (!data || data.length === 0) {
         return { isNovelty: false, daysRemaining: null };
       }
 
-      const daysRemaining = calcDaysRemaining(result.records[0].created_at);
+      const daysRemaining = calcDaysRemaining(data[0].created_at);
       return {
         isNovelty: daysRemaining > 0,
         daysRemaining: daysRemaining > 0 ? daysRemaining : null,
@@ -561,15 +567,15 @@ export function useNoveltyProductIds() {
     queryFn: async () => {
       const cutoff = getCutoffDate();
 
-      const result = await invokeExternalDb<{ id: string }>({
-        table: 'products',
-        operation: 'select',
-        select: 'id',
-        filters: { is_active: true, created_at: `gte.${cutoff}` },
-        limit: 500,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('products'))
+        .select('id')
+        .eq('is_active', true)
+        .gte('created_at', cutoff)
+        .range(0, 499);
+      if (error) return handleQueryError('useNovelties', 'products', error);
 
-      return new Set(result.records.map((r) => r.id));
+      return new Set((data ?? []).map((r) => r.id));
     },
     staleTime: 2 * 60 * 1000,
   });

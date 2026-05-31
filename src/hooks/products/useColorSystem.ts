@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { invokeExternalDb } from '@/lib/external-db';
-import { logger } from '@/lib/logger';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 
 export interface ColorGroup {
   id: string;
@@ -32,32 +30,37 @@ export interface ColorFilters {
   nuances: ColorNuance[];
 }
 
-// Migrated from supabase.functions.invoke('external-db-bridge') to invokeExternalDb
-// (2026-05-30) — uses REST native PostgREST path, zero Edge Function calls.
+// Migrated to direct Supabase PostgREST calls (2026-05-31).
 async function fetchExternalColors() {
-  const groupsResult = await invokeExternalDb<Record<string, string>>({
-    table: 'color_groups',
-    operation: 'select',
-    filters: { is_active: true },
-    orderBy: { column: 'sort_order', ascending: true },
-  });
-  const groups = groupsResult.records || [];
+  const { data: groups, error: groupsError } = await supabase
+    .from(resolveTable('color_groups'))
+    .select('id, name, slug, hex_code, internal_code')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
 
-  const variationsResult = await invokeExternalDb<Record<string, string>>({
-    table: 'color_variations',
-    operation: 'select',
-    filters: { is_active: true },
-    orderBy: { column: 'sort_order', ascending: true },
-  });
-  const variations = variationsResult.records || [];
+  if (groupsError) {
+    handleQueryError('useColorSystem', 'color_groups', groupsError);
+    return [];
+  }
 
-  const groupsWithVariations: ColorGroup[] = groups.map((group) => ({
+  const { data: variations, error: variationsError } = await supabase
+    .from(resolveTable('color_variations'))
+    .select('id, name, slug, hex_code, internal_code, group_id')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
+
+  if (variationsError) {
+    handleQueryError('useColorSystem', 'color_variations', variationsError);
+    return [];
+  }
+
+  const groupsWithVariations: ColorGroup[] = (groups || []).map((group) => ({
     id: group.id,
     name: group.name,
     slug: group.slug || group.name.toLowerCase().replace(/\s+/g, '-'),
     hex_code: group.hex_code,
     internal_code: group.internal_code,
-    variations: variations
+    variations: (variations || [])
       .filter((v) => v.group_id === group.id)
       .map((v) => ({
         id: v.id,
@@ -79,13 +82,13 @@ export function useColorSystem() {
       const groups = await fetchExternalColors();
 
       const { data: nuances, error: nuancesError } = await supabase
-        .from('color_nuances')
+        .from(resolveTable('color_nuances'))
         .select('id, name, slug')
         .eq('is_active', true)
         .order('sort_order');
 
       if (nuancesError) {
-        logger.warn('Nuances nao encontradas localmente:', nuancesError);
+        handleQueryError('useColorSystem', 'color_nuances', nuancesError);
       }
 
       return {

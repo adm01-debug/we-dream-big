@@ -5,7 +5,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { TABELAS_PRECO_QUERY_OPTIONS } from '@/lib/query-config';
-import { invokeExternalDb } from '@/lib/external-db';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 import { rawToTabelaPrecoTecnica, transformRawToTabelas } from '@/lib/personalization';
 import { TECNICAS_QUERY_KEYS } from '@/hooks/tecnicas/keys';
 import type {
@@ -22,30 +22,30 @@ export function useTabelasPreco(filtros?: TabelaPrecoFiltros) {
   return useQuery({
     queryKey: [...TECNICAS_QUERY_KEYS.tabelasPreco(), filtros],
     queryFn: async (): Promise<TabelaPrecoTecnica[]> => {
-      const filters: Record<string, unknown> = {};
+      let query = supabase
+        .from(resolveTable('customization_price_tables'))
+        .select('*')
+        .order('table_code', { ascending: true })
+        .limit(500);
 
       if (filtros?.apenasAtivas) {
-        filters.is_active = true;
+        query = query.eq('is_active', true);
       }
       if (filtros?.tecnicaId) {
-        filters.technique_id = filtros.tecnicaId;
+        query = query.eq('technique_id', filtros.tecnicaId);
       }
       if (filtros?.codigoTabela) {
-        filters.table_code = filtros.codigoTabela;
+        query = query.eq('table_code', filtros.codigoTabela);
       }
       if (filtros?.nomeTecnica) {
-        filters.customization_type_name = filtros.nomeTecnica;
+        query = query.eq('customization_type_name', filtros.nomeTecnica);
       }
 
-      const result = await invokeExternalDb<CustomizationPriceTableRaw>({
-        table: 'customization_price_tables',
-        operation: 'select',
-        filters: Object.keys(filters).length > 0 ? filters : undefined,
-        orderBy: { column: 'table_code', ascending: true },
-        limit: 500,
-      });
+      const { data, error } = await query;
+      if (error) return handleQueryError('useTabelasPreco', 'customization_price_tables', error);
+      const records = (data ?? []) as CustomizationPriceTableRaw[];
 
-      let tabelas = transformRawToTabelas(result.records);
+      let tabelas = transformRawToTabelas(records);
 
       // Filtro de max_colors pós-query
       if (filtros?.maxCores !== undefined) {
@@ -67,14 +67,16 @@ export function useTabelasPorTecnica(nomeTecnica: string | undefined) {
     queryFn: async (): Promise<TabelaPrecoTecnica[]> => {
       if (!nomeTecnica) return [];
 
-      const result = await invokeExternalDb<CustomizationPriceTableRaw>({
-        table: 'customization_price_tables',
-        operation: 'select',
-        filters: { customization_type_name: nomeTecnica, is_active: true },
-        orderBy: { column: 'max_colors', ascending: true },
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('customization_price_tables'))
+        .select('*')
+        .eq('customization_type_name', nomeTecnica)
+        .eq('is_active', true)
+        .order('max_colors', { ascending: true });
+      if (error) return handleQueryError('useTabelasPreco', 'customization_price_tables', error);
+      const records = (data ?? []) as CustomizationPriceTableRaw[];
 
-      return transformRawToTabelas(result.records);
+      return transformRawToTabelas(records);
     },
     enabled: !!nomeTecnica,
     ...TABELAS_PRECO_QUERY_OPTIONS,
@@ -90,14 +92,20 @@ export function useTabelaPorCodigo(codigoOpcao: string | undefined) {
     queryFn: async (): Promise<TabelaPrecoTecnica | null> => {
       if (!codigoOpcao) return null;
 
-      const result = await invokeExternalDb<CustomizationPriceTableRaw>({
-        table: 'customization_price_tables',
-        operation: 'select',
-        filters: { table_code_option: codigoOpcao },
-        limit: 1,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('customization_price_tables'))
+        .select('*')
+        .eq('table_code_option', codigoOpcao)
+        .limit(1);
+      if (error)
+        return handleQueryError(
+          'useTabelasPreco',
+          'customization_price_tables',
+          error,
+        ) as unknown as null;
+      const records = (data ?? []) as CustomizationPriceTableRaw[];
 
-      const tabela = result.records[0];
+      const tabela = records[0];
       return tabela ? rawToTabelaPrecoTecnica(tabela) : null;
     },
     enabled: !!codigoOpcao,
@@ -112,14 +120,19 @@ export function useNomesTecnicasPreco() {
   return useQuery({
     queryKey: TECNICAS_QUERY_KEYS.nomesTecnicas(),
     queryFn: async (): Promise<string[]> => {
-      const result = await invokeExternalDb<{ customization_type_name: string }>({
-        table: 'customization_price_tables',
-        operation: 'select',
-        select: 'customization_type_name',
-        filters: { is_active: true },
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('customization_price_tables'))
+        .select('customization_type_name')
+        .eq('is_active', true);
+      if (error)
+        return handleQueryError(
+          'useTabelasPreco',
+          'customization_price_tables',
+          error,
+        ) as unknown as string[];
+      const records = (data ?? []) as { customization_type_name: string }[];
 
-      const nomes = [...new Set(result.records.map((r) => r.customization_type_name))];
+      const nomes = [...new Set(records.map((r) => r.customization_type_name))];
       return nomes.sort();
     },
     staleTime: 10 * 60 * 1000,
@@ -135,14 +148,19 @@ export async function buscarTabelaAdequada(
   larguraCm?: number,
   alturaCm?: number,
 ): Promise<TabelaPrecoTecnica | null> {
-  const result = await invokeExternalDb<CustomizationPriceTableRaw>({
-    table: 'customization_price_tables',
-    operation: 'select',
-    filters: { customization_type_name: nomeTecnica, is_active: true },
-    orderBy: { column: 'max_colors', ascending: true },
-  });
+  const { data, error } = await supabase
+    .from(resolveTable('customization_price_tables'))
+    .select('*')
+    .eq('customization_type_name', nomeTecnica)
+    .eq('is_active', true)
+    .order('max_colors', { ascending: true });
+  if (error) {
+    handleQueryError('useTabelasPreco', 'customization_price_tables', error);
+    return null;
+  }
+  const records = (data ?? []) as CustomizationPriceTableRaw[];
 
-  const tabelas = transformRawToTabelas(result.records);
+  const tabelas = transformRawToTabelas(records);
 
   // Encontrar tabela que comporta o número de cores
   let tabelaAdequada = tabelas.find((t) => t.maxCores !== null && t.maxCores >= cores);

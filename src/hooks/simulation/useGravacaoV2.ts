@@ -6,7 +6,7 @@
  */
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { invokeExternalDb } from '@/lib/external-db';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 import { invokeExternalRpc } from '@/lib/external-rpc';
 
 // Re-export types & helpers for backward compat
@@ -97,14 +97,12 @@ export function useProductPrintAreas(productId: string | null) {
       const areas = await fetchPrintAreasFromProduct(productId);
       if (!areas.length) return [];
 
-      const techResult = await invokeExternalDb<TecnicaRow>({
-        table: 'tabela_preco_gravacao_oficial',
-        operation: 'select',
-        filters: { ativo: true },
-        limit: 100,
-      });
+      const table = resolveTable('tabela_preco_gravacao_oficial');
+      const { data, error } = await supabase.from(table).select('*').eq('ativo', true).limit(100);
+      if (error) handleQueryError('useProductPrintAreas', table, error);
+      const techRecords = (data || []) as TecnicaRow[];
 
-      const techById = new Map((techResult.records || []).map((t) => [t.id, t]));
+      const techById = new Map(techRecords.map((t) => [t.id, t]));
 
       return areas.map((area) => {
         const techniques: { id: string; nome: string; codigo: string }[] = [];
@@ -140,13 +138,14 @@ export function useTabelasPrecoOficial() {
   return useQuery({
     queryKey: ['tabelas-preco-oficial'],
     queryFn: async (): Promise<TabelaPrecoOficial[]> => {
-      const result = await invokeExternalDb<TabelaPrecoOficial>({
-        table: 'tabela_preco_gravacao_oficial',
-        operation: 'select',
-        filters: { ativo: true },
-        orderBy: { column: 'codigo', ascending: true },
-      });
-      return result.records || [];
+      const table = resolveTable('tabela_preco_gravacao_oficial');
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .eq('ativo', true)
+        .order('codigo', { ascending: true });
+      if (error) handleQueryError('useTabelasPrecoOficial', table, error);
+      return (data || []) as TabelaPrecoOficial[];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -157,13 +156,14 @@ export function useFaixasPrecoOficial(tabelaPrecoId: string | null) {
     queryKey: ['faixas-preco-oficial', tabelaPrecoId],
     queryFn: async (): Promise<FaixaPrecoOficial[]> => {
       if (!tabelaPrecoId) return [];
-      const result = await invokeExternalDb<FaixaPrecoOficial>({
-        table: 'tabela_preco_gravacao_oficial_faixa',
-        operation: 'select',
-        filters: { tabela_preco_gravacao_id: tabelaPrecoId },
-        orderBy: { column: 'ordem', ascending: true },
-      });
-      return result.records || [];
+      const table = resolveTable('customization_price_tiers');
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .eq('tabela_preco_gravacao_id', tabelaPrecoId)
+        .order('ordem', { ascending: true });
+      if (error) handleQueryError('useFaixasPrecoOficial', table, error);
+      return (data || []) as FaixaPrecoOficial[];
     },
     enabled: !!tabelaPrecoId,
     staleTime: 5 * 60 * 1000,
@@ -258,13 +258,10 @@ export function useTabelaPrecoPorCodigo(codigo: string | null) {
     queryKey: ['tabela-preco-codigo', codigo],
     queryFn: async (): Promise<TabelaPrecoOficial | null> => {
       if (!codigo) return null;
-      const result = await invokeExternalDb<TabelaPrecoOficial>({
-        table: 'tabela_preco_gravacao_oficial',
-        operation: 'select',
-        filters: { codigo },
-        limit: 1,
-      });
-      return result.records[0] || null;
+      const table = resolveTable('tabela_preco_gravacao_oficial');
+      const { data, error } = await supabase.from(table).select('*').eq('codigo', codigo).limit(1);
+      if (error) handleQueryError('useTabelaPrecoPorCodigo', table, error);
+      return (data as TabelaPrecoOficial[])?.[0] || null;
     },
     enabled: !!codigo,
     staleTime: 5 * 60 * 1000,

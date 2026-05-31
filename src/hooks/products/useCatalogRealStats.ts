@@ -1,9 +1,9 @@
 /**
- * useCatalogRealStats — Fetches real aggregate counts from the external DB.
- * Uses individual queries (not batch) because batch doesn't support countMode.
+ * useCatalogRealStats — Fetches real aggregate counts from Supabase PostgREST.
+ * Uses individual queries with { count: 'exact' } for precise totals.
  */
 import { useQuery } from '@tanstack/react-query';
-import { invokeExternalDb } from '@/lib/external-db/bridge';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 
 export interface CatalogRealStats {
   totalVariants: number;
@@ -30,45 +30,40 @@ export function useCatalogRealStats() {
   return useQuery<CatalogRealStats>({
     queryKey: ['catalog-real-stats', 'v4'],
     queryFn: async () => {
-      // Run 3 parallel queries with countMode: exact
+      // Run 3 parallel queries with count: 'exact'
       const [variantsResult, categoriesResult, suppliersResult] = await Promise.all([
-        invokeExternalDb<{ id: string }>({
-          table: 'product_variants',
-          operation: 'select',
-          select: 'id',
-          filters: {},
-          limit: 1,
-          offset: 0,
-          countMode: 'exact',
-        }),
-        invokeExternalDb<{ id: string; name: string }>({
-          table: 'categories',
-          operation: 'select',
-          select: 'id,name',
-          filters: { active: true },
-          limit: 1000,
-          offset: 0,
-          countMode: 'exact',
-        }),
-        invokeExternalDb<{ id: string }>({
-          table: 'suppliers',
-          operation: 'select',
-          select: 'id',
-          filters: { active: true },
-          limit: 1,
-          offset: 0,
-          countMode: 'exact',
-        }),
+        supabase.from(resolveTable('product_variants')).select('id', { count: 'exact' }).limit(1),
+        supabase
+          .from(resolveTable('categories'))
+          .select('id,name', { count: 'exact' })
+          .eq('active', true)
+          .limit(1000),
+        supabase
+          .from(resolveTable('suppliers'))
+          .select('id', { count: 'exact' })
+          .eq('active', true)
+          .limit(1),
       ]);
 
-      // Variants: use count from countMode
+      // Handle errors with 410 handling
+      if (variantsResult.error) {
+        handleQueryError('useCatalogRealStats', 'product_variants', variantsResult.error);
+      }
+      if (categoriesResult.error) {
+        handleQueryError('useCatalogRealStats', 'categories', categoriesResult.error);
+      }
+      if (suppliersResult.error) {
+        handleQueryError('useCatalogRealStats', 'suppliers', suppliersResult.error);
+      }
+
+      // Variants: use count from exact mode
       const totalVariants = variantsResult.count ?? 0;
 
       // Categories: filter hidden ones from records
-      const visible = categoriesResult.records.filter((c) => !isHiddenCategory(c.name || ''));
+      const visible = (categoriesResult.data ?? []).filter((c) => !isHiddenCategory(c.name || ''));
       const totalCategories = visible.length;
 
-      // Suppliers: use count from countMode
+      // Suppliers: use count from exact mode
       const totalSuppliers = suppliersResult.count ?? 0;
 
       return { totalVariants, totalCategories, totalSuppliers };

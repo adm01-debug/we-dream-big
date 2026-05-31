@@ -3,7 +3,7 @@
  * Tabelas: collections, collection_products
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { invokeExternalDb, invokeExternalDbSingle } from '@/lib/external-db';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 import { toast } from 'sonner';
 import { sanitizeError } from '@/lib/security/sanitize-error';
 
@@ -43,15 +43,14 @@ export function useExternalCollections() {
   return useQuery({
     queryKey: [QUERY_KEY],
     queryFn: async () => {
-      // Buscar todas as coleções sem filtrar por is_active (coluna pode não existir)
-      const result = await invokeExternalDb<ExternalCollection>({
-        table: 'collections',
-        operation: 'select',
-        select: '*', // Buscar todos os campos disponíveis
-        limit: 100,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('collections'))
+        .select('*')
+        .limit(100);
+      if (error) return handleQueryError('useExternalCollections', 'collections', error);
+      const records = (data ?? []) as ExternalCollection[];
       // Filtrar no cliente se o campo existir
-      return result.records.filter((c) => c.is_active !== false);
+      return records.filter((c) => c.is_active !== false);
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
@@ -66,14 +65,14 @@ export function useExternalCollectionProducts(collectionId: string | null) {
     queryFn: async () => {
       if (!collectionId) return [];
 
-      const result = await invokeExternalDb<ExternalCollectionProduct>({
-        table: 'collection_products',
-        operation: 'select',
-        filters: { collection_id: collectionId },
-        orderBy: { column: 'display_order', ascending: true },
-        limit: 500,
-      });
-      return result.records;
+      const { data, error } = await supabase
+        .from(resolveTable('collection_products'))
+        .select('*')
+        .eq('collection_id', collectionId)
+        .order('display_order', { ascending: true })
+        .limit(500);
+      if (error) return handleQueryError('useExternalCollections', 'collection_products', error);
+      return (data ?? []) as ExternalCollectionProduct[];
     },
     enabled: !!collectionId,
     staleTime: 5 * 60 * 1000,
@@ -89,16 +88,19 @@ export function useExternalCollectionProductCounts(collectionIds: string[]) {
     queryFn: async () => {
       if (collectionIds.length === 0) return new Map<string, number>();
 
-      const result = await invokeExternalDb<ExternalCollectionProduct>({
-        table: 'collection_products',
-        operation: 'select',
-        select: 'collection_id,product_id',
-        filters: { collection_id: collectionIds },
-        limit: 5000,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('collection_products'))
+        .select('collection_id,product_id')
+        .in('collection_id', collectionIds)
+        .limit(5000);
+      if (error) return handleQueryError('useExternalCollections', 'collection_products', error);
+      const records = (data ?? []) as Pick<
+        ExternalCollectionProduct,
+        'collection_id' | 'product_id'
+      >[];
 
       const counts = new Map<string, number>();
-      for (const r of result.records) {
+      for (const r of records) {
         counts.set(r.collection_id, (counts.get(r.collection_id) || 0) + 1);
       }
       return counts;
@@ -115,21 +117,19 @@ export function useExternalCollectionMutations() {
   const queryClient = useQueryClient();
 
   const createCollection = useMutation({
-    mutationFn: async (data: Partial<ExternalCollection>) => {
+    mutationFn: async (payload: Partial<ExternalCollection>) => {
       const slug =
-        data.name
+        payload.name
           ?.toLowerCase()
           .replace(/\s+/g, '-')
           .replace(/[^a-z0-9-]/g, '') || `col-${Date.now()}`;
-      return invokeExternalDbSingle<ExternalCollection>({
-        table: 'collections',
-        operation: 'insert',
-        data: {
-          ...data,
-          slug,
-          is_active: true,
-        },
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('collections'))
+        .insert({ ...payload, slug, is_active: true })
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
+      return data as ExternalCollection;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -141,13 +141,21 @@ export function useExternalCollectionMutations() {
   });
 
   const updateCollection = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<ExternalCollection> }) => {
-      return invokeExternalDbSingle<ExternalCollection>({
-        table: 'collections',
-        operation: 'update',
-        id,
-        data,
-      });
+    mutationFn: async ({
+      id,
+      data: payload,
+    }: {
+      id: string;
+      data: Partial<ExternalCollection>;
+    }) => {
+      const { data, error } = await supabase
+        .from(resolveTable('collections'))
+        .update(payload)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
+      return data as ExternalCollection;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -160,11 +168,8 @@ export function useExternalCollectionMutations() {
 
   const deleteCollection = useMutation({
     mutationFn: async (id: string) => {
-      return invokeExternalDb({
-        table: 'collections',
-        operation: 'delete',
-        id,
-      });
+      const { error } = await supabase.from(resolveTable('collections')).delete().eq('id', id);
+      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -183,14 +188,13 @@ export function useExternalCollectionMutations() {
       collectionId: string;
       productId: string;
     }) => {
-      return invokeExternalDbSingle<ExternalCollectionProduct>({
-        table: 'collection_products',
-        operation: 'insert',
-        data: {
-          collection_id: collectionId,
-          product_id: productId,
-        },
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('collection_products'))
+        .insert({ collection_id: collectionId, product_id: productId })
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
+      return data as ExternalCollectionProduct;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, 'products', variables.collectionId] });
@@ -203,11 +207,11 @@ export function useExternalCollectionMutations() {
 
   const removeProductFromCollection = useMutation({
     mutationFn: async (relationId: string) => {
-      return invokeExternalDb({
-        table: 'collection_products',
-        operation: 'delete',
-        id: relationId,
-      });
+      const { error } = await supabase
+        .from(resolveTable('collection_products'))
+        .delete()
+        .eq('id', relationId);
+      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });

@@ -1,10 +1,6 @@
-// Hook CRUD para Tecnicas de Gravacao (via external-db-bridge)
+// Hook CRUD para Tecnicas de Gravacao (via Supabase PostgREST)
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  invokeExternalDb,
-  invokeExternalDbSingle,
-  invokeExternalDbDelete,
-} from '@/lib/external-db';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 import type {
   TecnicaGravacao,
   TecnicaGravacaoVariante,
@@ -20,7 +16,7 @@ const generateSlug = (nome: string): string => {
   return nome
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 };
@@ -31,25 +27,32 @@ export function useTecnicasGravacao() {
   const tecnicasQuery = useQuery({
     queryKey: [QUERY_KEY],
     queryFn: async (): Promise<TecnicaGravacaoWithVariantes[]> => {
-      const [tecnicasResult, variantesResult] = await Promise.all([
-        invokeExternalDb<TecnicaGravacao>({
-          table: 'tecnica_gravacao',
-          operation: 'select',
-          orderBy: { column: 'nome', ascending: true },
-        }),
-        invokeExternalDb<{ tecnica_gravacao_id: string }>({
-          table: 'tecnica_gravacao_variante',
-          operation: 'select',
-          select: 'tecnica_gravacao_id',
-        }),
+      const [tecnicasRes, variantesRes] = await Promise.all([
+        supabase
+          .from(resolveTable('tecnica_gravacao'))
+          .select('*')
+          .order('nome', { ascending: true }),
+        supabase.from(resolveTable('tecnica_gravacao_variante')).select('tecnica_gravacao_id'),
       ]);
 
+      if (tecnicasRes.error)
+        return handleQueryError('useTecnicasGravacao', 'tecnica_gravacao', tecnicasRes.error);
+      if (variantesRes.error)
+        return handleQueryError(
+          'useTecnicasGravacao',
+          'tecnica_gravacao_variante',
+          variantesRes.error,
+        );
+
+      const tecnicas = (tecnicasRes.data ?? []) as TecnicaGravacao[];
+      const variantes = (variantesRes.data ?? []) as { tecnica_gravacao_id: string }[];
+
       const variantesCount: Record<string, number> = {};
-      variantesResult.records.forEach((v) => {
+      variantes.forEach((v) => {
         variantesCount[v.tecnica_gravacao_id] = (variantesCount[v.tecnica_gravacao_id] || 0) + 1;
       });
 
-      return tecnicasResult.records.map((t) => ({
+      return tecnicas.map((t) => ({
         ...t,
         variantes: [],
         variantes_count: variantesCount[t.id] || 0,
@@ -61,11 +64,13 @@ export function useTecnicasGravacao() {
   const createMutation = useMutation({
     mutationFn: async (formData: TecnicaGravacaoFormData): Promise<TecnicaGravacao> => {
       const slug = generateSlug(formData.nome);
-      return invokeExternalDbSingle<TecnicaGravacao>({
-        table: 'tecnica_gravacao',
-        operation: 'insert',
-        data: { ...formData, slug },
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('tecnica_gravacao'))
+        .insert({ ...formData, slug })
+        .select()
+        .single();
+      if (error) throw new Error(`[useTecnicasGravacao] Insert error: ${error.message}`);
+      return data as TecnicaGravacao;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -85,12 +90,14 @@ export function useTecnicasGravacao() {
       if (updates.nome) {
         updateData.slug = generateSlug(updates.nome);
       }
-      return invokeExternalDbSingle<TecnicaGravacao>({
-        table: 'tecnica_gravacao',
-        operation: 'update',
-        id,
-        data: updateData,
-      });
+      const { data, error } = await supabase
+        .from(resolveTable('tecnica_gravacao'))
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw new Error(`[useTecnicasGravacao] Update error: ${error.message}`);
+      return data as TecnicaGravacao;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -104,22 +111,23 @@ export function useTecnicasGravacao() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string): Promise<void> => {
       // Verificar variantes vinculadas
-      const variantesResult = await invokeExternalDb<{ id: string }>({
-        table: 'tecnica_gravacao_variante',
-        operation: 'select',
-        filters: { tecnica_gravacao_id: id },
-        select: 'id',
-        limit: 1,
-      });
+      const { data, error: selectError } = await supabase
+        .from(resolveTable('tecnica_gravacao_variante'))
+        .select('id')
+        .eq('tecnica_gravacao_id', id)
+        .limit(1);
 
-      if ((variantesResult.count ?? 0) > 0) {
+      if (selectError)
+        throw new Error(`[useTecnicasGravacao] Select error: ${selectError.message}`);
+
+      if ((data ?? []).length > 0) {
         // BUG-GRAVACAO-01 FIX: variantesResult.count pode ser null quando a query
         // nao suporta countMode. Usar nullish coalescing evita "existem null variante(s)".
-        const numVariantes = variantesResult.count ?? 'algumas';
-        throw new Error(`Nao e possivel excluir: existem ${numVariantes} variante(s) vinculada(s)`);
+        throw new Error(`Nao e possivel excluir: existem variante(s) vinculada(s)`);
       }
 
-      await invokeExternalDbDelete('tecnica_gravacao', id);
+      const { error } = await supabase.from(resolveTable('tecnica_gravacao')).delete().eq('id', id);
+      if (error) throw new Error(`[useTecnicasGravacao] Delete error: ${error.message}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -132,12 +140,13 @@ export function useTecnicasGravacao() {
 
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, ativo }: { id: string; ativo: boolean }): Promise<void> => {
-      await invokeExternalDbSingle({
-        table: 'tecnica_gravacao',
-        operation: 'update',
-        id,
-        data: { ativo },
-      });
+      const { error } = await supabase
+        .from(resolveTable('tecnica_gravacao'))
+        .update({ ativo })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw new Error(`[useTecnicasGravacao] Update error: ${error.message}`);
     },
     onSuccess: (_, { ativo }) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -172,28 +181,37 @@ export function useTecnicaGravacao(id: string | undefined) {
     queryFn: async (): Promise<TecnicaGravacaoWithVariantes | null> => {
       if (!id) return null;
 
-      const [tecnicaResult, variantesResult] = await Promise.all([
-        invokeExternalDb<TecnicaGravacao>({
-          table: 'tecnica_gravacao',
-          operation: 'select',
-          filters: { id },
-          limit: 1,
-        }),
-        invokeExternalDb<TecnicaGravacaoVariante>({
-          table: 'tecnica_gravacao_variante',
-          operation: 'select',
-          filters: { tecnica_gravacao_id: id },
-          orderBy: { column: 'ordem_exibicao', ascending: true },
-        }),
+      const [tecnicaRes, variantesRes] = await Promise.all([
+        supabase.from(resolveTable('tecnica_gravacao')).select('*').eq('id', id).limit(1),
+        supabase
+          .from(resolveTable('tecnica_gravacao_variante'))
+          .select('*')
+          .eq('tecnica_gravacao_id', id)
+          .order('ordem_exibicao', { ascending: true }),
       ]);
 
-      const tecnica = tecnicaResult.records[0];
+      if (tecnicaRes.error)
+        return handleQueryError(
+          'useTecnicaGravacao',
+          'tecnica_gravacao',
+          tecnicaRes.error,
+        ) as unknown as null;
+      if (variantesRes.error)
+        return handleQueryError(
+          'useTecnicaGravacao',
+          'tecnica_gravacao_variante',
+          variantesRes.error,
+        ) as unknown as null;
+
+      const tecnica = (tecnicaRes.data ?? [])[0] as TecnicaGravacao | undefined;
       if (!tecnica) return null;
+
+      const variantes = (variantesRes.data ?? []) as TecnicaGravacaoVariante[];
 
       return {
         ...tecnica,
-        variantes: variantesResult.records,
-        variantes_count: variantesResult.count ?? undefined,
+        variantes,
+        variantes_count: variantes.length,
       };
     },
     enabled: !!id,

@@ -1,12 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { applyPixMask, validatePixKey } from '@/utils/pixMask';
-import {
-  invokeExternalDb,
-  invokeExternalDbSingle,
-  invokeExternalDbDelete,
-} from '@/lib/external-db';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 import { searchCrm } from '@/lib/crm-db';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { validateCnpj, maskCep } from '@/utils/masks';
 import { fetchAddressByCep } from '@/utils/viacep';
@@ -153,16 +148,18 @@ export function useSuppliersManager() {
       const pageSize = 200;
       const maxPages = 10; // cap at 2000 to prevent runaway
       for (let page = 0; page < maxPages; page++) {
-        const result = await invokeExternalDb<Supplier>({
-          table: 'suppliers',
-          operation: 'select',
-          select: '*',
-          orderBy: { column: 'name', ascending: true },
-          limit: pageSize,
-          offset: page * pageSize,
-        });
-        const records = result.records || [];
-        all.push(...records);
+        const offset = page * pageSize;
+        const { data, error } = await supabase
+          .from(resolveTable('suppliers'))
+          .select('*')
+          .order('name', { ascending: true })
+          .range(offset, offset + pageSize - 1);
+        if (error) {
+          handleQueryError('useSuppliersManager', 'suppliers', error);
+          break;
+        }
+        const records = data || [];
+        all.push(...(records as Supplier[]));
         if (records.length < pageSize) break; // last page
       }
       setSuppliers(all);
@@ -350,14 +347,13 @@ export function useSuppliersManager() {
     // Duplicate checks
     if (cnpjRaw.length === 14 && editingSupplier.cnpj) {
       try {
-        const existing = await invokeExternalDb<{ id: string; name: string; cnpj: string }>({
-          table: 'suppliers',
-          operation: 'select',
-          select: 'id,name,cnpj',
-          filters: { cnpj: editingSupplier.cnpj.trim() },
-          limit: 5,
-        });
-        const duplicate = existing.records?.find((r) => r.id !== editingSupplier.id);
+        const { data: existingData, error: cnpjErr } = await supabase
+          .from(resolveTable('suppliers'))
+          .select('id,name,cnpj')
+          .eq('cnpj', editingSupplier.cnpj.trim())
+          .limit(5);
+        if (cnpjErr) handleQueryError('useSuppliersManager', 'suppliers', cnpjErr);
+        const duplicate = (existingData || []).find((r) => r.id !== editingSupplier.id);
         if (duplicate) {
           toast.error(`Já existe outro fornecedor com este CNPJ: "${duplicate.name}".`);
           setSaving(false);
@@ -367,17 +363,16 @@ export function useSuppliersManager() {
         logger.warn('[SuppliersManager] CNPJ dup check failed:', err);
       }
     }
-    // BUG-21 FIX: case-insensitive name dup check via __ilike_ prefix
+    // BUG-21 FIX: case-insensitive name dup check via ilike
     if (editingSupplier.name?.trim()) {
       try {
-        const existingByName = await invokeExternalDb<{ id: string; name: string }>({
-          table: 'suppliers',
-          operation: 'select',
-          select: 'id,name',
-          filters: { __ilike_name: editingSupplier.name.trim() },
-          limit: 5,
-        });
-        const dupByName = existingByName.records?.find((r) => r.id !== editingSupplier.id);
+        const { data: nameData, error: nameErr } = await supabase
+          .from(resolveTable('suppliers'))
+          .select('id,name')
+          .ilike('name', editingSupplier.name.trim())
+          .limit(5);
+        if (nameErr) handleQueryError('useSuppliersManager', 'suppliers', nameErr);
+        const dupByName = (nameData || []).find((r) => r.id !== editingSupplier.id);
         if (dupByName) {
           toast.error(`Já existe outro fornecedor com este nome: "${dupByName.name}".`);
           setSaving(false);
@@ -389,19 +384,14 @@ export function useSuppliersManager() {
     }
     if (editingSupplier.trading_name?.trim()) {
       try {
-        const existingByTN = await invokeExternalDb<{
-          id: string;
-          name: string;
-          trading_name: string;
-        }>({
-          table: 'suppliers',
-          operation: 'select',
-          select: 'id,name,trading_name',
+        const { data: tnData, error: tnErr } = await supabase
+          .from(resolveTable('suppliers'))
+          .select('id,name,trading_name')
           // BUG-21 FIX: case-insensitive trading_name dup check
-          filters: { __ilike_trading_name: editingSupplier.trading_name.trim() },
-          limit: 5,
-        });
-        const dupByTN = existingByTN.records?.find((r) => r.id !== editingSupplier.id);
+          .ilike('trading_name', editingSupplier.trading_name.trim())
+          .limit(5);
+        if (tnErr) handleQueryError('useSuppliersManager', 'suppliers', tnErr);
+        const dupByTN = (tnData || []).find((r) => r.id !== editingSupplier.id);
         if (dupByTN) {
           toast.error(
             `Já existe outro fornecedor com este Nome Fantasia: "${dupByTN.trading_name || dupByTN.name}".`,
@@ -491,15 +481,21 @@ export function useSuppliersManager() {
       if (isNew) {
         payload.organization_id = ORGANIZATION_ID;
         payload.created_at = now;
-        await invokeExternalDbSingle({ table: 'suppliers', operation: 'insert', data: payload });
+        const { error: insertErr } = await supabase
+          .from('suppliers')
+          .insert(payload)
+          .select()
+          .single();
+        if (insertErr) throw new Error(insertErr.message);
         toast.success(`Fornecedor "${editingSupplier.name}" criado`);
       } else {
-        await invokeExternalDbSingle({
-          table: 'suppliers',
-          operation: 'update',
-          id: editingSupplier.id,
-          data: payload,
-        });
+        const { error: updateErr } = await supabase
+          .from('suppliers')
+          .update(payload)
+          .eq('id', editingSupplier.id)
+          .select()
+          .single();
+        if (updateErr) throw new Error(updateErr.message);
         toast.success(`Fornecedor "${editingSupplier.name}" atualizado`);
       }
       setEditingSupplier(null);
@@ -522,7 +518,8 @@ export function useSuppliersManager() {
     setDeleteConfirmSupplier(null);
     setDeleting(supplier.id);
     try {
-      await invokeExternalDbDelete('suppliers', supplier.id);
+      const { error: deleteErr } = await supabase.from('suppliers').delete().eq('id', supplier.id);
+      if (deleteErr) throw new Error(deleteErr.message);
       toast.success(`Fornecedor "${supplier.name}" excluído`);
       fetchSuppliers();
     } catch (err: unknown) {

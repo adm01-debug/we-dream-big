@@ -1,12 +1,11 @@
 /**
  * External Database Hook - Ponto de entrada principal.
  *
- * Modularizado em:
- * - src/lib/external-db/types.ts    → Interfaces de tipos
- * - src/lib/external-db/tables.ts   → Constantes de tabelas/views
- * - src/lib/external-db/invoke.ts   → Retry logic e error handling
+ * MIGRADO (2026-05-31): Usa PostgREST direto via supabase.from() em vez do
+ * bridge legado (invokeExternalDb). Aliases de tabela resolvidos via resolveTable().
  *
- * Este arquivo contém o hook principal e re-exporta tudo para compatibilidade.
+ * Mantém todas interfaces, tipos e assinaturas do hook inalterados para
+ * compatibilidade com consumidores existentes.
  */
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
@@ -18,8 +17,7 @@ export { extractFunctionErrorMessage } from '@/lib/external-db/invoke';
 
 import type { ExternalTable } from '@/lib/external-db/tables';
 import { extractFunctionErrorMessage } from '@/lib/external-db/invoke';
-import { invokeExternalDb } from '@/lib/external-db/bridge';
-import { KillSwitchActiveError } from '@/lib/external-db/kill-switch-client';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 import { logger } from '@/lib/logger';
 import type {
   ExternalProduct,
@@ -75,23 +73,72 @@ interface ExternalDatabaseState<T> {
   error: string | null;
 }
 
+// ============================================
+// HELPERS — PostgREST filter application
+// ============================================
+
 /**
- * Verifica se um erro é relacionado ao bridge descontinuado.
- * Quando o kill-switch está OFF ou há falha de rede com o bridge,
- * o erro não deve gerar toast (é esperado e silencioso).
+ * Aplica filtros ao query builder do Supabase PostgREST.
+ * Suporta:
+ *  - Valores simples → .eq()
+ *  - Strings PostgREST: 'ilike.%X%' → .ilike(), 'gte.X' → .gte(), 'lte.X' → .lte(),
+ *    'gt.X' → .gt(), 'lt.X' → .lt(), 'neq.X' → .neq(), 'in.(a,b)' → .in()
  */
-function isBridgeRelatedError(err: unknown, message: string): boolean {
-  // KillSwitchActiveError: bridge explicitamente desativado
-  if (err instanceof KillSwitchActiveError) return true;
-  // Mensagens típicas do bridge desativado ou erro de rede com a edge function
-  const lower = message.toLowerCase();
-  return (
-    lower.includes('external-db-bridge') ||
-    lower.includes('kill-switch') ||
-    lower.includes('failed to send a request to the edge function') ||
-    lower.includes('foi descontinuada') ||
-    lower.includes('migre para rest nativo')
-  );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyFilters(query: any, filters: Record<string, unknown>): any {
+  let q = query;
+  for (const [key, value] of Object.entries(filters)) {
+    if (value === undefined || value === null) continue;
+
+    if (typeof value === 'string') {
+      // PostgREST operator strings
+      const ilMatch = value.match(/^ilike\.(.+)$/i);
+      if (ilMatch) {
+        q = q.ilike(key, ilMatch[1]);
+        continue;
+      }
+
+      const gteMatch = value.match(/^gte\.(.+)$/);
+      if (gteMatch) {
+        q = q.gte(key, gteMatch[1]);
+        continue;
+      }
+
+      const lteMatch = value.match(/^lte\.(.+)$/);
+      if (lteMatch) {
+        q = q.lte(key, lteMatch[1]);
+        continue;
+      }
+
+      const gtMatch = value.match(/^gt\.(.+)$/);
+      if (gtMatch) {
+        q = q.gt(key, gtMatch[1]);
+        continue;
+      }
+
+      const ltMatch = value.match(/^lt\.(.+)$/);
+      if (ltMatch) {
+        q = q.lt(key, ltMatch[1]);
+        continue;
+      }
+
+      const neqMatch = value.match(/^neq\.(.+)$/);
+      if (neqMatch) {
+        q = q.neq(key, neqMatch[1]);
+        continue;
+      }
+
+      const inMatch = value.match(/^in\.\((.+)\)$/);
+      if (inMatch) {
+        q = q.in(key, inMatch[1].split(','));
+        continue;
+      }
+    }
+
+    // Valor simples (string sem operador, number, boolean, etc.)
+    q = q.eq(key, value);
+  }
+  return q;
 }
 
 // ============================================
@@ -102,6 +149,8 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
   if (!tableName || typeof tableName !== 'string') {
     console.error(`[useExternalDatabase] Invalid tableName: ${JSON.stringify(tableName)}`);
   }
+
+  const resolved = resolveTable(tableName);
 
   const [state, setState] = useState<ExternalDatabaseState<T>>({
     data: [],
@@ -128,65 +177,126 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
       }
 
       try {
-        // MIGRAÇÃO REST-NATIVO (2026-05-30): roteia via invokeExternalDb, que tenta o
-        // REST nativo (PostgREST) primeiro e, quando o kill-switch `edge_external_db_bridge`
-        // está OFF, retorna vazio em SILÊNCIO — sem emitir o evento `unavailable` que o
-        // invokeWithRetry legado disparava (banner de "catálogo indisponível") para um
-        // estado que hoje é o esperado. Ver src/lib/external-db/bridge.ts::invokeExternalDb.
-        //
-        // SELECT por id: o REST nativo filtra via PostgREST (.eq), então traduzimos o id
-        // em filtro. Para escritas (insert/update/delete) o id segue no campo próprio.
-        const idFilter = operation === 'select' && options?.id ? { id: options.id } : undefined;
-        const mergedFilters =
-          idFilter || options?.filters
-            ? { ...(options?.filters ?? {}), ...(idFilter ?? {}) }
-            : undefined;
-
-        const result = await invokeExternalDb<T>({
-          table: tableName,
-          operation,
-          data: options?.data as Record<string, unknown> | undefined,
-          filters: mergedFilters,
-          id: options?.id,
-          select: options?.select,
-          orderBy: options?.orderBy,
-          limit: options?.limit,
-          offset: options?.offset,
-        });
-
-        // invokeExternalDb já devolve { records, count } desempacotado.
+        // ------ SELECT ------
         if (operation === 'select') {
+          let query = supabase.from(resolved).select(options?.select || '*', { count: 'exact' });
+
+          // Filtro por id
+          if (options?.id) {
+            query = query.eq('id', options.id);
+          }
+
+          // Filtros adicionais
+          if (options?.filters) {
+            query = applyFilters(query, options.filters);
+          }
+
+          // Ordenação
+          if (options?.orderBy) {
+            query = query.order(options.orderBy.column, {
+              ascending: options.orderBy.ascending ?? true,
+            });
+          }
+
+          // Paginação
+          if (options?.limit !== undefined) {
+            const from = options?.offset ?? 0;
+            query = query.range(from, from + options.limit - 1);
+          }
+
+          const { data, error, count } = await query;
+
+          if (error) {
+            const fallback = handleQueryError('useExternalDatabase', resolved, error);
+            if (isMountedRef.current) {
+              setState((prev) => ({
+                ...prev,
+                data: fallback as T[],
+                count: 0,
+                isLoading: false,
+              }));
+            }
+            return { records: fallback as T[], count: 0 };
+          }
+
+          const records = (data ?? []) as T[];
           if (isMountedRef.current) {
             setState((prev) => ({
               ...prev,
-              data: result.records,
-              count: result.count,
+              data: records,
+              count: count,
               isLoading: false,
             }));
           }
-          return result as QueryResult<T>;
+          return { records, count } as QueryResult<T>;
         }
-        if (isMountedRef.current) {
-          setState((prev) => ({ ...prev, isLoading: false }));
+
+        // ------ INSERT ------
+        if (operation === 'insert') {
+          const { data, error } = await supabase
+            .from(resolved)
+            .insert(options?.data as Record<string, unknown>)
+            .select()
+            .single();
+
+          if (error) {
+            throw new Error(error.message);
+          }
+
+          if (isMountedRef.current) {
+            setState((prev) => ({ ...prev, isLoading: false }));
+          }
+          return (data ?? null) as T;
         }
-        return (result.records[0] ?? null) as T;
+
+        // ------ UPDATE ------
+        if (operation === 'update') {
+          if (!options?.id) throw new Error('Update requires an id');
+
+          const { data, error } = await supabase
+            .from(resolved)
+            .update(options.data as Record<string, unknown>)
+            .eq('id', options.id)
+            .select()
+            .single();
+
+          if (error) {
+            throw new Error(error.message);
+          }
+
+          if (isMountedRef.current) {
+            setState((prev) => ({ ...prev, isLoading: false }));
+          }
+          return (data ?? null) as T;
+        }
+
+        // ------ DELETE ------
+        if (operation === 'delete') {
+          if (!options?.id) throw new Error('Delete requires an id');
+
+          const { error } = await supabase.from(resolved).delete().eq('id', options.id);
+
+          if (error) {
+            throw new Error(error.message);
+          }
+
+          if (isMountedRef.current) {
+            setState((prev) => ({ ...prev, isLoading: false }));
+          }
+          return {} as T;
+        }
+
+        return null;
       } catch (err) {
         const errorMessage = await extractFunctionErrorMessage(err);
         if (isMountedRef.current) {
           setState((prev) => ({ ...prev, error: errorMessage, isLoading: false }));
-          // Não exibir toast para erros do bridge descontinuado — são esperados e silenciosos
-          // (kill-switch OFF / falha de rede com a edge function). Demais erros (auth, dados)
-          // continuam gerando toast normalmente.
-          if (!isBridgeRelatedError(err, errorMessage)) {
-            toast.error(errorMessage);
-          } else {
-            logger.warn(`[useExternalDatabase:${tableName}] bridge silenciado: ${errorMessage}`);
-          }
+          toast.error(errorMessage);
         }
         return null;
       }
     },
-    [tableName],
+    [resolved],
   );
 
   const fetchAll = useCallback(
@@ -212,15 +322,6 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
       const result = await invoke('insert', { data });
       if (!result) return null;
 
-      if (typeof result === 'object' && 'records' in result) {
-        const created = (result as QueryResult<T>).records[0] || null;
-        if (created) {
-          toast.success('Registro criado com sucesso!');
-          return created as T;
-        }
-        return null;
-      }
-
       toast.success('Registro criado com sucesso!');
       return result as T;
     },
@@ -231,15 +332,6 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
     async (id: string, data: Partial<T>) => {
       const result = await invoke('update', { id, data });
       if (!result) return null;
-
-      if (typeof result === 'object' && 'records' in result) {
-        const updated = (result as QueryResult<T>).records[0] || null;
-        if (updated) {
-          toast.success('Registro atualizado com sucesso!');
-          return updated as T;
-        }
-        return null;
-      }
 
       toast.success('Registro atualizado com sucesso!');
       return result as T;

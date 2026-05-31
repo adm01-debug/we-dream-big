@@ -5,8 +5,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase, SUPABASE_URL } from '@/integrations/supabase/client';
-import { invokeExternalDb } from '@/lib/external-db';
+import { SUPABASE_URL } from '@/integrations/supabase/client';
+import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
 import { useExpertChatTts } from './useExpertChatTts';
 import { useExpertConversations, type ExpertConversation } from '@/hooks/intelligence';
 import {
@@ -165,79 +165,78 @@ export function useExpertChat({
       );
     const fetchFilters = async () => {
       try {
-        const [cat, sup, tec, tag, col, mat] = await Promise.all([
-          invokeExternalDb<{ name: string }>({
-            table: 'categories',
-            operation: 'select',
-            select: 'name',
-            filters: { is_active: true },
-            orderBy: { column: 'name', ascending: true },
-            limit: 500,
-          }),
-          invokeExternalDb<{ name: string }>({
-            table: 'suppliers',
-            operation: 'select',
-            select: 'name',
-            orderBy: { column: 'name', ascending: true },
-            limit: 200,
-          }),
-          invokeExternalDb<{ nome: string }>({
-            table: 'tecnicas_gravacao',
-            operation: 'select',
-            select: 'nome',
-            filters: { ativo: true },
-            orderBy: { column: 'nome', ascending: true },
-            limit: 100,
-          }),
-          invokeExternalDb<{ name: string }>({
-            table: 'tags',
-            operation: 'select',
-            select: 'name',
-            orderBy: { column: 'name', ascending: true },
-            limit: 200,
-          }),
-          invokeExternalDb<{ name: string }>({
-            table: 'color_groups',
-            operation: 'select',
-            select: 'name',
-            orderBy: { column: 'name', ascending: true },
-            limit: 200,
-          }),
-          invokeExternalDb<{ name: string }>({
-            table: 'material_groups',
-            operation: 'select',
-            select: 'name',
-            orderBy: { column: 'name', ascending: true },
-            limit: 200,
-          }),
+        const [catRes, supRes, tecRes, tagRes, colRes, matRes] = await Promise.all([
+          supabase
+            .from(resolveTable('categories'))
+            .select('name')
+            .eq('is_active', true)
+            .order('name', { ascending: true })
+            .limit(500),
+          supabase
+            .from(resolveTable('suppliers'))
+            .select('name')
+            .order('name', { ascending: true })
+            .limit(200),
+          supabase
+            .from(resolveTable('tecnicas_gravacao'))
+            .select('nome')
+            .eq('ativo', true)
+            .order('nome', { ascending: true })
+            .limit(100),
+          supabase
+            .from(resolveTable('tags'))
+            .select('name')
+            .order('name', { ascending: true })
+            .limit(200),
+          supabase
+            .from(resolveTable('color_groups'))
+            .select('name')
+            .order('name', { ascending: true })
+            .limit(200),
+          supabase
+            .from(resolveTable('material_groups'))
+            .select('name')
+            .order('name', { ascending: true })
+            .limit(200),
         ]);
+        if (catRes.error) return handleQueryError('useExpertChat', 'categories', catRes.error);
+        if (supRes.error) return handleQueryError('useExpertChat', 'suppliers', supRes.error);
+        if (tecRes.error)
+          return handleQueryError('useExpertChat', 'tecnicas_gravacao', tecRes.error);
+        if (tagRes.error) return handleQueryError('useExpertChat', 'tags', tagRes.error);
+        if (colRes.error) return handleQueryError('useExpertChat', 'color_groups', colRes.error);
+        if (matRes.error) return handleQueryError('useExpertChat', 'material_groups', matRes.error);
         if (cancelled) return;
+        const catRecords = catRes.data ?? [];
+        const supRecords = supRes.data ?? [];
+        const tecRecords = tecRes.data ?? [];
+        const tagRecords = tagRes.data ?? [];
+        const colRecords = colRes.data ?? [];
+        const matRecords = matRes.data ?? [];
         setFilterOptions({
-          categories: uniq((cat.records ?? []).map((i) => i.name)),
-          materials: uniq((mat.records ?? []).map((i) => i.name)),
-          colors: uniq((col.records ?? []).map((i) => i.name)),
-          suppliers: uniq((sup.records ?? []).map((i) => i.name)),
-          techniques: uniq((tec.records ?? []).map((i: { nome: string }) => i.nome)),
+          categories: uniq(catRecords.map((i) => i.name)),
+          materials: uniq(matRecords.map((i) => i.name)),
+          colors: uniq(colRecords.map((i) => i.name)),
+          suppliers: uniq(supRecords.map((i) => i.name)),
+          techniques: uniq(tecRecords.map((i: { nome: string }) => i.nome)),
           publicoAlvo: [],
           datasComemorativas: [],
           endomarketing: [],
           nichos: [],
-          tags: uniq((tag.records ?? []).map((i) => i.name)),
+          tags: uniq(tagRecords.map((i) => i.name)),
         });
         try {
-          const [ramos] = await Promise.all([
-            invokeExternalDb<{ nome: string }>({
-              table: 'ramo_atividade',
-              operation: 'select',
-              select: 'nome',
-              orderBy: { column: 'nome', ascending: true },
-              limit: 200,
-            }),
-          ]);
-          if (!cancelled && ramos.records?.length) {
+          const ramosRes = await supabase
+            .from(resolveTable('ramo_atividade'))
+            .select('nome')
+            .order('nome', { ascending: true })
+            .limit(200);
+          if (ramosRes.error) {
+            handleQueryError('useExpertChat', 'ramo_atividade', ramosRes.error);
+          } else if (!cancelled && ramosRes.data?.length) {
             setFilterOptions((prev) => ({
               ...prev,
-              nichos: uniq((ramos.records ?? []).map((i) => i.nome)),
+              nichos: uniq((ramosRes.data ?? []).map((i) => i.nome)),
             }));
           }
         } catch {
