@@ -226,13 +226,11 @@ export function useTecnicaByCodigo(codigo: string | undefined) {
     queryFn: async (): Promise<TecnicaUnificada | null> => {
       if (!codigo) return null;
 
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'tecnica_gravacao',
-          operation: 'select',
-          filters: { codigo },
-          limit: 1,
-        },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'tecnica_gravacao',
+        operation: 'select',
+        filters: { codigo },
+        limit: 1,
       });
 
       if (error) throw error;
