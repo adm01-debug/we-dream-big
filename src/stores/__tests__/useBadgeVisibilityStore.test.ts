@@ -39,7 +39,7 @@ describe('useBadgeVisibilityStore', () => {
       // But also make it thenable if it's the end of the chain
       const result = {
         ...mockSupabase,
-        then: (resolve: any) => resolve({ error: null })
+        then: (resolve: (value: unknown) => unknown) => resolve({ error: null }),
       };
       return result;
     });
