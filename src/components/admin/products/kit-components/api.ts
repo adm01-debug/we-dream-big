@@ -144,8 +144,10 @@ export async function updateComponentMedia(
 }
 
 export async function deleteComponentMedia(id: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'kit_component_media', operation: 'delete', id },
+  const { data, error } = await invokeExternalDbBridge({
+    table: 'kit_component_media',
+    operation: 'delete',
+    id,
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Erro ao excluir mídia');
