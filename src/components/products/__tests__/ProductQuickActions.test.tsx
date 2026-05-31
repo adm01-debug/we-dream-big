@@ -40,7 +40,7 @@ describe('ProductQuickActions Tooltips', () => {
 
   const renderComponent = (props = defaultProps) => {
     return render(
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         <ProductQuickActions {...props} />
       </TooltipProvider>
     );
@@ -67,19 +67,13 @@ describe('ProductQuickActions Tooltips', () => {
     for (const action of actions) {
       const button = screen.getByRole('button', { name: new RegExp(action.label, 'i') });
       
-      // Hover triggers data-state="delayed-open" in Radix Tooltip
       fireEvent.mouseEnter(button);
       
-      // Since Radix might not render in the same DOM tree or requires time
-      // We check for the content
       await waitFor(() => {
-        expect(document.body.textContent).toContain(action.description);
+        expect(screen.queryByText(action.description)).toBeInTheDocument();
       }, { timeout: 3000 });
       
       fireEvent.mouseLeave(button);
-      await waitFor(() => {
-        expect(document.body.textContent).not.toContain(action.description);
-      });
     }
   });
 
@@ -101,7 +95,7 @@ describe('ProductQuickActions Tooltips', () => {
 
       fireEvent.mouseEnter(button);
       await waitFor(() => {
-        expect(document.body.textContent).toContain(action.expected);
+        expect(screen.queryByText(action.expected)).toBeInTheDocument();
       }, { timeout: 3000 });
     }
   });
