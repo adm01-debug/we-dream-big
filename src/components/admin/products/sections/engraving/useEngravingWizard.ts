@@ -137,8 +137,10 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: { table: 'print_area_techniques', operation: 'delete', id },
+      const { data, error } = await invokeExternalDbBridge({
+        table: 'print_area_techniques',
+        operation: 'delete',
+        id,
       });
       if (error) throw new Error(error.message);
       if (!data?.success) throw new Error(data?.error || 'Erro ao excluir área');
