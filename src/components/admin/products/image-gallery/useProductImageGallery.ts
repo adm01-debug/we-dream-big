@@ -462,13 +462,11 @@ export function useProductImageGallery({
       try {
         await Promise.all(
           updates.map(({ id, display_order: displayOrder }) =>
-            supabase.functions.invoke('external-db-bridge', {
-              body: {
-                table: 'product_images',
-                operation: 'update',
-                id,
-                data: { display_order: displayOrder },
-              },
+            invokeExternalDbBridge({
+              table: 'product_images',
+              operation: 'update',
+              id,
+              data: { display_order: displayOrder },
             }),
           ),
         );
