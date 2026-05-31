@@ -559,7 +559,11 @@ interface VariantStockTableProps {
   className?: string;
 }
 
-export function VariantStockTable({ products, className }: VariantStockTableProps) {
+export function VariantStockTable({
+  products,
+  className,
+  isLoading,
+}: VariantStockTableProps & { isLoading?: boolean }) {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(0);
   const [inlineSearch, setInlineSearch] = useState('');
