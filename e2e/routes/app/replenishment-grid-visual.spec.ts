@@ -12,18 +12,29 @@ test.describe('Replenishment Grid Advanced Visual & A11y @mobile', () => {
   test.beforeEach(async ({ context }) => {
     // Hard cleaning of cache and service workers
     await context.addInitScript(() => {
-      window.addEventListener('load', () => {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(registrations => {
-            for (const registration of registrations) {
-              registration.unregister();
-            }
-          });
-        }
+      // Force default feature flags to ensure consistency
+      const defaultFlags = {
+        'mfa': 'false',
+        'ai_recommendations': 'true',
+        'presentation_mode': 'true',
+        'voice_commands': 'true',
+        'magic_up': 'true',
+        'e2e_tests': 'true', // enable for tests
+        'advanced_analytics': 'true',
+        'custom_kits_v2': 'false'
+      };
+      
+      Object.entries(defaultFlags).forEach(([flag, value]) => {
+        localStorage.setItem(`ff_${flag}`, value);
       });
-      // Clear localStorage/sessionStorage to avoid flag overrides
-      localStorage.clear();
-      sessionStorage.clear();
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          for (const registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
     });
   });
 
