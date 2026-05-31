@@ -483,13 +483,11 @@ export function useProductVideoGallery(productId?: string) {
           return;
         }
         const { data: tu } = supabase.storage.from('product-videos').getPublicUrl(td.path);
-        await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'product_videos',
-            operation: 'update',
-            id: video.id,
-            data: { url_thumbnail: tu.publicUrl },
-          },
+        await invokeExternalDbBridge({
+          table: 'product_videos',
+          operation: 'update',
+          id: video.id,
+          data: { url_thumbnail: tu.publicUrl },
         });
         queryClient.invalidateQueries({ queryKey: ['product-videos-ext', productId] });
         toast.success('Thumbnail regenerada!');
