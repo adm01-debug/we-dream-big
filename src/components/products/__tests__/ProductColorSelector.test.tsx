@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { ProductColorSelector, CompactColorDots } from '../ProductColorSelector';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -11,29 +11,30 @@ const mockColors = [
 
 describe('ProductColorSelector Tooltip Requirements', () => {
   it('does not have a native title attribute on swatches in ProductColorSelector', () => {
-    render(
+    const { getAllByRole } = render(
       <TooltipProvider>
         <ProductColorSelector colors={mockColors} />
       </TooltipProvider>
     );
 
-    const swatches = screen.getAllByRole('button');
+    const swatches = getAllByRole('button');
     swatches.forEach(swatch => {
       expect(swatch.getAttribute('title')).toBeNull();
     });
   });
 
   it('does not have a native title attribute on dots in CompactColorDots', () => {
-    render(
+    const { container } = render(
       <TooltipProvider>
         <CompactColorDots colors={mockColors} />
       </TooltipProvider>
     );
 
-    // CompactColorDots renders spans inside TooltipTrigger
-    const dots = screen.getByText('Vermelho').closest('div')?.querySelectorAll('span');
-    dots?.forEach(dot => {
-      if (dot.style.backgroundColor) { // It's a color dot
+    // CompactColorDots renders spans that act as triggers
+    const dots = container.querySelectorAll('span');
+    dots.forEach(dot => {
+      // Check if it's one of our color dots (they have a background color set)
+      if (dot.style.backgroundColor) {
         expect(dot.getAttribute('title')).toBeNull();
       }
     });
