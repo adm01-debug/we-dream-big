@@ -62,8 +62,8 @@ export function OptimizedImage({
       url.searchParams.set('q', '10');
       url.searchParams.set('blur', '10');
       const thumbUrl = url.toString();
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[OptimizedImage] Unsplash Image detected. Generated thumbnail: ${thumbUrl}`);
+      if (debug || process.env.NODE_ENV === 'development') {
+        console.info(`[OptimizedImage] Unsplash Image detected. Generated thumbnail: ${thumbUrl}`);
       }
       return thumbUrl;
     }
