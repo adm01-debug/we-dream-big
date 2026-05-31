@@ -9,6 +9,8 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 // Mock supabase
 vi.mock('@/integrations/supabase/client', () => ({
+  SUPABASE_URL: "https://test.supabase.co",
+  SUPABASE_PUBLISHABLE_KEY: "test-anon-key",
   supabase: {
     from: () => ({ insert: () => ({ select: () => Promise.resolve({ data: [], error: null }) }) }),
   },
