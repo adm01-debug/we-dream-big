@@ -3,27 +3,14 @@
  * Inclui preview expandido, quick-add e badges de urgência
  */
 
-import { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Heart,
-  Eye,
-  Share2,
-  GitCompare,
-  ShoppingCart,
-  Package,
-  Sparkles,
-  Clock,
-  TrendingUp,
-  ChevronRight,
-} from 'lucide-react';
+import { Heart, Eye, Share2, GitCompare, ShoppingCart, Package, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/hooks/products';
 import { PriceFreshnessBadge } from './PriceFreshnessBadge';
-import { ProductStatusBadge, UrgencyType } from './ProductStatusBadge';
+import { ProductStatusBadge } from './ProductStatusBadge';
 
 interface EnhancedProductCardProps {
   product: Product;

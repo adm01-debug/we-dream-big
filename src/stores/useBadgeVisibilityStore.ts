@@ -46,7 +46,7 @@ interface BadgeVisibilityStore {
   /**
    * Inicializa o store a partir das preferências do perfil do usuário.
    */
-  initializeFromProfile: (preferences: any) => void;
+  initializeFromProfile: (preferences: unknown) => void;
 }
 
 /**
@@ -179,8 +179,30 @@ export const useBadgeVisibilityStore = create<BadgeVisibilityStore>()(
       },
 
       initializeFromProfile: (preferences) => {
-        if (preferences?.badge_visibility) {
-          set({ routeSettings: preferences.badge_visibility, syncError: null });
+        if (
+          preferences !== null &&
+          typeof preferences === 'object' &&
+          !Array.isArray(preferences) &&
+          'badge_visibility' in (preferences as Record<string, unknown>)
+        ) {
+          const bv = (preferences as Record<string, unknown>).badge_visibility;
+          if (bv !== null && typeof bv === 'object' && !Array.isArray(bv)) {
+            const isValidEntry = (v: unknown): v is ThemeSettings =>
+              v !== null &&
+              typeof v === 'object' &&
+              !Array.isArray(v) &&
+              typeof (v as Record<string, unknown>).light === 'boolean' &&
+              typeof (v as Record<string, unknown>).dark === 'boolean';
+            const allValid = Object.values(bv as Record<string, unknown>).every(isValidEntry);
+            if (!allValid) {
+              console.warn('[BadgeVisibilityStore] Invalid badge_visibility structure, ignoring.');
+              return;
+            }
+            set({
+              routeSettings: bv as Record<string, ThemeSettings>,
+              syncError: null,
+            });
+          }
         }
       },
     }),
