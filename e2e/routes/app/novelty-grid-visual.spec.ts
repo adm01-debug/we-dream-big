@@ -81,7 +81,32 @@ test.describe('Novelty Grid Advanced Visual & A11y @mobile', () => {
           .include('div[role="list"]')
           .analyze();
         
-        expect(results.violations).toEqual([]);
+        if (results.violations.length > 0) {
+          console.error(`A11y Violations for viewport ${viewport.name}:`);
+          results.violations.forEach(v => {
+            console.error(`- [${v.id}] ${v.help} (${v.impact})`);
+            console.error(`  URL: ${v.helpUrl}`);
+            console.error(`  Nodes: ${v.nodes.length}`);
+          });
+        }
+        
+        expect(results.violations, `A11y violations found in ${viewport.name}: ${results.violations.map(v => v.id).join(', ')}`).toEqual([]);
+      });
+
+      test('Browser Preferences - Accessibility Consistency', async ({ page }) => {
+        // Simulate high contrast / large font via CSS injection
+        await page.addStyleTag({
+          content: `
+            html { font-size: 20px !important; }
+            * { transition: none !important; animation: none !important; }
+          `
+        });
+        
+        await page.goto('/novidades');
+        const grid = page.locator('div[role="list"]');
+        await grid.waitFor({ state: 'visible' });
+
+        await expect(grid).toHaveScreenshot(`novelty-grid-a11y-prefs-${viewport.name}.png`);
       });
 
       test('Keyboard Navigation', async ({ page }) => {
