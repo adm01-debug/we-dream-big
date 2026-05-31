@@ -156,14 +156,10 @@ export function useTechniqueStats() {
   return useQuery({
     queryKey: ['technique-stats'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('v_technique_stats')
-        .select('*')
-        .order('produtos_com_tecnica', { ascending: false });
-
-      if (error) throw new Error(error.message);
-      return data || [];
+      logger.warn('[DEPRECATED] useTechniqueStats() desativado: retornando []');
+      return [];
     },
+    retry: false,
     staleTime: 10 * 60 * 1000,
   });
 }
