@@ -389,13 +389,11 @@ export function useProductImageGallery({
       const ext = extImageMap.get(url);
       if (ext?.id && productId) {
         try {
-          await supabase.functions.invoke('external-db-bridge', {
-            body: {
-              table: 'product_images',
-              operation: 'update',
-              id: ext.id,
-              data: { is_active: false },
-            },
+          await invokeExternalDbBridge({
+            table: 'product_images',
+            operation: 'update',
+            id: ext.id,
+            data: { is_active: false },
           });
           queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
         } catch (err) {
