@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Play, Package } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ColorTooltipContent, colorTooltipClassName } from '../ColorTooltipContent';
 import { sortByColorGroup } from '@/utils/colorSorting';
 import { getCdnUrl } from '@/utils/image-utils';
 
@@ -20,13 +21,12 @@ interface ColorMedia {
   videos?: string[];
 }
 
-function ColorThumb({ src, alt, title }: { src: string; alt: string; title: string }) {
+function ColorThumb({ src, alt }: { src: string; alt: string }) {
   const [loaded, setLoaded] = useState(false);
   return (
     <img
       src={src}
       alt={alt}
-      title={title}
       className={cn(
         'h-full w-full object-cover transition-all duration-700 ease-out group-hover/color:scale-110',
         loaded ? 'scale-100 opacity-100 blur-0' : 'scale-105 opacity-40 blur-sm',
@@ -153,11 +153,16 @@ export function GalleryColorVariations({
                           <ColorThumb
                             src={getCdnUrl(color.images?.[0] || color.image || '', 'thumbnail')}
                             alt={color.name}
-                            title={color.name}
                           />
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent>{color.name}</TooltipContent>
+                      <TooltipContent
+                        side="top"
+                        sideOffset={8}
+                        className={colorTooltipClassName}
+                      >
+                        <ColorTooltipContent colorName={color.name} colorHex={color.hex} />
+                      </TooltipContent>
                     </Tooltip>
                   ) : (
                     <div className="h-full w-full" style={{ backgroundColor: color.hex }} />

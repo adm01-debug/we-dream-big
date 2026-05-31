@@ -37,7 +37,7 @@ export function PriceDropBadge({
     : null;
 
   return (
-    <TooltipProvider delayDuration={700}>
+    <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div

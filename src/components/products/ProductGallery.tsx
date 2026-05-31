@@ -237,7 +237,7 @@ export function ProductGallery({
                   <img
                     src={getCdnUrl(allMedia[selectedIndex], 'large')}
                     alt={`${productName} - Imagem ${selectedIndex + 1}`}
-                    title={productName}
+                    
                     className={cn(
                       'h-full w-full object-contain transition-all duration-700 ease-out',
                       zoom > 1 && 'cursor-grab',

@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Novelty Card Variations @mobile', () => {
   test.beforeEach(async ({ context }) => {
-    // Mock the novelties API to provide specific edge cases
     await context.route('**/functions/v1/novelties**', async route => {
       await route.fulfill({
         status: 200,
@@ -59,13 +58,11 @@ test.describe('Novelty Card Variations @mobile', () => {
     await page.goto('/novidades');
     const grid = page.locator('div[role="list"]');
     await grid.waitFor({ state: 'visible' });
-    
-    // Take screenshot of the variations
+
     await expect(grid).toHaveScreenshot('novelty-card-variations.png', {
       maxDiffPixelRatio: 0.05
     });
 
-    // Check specific heights to ensure alignment
     const cards = page.locator('div[role="listitem"]');
     const count = await cards.count();
     expect(count).toBe(3);
@@ -74,12 +71,11 @@ test.describe('Novelty Card Variations @mobile', () => {
       const card = cards.nth(i);
       const h3 = card.locator('h3');
       const priceContainer = card.locator('.min-h-\\[3\\.25rem\\]');
-      
+
       const h3Box = await h3.boundingBox();
       const priceBox = await priceContainer.boundingBox();
 
       if (h3Box) {
-        // Should have a consistent minimum height even with different content
         expect(h3Box.height).toBeGreaterThanOrEqual(40);
       }
       if (priceBox) {

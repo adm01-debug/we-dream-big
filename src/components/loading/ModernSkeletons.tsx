@@ -105,8 +105,8 @@ export function ProductCardSkeleton({
         {/* Footer: Price & Actions */}
         <div className="mt-auto flex items-center justify-between border-t border-border/30 pt-2">
           <div className="space-y-1">
-             <Skeleton className="h-3 w-12" animate={animate} />
-             <Skeleton className="h-2 w-full max-w-[100px]" animate={animate} />
+            <Skeleton className="h-3 w-12" animate={animate} />
+            <Skeleton className="h-2 w-full max-w-[100px]" animate={animate} />
           </div>
           <Skeleton className="h-8 w-8 rounded-full" animate={animate} />
         </div>

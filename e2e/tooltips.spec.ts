@@ -27,10 +27,22 @@ test.describe("Tooltip Regression Tests", () => {
         const tooltipTrigger = page.locator('[data-state="closed"], .tooltip-trigger').first();
         
         if (await tooltipTrigger.count() > 0) {
+          const startTime = Date.now();
           await tooltipTrigger.hover();
           
           const tooltip = page.locator('[role="tooltip"]');
-          await expect(tooltip).toBeVisible();
+          
+          // Timing assertions: never appear before 1000ms
+          await page.waitForTimeout(900);
+          await expect(tooltip).not.toBeVisible();
+          
+          // Should appear at or after 1000ms
+          await expect(tooltip).toBeVisible({ timeout: 2000 });
+          const endTime = Date.now();
+          const duration = endTime - startTime;
+          
+          expect(duration).toBeGreaterThanOrEqual(1000);
+          testInfo.annotations.push({ type: 'performance', description: `Tooltip appeared in ${duration}ms` });
           
           const styles = await tooltip.evaluate((el) => {
             const s = window.getComputedStyle(el);

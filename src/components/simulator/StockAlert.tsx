@@ -131,7 +131,7 @@ export function StockBadge({ product, quantity, className }: StockAlertProps) {
 
   return (
     <TooltipProvider>
-      <Tooltip delayDuration={700}>
+      <Tooltip>
         <TooltipTrigger asChild>
           <Badge
             variant="outline"

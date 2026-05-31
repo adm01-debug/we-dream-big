@@ -28,7 +28,7 @@ export function InstrumentationToggleButton() {
   );
 
   return (
-    <TooltipProvider delayDuration={700}>
+    <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

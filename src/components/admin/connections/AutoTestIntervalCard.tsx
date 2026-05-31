@@ -86,7 +86,7 @@ export function AutoTestIntervalCard() {
           </div>
         </div>
 
-        <TooltipProvider delayDuration={700}>
+        <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="inline-flex">
