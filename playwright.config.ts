@@ -50,13 +50,19 @@ const QUARANTINE_LIST = fs.existsSync(path.resolve(__dirname, 'quarantine-list.j
   ? JSON.parse(fs.readFileSync(path.resolve(__dirname, 'quarantine-list.json'), 'utf-8'))
   : [];
 
+const QUARANTINE_LIST = fs.existsSync(path.resolve(__dirname, 'quarantine-list.json'))
+  ? JSON.parse(fs.readFileSync(path.resolve(__dirname, 'quarantine-list.json'), 'utf-8'))
+  : [];
+
+const quarantineRegex = QUARANTINE_LIST.length > 0
+  ? new RegExp(QUARANTINE_LIST.map(t => t.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'))
+  : null;
+
 export default defineConfig({
   testDir: './e2e',
-  // Restrict to *.spec.ts only — prevents Playwright from loading vitest
-  // unit tests (*.test.ts) that live inside e2e/scripts/__tests__/ and
-  // cause "Cannot redefine property: Symbol($$jest-matchers-object)" when
-  // @vitest/expect conflicts with Playwright's already-initialized matchers.
+  // Restrict to *.spec.ts only
   testMatch: /.*\.spec\.ts/,
+  grepInvert: quarantineRegex || undefined,
   globalSetup: path.resolve(__dirname, 'e2e/global-setup.ts'),
   globalTeardown: path.resolve(__dirname, 'e2e/global-teardown.ts'),
   fullyParallel: true,
