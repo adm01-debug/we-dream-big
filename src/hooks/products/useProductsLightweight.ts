@@ -3,7 +3,7 @@
  *
  * Loads ~10x faster than useProducts (no color/variant enrichment).
  */
-import { dbBatch, dbInvoke } from '@/lib/db/postgrest';
+import { dbInvoke } from '@/lib/db/postgrest';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import {
   fetchPromobrindProductsLightweight,
@@ -161,7 +161,7 @@ async function fetchCatalogPage(
 
   let batchResults;
   try {
-    batchResults = await dbBatch(batchQueries);
+    batchResults = await Promise.all(batchQueries.map(q => dbInvoke(q)));
   } catch {
     // BUG-LOAD-01 FIX: O fallback anterior usava fetchPromobrindProductsLightweight
     // com limit=500, que faz short-circuit para UMA única query REST quando `limit`

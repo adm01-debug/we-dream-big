@@ -1,7 +1,7 @@
 /**
  * Fetch products with full enrichment (colors, images, variants, suppliers).
  */
-import { dbInvoke, dbBatch } from '@/lib/db/postgrest';
+import { dbInvoke } from '@/lib/db/postgrest';
 import { logger } from '@/lib/logger';
 import { type BatchQuery, type BatchResult, type InvokeResult } from './bridge';
 import {
@@ -334,7 +334,7 @@ async function enrichProducts(products: PromobrindProduct[], options?: { limit?:
 
   let batchResults: BatchResult[] = [];
   try {
-    batchResults = await dbBatch(batchQueries);
+    batchResults = await Promise.all(batchQueries.map(q => dbInvoke(q)));
   } catch (err) {
     logger.warn('[external-db] Batch enrichment failed, products will have basic data:', err);
     return;
