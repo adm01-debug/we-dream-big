@@ -10,11 +10,6 @@ interface CommemorativeDateFilterProps {
   compact?: boolean;
 }
 
-/**
- * Componente de filtro para datas comemorativas ativas
- * Mostra apenas datas que estão no período de campanha (baseado em campaign_start_days)
- * Suporta multi-seleção
- */
 export function CommemorativeDateFilter({
   selectedDates,
   onToggleDate,
@@ -24,7 +19,6 @@ export function CommemorativeDateFilter({
 }: CommemorativeDateFilterProps) {
   const { data: activeDates, isLoading, error } = useActiveCommemorativeDates();
 
-  // Não renderiza nada se não há datas ativas ou erro
   if (error) {
     console.error('Erro ao carregar datas comemorativas:', error);
     return null;
@@ -41,12 +35,11 @@ export function CommemorativeDateFilter({
   }
 
   if (!activeDates?.length) {
-    return null; // Sem datas ativas, não mostra o filtro
+    return null;
   }
 
   return (
     <div className={cn('space-y-2', className)}>
-      {/* Botão limpar se tiver seleção */}
       {selectedDates.length > 0 && onClearDates && (
         <div className="flex justify-end">
           <button
@@ -59,7 +52,6 @@ export function CommemorativeDateFilter({
         </div>
       )}
 
-      {/* Lista de datas */}
       <div
         className={cn('overflow-y-auto overscroll-contain pr-2', compact ? 'max-h-40' : 'max-h-56')}
         style={{ overscrollBehavior: 'contain' }}
@@ -95,7 +87,6 @@ function CommemorativeDateItem({
 
   return (
     <label className="group flex cursor-pointer items-center gap-3 py-1.5">
-      {/* Checkbox visual */}
       <div
         className={cn(
           'flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 transition-colors',
@@ -118,7 +109,6 @@ function CommemorativeDateItem({
         )}
       </div>
 
-      {/* Nome da data */}
       <span
         className={cn(
           'flex-1 truncate text-sm',
@@ -131,7 +121,6 @@ function CommemorativeDateItem({
         {date.name}
       </span>
 
-      {/* Countdown badge */}
       {daysUntilText && (
         <span className="flex-shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
           {daysUntilText}
@@ -144,7 +133,7 @@ function CommemorativeDateItem({
 function getDaysUntilText(daysUntil: number | null): string | null {
   if (daysUntil === null) return null;
   if (daysUntil === 0) return 'Hoje!';
-  if (daysUntil === 1) return 'Amanhã';
+  if (daysUntil === 1) return 'Amanh\u00e3';
   if (daysUntil <= 7) return `${daysUntil}d`;
   if (daysUntil <= 30) return `${Math.ceil(daysUntil / 7)}sem`;
   return `${Math.ceil(daysUntil / 30)}m`;
