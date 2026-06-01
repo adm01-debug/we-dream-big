@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-01T17:29:58.634Z",
-  "totalErrors": 72,
+  "generatedAt": "2026-06-01T17:52:24.000Z",
+  "totalErrors": 71,
   "counts": {
     "src/components/access/DevAccessDeniedPage.tsx": {
       "react-hooks/exhaustive-deps": 1
@@ -77,11 +77,6 @@
     },
     "src/components/mockup/approval/OffscreenLayoutCapture.tsx": {
       "react-hooks/exhaustive-deps": 1
-    },
-    "src/components/notifications/NotificationDrawer.tsx": {
-      "@typescript-eslint/no-explicit-any": 1,
-      "@typescript-eslint/no-unused-vars": 4,
-      "no-duplicate-imports": 1
     },
     "src/components/notifications/NotificationPreferences.tsx": {
       "@typescript-eslint/consistent-type-imports": 1
@@ -249,6 +244,10 @@
       "@typescript-eslint/no-explicit-any": 2,
       "@typescript-eslint/no-unused-vars": 1
     },
+    "src/components/search/__tests__/GlobalSearchPaletteTooltip.test.tsx": {
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unused-vars": 3
+    },
     "src/components/search/useGlobalSearch.ts": {
       "react-hooks/exhaustive-deps": 1
     },
@@ -347,6 +346,9 @@
     },
     "src/hooks/simulation/useSimulation.ts": {
       "react-hooks/exhaustive-deps": 2
+    },
+    "src/hooks/simulation/useTechniquePricing.ts": {
+      "react-hooks/exhaustive-deps": 1
     },
     "src/hooks/simulation/useTechniquePricingOptions.ts": {
       "@typescript-eslint/no-unused-vars": 1

@@ -15,7 +15,7 @@ import { toolsRoutes } from './tools-routes';
 import { OptimizedImageDemo } from './lazy-pages';
 
 // NProgress configuration
-NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.1 });
+NProgress.configure({ showSpinner: false, speed: 250, minimum: 0.2, trickleSpeed: 100 });
 
 const AppProviders = lazyWithRetry(() =>
   import('@/components/providers/AppProviders').then((m) => ({ default: m.AppProviders })),
