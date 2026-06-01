@@ -94,10 +94,13 @@ describe('GlobalSearchIdleState Rendering', () => {
     render(
       <BrowserRouter>
         <TooltipProvider>
-          <GlobalSearchIdleState {...propsWith3} />
+          <Command>
+            <GlobalSearchIdleState {...propsWith3} />
+          </Command>
         </TooltipProvider>
       </BrowserRouter>
     );
+
     
     expect(screen.getByText('3º')).toBeDefined();
   });
