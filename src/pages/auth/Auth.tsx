@@ -288,15 +288,6 @@ export default function Auth() {
                   className={authButtonClass(
                     'h-8 rounded-lg bg-white/5 px-3 text-[10px] uppercase tracking-widest text-white/40 hover:bg-white/10 hover:text-white'
                   )}
-                  onClick={() => navigate('/admin/status')}
-                >
-                  Status do Sistema
-                </button>
-                <button
-                  type="button"
-                  className={authButtonClass(
-                    'h-8 rounded-lg bg-white/5 px-3 text-[10px] uppercase tracking-widest text-white/40 hover:bg-white/10 hover:text-white'
-                  )}
                   onClick={() => window.location.reload()}
                 >
                   Recarregar

@@ -34,6 +34,18 @@ export interface Technique {
   [key: string]: unknown;
 }
 
+export function createDefaultArea(): PersonalizationArea {
+  return {
+    id: crypto.randomUUID(),
+    name: 'Área 1',
+    positionX: 50,
+    positionY: 50,
+    logoWidth: 10,
+    logoHeight: 5,
+    logoPreview: null,
+  };
+}
+
 export interface GeneratedMockup {
   id: string;
   product_id: string | null;
@@ -248,7 +260,7 @@ export async function generateMockupApi(
   };
 }
 
-export function downloadMockup(mockupUrl: string, product: { sku?: string | null }, technique: Technique): void {
+export function downloadMockupAsPdf(mockupUrl: string, product: { sku?: string | null }, technique: Technique): void {
   const safeSku = product.sku?.replace(/[^a-zA-Z0-9]/g, '-') || 'mockup';
   const safeTechnique = (technique.code || technique.name).replace(/[^a-zA-Z0-9]/g, '-');
   const fileName = `mockup-${safeSku}-${safeTechnique}.pdf`;
