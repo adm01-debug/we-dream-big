@@ -1,12 +1,51 @@
 {
-  "generatedAt": "2026-05-31T21:30:44.376Z",
-  "totalErrors": 96,
+  "generatedAt": "2026-06-01T01:16:01.681Z",
+  "totalErrors": 432,
   "counts": {
+    "src/components/admin/security/HardeningHealthCard.tsx": {
+      "TS2304": 1
+    },
+    "src/components/admin/suppliers-manager/useSuppliersManager.ts": {
+      "TS2339": 7,
+      "TS2345": 4,
+      "TS2769": 7
+    },
+    "src/components/command/GlobalCommandBar.tsx": {
+      "TS2345": 1
+    },
+    "src/components/dev/__tests__/BridgeMetricsOverlay.test.tsx": {
+      "TS2307": 2
+    },
+    "src/components/dev/__tests__/DevOnlyBridgeOverlay.test.tsx": {
+      "TS2307": 1
+    },
+    "src/components/dev/metrics/BridgeMetricsSummary.tsx": {
+      "TS2307": 1
+    },
+    "src/components/expert/chat/useExpertChat.ts": {
+      "TS2339": 6,
+      "TS2345": 3,
+      "TS2448": 3,
+      "TS2454": 3,
+      "TS2769": 7
+    },
     "src/components/mockup/approval/OffscreenLayoutCapture.tsx": {
       "TS2345": 1
     },
+    "src/components/novelties/NoveltiesSection.tsx": {
+      "TS2339": 6
+    },
+    "src/components/novelties/NoveltyStatsCards.tsx": {
+      "TS2339": 8
+    },
+    "src/components/replenishments/ReplenishmentStatsCards.tsx": {
+      "TS2322": 1
+    },
     "src/components/search/AdvancedSearch.tsx": {
       "TS2345": 1
+    },
+    "src/components/ui/sonner.tsx": {
+      "TS2367": 1
     },
     "src/hooks/admin/useAllowedIPs.ts": {
       "TS2322": 5,
@@ -26,6 +65,27 @@
     "src/hooks/auth/useAccessSecurity.ts": {
       "TS2345": 1
     },
+    "src/hooks/collections/useExternalCollections.ts": {
+      "TS2322": 4,
+      "TS2345": 5,
+      "TS2352": 1,
+      "TS2769": 8
+    },
+    "src/hooks/gravacao/useTecnicasGravacao.ts": {
+      "TS2345": 7,
+      "TS2352": 1,
+      "TS2353": 1,
+      "TS2769": 9
+    },
+    "src/hooks/gravacao/useVariantesGravacao.ts": {
+      "TS2345": 6,
+      "TS2353": 2,
+      "TS2769": 6
+    },
+    "src/hooks/intelligence/useExternalDatabase.ts": {
+      "TS2345": 4,
+      "TS2769": 4
+    },
     "src/hooks/intelligence/useSalesGoals.ts": {
       "TS2322": 10,
       "TS2345": 5,
@@ -35,23 +95,76 @@
     "src/hooks/mockup/mockupGenerationService.ts": {
       "TS2322": 1
     },
+    "src/hooks/products/useCatalogRealStats.ts": {
+      "TS2339": 1,
+      "TS2345": 2,
+      "TS2769": 3
+    },
     "src/hooks/products/useColorSystem.ts": {
-      "TS2345": 1,
+      "TS2339": 15,
+      "TS2345": 3,
       "TS2352": 1,
-      "TS2769": 1
+      "TS2769": 3
+    },
+    "src/hooks/products/useNovelties.ts": {
+      "TS2322": 1,
+      "TS2339": 9,
+      "TS2345": 14,
+      "TS2352": 1,
+      "TS2769": 16
+    },
+    "src/hooks/products/useProductImages.ts": {
+      "TS2345": 6,
+      "TS2352": 3,
+      "TS2769": 3
     },
     "src/hooks/products/useProductInsights.ts": {
       "TS18047": 1,
       "TS2531": 1
     },
+    "src/hooks/products/useReplenishments.ts": {
+      "TS2345": 5,
+      "TS2352": 3,
+      "TS2769": 9
+    },
+    "src/hooks/products/useSimilarProducts.ts": {
+      "TS2339": 3,
+      "TS2345": 8,
+      "TS2352": 2,
+      "TS2769": 5
+    },
+    "src/hooks/products/useStockAlerts.ts": {
+      "TS2345": 1,
+      "TS2769": 1
+    },
+    "src/hooks/products/useSupplierFiscalData.ts": {
+      "TS2322": 7,
+      "TS2339": 4,
+      "TS2345": 13,
+      "TS2353": 1,
+      "TS2769": 11
+    },
+    "src/hooks/products/useSupplierTrust.ts": {
+      "TS2339": 6,
+      "TS2345": 5,
+      "TS2769": 3
+    },
     "src/hooks/quotes/useQuoteBuilderState.ts": {
       "TS2352": 1
+    },
+    "src/hooks/simulation/useExternalSimulator.ts": {
+      "TS2345": 8,
+      "TS2769": 7
+    },
+    "src/hooks/simulation/useGravacaoV2.ts": {
+      "TS2345": 4,
+      "TS2589": 4,
+      "TS2769": 4
     },
     "src/hooks/simulation/usePrintAreas.ts": {
       "TS2322": 1,
       "TS2345": 6,
-      "TS2589": 4,
-      "TS2769": 5
+      "TS2769": 4
     },
     "src/hooks/simulation/useSimulation.ts": {
       "TS2345": 1,
@@ -61,6 +174,16 @@
       "TS2339": 16,
       "TS2345": 1,
       "TS2769": 1
+    },
+    "src/hooks/tecnicas/useTabelasPreco.ts": {
+      "TS2345": 10,
+      "TS2352": 1,
+      "TS2769": 5
+    },
+    "src/hooks/tecnicas/useTecnicaMutations.ts": {
+      "TS2322": 1,
+      "TS2345": 5,
+      "TS2769": 4
     },
     "src/lib/cloud-status.ts": {
       "TS2339": 1,
@@ -73,6 +196,13 @@
       "TS2769": 1
     },
     "src/lib/personalization/repositories/technique.repository.ts": {
+      "TS2322": 1,
+      "TS2339": 1
+    },
+    "src/pages/admin/AdminTemasPage.tsx": {
+      "TS2367": 1
+    },
+    "src/pages/collections/CollectionsPage.tsx": {
       "TS2322": 1,
       "TS2339": 1
     },
