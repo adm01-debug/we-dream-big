@@ -13,6 +13,8 @@ import {
   Settings2,
   ArrowLeft,
   Download,
+  Calendar as CalendarIcon,
+  Filter,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -24,6 +26,11 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useNotifications, type WorkspaceNotification } from '@/hooks/ui';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 import { useAriaLive } from '@/components/a11y/AriaLive';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -248,9 +255,13 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
       page,
       search,
       category,
+      unreadOnly,
+      dateRange,
       setPage,
       setSearch,
       setCategory,
+      setUnreadOnly,
+      setDateRange,
       markAsRead: baseMarkAsRead,
       undoMarkAsRead,
       markAllAsRead,
@@ -263,6 +274,8 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
     const [showPreferences, setShowPreferences] = useState(false);
     const [localSearch, setLocalSearch] = useState(search);
     const [localCategory, setLocalCategory] = useState(category);
+    const [localUnreadOnly, setLocalUnreadOnly] = useState(unreadOnly);
+    const [localDateRange, setLocalDateRange] = useState(dateRange);
     const prevCountRef = React.useRef(unreadCount);
     const { announce } = useAriaLive();
     const prevRefetchingRef = useRef(false);
@@ -292,14 +305,16 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
       prevRefetchingRef.current = isRefetching;
     }, [isRefetching, unreadCount, announce]);
 
-    // Debounced search and category update
+    // Debounced search and filters update
     useEffect(() => {
       const timeout = setTimeout(() => {
         setSearch(localSearch);
         setCategory(localCategory);
+        setUnreadOnly(localUnreadOnly);
+        setDateRange(localDateRange);
       }, 400);
       return () => clearTimeout(timeout);
-    }, [localSearch, localCategory, setSearch, setCategory]);
+    }, [localSearch, localCategory, localUnreadOnly, localDateRange, setSearch, setCategory, setUnreadOnly, setDateRange]);
 
     const markAsRead = useCallback(async (id: string) => {
       await baseMarkAsRead(id);
@@ -311,11 +326,25 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
       });
     }, [baseMarkAsRead, undoMarkAsRead]);
 
+    const handleClearFilters = () => {
+      setLocalSearch('');
+      setLocalCategory('all');
+      setLocalUnreadOnly(false);
+      setLocalDateRange({ from: undefined, to: undefined });
+    };
+
+    const hasActiveFilters = localSearch !== '' || localCategory !== 'all' || localUnreadOnly || localDateRange.from || localDateRange.to;
+
     const handleExportCSV = useCallback(() => {
       if (notifications.length === 0) return;
       
       const headers = ['Data', 'Título', 'Mensagem', 'Tipo', 'Categoria', 'Lida'];
-      const rows = notifications.map(n => [
+      const filteredNotifications = notifications.filter(n => {
+        // Since we are using filtered list from hook, we just use notifications
+        // but it's good to note we export the currently visible list.
+        return true; 
+      });
+      const rows = filteredNotifications.map(n => [
         new Date(n.created_at).toLocaleString('pt-BR'),
         n.title,
         n.message,
@@ -588,6 +617,65 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
                       <TabsTrigger value="marketing">Marketing</TabsTrigger>
                     </TabsList>
                   </Tabs>
+
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="unread-only"
+                        checked={localUnreadOnly}
+                        onCheckedChange={setLocalUnreadOnly}
+                      />
+                      <Label htmlFor="unread-only" className="text-xs">Não lidas</Label>
+                    </div>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={cn(
+                            "h-8 justify-start text-left font-normal text-xs",
+                            !localDateRange.from && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-3 w-3" />
+                          {localDateRange?.from ? (
+                            localDateRange.to ? (
+                              <>
+                                {format(localDateRange.from, "dd/MM/yy")} -{" "}
+                                {format(localDateRange.to, "dd/MM/yy")}
+                              </>
+                            ) : (
+                              format(localDateRange.from, "dd/MM/yy")
+                            )
+                          ) : (
+                            <span>Intervalo de datas</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          initialFocus
+                          mode="range"
+                          defaultMonth={localDateRange?.from}
+                          selected={localDateRange}
+                          onSelect={setLocalDateRange}
+                          numberOfMonths={1}
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    {hasActiveFilters && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 px-2 text-xs text-muted-foreground"
+                        onClick={handleClearFilters}
+                      >
+                        Limpar
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {isLoading && notifications.length === 0 ? (
