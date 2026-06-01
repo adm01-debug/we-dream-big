@@ -359,11 +359,36 @@ export async function tryExecuteRestNative<T>(
       return result;
     } catch (e) {
       const msg = (e as Error).message;
-      if (attempt < REST_NATIVE_RETRY_COUNT && isRetryableError(msg)) { logger.warn(`[rest-native] transient error for ${resolvedTable}, retrying: ${msg}`); await sleep(REST_NATIVE_RETRY_DELAY_MS); continue; }
-      metrics.fail++; metrics.lastError = msg; metrics.lastErrorAt = Date.now();
-      recordBridgeCall({ bridge: 'external-db-bridge', op: 'select', target: options.table, durationMs: Date.now() - t0, reqBytes: estimatePayloadBytes(options.filters ?? null), respBytes: 0, ok: false, errorMessage: msg, requestId: newRequestId() });
-      if (ctx?.bridgeEnabled) { logger.debug(`[rest-native] error for table=${options.table}, falling back to bridge: ${msg}`); }
-      else { reportSilentEmpty({ reason: 'rest_error', table: options.table, operation: options.operation, message: msg }); }
+      if (attempt < REST_NATIVE_RETRY_COUNT && isRetryableError(msg)) {
+        logger.warn(`[rest-native] transient error for ${resolvedTable}, retrying: ${msg}`);
+        await sleep(REST_NATIVE_RETRY_DELAY_MS);
+        continue;
+      }
+      metrics.fail++;
+      metrics.lastError = msg;
+      metrics.lastErrorAt = Date.now();
+      recordBridgeCall({
+        bridge: 'external-db-bridge',
+        op: 'select',
+        target: options.table,
+        durationMs: Date.now() - t0,
+        reqBytes: estimatePayloadBytes(options.filters ?? null),
+        respBytes: 0,
+        ok: false,
+        errorMessage: msg,
+        requestId: newRequestId(),
+      });
+      if (ctx?.bridgeEnabled) {
+        logger.debug(`[rest-native] error for table=${options.table}, falling back to bridge: ${msg}`);
+      } else {
+        const reason = msg.includes('410') || msg.includes('Gone') ? 'gone_410' : 'rest_error';
+        reportSilentEmpty({
+          reason,
+          table: options.table,
+          operation: options.operation,
+          message: msg,
+        });
+      }
       return null;
     }
   }
