@@ -1,4 +1,4 @@
-import { dbInvoke } from '@/lib/db/postgrest';
+import { dbInvoke, shouldRetry } from '@/lib/db/postgrest';
 import { useQuery } from '@tanstack/react-query';
 import { getProductImageUrl, type PromobrindProduct } from '@/lib/external-db/product-types';
 
@@ -28,7 +28,10 @@ export function useStockAlerts(lowStockThreshold = 50, criticalStockThreshold = 
         select: STOCK_ALERT_SELECT,
         filters: {
           is_active: true,
-          stock_quantity: `lt.${lowStockThreshold}`,
+          // FIX: era `lt.${lowStockThreshold}` (string) que dbInvoke tratava como
+          // .eq(col, 'lt.50') → PostgREST gerava stock_quantity=eq.lt.50 → 400.
+          // Agora usa objeto de operador que dbInvoke sabe traduzir para .lt()
+          stock_quantity: { op: 'lt', value: lowStockThreshold },
         },
         orderBy: { column: 'stock_quantity', ascending: true },
         limit: 50,
@@ -53,6 +56,8 @@ export function useStockAlerts(lowStockThreshold = 50, criticalStockThreshold = 
       });
     },
     staleTime: 5 * 60 * 1000,
-    retry: 2,
+    // FIX: era retry: 2 — retentava 400 Bad Request (erro do cliente) 3x.
+    // shouldRetry só retenta 5xx (erros do servidor), nunca 4xx.
+    retry: shouldRetry,
   });
 }
