@@ -160,7 +160,7 @@ export function GlobalSearchPalette() {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            Assistente de voz IA <kbd className="ml-1 text-[9px] opacity-60">Ctrl+Shift+V</kbd>
+            Fale com o Flow <kbd className="ml-1 text-[9px] opacity-60">Ctrl+Shift+V</kbd>
           </TooltipContent>
         </Tooltip>
       </div>
