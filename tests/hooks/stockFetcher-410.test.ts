@@ -42,8 +42,8 @@ describe('Resiliência a 410 Gone', () => {
     // Importar o hook dinamicamente para garantir que use o mock
     const { useNoveltiesWithDetails } = await import('@/hooks/products/useNovelties');
     
-    // Como os hooks do React-Query precisam de um Provider, testamos a lógica da queryFn
-    // No caso real, faríamos um renderHook com wrapper, mas aqui validamos a resiliência no hook migrado
-    // (Nota: esta implementação de teste depende de como o hook exporta sua lógica)
+    // Simular a queryFn
+    const { useQuery } = await import('@tanstack/react-query');
+    // ...
   });
 });
