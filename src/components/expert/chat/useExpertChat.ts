@@ -253,6 +253,18 @@ export function useExpertChat({
     };
   }, [isOpen]);
 
+
+  // handleAutoSend must be declared BEFORE any useEffect/useCallback that
+  // references it, otherwise the const is in the Temporal Dead Zone when
+  // React evaluates the dependency array during render.
+  const handleAutoSend = useCallback((text: string) => {
+    setInput(text);
+    setTimeout(() => {
+      const sendBtn = document.querySelector('[data-oracle-send]') as HTMLButtonElement;
+      sendBtn?.click();
+    }, 50);
+  }, []);
+
   // Proactive filter feedback
   const prevFilterKeyRef = useRef('');
   const filterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -436,14 +448,6 @@ export function useExpertChat({
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-  }, []);
-
-  const handleAutoSend = useCallback((text: string) => {
-    setInput(text);
-    setTimeout(() => {
-      const sendBtn = document.querySelector('[data-oracle-send]') as HTMLButtonElement;
-      sendBtn?.click();
-    }, 50);
   }, []);
 
   const sendMessage = async () => {
