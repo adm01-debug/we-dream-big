@@ -9,6 +9,7 @@
  */
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { dbInvoke } from '@/lib/db/postgrest';
 import { TECNICAS_QUERY_OPTIONS } from '@/lib/query-config';
 import { TECNICAS_QUERY_KEYS } from '@/hooks/tecnicas/keys';
 import type { TecnicaUnificada, TecnicaResumo, TecnicaFiltros } from '@/types/tecnica-unificada';
@@ -89,25 +90,14 @@ function bridgeToTecnicaUnificada(row: TecnicaBridgeResponse): TecnicaUnificada 
  * Busca técnicas do BD EXTERNO via edge function (já passa por adapter).
  */
 async function fetchTecnicasExterno(): Promise<TecnicaBridgeResponse[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table: 'tecnica_gravacao',
-      operation: 'select',
-      orderBy: { column: 'ordem_exibicao', ascending: true },
-      limit: 200,
-    },
+  const result = await dbInvoke<any>({
+    table: 'tecnica_gravacao',
+    operation: 'select',
+    orderBy: { column: 'ordem_exibicao', ascending: true },
+    limit: 200,
   });
 
-  if (error) {
-    console.error('Erro ao buscar técnicas do BD externo:', error);
-    throw error;
-  }
-
-  if (!data?.success) {
-    throw new Error(data?.error || 'Erro desconhecido ao buscar técnicas');
-  }
-
-  return adaptTecnicaRows(data.data?.records || []);
+  return adaptTecnicaRows(result.records);
 }
 
 /**
@@ -202,18 +192,14 @@ export function useTecnicaById(id: string | undefined) {
     queryFn: async (): Promise<TecnicaUnificada | null> => {
       if (!id) return null;
 
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'tecnica_gravacao',
-          operation: 'select',
-          filters: { id },
-          limit: 1,
-        },
+      const result = await dbInvoke<any>({
+        table: 'tecnica_gravacao',
+        operation: 'select',
+        filters: { id },
+        limit: 1,
       });
 
-      if (error) throw error;
-
-      const records = data?.data?.records || [];
+      const records = result.records;
       return records.length > 0 ? bridgeToTecnicaUnificada(adaptTecnicaRow(records[0])) : null;
     },
     ...TECNICAS_QUERY_OPTIONS,
@@ -229,18 +215,14 @@ export function useTecnicaByCodigo(codigo: string | undefined) {
     queryFn: async (): Promise<TecnicaUnificada | null> => {
       if (!codigo) return null;
 
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'tecnica_gravacao',
-          operation: 'select',
-          filters: { codigo },
-          limit: 1,
-        },
+      const result = await dbInvoke<any>({
+        table: 'tecnica_gravacao',
+        operation: 'select',
+        filters: { codigo },
+        limit: 1,
       });
 
-      if (error) throw error;
-
-      const records = data?.data?.records || [];
+      const records = result.records;
       return records.length > 0 ? bridgeToTecnicaUnificada(adaptTecnicaRow(records[0])) : null;
     },
     ...TECNICAS_QUERY_OPTIONS,

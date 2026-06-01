@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { dbInvoke } from '@/lib/db/postgrest';
 // ... keep existing imports
 import { logger } from '@/lib/logger';
 
@@ -35,19 +36,21 @@ export interface ColorFilters {
 // Migrated from supabase.functions.invoke('external-db-bridge') to dbInvoke
 // (2026-05-30) — uses REST native PostgREST path, zero Edge Function calls.
 async function fetchExternalColors() {
-  const groupsResult = await supabase
-    .from('color_groups')
-    .select('*')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true });
-  const groups = groupsResult.data || [];
+  const groupsResult = await dbInvoke<any>({
+    table: 'color_groups',
+    operation: 'select',
+    filters: { is_active: true },
+    orderBy: { column: 'sort_order', ascending: true },
+  });
+  const groups = groupsResult.records || [];
 
-  const variationsResult = await supabase
-    .from('color_variations')
-    .select('*')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true });
-  const variations = variationsResult.data || [];
+  const variationsResult = await dbInvoke<any>({
+    table: 'color_variations',
+    operation: 'select',
+    filters: { is_active: true },
+    orderBy: { column: 'sort_order', ascending: true },
+  });
+  const variations = variationsResult.records || [];
 
   const groupsWithVariations: ColorGroup[] = groups.map((group) => ({
     id: group.id,
@@ -76,11 +79,12 @@ export function useColorSystem() {
     queryFn: async () => {
       const groups = await fetchExternalColors();
 
-      const { data: nuances, error: nuancesError } = await supabase
-        .from('color_nuances')
-        .select('id, name, slug')
-        .eq('is_active', true)
-        .order('sort_order');
+      const { records: nuances, count } = await dbInvoke<any>({
+        table: 'color_nuances',
+        operation: 'select',
+        filters: { is_active: true },
+        orderBy: { column: 'sort_order' },
+      });
 
       if (nuancesError) {
         logger.warn('Nuances nao encontradas localmente:', nuancesError);

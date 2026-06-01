@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { dbInvoke, dbInvokeSingle, dbInvokeDelete } from '@/lib/db/postgrest';
 import { toast } from 'sonner';
 
 export interface SupplierSource {
@@ -29,10 +30,17 @@ export type SupplierSourceInput = Omit<SupplierSource, 'id' | 'created_at' | 'up
 const BRIDGE_TABLE = 'variant_supplier_sources';
 
 async function bridgeInvoke(body: Record<string, unknown>) {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', { body });
-  if (error) throw new Error(error.message);
-  if (!data?.success) throw new Error(data?.error || 'Erro na operação');
-  return data;
+  return dbInvoke({
+    table: body.table as string,
+    operation: body.operation as any,
+    data: body.data as any,
+    id: body.id as string,
+    filters: body.filters as any,
+    select: body.select as string,
+    orderBy: body.orderBy as any,
+    limit: body.limit as number,
+    offset: body.offset as number,
+  });
 }
 
 export function useProductSupplierSources(productId?: string) {
