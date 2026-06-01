@@ -11,7 +11,7 @@ vi.mock('@/integrations/supabase/client', () => {
 });
 
 import { __mockFrom as mockFrom } from '@/integrations/supabase/client';
-import { dbInvoke } from '@/lib/external-db/rest-native';
+import { tryExecuteRestNative as dbInvoke } from '@/lib/external-db/rest-native';
 import { reportSilentEmpty } from '@/lib/external-db/silent-empty-report';
 
 // Mock silent-empty-report
