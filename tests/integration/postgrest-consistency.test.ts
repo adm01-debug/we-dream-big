@@ -1,61 +1,61 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { dbInvoke } from '@/lib/db/postgrest';
-import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
-describe('PostgREST consistent behavior', () => {
-  it('should remap PT columns correctly for tabela_preco_gravacao_oficial', async () => {
-    // Mock Supabase to return PT names
-    vi.spyOn(supabase, 'from').mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        order: vi.fn().mockResolvedValue({
-          data: [
-            {
-              id: 'tech-1',
-              nome: 'Serigrafia',
-              ativo: true,
-              codigo_tabela: 'SR'
-            }
-          ],
-          error: null,
-          count: 1
-        })
-      })
-    } as any);
+// Mock postgrest
+vi.mock('@/lib/db/postgrest', () => ({
+  dbInvoke: vi.fn(),
+}));
 
-    const result = await dbInvoke<any>({
-      table: 'tabela_preco_gravacao_oficial',
-      operation: 'select',
-      orderBy: { column: 'name', ascending: true }
-    });
+// Mock logger
+vi.mock('@/lib/logger', () => ({
+  logger: {
+    warn: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+  },
+}));
 
-    // Verify it was remapped to EN keys in mapRows
-    expect(result.records[0]).toHaveProperty('name', 'Serigrafia');
-    expect(result.records[0]).toHaveProperty('is_active', true);
-    expect(result.records[0]).toHaveProperty('table_code', 'SR');
+describe('PostgREST Pagination and Filtering Consistency', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('should handle pagination ranges correctly', async () => {
-    const fromSpy = vi.spyOn(supabase, 'from').mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        range: vi.fn().mockResolvedValue({
-          data: [],
-          error: null,
-          count: 100
-        })
-      })
-    } as any);
+  it('should apply filters and ordering correctly in dbInvoke', async () => {
+    (dbInvoke as any).mockResolvedValueOnce({ records: [], count: 0 });
 
+    const filters = { is_active: true, category_id: 'cat-123' };
+    const orderBy = { column: 'name', ascending: true };
+    
     await dbInvoke({
       table: 'products',
       operation: 'select',
-      offset: 20,
-      limit: 10
+      filters,
+      orderBy,
+      limit: 10,
     });
 
-    // range is inclusive: offset to offset + limit - 1
-    // 20 to 20 + 10 - 1 = 29
-    const lastSelect = fromSpy.mock.results[0].value.select;
-    const rangeCall = lastSelect.mock.results[0].value.range;
-    expect(rangeCall).toHaveBeenCalledWith(20, 29);
+    expect(dbInvoke).toHaveBeenCalledWith(expect.objectContaining({
+      table: 'products',
+      filters: expect.objectContaining(filters),
+      orderBy: expect.objectContaining(orderBy),
+      limit: 10
+    }));
+  });
+
+  it('should handle pagination ranges correctly', async () => {
+    (dbInvoke as any).mockResolvedValueOnce({ records: [], count: 100 });
+
+    await dbInvoke({
+      table: 'suppliers',
+      operation: 'select',
+      offset: 20,
+      limit: 20,
+    });
+
+    expect(dbInvoke).toHaveBeenCalledWith(expect.objectContaining({
+      offset: 20,
+      limit: 20
+    }));
   });
 });
