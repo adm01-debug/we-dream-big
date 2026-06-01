@@ -71,7 +71,8 @@ describe('rest-native fallback and 410 handling', () => {
 
     const result = await dbInvoke({ table: 'products', operation: 'select' });
 
-    expect(result.data).toEqual({ records: mockData, count: 1 });
+    expect(result!.records).toEqual(mockData);
+    expect(result!.count).toBe(1);
     expect(reportSilentEmpty).not.toHaveBeenCalled();
   });
 });
