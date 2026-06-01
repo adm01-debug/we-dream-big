@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GlobalSearchPalette } from '../GlobalSearchPalette';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -22,11 +22,11 @@ vi.mock('../useGlobalSearch', () => ({
     setQuery: vi.fn(),
     handleSelect: mockHandleSelect,
     groupedResults: {
-      product: [
-        { id: 'res-1', title: 'Result 1', href: '/product/1', type: 'product' },
-        { id: 'res-2', title: 'Result 2', href: '/product/2', type: 'product' },
-      ],
-    },
+        product: [
+            { id: 'res-1', title: 'Result 1', href: '/product/1', type: 'product' },
+            { id: 'res-2', title: 'Result 2', href: '/product/2', type: 'product' },
+        ]
+    }
   }),
 }));
 
@@ -50,7 +50,7 @@ describe('GlobalSearchPalette Shortcuts', () => {
             <GlobalSearchPalette />
           </TooltipProvider>
         </BrowserRouter>
-      </ThemeContext.Provider>,
+      </ThemeContext.Provider>
     );
 
     // Simulate keydown '1' on document
@@ -67,7 +67,7 @@ describe('GlobalSearchPalette Shortcuts', () => {
             <GlobalSearchPalette />
           </TooltipProvider>
         </BrowserRouter>
-      </ThemeContext.Provider>,
+      </ThemeContext.Provider>
     );
 
     // Simulate keydown '2' on document

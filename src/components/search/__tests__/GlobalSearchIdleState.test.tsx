@@ -15,15 +15,14 @@ describe('GlobalSearchIdleState Rendering', () => {
         sku: 'CAN-001',
         view_count: 100,
         image_url: 'https://example.com/image.jpg',
-        category_name: 'Cozinha',
+        category_name: 'Cozinha'
       },
       {
         id: '2',
         name: 'Caneca Mid',
         sku: 'CAN-002',
         view_count: 50,
-        // No image to test RankBadge fallback
-      },
+      }
     ],
     contextualSuggestions: [],
     quickSuggestions: [],
@@ -42,7 +41,7 @@ describe('GlobalSearchIdleState Rendering', () => {
             <GlobalSearchIdleState {...mockProps} />
           </Command>
         </TooltipProvider>
-      </BrowserRouter>,
+      </BrowserRouter>
     );
 
     const img = screen.getByAltText('Caneca Top');
@@ -50,7 +49,7 @@ describe('GlobalSearchIdleState Rendering', () => {
     expect(img.getAttribute('src')).toBe('https://example.com/image.jpg');
   });
 
-  it('renders TOP 1 badge for the first item', () => {
+  it('renders TOP 1 banner for the first item', () => {
     render(
       <BrowserRouter>
         <TooltipProvider>
@@ -58,22 +57,21 @@ describe('GlobalSearchIdleState Rendering', () => {
             <GlobalSearchIdleState {...mockProps} />
           </Command>
         </TooltipProvider>
-      </BrowserRouter>,
+      </BrowserRouter>
     );
 
     expect(screen.getByText(/TOP 1/i)).toBeDefined();
   });
 
   it('renders RankBadge when image is missing', () => {
-    // If I add a 3rd item:
     const propsWith3 = {
       ...mockProps,
       popularProducts: [
         ...mockProps.popularProducts,
-        { id: '3', name: 'Caneca Low', sku: 'CAN-003', view_count: 10 },
-      ],
+        { id: '3', name: 'Caneca Low', sku: 'CAN-003', view_count: 10 }
+      ]
     };
-
+    
     render(
       <BrowserRouter>
         <TooltipProvider>
@@ -81,9 +79,9 @@ describe('GlobalSearchIdleState Rendering', () => {
             <GlobalSearchIdleState {...propsWith3} />
           </Command>
         </TooltipProvider>
-      </BrowserRouter>,
+      </BrowserRouter>
     );
-
+    
     expect(screen.getByText('3º')).toBeDefined();
   });
 });

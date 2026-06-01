@@ -170,6 +170,21 @@ export default defineConfig({
       grepInvert: /@smoke/,
     },
     {
+      name: 'firefox-authed',
+      use: { ...devices['Desktop Firefox'], storageState: STORAGE_STATE },
+      dependencies: ['setup'],
+      testMatch: /flows\/global-search-comprehensive\.spec\.ts/,
+      grepInvert: /@smoke/,
+    },
+    {
+      name: 'webkit-authed',
+      use: { ...devices['Desktop Safari'], storageState: STORAGE_STATE },
+      dependencies: ['setup'],
+      testMatch: /flows\/global-search-comprehensive\.spec\.ts/,
+      grepInvert: /@smoke/,
+    },
+
+    {
       // Smoke gate — 1 teste por funcionalidade, ordem fixa, workers=1.
       // SEM retries: gate determinístico — flakiness deve falhar visível.
       // Executar isoladamente: `npm run test:e2e:smoke` ou
