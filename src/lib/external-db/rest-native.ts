@@ -332,9 +332,12 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
     query = query.order(remapOrderByCol(tableName, options.orderBy.column), { ascending: options.orderBy.ascending ?? true });
   }
   if (typeof options.limit === 'number') {
-    const offset = options.offset ?? 0; query = query.range(offset, offset + options.limit - 1);
+    const offset = options.offset ?? 0;
+    query = query.range(offset, offset + options.limit - 1);
   } else if (typeof options.offset === 'number' && options.offset > 0) {
-    logger.warn(`[rest-native] PAGINATION WARNING: offset=${options.offset} without limit on table=${tableName}. Capping at ${OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER}.`);
+    logger.warn(
+      `[rest-native] PAGINATION WARNING: offset=${options.offset} without limit on table=${tableName}. Capping at ${OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER}.`,
+    );
     query = query.range(options.offset, options.offset + OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER);
   }
   const { data, error, count } = await query;
