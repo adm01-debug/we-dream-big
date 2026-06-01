@@ -18,7 +18,6 @@ import type { ProductLightweight, Product } from '@/types/product-catalog';
 function mapLightweight(p: LightweightProduct): ProductLightweight {
   const price = p.sale_price ?? p.cost_price ?? 0;
   const imageUrl = p.primary_image_url || p.image_url || '/placeholder.svg';
-
   return {
     id: String(p.id),
     name: p.name,
@@ -50,7 +49,6 @@ export function mapLightweightToProduct(
   const resolvedCategoryName = resolvedCategoryId
     ? (categoriesById?.get(resolvedCategoryId) ?? null)
     : null;
-
   return {
     id: String(p.id),
     name: p.name,
@@ -74,53 +72,26 @@ export function mapLightweightToProduct(
     onSale: false,
     isKit: p.is_kit ?? false,
     gender: p.gender || null,
-    category: {
-      id: resolvedCategoryId || '0',
-      name: resolvedCategoryName ?? 'Sem categoria',
-    },
-    supplier: {
-      id: p.supplier_id || p.brand || 'unknown',
-      name: p.brand || 'Fornecedor',
-    },
-    tags: {
-      publicoAlvo: [],
-      datasComemorativas: [],
-      endomarketing: [],
-      ramo: [],
-      nicho: [],
-    },
+    category: { id: resolvedCategoryId || '0', name: resolvedCategoryName ?? 'Sem categoria' },
+    supplier: { id: p.supplier_id || p.brand || 'unknown', name: p.brand || 'Fornecedor' },
+    tags: { publicoAlvo: [], datasComemorativas: [], endomarketing: [], ramo: [], nicho: [] },
     dimensions: {},
-    // SSOT externo. `price_freshness_threshold_days` ainda não vem na lightweight
-    // (coluna inexistente no BD externo) — fica null e o util cai no default 60d
-    // ou no override local resolvido pelo consumidor.
     priceUpdatedAt: p.price_updated_at ?? null,
     priceFreshnessThresholdDays: null,
   };
 }
 
-// ============================================
-// INFINITE CATALOG HOOK
-// ============================================
-
 export const CATALOG_PAGE_SIZE = 500;
 export const CATALOG_BATCH_PAGES = 4;
-// `price_updated_at` é o SSOT da idade do preço (trigger no BD externo).
-// `price_freshness_threshold_days` ainda NÃO existe no BD externo — quando
-// existir, basta acrescentar à lista; o mapper já trata como opcional.
 export const PRODUCT_SELECT_LIGHTWEIGHT =
   'id, name, sku, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, active, stock_quantity, min_quantity, is_kit, gender, price_updated_at';
 
 interface CatalogPage {
   products: Product[];
-  nextOffset: number | null; // null = no more pages
+  nextOffset: number | null;
   totalEstimate: number | null;
 }
 
-/**
- * Fetches a batch of catalog pages starting at the given offset.
- * First call fetches 4 pages (2000 products) via batch bridge.
- * Subsequent calls fetch 1 page (500 products) each.
- */
 async function loadCategoriesMap(): Promise<ReadonlyMap<string, string>> {
   try {
     const categories = await fetchPromobrindCategories();
@@ -142,7 +113,6 @@ async function fetchCatalogPage(
   if (suppliers && suppliers.length > 0) filters.supplier_id = suppliers;
 
   const orderBy = { column: 'name', ascending: true };
-
   const isFirstLoad = offset === 0;
   const pagesToFetch = isFirstLoad ? CATALOG_BATCH_PAGES : 1;
 
@@ -163,17 +133,6 @@ async function fetchCatalogPage(
   try {
     batchResults = await Promise.all(batchQueries.map(q => dbInvoke(q)));
   } catch {
-    // BUG-LOAD-01 FIX: O fallback anterior usava fetchPromobrindProductsLightweight
-    // com limit=500, que faz short-circuit para UMA única query REST quando `limit`
-    // é especificado — retornando apenas 500 produtos e totalEstimate=null.
-    // Resultado: UI exibia "500 itens" mesmo com 6000+ no banco.
-    //
-    // Novo fallback: replicar o mesmo comportamento do batch bridge usando
-    // dbInvoke em paralelo (que roteia para REST nativo quando o
-    // kill-switch 'edge_external_db_bridge' está OFF). Assim:
-    //   - Primeiro carregamento: 4 × 500 = 2000 produtos em paralelo
-    //   - Carregamentos seguintes: 1 × 500 = 500 produtos
-    //   - totalEstimate correto via countMode:'exact' na primeira página
     const restQueries = Array.from({ length: pagesToFetch }, (_, i) =>
       dbInvoke<LightweightProduct>({
         table: 'products',
@@ -186,32 +145,22 @@ async function fetchCatalogPage(
         ...(i === 0 && isFirstLoad ? { countMode: 'exact' } : {}),
       }).catch(() => ({ records: [] as LightweightProduct[], count: null as number | null })),
     );
-
     const [pageResults, categoriesById] = await Promise.all([
       Promise.all(restQueries),
       categoriesPromise,
     ]);
-
     const fallbackProducts: Product[] = [];
     let fallbackTotalEstimate: number | null = null;
     let fallbackLastPageSize = 0;
-
     for (const result of pageResults) {
-      fallbackProducts.push(
-        ...result.records.map((p) => mapLightweightToProduct(p, categoriesById)),
-      );
+      fallbackProducts.push(...result.records.map((p) => mapLightweightToProduct(p, categoriesById)));
       fallbackLastPageSize = result.records.length;
-      if (result.count !== null && fallbackTotalEstimate === null) {
-        fallbackTotalEstimate = result.count;
-      }
+      if (result.count !== null && fallbackTotalEstimate === null) fallbackTotalEstimate = result.count;
     }
-
     const fallbackFetchedUpTo = offset + pagesToFetch * CATALOG_PAGE_SIZE;
-    const fallbackHasMore = fallbackLastPageSize === CATALOG_PAGE_SIZE;
-
     return {
       products: fallbackProducts,
-      nextOffset: fallbackHasMore ? fallbackFetchedUpTo : null,
+      nextOffset: fallbackLastPageSize === CATALOG_PAGE_SIZE ? fallbackFetchedUpTo : null,
       totalEstimate: fallbackTotalEstimate,
     };
   }
@@ -221,32 +170,33 @@ async function fetchCatalogPage(
   let totalEstimate: number | null = null;
   let lastPageSize = 0;
 
+  // FIX-CATALOG-01 (2026-06-01): batchResults is now InvokeResult<T>[] from dbInvoke,
+  // NOT BatchResult[] from invokeBatchBridge. InvokeResult shape is { records, count },
+  // not { success, data: { records, count } }. The old check (result.success && result.data?.records)
+  // was always falsy → products array stayed empty → "0 itens" in catalog.
   for (const result of batchResults) {
-    if (result.success && result.data?.records) {
-      const mapped = (result.data.records as LightweightProduct[]).map((p) =>
+    if (result.records && result.records.length > 0) {
+      const mapped = (result.records as LightweightProduct[]).map((p) =>
         mapLightweightToProduct(p, categoriesById),
       );
       products.push(...mapped);
-      lastPageSize = result.data.records.length;
-      if (result.data.count !== null && totalEstimate === null) {
-        totalEstimate = result.data.count as number;
+      lastPageSize = result.records.length;
+      if (result.count !== null && totalEstimate === null) {
+        totalEstimate = result.count as number;
       }
+    } else if (result.records) {
+      lastPageSize = 0;
     }
   }
 
   const fetchedUpTo = offset + pagesToFetch * CATALOG_PAGE_SIZE;
-  const hasMore = lastPageSize === CATALOG_PAGE_SIZE;
-
   return {
     products,
-    nextOffset: hasMore ? fetchedUpTo : null,
+    nextOffset: lastPageSize === CATALOG_PAGE_SIZE ? fetchedUpTo : null,
     totalEstimate,
   };
 }
 
-/**
- * Hook leve para buscar lista de produtos com campos mínimos.
- */
 export function useProductsLightweight() {
   return useQuery<ProductLightweight[]>({
     queryKey: ['promobrind-products-lightweight', 'v3-page-100'],
@@ -262,11 +212,6 @@ export function useProductsLightweight() {
   });
 }
 
-/**
- * Hook com paginação infinita server-side para o catálogo.
- * Primeiro carregamento: 2000 produtos (4 páginas em paralelo).
- * Carregamentos seguintes: 500 produtos por vez, sob demanda.
- */
 export function useProductsCatalog(filters?: {
   search?: string;
   categories?: string[];
@@ -275,7 +220,6 @@ export function useProductsCatalog(filters?: {
   const search = filters?.search || '';
   const categories = filters?.categories || [];
   const suppliers = filters?.suppliers || [];
-
   return useInfiniteQuery<CatalogPage, Error>({
     queryKey: ['promobrind-products-catalog', search, categories, suppliers],
     queryFn: ({ pageParam }) =>

@@ -33,20 +33,24 @@ export function prefetchCatalog(queryClient: QueryClient) {
       let totalEstimate: number | null = null;
       let lastPageSize = 0;
 
+      // FIX-CATALOG-01 (2026-06-01): same InvokeResult shape fix as useProductsLightweight.
+      // batchResults is InvokeResult<T>[] from dbInvoke — shape is { records, count }.
       for (const result of batchResults) {
-        if (result.success && result.data?.records) {
+        if (result.records && result.records.length > 0) {
           products.push(
-            ...(result.data.records as unknown[]).map((p) =>
+            ...(result.records as unknown[]).map((p) =>
               mapLightweightToProduct(
                 p as Parameters<typeof mapLightweightToProduct>[0],
                 categoriesById,
               ),
             ),
           );
-          lastPageSize = result.data.records.length;
-          if (result.data.count !== null && totalEstimate === null) {
-            totalEstimate = result.data.count as number;
+          lastPageSize = result.records.length;
+          if (result.count !== null && totalEstimate === null) {
+            totalEstimate = result.count as number;
           }
+        } else if (result.records) {
+          lastPageSize = 0;
         }
       }
 
@@ -62,10 +66,6 @@ export function prefetchCatalog(queryClient: QueryClient) {
   });
 }
 
-/**
- * Prefetch do catalogo somente apos autenticacao.
- * Evita chamadas a bridge sem JWT e nao deve participar do boot publico.
- */
 export function useCatalogPrefetch() {
   const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
@@ -73,12 +73,10 @@ export function useCatalogPrefetch() {
 
   useEffect(() => {
     if (isLoading || !isAuthenticated || prefetchedRef.current) return;
-
     const timer = setTimeout(() => {
       prefetchedRef.current = true;
       prefetchCatalog(queryClient);
     }, 400);
-
     return () => clearTimeout(timer);
   }, [isAuthenticated, isLoading, queryClient]);
 }
