@@ -3,7 +3,6 @@
  * Migrated from supabase.functions.invoke('external-db-bridge') to dbInvoke
  * (2026-05-30) — uses REST native PostgREST path, zero Edge Function calls.
  */
-import { supabase } from '@/integrations/supabase/client';
 import { dbInvoke } from '@/lib/db/postgrest';
 import { useQuery } from '@tanstack/react-query';
 import { CACHE_TIMES, GC_TIMES } from '@/lib/query-config';

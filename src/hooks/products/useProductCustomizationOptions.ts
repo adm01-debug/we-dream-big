@@ -10,7 +10,6 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { dbInvoke } from '@/lib/db/postgrest';
 import { invokeExternalRpc } from '@/lib/external-rpc';
 import { adaptCustomizationOptions } from '@/lib/personalization/adapters';
 import type { CustomizationOptionsResponse } from '@/types/customization';
@@ -28,8 +27,9 @@ export function useProductCustomizationOptions(productId: string | null) {
         );
 
         return adaptCustomizationOptions(result);
-      } catch (err: any) {
-        if (err?.message?.includes('410') || err?.message?.includes('Gone')) {
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('410') || msg.includes('Gone')) {
           const { reportSilentEmpty } = await import('@/lib/external-db/silent-empty-report');
           reportSilentEmpty({
             reason: 'gone_410',

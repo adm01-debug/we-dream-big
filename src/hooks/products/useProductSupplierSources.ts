@@ -3,8 +3,7 @@
  * Uses variant_supplier_sources table in the external catalog DB.
  */
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { dbInvoke, dbInvokeSingle, dbInvokeDelete } from '@/lib/db/postgrest';
+import { dbInvoke } from '@/lib/db/postgrest';
 import { toast } from 'sonner';
 
 export interface SupplierSource {
@@ -33,9 +32,9 @@ async function bridgeInvoke(body: Record<string, unknown>) {
   return dbInvoke({
     table: body.table as string,
     operation: body.operation as any,
-    data: body.data as any,
+    data: body.data as Record<string, unknown>,
     id: body.id as string,
-    filters: body.filters as any,
+    filters: body.filters as Record<string, unknown>,
     select: body.select as string,
     orderBy: body.orderBy as any,
     limit: body.limit as number,

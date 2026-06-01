@@ -3,7 +3,6 @@
  * Consulta o banco externo Promobrind via external-db-bridge (SSOT).
  */
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { dbInvoke } from '@/lib/db/postgrest';
 
 export interface ProdutoRamo {

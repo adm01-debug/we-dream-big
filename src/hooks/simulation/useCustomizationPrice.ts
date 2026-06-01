@@ -6,7 +6,6 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { dbInvoke } from '@/lib/db/postgrest';
 import { invokeExternalRpc } from '@/lib/external-rpc';
 import { validateRpcPayload } from '@/lib/personalization/rpc-validator';
 import { PRICE_CONTRACT } from '@/lib/personalization/rpc-contracts';
@@ -55,8 +54,9 @@ export function useCustomizationPriceCalculator() {
         }
         validateRpcPayload(PRICE_CONTRACT, result as unknown as Record<string, unknown>);
         return result;
-      } catch (err: any) {
-        if (err?.message?.includes('410') || err?.message?.includes('Gone')) {
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('410') || msg.includes('Gone')) {
           const { reportSilentEmpty } = await import('@/lib/external-db/silent-empty-report');
           reportSilentEmpty({
             reason: 'gone_410',
@@ -135,8 +135,9 @@ export function useCustomizationPriceReactive(
           setError(result?.error || 'Erro no cálculo');
           setPrice(null);
         }
-      } catch (err: any) {
-        if (err?.message?.includes('410') || err?.message?.includes('Gone')) {
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('410') || msg.includes('Gone')) {
           const { reportSilentEmpty } = await import('@/lib/external-db/silent-empty-report');
           reportSilentEmpty({
             reason: 'gone_410',

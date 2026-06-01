@@ -8,7 +8,6 @@
  * ============================================
  */
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { dbInvoke } from '@/lib/db/postgrest';
 import { TECNICAS_QUERY_OPTIONS } from '@/lib/query-config';
 import { TECNICAS_QUERY_KEYS } from '@/hooks/tecnicas/keys';
@@ -90,7 +89,7 @@ function bridgeToTecnicaUnificada(row: TecnicaBridgeResponse): TecnicaUnificada 
  * Busca técnicas do BD EXTERNO via edge function (já passa por adapter).
  */
 async function fetchTecnicasExterno(): Promise<TecnicaBridgeResponse[]> {
-  const result = await dbInvoke<any>({
+  const result = await dbInvoke<Record<string, unknown>>({
     table: 'tecnica_gravacao',
     operation: 'select',
     orderBy: { column: 'ordem_exibicao', ascending: true },
@@ -192,7 +191,7 @@ export function useTecnicaById(id: string | undefined) {
     queryFn: async (): Promise<TecnicaUnificada | null> => {
       if (!id) return null;
 
-      const result = await dbInvoke<any>({
+      const result = await dbInvoke<Record<string, unknown>>({
         table: 'tecnica_gravacao',
         operation: 'select',
         filters: { id },
@@ -215,7 +214,7 @@ export function useTecnicaByCodigo(codigo: string | undefined) {
     queryFn: async (): Promise<TecnicaUnificada | null> => {
       if (!codigo) return null;
 
-      const result = await dbInvoke<any>({
+      const result = await dbInvoke<Record<string, unknown>>({
         table: 'tecnica_gravacao',
         operation: 'select',
         filters: { codigo },
