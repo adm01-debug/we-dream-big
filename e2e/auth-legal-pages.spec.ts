@@ -45,7 +45,7 @@ test.describe('Auth Legal Pages', () => {
     await expect(page).toHaveURL(/\/auth/);
   });
 
-  test('should have accessible links in LegalFooter on login page', async ({ page }) => {
+  test('should have accessible links in LegalFooter on login page @mobile', async ({ page }) => {
     await page.goto('/auth');
     
     const termsLink = page.getByRole('link', { name: 'Termos de Uso' });
