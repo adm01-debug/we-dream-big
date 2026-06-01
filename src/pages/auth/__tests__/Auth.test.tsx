@@ -49,9 +49,11 @@ describe('Auth Page', () => {
     expect(screen.getByTestId('login-password-input')).toBeInTheDocument();
     expect(screen.getByTestId('login-submit')).toBeInTheDocument();
     
-    // Ensure the status card is NOT rendered
-    expect(screen.queryByText(/status/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/infraestrutura/i)).not.toBeInTheDocument();
+    // Ensure the status card and related elements are NOT rendered
+    expect(screen.queryByText(/status da infraestrutura/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/banco de dados/i)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('infrastructure-status-card')).not.toBeInTheDocument();
+    expect(screen.queryByText(/status do sistema/i)).not.toBeInTheDocument();
   });
 
   it('toggles password visibility', () => {
