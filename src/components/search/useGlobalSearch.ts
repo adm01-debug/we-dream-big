@@ -71,8 +71,10 @@ export interface PopularProduct {
   name: string;
   sku: string;
   category_name: string | null;
+  image_url: string | null;
   view_count: number;
 }
+
 
 export interface AppliedFilter {
   type: 'category' | 'color' | 'price' | 'material' | 'stock' | 'featured' | 'kit';
