@@ -96,9 +96,17 @@ export function useCatalogState() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const { isFavorite, toggleFavorite, favoriteCount } = useFavoritesStore();
+  const { isFavorite, toggleFavorite: baseToggleFavorite, favoriteCount } = useFavoritesStore();
   const favQuickAdd = useFavoriteQuickAdd();
-  const { isInCompare, toggleCompare, canAddMore } = useComparisonStore();
+  const { isInCompare, toggleCompare: baseToggleCompare, canAddMore } = useComparisonStore();
+
+  const toggleFavorite = useCallback((productId: string) => {
+    baseToggleFavorite(productId);
+  }, [baseToggleFavorite]);
+
+  const toggleCompare = useCallback((productId: string) => {
+    return baseToggleCompare(productId);
+  }, [baseToggleCompare]);
   const { registerProducts } = useProductsContext();
   const { data: promoSalesMap } = usePromoSalesRanking();
   const { data: supplierSalesMap } = useSupplierSalesRanking();
@@ -242,7 +250,8 @@ export function useCatalogState() {
     searchQueryRef.current = searchQuery;
   }, [searchQuery]);
 
-  const debouncedServerSearch = useDebounce(searchQuery, 400);
+  const debouncedSearch = useDebounce(searchQuery, 400);
+  const debouncedServerSearch = debouncedSearch;
 
   const {
     data: catalogData,
@@ -401,7 +410,7 @@ export function useCatalogState() {
     return count;
   }, [filters]);
 
-  const debouncedSearchQuery = useDebounce(searchQuery, 350);
+  const debouncedSearchQuery = debouncedSearch;
   const { results: fuzzySearchResults, hasSearch: hasFuzzySearch } = useProductFuzzySearch(
     realProducts,
     debouncedSearchQuery,
