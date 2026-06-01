@@ -47,25 +47,32 @@ export function RoutePrefetcher() {
 
     // Authenticated users: prefetch likely-next protected routes.
     if (pathname === '/auth' || pathname === '/login') {
-      // Prefetch dashboard early
       import('@/pages/Index');
       import('@/pages/products/FiltersPage');
     } else if (pathname === '/') {
-      // Prefetch heavy pages from dashboard + Auth (sessão pode expirar)
       import('@/pages/products/FiltersPage');
       import('@/pages/quotes/QuotesListPage');
       import('@/pages/clients/ClientsPage');
       import('@/pages/auth/Auth');
-    } else if (pathname === '/produtos') {
+    } else if (pathname === '/produtos' || pathname === '/filtros') {
       import('@/pages/products/ProductDetail');
       import('@/pages/tools/PriceSimulatorPage');
+    } else if (pathname.startsWith('/produto/')) {
+      import('@/pages/quotes/QuoteBuilderPage');
+      import('@/pages/products/FiltersPage');
+    } else if (pathname.startsWith('/orcamentos')) {
+      import('@/pages/quotes/QuoteBuilderPage');
+      import('@/pages/clients/ClientsPage');
     }
 
-    // Secondary priority prefetch
+    // Secondary priority prefetch (after idle)
     const timeoutId = setTimeout(() => {
       if (pathname !== '/orcamentos/novo') import('@/pages/quotes/QuoteBuilderPage');
-      if (pathname === '/produtos') import('@/pages/mockups/MockupGenerator');
-    }, 2500);
+      if (pathname === '/produtos' || pathname === '/filtros') {
+        import('@/pages/mockups/MockupGenerator');
+        import('@/pages/collections/CollectionsPage');
+      }
+    }, 1800);
 
     return () => clearTimeout(timeoutId);
   }, [pathname, user]);

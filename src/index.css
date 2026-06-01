@@ -83,6 +83,14 @@
   }
 }
 
+/* GPU-composited scroll containers — promotes to own layer to avoid repaints on scroll */
+@layer utilities {
+  .scrollbar-products {
+    transform: translateZ(0);
+    will-change: scroll-position;
+  }
+}
+
 /* Custom Tooltip Utilities (Ensures build retention) */
 @layer utilities {
   /* Tooltip: Standard (13px) */

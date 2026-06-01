@@ -74,7 +74,7 @@ const stockColor = (status: string) => {
 };
 
 const CONTAINER_CLASS =
-  'h-[calc(100vh-200px)] min-h-[550px] overflow-y-auto rounded-xl border border-border/40 bg-gradient-to-b from-background/80 to-background/40 backdrop-blur-sm scrollbar-products shadow-inner';
+  'h-[calc(100vh-200px)] min-h-[550px] overflow-y-auto rounded-xl border border-border/40 bg-background scrollbar-products shadow-sm';
 
 function SortHeader({
   label,

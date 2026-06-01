@@ -198,18 +198,17 @@ export function useFiltersPageState() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [gridColumns, setGridColumns] = useState<ColumnCount>(getDefaultColumns);
 
-  // Responsive clamp: force appropriate columns on small screens
+  // Responsive clamp: use ref so the listener doesn't re-register on every column change
+  const gridColumnsRef = useRef(gridColumns);
+  gridColumnsRef.current = gridColumns;
   useEffect(() => {
     const handleResize = () => {
-      const w = window.innerWidth;
-      if (w < 768 && gridColumns > 3) {
-        setGridColumns(3);
-      }
+      if (window.innerWidth < 768 && gridColumnsRef.current > 3) setGridColumns(3);
     };
     handleResize();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
     return () => window.removeEventListener('resize', handleResize);
-  }, [gridColumns]);
+  }, []); // empty deps — handler uses ref to avoid stale closure
   const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
   const [commandAction, setCommandAction] = useState<string | null>(null);
   // FIX-12: removido estado 'appliedFilters' — declarado mas nunca consumido (dead code).
@@ -329,65 +328,64 @@ export function useFiltersPageState() {
       !categoryFilterError
     )
       result = [];
-    if (filters.suppliers.length > 0)
+    if (filters.suppliers.length > 0) {
+      const supplierIdSet = new Set(filters.suppliers);
+      const supplierLowerArr = filters.suppliers.map((s) => s.toLowerCase());
       result = result.filter((product) => {
-        const sId = product.supplier?.id || '';
+        if (supplierIdSet.has(product.supplier?.id || '')) return true;
+        if (supplierIdSet.has(product.supplier_reference || '')) return true;
         const sName = (product.supplier?.name || product.brand || '').toLowerCase();
-        return (
-          filters.suppliers.includes(sId) ||
-          filters.suppliers.some((s) => sName.includes(s.toLowerCase())) ||
-          filters.suppliers.includes(product.supplier_reference || '')
-        );
+        return supplierLowerArr.some((s) => sName.includes(s));
       });
-    if (filters.publicoAlvo.length > 0)
-      result = result.filter((product) => {
-        const tags = product.tags?.publicoAlvo || [];
-        return filters.publicoAlvo.some((p) =>
-          tags.some((t: string) => t.toLowerCase() === p.toLowerCase()),
-        );
-      });
-    if (filters.datasComemorativas.length > 0)
-      result = result.filter((product) => {
-        const tags = product.tags?.datasComemorativas || [];
-        return filters.datasComemorativas.some((d) =>
-          tags.some((t: string) => t.toLowerCase().includes(d.toLowerCase())),
-        );
-      });
-    if (filters.endomarketing.length > 0)
-      result = result.filter((product) => {
-        const tags = product.tags?.endomarketing || [];
-        return filters.endomarketing.some((e) =>
-          tags.some((t: string) => t.toLowerCase() === e.toLowerCase()),
-        );
-      });
-    if (filters.ramosAtividade?.length > 0 || filters.segmentosAtividade?.length > 0)
+    }
+    if (filters.publicoAlvo.length > 0) {
+      const pSet = new Set(filters.publicoAlvo.map((p) => p.toLowerCase()));
+      result = result.filter((product) =>
+        (product.tags?.publicoAlvo || []).some((t: string) => pSet.has(t.toLowerCase())),
+      );
+    }
+    if (filters.datasComemorativas.length > 0) {
+      const dcLower = filters.datasComemorativas.map((d) => d.toLowerCase());
+      result = result.filter((product) =>
+        (product.tags?.datasComemorativas || []).some((t: string) => {
+          const tl = t.toLowerCase();
+          return dcLower.some((d) => tl.includes(d));
+        }),
+      );
+    }
+    if (filters.endomarketing.length > 0) {
+      const eSet = new Set(filters.endomarketing.map((e) => e.toLowerCase()));
+      result = result.filter((product) =>
+        (product.tags?.endomarketing || []).some((t: string) => eSet.has(t.toLowerCase())),
+      );
+    }
+    if (filters.ramosAtividade?.length > 0 || filters.segmentosAtividade?.length > 0) {
+      const ramosLower = filters.ramosAtividade?.map((r) => r.toLowerCase()) ?? [];
+      const segLower = filters.segmentosAtividade?.map((s) => s.toLowerCase()) ?? [];
       result = result.filter((product) => {
         const ramos = product.tags?.ramo || [];
         const nichos = product.tags?.nicho || [];
-        const matchesRamo = filters.ramosAtividade?.length
-          ? filters.ramosAtividade.some((r) =>
-              ramos.some((t: string) => t.toLowerCase().includes(r.toLowerCase())),
-            )
+        // BUG-SF-06 FIX: AND logic — product must match ramo AND segmento when both active.
+        const matchesRamo = ramosLower.length
+          ? ramosLower.some((r) => ramos.some((t: string) => t.toLowerCase().includes(r)))
           : true;
-        const matchesSegmento = filters.segmentosAtividade?.length
-          ? filters.segmentosAtividade.some((s) =>
-              nichos.some((t: string) => t.toLowerCase().includes(s.toLowerCase())),
-            )
+        const matchesSegmento = segLower.length
+          ? segLower.some((s) => nichos.some((t: string) => t.toLowerCase().includes(s)))
           : true;
-        // BUG-SF-06 FIX: era OR — produto passava se correspondesse a ramo OU segmento.
-        // Correto é AND: produto deve corresponder ao ramo E ao segmento selecionados.
-        // Se apenas um dos filtros está ativo, o outro default é true (sem restrição).
         return matchesRamo && matchesSegmento;
       });
+    }
     if (hasMaterialFilter && materialFilteredProductIds.size > 0)
       result = result.filter((p) => materialFilteredProductIds.has(p.id));
     else if (hasMaterialFilter && materialFilteredProductIds.size === 0 && !isLoadingMaterialFilter)
       result = [];
-    if (!hasMaterialFilter && filters.materiais.length > 0)
+    if (!hasMaterialFilter && filters.materiais.length > 0) {
+      const materiaisLower = filters.materiais.map((m) => m.toLowerCase());
       result = result.filter((product) => {
         const materialsStr = product.materials.join(' ').toLowerCase();
-        return filters.materiais.some((m) => materialsStr.includes(m.toLowerCase()));
+        return materiaisLower.some((m) => materialsStr.includes(m));
       });
+    }
     const priceFilterActive = filters.priceRange[0] > 0 || filters.priceRange[1] < 9999;
     if (priceFilterActive)
       result = result.filter(
@@ -441,8 +439,8 @@ export function useFiltersPageState() {
     // Produto.tags é um objeto estruturado (publicoAlvo, ramo, etc.) — não tem campo de tags genérico.
     // Aqui fazemos match pelo slug do tag versus qualquer campo de string do produto.
     if (filters.tags?.length) {
+      const tagIdsLower = filters.tags.map((t) => t.toLowerCase());
       result = result.filter((product) => {
-        // Tenta match nos campos de tag do produto via ID ou valor
         const allTagValues = [
           ...(product.tags?.publicoAlvo || []),
           ...(product.tags?.datasComemorativas || []),
@@ -450,11 +448,7 @@ export function useFiltersPageState() {
           ...(product.tags?.ramo || []),
           ...(product.tags?.nicho || []),
         ].map((v: string) => v.toLowerCase());
-        // Se o ID da tag bater com algum valor de tag do produto, inclui o produto
-        return filters.tags.some((tagId) => {
-          const tagIdLower = tagId.toLowerCase();
-          return allTagValues.some((v) => v === tagIdLower || v.includes(tagIdLower));
-        });
+        return tagIdsLower.some((tagId) => allTagValues.some((v) => v === tagId || v.includes(tagId)));
       });
     }
     // BUG-SF-01 FIX: techniques era contabilizado/chipeado mas sem bloco de filtro.

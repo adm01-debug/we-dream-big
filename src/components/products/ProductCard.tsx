@@ -6,7 +6,6 @@ import { useState, useRef, useEffect, memo, forwardRef, useCallback } from 'reac
 import { GenderBadge } from './GenderBadge';
 import { Building2, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { getCdnUrl, getSrcSet } from '@/utils/image-utils';
 import { cn } from '@/lib/utils';
 import { useProductBounds } from '@/hooks/products/useProductBounds';
@@ -38,6 +37,23 @@ import { ProductCardActions } from './ProductCardActions';
 import { PriceFreshnessBadge } from './PriceFreshnessBadge';
 import { feedback } from '@/lib/feedback';
 import { telemetryService } from '@/services/telemetryService';
+
+const priceFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const formatPrice = (price: number) => priceFormatter.format(price);
+
+const STOCK_STATUS_COLOR: Record<string, string> = {
+  'in-stock': 'in-stock',
+  'low-stock': 'low-stock',
+  'out-of-stock': 'out-of-stock',
+};
+const getStockStatusColor = (status: string) => STOCK_STATUS_COLOR[status] ?? 'in-stock';
+
+const STOCK_STATUS_LABEL: Record<string, string> = {
+  'in-stock': 'Em estoque',
+  'low-stock': 'Estoque baixo',
+  'out-of-stock': 'Sem estoque',
+};
+const getStockStatusLabel = (status: string) => STOCK_STATUS_LABEL[status] ?? 'Em estoque';
 
 export interface ProductCardProps {
   product: Product;
@@ -83,7 +99,6 @@ export const ProductCard = memo(
     ref,
   ) {
     const navigate = useNavigate();
-    const _queryClient = useQueryClient();
     const { prefetchProduct } = usePrefetchProduct();
     // Categoria-FOLHA (mais específica) resolvida em lote pelo ProductLeafCategoryProvider.
     // Quando disponível, sobrepõe a categoria "rasa" (raiz/intermediária) no badge.
@@ -125,8 +140,8 @@ export const ProductCard = memo(
     const [variantPickerOpen, setVariantPickerOpen] = useState(false);
     const [variantPickerMode, setVariantPickerMode] = useState<VariantActionMode>('favorite');
 
-    const favStore = useFavoritesStore();
-    const compStore = useComparisonStore();
+    const addFavorite = useFavoritesStore((s) => s.addFavorite);
+    const addToCompare = useComparisonStore((s) => s.addToCompare);
 
     const handleStatusClick = useCallback(
       (type: string, _value?: string | number) => {
@@ -166,13 +181,13 @@ export const ProductCard = memo(
           : undefined;
 
         if (variantPickerMode === 'favorite') {
-          favStore.addFavorite(product.id, variantInfo);
+          addFavorite(product.id, variantInfo);
           feedback.light();
           toast.success(
             `"${product.name}" favoritado${variant?.color_name ? ` — ${variant.color_name}` : ''}`,
           );
         } else if (variantPickerMode === 'compare') {
-          const result = compStore.addToCompare(product.id, variantInfo);
+          const result = addToCompare(product.id, variantInfo);
           if (!result) {
             feedback.error();
             showErrorToast({ title: 'Limite de 4 produtos para comparação atingido' });
@@ -211,7 +226,7 @@ export const ProductCard = memo(
           setShareDialogOpen(true);
         }
       },
-      [variantPickerMode, product, favStore, compStore, navigate],
+      [variantPickerMode, product, addFavorite, addToCompare, navigate],
     );
 
     const markBusy = () => {
@@ -257,33 +272,6 @@ export const ProductCard = memo(
       }
     };
 
-    const formatPrice = (price: number) =>
-      new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
-
-    const getStockStatusColor = (status: string) => {
-      switch (status) {
-        case 'in-stock':
-          return 'in-stock';
-        case 'low-stock':
-          return 'low-stock';
-        case 'out-of-stock':
-          return 'out-of-stock';
-        default:
-          return 'in-stock';
-      }
-    };
-    const getStockStatusLabel = (status: string) => {
-      switch (status) {
-        case 'in-stock':
-          return 'Em estoque';
-        case 'low-stock':
-          return 'Estoque baixo';
-        case 'out-of-stock':
-          return 'Sem estoque';
-        default:
-          return 'Em estoque';
-      }
-    };
 
     // Multi-variant carousel
     const allMatchingVariants = resolveAllMatchingColors(product.colors, activeColorFilter);
@@ -451,7 +439,7 @@ export const ProductCard = memo(
         <div
           className={cn(
             'relative space-y-2.5 p-3 transition-all duration-500 sm:space-y-4 sm:p-5',
-            isHovered ? 'translate-y-[-2px] bg-background/95 backdrop-blur-md' : 'bg-background',
+            isHovered ? 'translate-y-[-2px] bg-background' : 'bg-background',
           )}
           style={{ zIndex: 10 }}
         >

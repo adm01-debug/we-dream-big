@@ -1,7 +1,7 @@
-import { useRef, useCallback, useState, useEffect } from 'react';
+import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2, ArrowUp } from 'lucide-react';
 import { ProductCard } from './ProductCard';
 import { ProductListItem } from './ProductListItem';
@@ -80,14 +80,13 @@ export function VirtualizedProductGrid({
   // In list mode, always 1 column; in grid mode use columns prop
   const effectiveColumns = viewMode === 'list' ? 1 : columns;
 
-  // Column gap varies by density, row gap is always consistent (16px = gap-y-4)
-  const getColumnGapPx = () => {
+  // Column gap varies by density, row gap is always consistent
+  const colGapPx = useMemo(() => {
     if (effectiveColumns >= 8) return 16;
     if (effectiveColumns >= 6) return 24;
     return 32;
-  };
-  const colGapPx = getColumnGapPx();
-  const rowGapPx = viewMode === 'list' ? 8 : 32; // list: compact 8px gap; grid: 32px
+  }, [effectiveColumns]);
+  const rowGapPx = viewMode === 'list' ? 8 : 32;
 
   // Calculate rows based on columns
   const rowCount = Math.ceil(products.length / effectiveColumns);
@@ -104,7 +103,7 @@ export function VirtualizedProductGrid({
     count: hasMore ? rowCount + 1 : rowCount,
     getScrollElement: () => parentRef.current,
     estimateSize: () => estimatedRowHeight,
-    overscan: viewMode === 'list' ? 8 : 3,
+    overscan: viewMode === 'list' ? 10 : 5,
     measureElement: (el) => el.getBoundingClientRect().height,
   });
 
@@ -150,8 +149,8 @@ export function VirtualizedProductGrid({
     return (
       <div className="relative h-full">
         <div
-          className="scrollbar-products h-[calc(100vh-200px)] min-h-[600px] overflow-y-auto overscroll-contain rounded-xl border border-border/40 bg-gradient-to-b from-background/80 to-background/40 shadow-inner backdrop-blur-sm"
-          style={{ contain: 'strict', WebkitOverflowScrolling: 'touch' }}
+          className="scrollbar-products h-[calc(100vh-200px)] min-h-[600px] overflow-y-auto overscroll-contain rounded-xl border border-border/40 bg-background shadow-sm"
+          style={{ contain: 'strict' }}
         >
           {showFilterBar && onSortChange && onOpenFilters && onClearFilters && onViewModeChange && (
             <div className="sticky top-[calc(var(--header-h,56px)+var(--breadcrumb-h,0px))] z-20 mb-2 border-b border-border bg-background/95 px-4 py-2.5 backdrop-blur-md">
@@ -203,8 +202,8 @@ export function VirtualizedProductGrid({
       <div
         ref={parentRef}
         data-testid="virtualized-product-grid"
-        className="scrollbar-products h-[calc(100vh-200px)] min-h-[600px] overflow-y-auto overscroll-contain rounded-xl border border-border/40 bg-gradient-to-b from-background/80 to-background/40 shadow-inner backdrop-blur-sm"
-        style={{ contain: 'strict', WebkitOverflowScrolling: 'touch' }}
+        className="scrollbar-products h-[calc(100vh-200px)] min-h-[600px] overflow-y-auto overscroll-contain rounded-xl border border-border/40 bg-background shadow-sm"
+        style={{ contain: 'strict' }}
       >
         {/* Barra de filtros sticky DENTRO do container de scroll */}
         {showFilterBar && onSortChange && onOpenFilters && onClearFilters && onViewModeChange && (
@@ -290,7 +289,7 @@ export function VirtualizedProductGrid({
                       }),
                 }}
               >
-                {rowProducts.map((product, colIndex) =>
+                {rowProducts.map((product) =>
                   viewMode === 'list' ? (
                     <ProductListItem
                       key={product.id}
@@ -305,18 +304,14 @@ export function VirtualizedProductGrid({
                       onStatusClick={onStatusClick}
                     />
                   ) : (
-                    <motion.div
+                    <div
                       key={product.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: colIndex * 0.05 }}
                       className={cn(
-                        'relative transition-all duration-200',
+                        'relative',
                         selectionMode &&
                           selectedIds?.has(product.id) &&
                           'rounded-2xl shadow-md ring-2 ring-primary/50',
                       )}
-                      style={{ zIndex: 1 }}
                     >
                       {selectionMode && (
                         <button
@@ -356,7 +351,7 @@ export function VirtualizedProductGrid({
                         activeColorFilter={activeColorFilter}
                         onStatusClick={onStatusClick}
                       />
-                    </motion.div>
+                    </div>
                   ),
                 )}
               </div>
