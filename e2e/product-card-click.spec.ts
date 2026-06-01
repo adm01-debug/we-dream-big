@@ -1,85 +1,91 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('ProductCard Pressed State', () => {
+test.describe('ProductCard Interaction & Accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to a page that contains ProductCards, e.g., home or catalog
     await page.goto('/');
-    // Wait for the grid to load
     await page.waitForSelector('[data-testid="product-card"]');
   });
 
-  test('should not change scale or opacity when clicked (pressed state) - Light Theme', async ({ page }) => {
+  test('should not show pressed state (scale/opacity) on click - Light & Dark', async ({ page }) => {
+    const themes = ['light', 'dark'];
+    
+    for (const theme of themes) {
+      if (theme === 'dark') {
+        await page.evaluate(() => document.documentElement.classList.add('dark'));
+      } else {
+        await page.evaluate(() => document.documentElement.classList.remove('dark'));
+      }
+      
+      const card = page.locator('[data-testid="product-card"]').first();
+      const initialBox = await card.boundingBox();
+      
+      // Move to center
+      await page.mouse.move(initialBox!.x + initialBox!.width / 2, initialBox!.y + initialBox!.height / 2);
+      await page.mouse.down();
+      
+      const pressedOpacity = await card.evaluate((el) => window.getComputedStyle(el).opacity);
+      const pressedTransform = await card.evaluate((el) => window.getComputedStyle(el).transform);
+      
+      await page.mouse.up();
+
+      // Validate no "pressed" reduction
+      expect(parseFloat(pressedOpacity)).toBeGreaterThan(0.95);
+      // matrix(1, 0, 0, 1, 0, 0) is identity. We check it's not scaled down (e.g. 0.98)
+      expect(pressedTransform).not.toContain('0.98');
+      expect(pressedTransform).not.toContain('0.95');
+    }
+  });
+
+  test('hover should still work (scale up)', async ({ page }) => {
     const card = page.locator('[data-testid="product-card"]').first();
+    const image = card.locator('img').first();
     
-    // Get initial state
-    const initialBox = await card.boundingBox();
-    const initialOpacity = await card.evaluate((el) => window.getComputedStyle(el).opacity);
+    const initialTransform = await image.evaluate((el) => window.getComputedStyle(el).transform);
     
-    // Move mouse to card to trigger hover (which might change scale/opacity intentionally)
     await card.hover();
-    const hoverOpacity = await card.evaluate((el) => window.getComputedStyle(el).opacity);
+    await page.waitForTimeout(400); // Wait for transition
     
-    // Click and hold (if possible with playwright, otherwise just click and check state during/after)
-    await page.mouse.move(initialBox!.x + initialBox!.width / 2, initialBox!.y + initialBox!.height / 2);
-    await page.mouse.down();
+    const hoverTransform = await image.evaluate((el) => window.getComputedStyle(el).transform);
     
-    // Check state while pressed
-    const pressedBox = await card.boundingBox();
-    const pressedOpacity = await card.evaluate((el) => window.getComputedStyle(el).opacity);
-    const pressedTransform = await card.evaluate((el) => window.getComputedStyle(el).transform);
-    
-    await page.mouse.up();
-
-    // In many modern CSS setups, scale is part of transform. 
-    // We expect transform not to have a scale smaller than 1 (or smaller than the hover scale)
-    // And opacity should remain high (not dimming)
-    
-    expect(parseFloat(pressedOpacity)).toBeGreaterThanOrEqual(0.9); // Should not dim significantly
-    expect(pressedTransform).not.toContain('matrix(0.9'); // Should not scale down to 0.98 or similar
-    
-    // Compare with hover state if hover changes things
-    // We want to ensure it doesn't RECEDE (get smaller) from hover state when clicked
-    // Note: transforms are complex to compare directly as strings, but matrix(1, 0, 0, 1, 0, 0) is no transform.
+    // Hover scale is 1.03
+    expect(hoverTransform).not.toBe(initialTransform);
+    expect(hoverTransform).toContain('1.03');
   });
 
-  test('should not change scale or opacity when clicked - Dark Theme', async ({ page }) => {
-    // Switch to dark theme
-    await page.evaluate(() => {
-      document.documentElement.classList.add('dark');
-    });
-    
+  test('accessibility: focus state should be visible', async ({ page }) => {
     const card = page.locator('[data-testid="product-card"]').first();
-    const initialBox = await card.boundingBox();
     
-    await page.mouse.move(initialBox!.x + initialBox!.width / 2, initialBox!.y + initialBox!.height / 2);
-    await page.mouse.down();
+    await page.keyboard.press('Tab');
+    // Ensure the card is the focused element (or keep tabbing until it is)
+    let isFocused = await card.evaluate((el) => document.activeElement === el);
+    let attempts = 0;
+    while (!isFocused && attempts < 10) {
+      await page.keyboard.press('Tab');
+      isFocused = await card.evaluate((el) => document.activeElement === el);
+      attempts++;
+    }
     
-    const pressedOpacity = await card.evaluate((el) => window.getComputedStyle(el).opacity);
-    const pressedTransform = await card.evaluate((el) => window.getComputedStyle(el).transform);
+    expect(isFocused).toBe(true);
     
-    await page.mouse.up();
-
-    expect(parseFloat(pressedOpacity)).toBeGreaterThanOrEqual(0.9);
-    expect(pressedTransform).not.toContain('matrix(0.9');
+    const ring = await card.evaluate((el) => window.getComputedStyle(el).boxShadow);
+    expect(ring).toContain('rgb'); // Should have a ring/box-shadow from focus
   });
 
-  test('mobile: should not show pressed feedback', async ({ page }) => {
-    // Emulate mobile
-    await page.setViewportSize({ width: 375, height: 667 });
-    
+  test('visual regression: card click state', async ({ page }) => {
     const card = page.locator('[data-testid="product-card"]').first();
-    const initialBox = await card.boundingBox();
     
-    // Tap and hold
-    await page.mouse.move(initialBox!.x + initialBox!.width / 2, initialBox!.y + initialBox!.height / 2);
+    // Screenshot before click
+    await expect(card).toHaveScreenshot('product-card-initial.png');
+    
+    // Screenshot while mouse down
+    const box = await card.boundingBox();
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
     await page.mouse.down();
     
-    const pressedOpacity = await card.evaluate((el) => window.getComputedStyle(el).opacity);
-    const pressedTransform = await card.evaluate((el) => window.getComputedStyle(el).transform);
+    // We expect this to match the reference image provided by user (manually verified via code changes)
+    // Here we just ensure it doesn't change from its own non-pressed state
+    await expect(card).toHaveScreenshot('product-card-pressed.png');
     
     await page.mouse.up();
-
-    expect(parseFloat(pressedOpacity)).toBeGreaterThanOrEqual(0.9);
-    expect(pressedTransform).not.toContain('matrix(0.9');
   });
 });

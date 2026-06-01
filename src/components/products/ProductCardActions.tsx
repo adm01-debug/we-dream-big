@@ -154,7 +154,7 @@ export const ProductCardActions = memo(function ProductCardActions({
           label="Orçamento"
           className={cn(
             btnClass,
-            'border-success/20 bg-success text-success-foreground shadow-success/20 hover:scale-110 hover:bg-success/90 active:scale-95 disabled:opacity-50',
+            'border-success/20 bg-success text-success-foreground shadow-success/20 hover:scale-110 hover:bg-success/90 disabled:opacity-50',
           )}
           testId="product-card-quote"
           onClick={(e) => {
@@ -173,7 +173,7 @@ export const ProductCardActions = memo(function ProductCardActions({
           productPrice={productPrice}
           minQuantity={productMinQuantity}
           variant="icon"
-          className="h-9 min-h-[36px] w-9 min-w-[36px] border-primary/20 bg-primary text-primary-foreground shadow-primary/20 hover:scale-110 hover:bg-primary/90 active:scale-95 disabled:opacity-50 md:h-11 md:min-h-[44px] md:w-11 md:min-w-[44px]"
+          className="h-9 min-h-[36px] w-9 min-w-[36px] border-primary/20 bg-primary text-primary-foreground shadow-primary/20 hover:scale-110 hover:bg-primary/90 disabled:opacity-50 md:h-11 md:min-h-[44px] md:w-11 md:min-w-[44px]"
         />
 
         {/* Quick View */}
