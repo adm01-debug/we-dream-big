@@ -99,26 +99,32 @@ GRANT EXECUTE ON FUNCTION public.fn_run_and_persist_smoke_tests() TO postgres;
 GRANT EXECUTE ON FUNCTION public.fn_run_and_persist_smoke_tests() TO authenticated;
 
 -- Views
-CREATE OR REPLACE VIEW public.v_smoke_tests_latest_run 
+-- Replay-safe: DROP antes de CREATE OR REPLACE evita 42P16 ("cannot change
+-- data type of view column") quando o snapshot do preview tem essas views
+-- com tipos de coluna diferentes (ex.: count(*)::integer vs count(*) bigint
+-- da migration 20260525063000).
+DROP VIEW IF EXISTS public.v_smoke_tests_latest_run;
+CREATE OR REPLACE VIEW public.v_smoke_tests_latest_run
 WITH (security_invoker = on) AS
 WITH latest AS (
   SELECT max(ran_at) AS ran_at FROM public.smoke_tests_runs
 )
-SELECT 
+SELECT
   r.ran_at, r.test_name, r.test_category, r.result, r.details, r.duration_ms
 FROM public.smoke_tests_runs r
 JOIN latest l ON r.ran_at = l.ran_at
-ORDER BY 
-  CASE upper(r.result) 
+ORDER BY
+  CASE upper(r.result)
     WHEN 'FAIL' THEN 1 WHEN 'WARN' THEN 2 WHEN 'PASS' THEN 3 ELSE 4
   END, r.test_name;
 
 GRANT SELECT ON public.v_smoke_tests_latest_run TO authenticated;
 REVOKE SELECT ON public.v_smoke_tests_latest_run FROM anon;
 
-CREATE OR REPLACE VIEW public.v_smoke_tests_trend 
+DROP VIEW IF EXISTS public.v_smoke_tests_trend;
+CREATE OR REPLACE VIEW public.v_smoke_tests_trend
 WITH (security_invoker = on) AS
-SELECT 
+SELECT
   ran_at,
   count(*) AS total,
   count(*) FILTER (WHERE upper(result) = 'PASS')         AS passed,
