@@ -2,7 +2,7 @@
  * Lightweight product fetch — minimal fields, no enrichment.
  * Used for selectors and catalog listing.
  */
-import { dbInvoke, dbBatch } from '@/lib/db/postgrest';
+import { dbInvoke } from '@/lib/db/postgrest';
 import { logger } from '@/lib/logger';
 import { type InvokeResult } from './bridge';
 
@@ -153,10 +153,10 @@ export async function fetchPromobrindProductsLightweight(options?: {
   let lastBurstPageSize = LIGHTWEIGHT_PAGE_SIZE;
 
   try {
-    const batchResults = await dbBatch(initialBatch);
+    const batchResults = await Promise.all(initialBatch.map(q => dbInvoke<any>(q)));
     for (const result of batchResults) {
-      if (result.success && result.data?.records) {
-        const records = result.data.records as LightweightProduct[];
+      if (result.records) {
+        const records = result.records as LightweightProduct[];
         products.push(...records);
         lastBurstPageSize = records.length;
       }
