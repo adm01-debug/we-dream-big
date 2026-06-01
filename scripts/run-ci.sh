@@ -21,7 +21,7 @@ echo "5. E2E Tests (Smoke & ProductCard)..."
 if [ -n "$E2E_BASE_URL" ]; then
   npm run test:e2e:smoke
   echo "🔍 Validando interações do ProductCard (Mobile & Desktop)..."
-  npx playwright test e2e/product-card-click.spec.ts --project=chromium-public --project=routes-mobile
+  npx playwright test e2e/product-card-click.spec.ts
 else
   echo "⚠️ Pulando E2E (E2E_BASE_URL não definida). Use 'npm run test:e2e' com o servidor rodando."
 fi
