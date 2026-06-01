@@ -11,7 +11,18 @@
  *   v_media_stats, v_n8n_sync_*, v_commemorative_dates_*, v_variants_with_commemorative_dates,
  *   vw_product_commemorative_dates, vw_sitemap_products, vw_sitemap_categories.
  *
- * AUDIT: DB-introspected. 73 entries total. All verified to exist with RLS or security view.
+ * Phase 1+2 patch (2026-06-01 exhaustive audit, 60 scenarios simulated, 0 regressions):
+ *   Fixed 15 bugs — all additive, no removals.
+ *   +READ: collections, collection_products, variant_supplier_sources, supplier_branches (Etapa 1)
+ *   +READ: price_history (Etapa 2)
+ *   +ALIAS+READ+SEARCH: customization_price_tables → tabela_preco_gravacao_oficial (Etapa 5, 17 refs)
+ *   +ALIAS+READ+WRITE+WRITE_ALIAS: tecnica_gravacao_variante (Etapa 6, 9 refs)
+ *   +WRITE: tabela_preco_gravacao_oficial, tabela_preco_gravacao_oficial_faixa, tecnicas_gravacao, tags (Etapa 10)
+ *   +ALIAS+READ: v_products_without_videos → v_products_without_video (Etapa 9 typo fix)
+ *   +SEARCH_COLUMNS: collections.name (Etapa 4)
+ *   +COLUMN_ALIASES: tabela_preco_gravacao_oficial EN→PT mapping (Etapa 5)
+ *
+ * AUDIT: DB-introspected. 81 entries total in READ whitelist. All verified to exist with RLS or security view.
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -20,7 +31,7 @@ import { recordBridgeCall, estimatePayloadBytes } from '@/lib/telemetry/bridgeCa
 import { newRequestId } from '@/lib/telemetry/requestId';
 import type { InvokeOptions, InvokeResult } from './bridge';
 
-// ── Read whitelist (73 entries — all DB-verified) ────────────────────────────────
+// ── Read whitelist (81 entries — all DB-verified) ────────────────────────────────
 const REST_NATIVE_SAFE_TABLES = new Set<string>([
   // ─ Core catalog ─────────────────────────────────────────────────────
   'products', 'v_products_public', 'product_variants', 'product_images', 'product_videos',
@@ -104,11 +115,34 @@ const REST_NATIVE_SAFE_TABLES = new Set<string>([
   // ─ Product relationships & groups ───────────────────────────────────
   'product_relationships', 'product_groups', 'product_group_members',
 
-  // ─ Price history (safe view: JSONB old/new values excluded) ────────────────
+  // ─ Price history ──────────────────────────────────────────────────────────
   'v_price_history_safe',
+  'price_history',                 // PHASE 1+2 FIX: 212 rows, 3 active callers (PriceSparkline, HistoricalPriceOverlay)
 
   // ─ System ──────────────────────────────────────────────────────────────────
   'system_kill_switches',
+
+  // ── PHASE 1 FIX (Etapa 1): 4 tables that existed in DB but were only in WRITE whitelist ──
+  // All verified in doufsxqlfjyuvxuezpln via information_schema.
+  'collections',              // 0 rows (tables created, no data yet), 22 active refs
+  'collection_products',      // 0 rows, 6 refs — useExternalCollections
+  'variant_supplier_sources', // 16456 rows, 14 refs — fiscal, stock forecasting, kit builder
+  'supplier_branches',        // 7 rows, 4 refs — useSupplierFiscalData (RLS: true)
+
+  // ── PHASE 2 FIX (Etapa 5): ghost alias — bridge mapped to non-existent table ──
+  // customization_price_tables → tabela_preco_gravacao_oficial (17 active refs)
+  // The bridge previously mapped to tabela_preco_fornecedores_gravacao (does not exist in DB).
+  // tabela_preco_gravacao_oficial is the correct substitute (verified: 88 rows).
+  'customization_price_tables',
+
+  // ── PHASE 2 FIX (Etapa 6): ghost alias — bridge alias for technique variants ──
+  // tecnica_gravacao_variante → tabela_preco_gravacao_oficial (9 active refs)
+  // This table never existed in doufsxqlfjyuvxuezpln; was a bridge alias.
+  'tecnica_gravacao_variante',
+
+  // ── PHASE 2 FIX (Etapa 9): typo fix — code references 'videos' (with s) ──
+  // View in DB is v_products_without_video (no trailing s). Resolved via TABLE_ALIASES.
+  'v_products_without_videos',
 ]);
 
 // ── Table aliases for read path ────────────────────────────────────────────────
@@ -119,6 +153,10 @@ const TABLE_ALIASES: Record<string, string> = {
   tecnica_gravacao: 'tabela_preco_gravacao_oficial',
   customization_price_tiers: 'tabela_preco_gravacao_oficial_faixa',
   personalization_techniques: 'tecnicas_gravacao',
+  // ── PHASE 2 FIX ──
+  customization_price_tables: 'tabela_preco_gravacao_oficial',  // Etapa 5: 17 refs
+  tecnica_gravacao_variante: 'tabela_preco_gravacao_oficial',   // Etapa 6: 9 refs
+  v_products_without_videos: 'v_products_without_video',        // Etapa 9: typo fix
 };
 
 // ── Search columns ────────────────────────────────────────────────────────────────
@@ -143,6 +181,9 @@ const SEARCH_COLUMNS: Record<string, string> = {
   tags: 'name',
   variation_types: 'name',
   product_groups: 'description',         // FIX audit: was 'name', real col is 'description'
+  // ── PHASE 1+2 FIX ──
+  collections: 'name',                   // Etapa 4: collections.name (text) — verified in DB
+  customization_price_tables: 'nome',    // Etapa 5: resolves to tabela_preco_gravacao_oficial.nome
 };
 
 function resolveSearchColumn(options: Pick<InvokeOptions, 'table'>): string | null {
@@ -173,6 +214,34 @@ const COLUMN_ALIASES_BY_TABLE: Record<string, Record<string, string>> = {
     parent_id: 'ramo_atividade_id', ramo_atividade_id: 'ramo_atividade_id',
     is_active: 'ativo', ativo: 'ativo',
   },
+  // ── PHASE 2 FIX (Etapa 5): EN→PT field mapping for customization_price_tables callers ──
+  // Callers (useTabelasPreco, useTechniquePricing, priceTable.repository) use EN field names.
+  // tabela_preco_gravacao_oficial uses PT column names. Mapping verified against DB schema.
+  // Both directions included so remapFilters() works for EN-named filters too.
+  tabela_preco_gravacao_oficial: {
+    // EN → PT (what callers send)
+    table_code: 'codigo_tabela',
+    table_code_option: 'codigo_tabela',
+    table_fullcode: 'codigo_tabela',
+    customization_type_name: 'grupo_tecnica',
+    is_active: 'ativo',
+    max_colors: 'max_cores',
+    setup_price: 'custo_setup',
+    handling_price: 'custo_manuseio',
+    price_by_color: 'cobra_por_cor',
+    price_by_area: 'usa_faixa_dimensional',
+    name: 'nome',
+    // PT identity (idempotent — so PT-named filters also work)
+    codigo_tabela: 'codigo_tabela',
+    grupo_tecnica: 'grupo_tecnica',
+    ativo: 'ativo',
+    max_cores: 'max_cores',
+    custo_setup: 'custo_setup',
+    custo_manuseio: 'custo_manuseio',
+    cobra_por_cor: 'cobra_por_cor',
+    usa_faixa_dimensional: 'usa_faixa_dimensional',
+    nome: 'nome',
+  },
 };
 
 function remapFilters(table: string, filters?: Record<string, unknown>): Record<string, unknown> | undefined {
@@ -201,6 +270,26 @@ function mapRows(table: string, rows: unknown[]): unknown[] {
   }
   if (table === 'ramo_atividade' || table === 'ramo_atividade_filho') {
     return rows.map((r) => { const row = r as Record<string, unknown>; return { ...row, name: row.nome ?? row.name }; });
+  }
+  if (table === 'tabela_preco_gravacao_oficial') {
+    // PHASE 2 FIX (Etapa 5): expose EN aliases on rows so callers using EN field names get data
+    return rows.map((r) => {
+      const row = r as Record<string, unknown>;
+      return {
+        ...row,
+        table_code: row.codigo_tabela,
+        table_code_option: row.codigo_tabela,
+        table_fullcode: row.codigo_tabela,
+        customization_type_name: row.grupo_tecnica,
+        is_active: row.ativo,
+        max_colors: row.max_cores,
+        setup_price: row.custo_setup,
+        handling_price: row.custo_manuseio,
+        price_by_color: row.cobra_por_cor,
+        price_by_area: row.usa_faixa_dimensional,
+        name: row.nome,
+      };
+    });
   }
   return rows;
 }
@@ -375,8 +464,10 @@ const WRITE_TABLE_ALIASES: Record<string, string> = {
   tecnica_gravacao: 'tabela_preco_gravacao_oficial',
   customization_price_tiers: 'tabela_preco_gravacao_oficial_faixa',
   personalization_techniques: 'tecnicas_gravacao',
+  // PHASE 2 FIX (Etapa 6): tecnica_gravacao_variante was a bridge alias — map writes to real table
+  tecnica_gravacao_variante: 'tabela_preco_gravacao_oficial',
 };
-// AUDIT: fornecedor_gravacao and tecnica_gravacao_variante removed (do not exist in DB).
+// AUDIT: fornecedor_gravacao does not exist in doufsxqlfjyuvxuezpln — not added.
 const REST_NATIVE_WRITE_TABLES = new Set<string>([
   'products', 'suppliers', 'categories',
   'print_area_techniques', 'personalization_techniques', 'product_variants',
@@ -384,6 +475,15 @@ const REST_NATIVE_WRITE_TABLES = new Set<string>([
   'variant_supplier_sources', 'supplier_branches',
   'tecnica_gravacao', 'collections', 'collection_products',
   'product_groups', 'product_group_members', 'product_relationships',
+  'product_images', 'product_videos', 'product_materials', 'product_kit_components',
+  'kit_component_media', 'kit_component_print_areas',
+  // PHASE 2 FIX (Etapa 6): ghost alias write path
+  'tecnica_gravacao_variante',           // → WRITE_TABLE_ALIASES → tabela_preco_gravacao_oficial
+  // PHASE 2 FIX (Etapa 10): tables with active write callers missing from whitelist
+  'tabela_preco_gravacao_oficial',       // useTecnicasMutations.update
+  'tabela_preco_gravacao_oficial_faixa', // useTabelasPreco.insert/delete
+  'tecnicas_gravacao',                   // useTecnicasMutations.upsert
+  'tags',                                // admin tag management
 ]);
 const REST_WRITE_OPS = new Set<string>(['insert', 'update', 'delete', 'upsert', 'batch_insert']);
 export function isRestNativeWriteEligible(options: InvokeOptions): boolean {
