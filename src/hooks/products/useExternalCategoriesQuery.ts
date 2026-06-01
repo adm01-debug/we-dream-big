@@ -3,7 +3,7 @@
  * Migrated from supabase.functions.invoke('external-db-bridge') to dbInvoke
  * (2026-05-30) — uses REST native PostgREST path, zero Edge Function calls.
  */
-import { dbInvoke } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { CACHE_TIMES, GC_TIMES } from '@/lib/query-config';
 
@@ -25,14 +25,21 @@ export interface ExternalCategory {
 export const EXTERNAL_CATEGORIES_QUERY_KEY = ['external-categories'] as const;
 
 async function fetchExternalCategories(): Promise<ExternalCategory[]> {
-  const result = await dbInvoke<ExternalCategory>({
-    table: 'categories',
-    operation: 'select',
-    filters: { is_active: true },
-    limit: 1000,
-    orderBy: { column: 'name', ascending: true },
-  });
-  return result.records || [];
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('is_active', true)
+    .order('name', { ascending: true })
+    .limit(1000);
+
+  if (error) {
+    if (error.message?.includes('410') || error.message?.includes('Gone')) {
+      logger.warn(`[useExternalCategoriesQuery] Bridge deprecated (410) for categories`);
+      return [];
+    }
+    throw error;
+  }
+  return data || [];
 }
 
 export function useExternalCategoriesQuery() {
