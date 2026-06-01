@@ -64,7 +64,10 @@ export function useProductVariantsWithStock(productId: string | undefined) {
         .limit(200);
 
       if (error) {
-        if (error.message?.includes('410')) return [];
+        if (error.message?.includes('410') || error.message?.includes('Gone')) {
+          logger.warn('Bridge deprecated (410) for variant sources');
+          return [];
+        }
         throw error;
       }
 
