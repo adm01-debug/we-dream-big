@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
   const uploadSourcemaps = isProd && !!process.env.SENTRY_AUTH_TOKEN;
 
-  const config: UserConfig = {
+  const config: UserConfig & { test?: any } = {
     plugins: [
       react(),
       mode === 'development' && componentTagger(),
@@ -121,6 +121,27 @@ export default defineConfig(({ mode }) => {
         'react-hook-form',
         '@hookform/resolvers/zod',
       ],
+    },
+
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/test/setup.ts',
+      // Auto-retry for flaky component tests
+      retry: process.env.CI ? 2 : 0,
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'json', 'html', 'json-summary'],
+        // Thresholds to block PRs on regression
+        thresholds: {
+          statements: 80,
+          branches: 80,
+          functions: 80,
+          lines: 80,
+        },
+        include: ['src/components/search/**'],
+        exclude: ['src/components/search/__tests__/**'],
+      },
     },
   };
 
