@@ -21,9 +21,9 @@ export function OptimizedImage({
   fallbackClassName,
   containerClassName,
   priority = false,
-  blurAmount = 20,
-  zoomAmount = 1.1,
-  duration = 700,
+  blurAmount = 15,
+  zoomAmount = 1.05,
+  duration = 400,
   lqip,
   debug = false,
   onDetection,
@@ -127,6 +127,7 @@ export function OptimizedImage({
       style={
         {
           aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : 'auto',
+          contain: 'layout paint',
         } as React.CSSProperties
       }
     >

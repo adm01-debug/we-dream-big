@@ -58,6 +58,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global performance: prefer reduced motion when user opts in */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Layout containment for heavy sections */
+@layer utilities {
+  .contain-layout {
+    contain: layout style;
+  }
+  .contain-paint {
+    contain: paint;
+  }
+  .contain-strict {
+    contain: strict;
+  }
+}
+
 /* Custom Tooltip Utilities (Ensures build retention) */
 @layer utilities {
   /* Tooltip: Standard (13px) */
@@ -132,40 +157,6 @@
     letter-spacing: 0.15em !important;
   }
 }
-
-@keyframes orbitSmooth {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  25% {
-    transform: translate(15px, -15px) rotate(1.5deg);
-  }
-  50% {
-    transform: translate(30px, 0) rotate(0deg);
-  }
-  75% {
-    transform: translate(15px, 15px) rotate(-1.5deg);
-  }
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-}
-
-/* Nova animação de órbita circular perfeita */
-
-@keyframes pulseGlow {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
-    opacity: 0.8;
-  }
-  50% {
-    filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.8));
-    opacity: 1;
-  }
-}
-
-/* A definição oficial está no final do arquivo */
 
 /* ═══ NUCLEAR SCROLL LOCK PREVENTION ═══
    Radix UI / react-remove-scroll sets data-scroll-locked on html/body
@@ -889,21 +880,6 @@ html[data-scroll-locked] body {
   }
 }
 
-@keyframes rocketLaunch {
-  0% {
-    transform: translateY(100px);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-120vh) rotate(-15deg);
-    opacity: 0.8;
-  }
-}
-
 /* Reduced motion support for visual consistency in testing and accessibility */
 @media (prefers-reduced-motion: reduce) {
   .animate-rocket-shake,
@@ -912,27 +888,6 @@ html[data-scroll-locked] body {
     animation-iteration-count: 1 !important;
     animation-delay: 0ms !important;
     transition: none !important;
-  }
-}
-
-@keyframes rocketShake {
-  0%,
-  100% {
-    transform: translateX(-1px);
-  }
-  50% {
-    transform: translateX(1px);
-  }
-}
-
-@keyframes flameTrail {
-  0% {
-    opacity: 0.5;
-    transform: translateX(-50%) scaleY(0.8);
-  }
-  100% {
-    opacity: 0.9;
-    transform: translateX(-50%) scaleY(1.2);
   }
 }
 
@@ -945,20 +900,6 @@ html[data-scroll-locked] body {
   50% {
     opacity: 1;
     transform: scale(1.5);
-  }
-}
-
-@keyframes smokeRise {
-  0% {
-    transform: translateY(0) scale(0.5);
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.15;
-  }
-  100% {
-    transform: translateY(-200px) scale(2);
-    opacity: 0;
   }
 }
 
@@ -978,6 +919,29 @@ html[data-scroll-locked] body {
   100% {
     transform: translateX(300%) skewX(-25deg);
   }
+}
+
+/* Skeleton shimmer - CSS-only replacement for framer-motion */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--foreground) / 0.05) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+:is(.dark) .skeleton-shimmer::after {
+  background: linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.05) 50%, transparent 100%);
+  background-size: 200% 100%;
 }
 
 /* Shimmer cinza-claro para placeholder de imagem do produto */

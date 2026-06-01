@@ -14,7 +14,6 @@ import {
   ArrowLeft,
   Download,
   Calendar as CalendarIcon,
-  Filter,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -37,9 +36,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { useAriaLive } from '@/components/a11y/AriaLive';
-import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -171,7 +169,7 @@ const RefetchSpinner = React.memo(function RefetchSpinner({
  * DrawerHeaderTitle — título + contador "X novas". Depende apenas de
  * `unreadCount`; o spinner de refetch é renderizado como filho independente.
  */
-const DrawerHeaderTitle = React.memo(function DrawerHeaderTitle({
+const _DrawerHeaderTitle = React.memo(function DrawerHeaderTitle({
   unreadCount,
 }: {
   unreadCount: number;
@@ -274,7 +272,8 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
       markAllAsRead,
       clearAll,
       prefetch,
-    } = useNotifications() as any; // Cast for extended props
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Cast for extended props
+    } = useNotifications() as any;
     const navigate = useNavigate();
     const [shouldShake, setShouldShake] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -363,9 +362,7 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
       if (notifications.length === 0) return;
 
       const headers = ['Data', 'Título', 'Mensagem', 'Tipo', 'Categoria', 'Lida'];
-      const filteredNotifications = notifications.filter((n) => {
-        // Since we are using filtered list from hook, we just use notifications
-        // but it's good to note we export the currently visible list.
+      const filteredNotifications = notifications.filter(() => {
         return true;
       });
       const rows = filteredNotifications.map((n) => [
