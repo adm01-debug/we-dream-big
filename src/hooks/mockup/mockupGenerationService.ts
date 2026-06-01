@@ -260,7 +260,7 @@ export async function generateMockupApi(
   };
 }
 
-export function downloadMockup(mockupUrl: string, product: { sku?: string | null }, technique: Technique): void {
+export function downloadMockupAsPdf(mockupUrl: string, product: { sku?: string | null }, technique: Technique): void {
   const safeSku = product.sku?.replace(/[^a-zA-Z0-9]/g, '-') || 'mockup';
   const safeTechnique = (technique.code || technique.name).replace(/[^a-zA-Z0-9]/g, '-');
   const fileName = `mockup-${safeSku}-${safeTechnique}.pdf`;
