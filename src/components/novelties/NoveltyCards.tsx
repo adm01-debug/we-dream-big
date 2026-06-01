@@ -2,9 +2,9 @@
  * NoveltyCards — Grid, List, Table, and Skeleton card components for novelties.
  * Follows the same info pattern as ProductCard (catalog).
  */
-import { memo, useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
+import { memo } from 'react';
+import { cn } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -17,454 +17,345 @@ import { Package, Building2, FolderTree } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NoveltyBadge } from '@/components/products/NoveltyBadge';
 import { ProductStatusBadge } from '@/components/products/ProductStatusBadge';
-import { ProductSparkline } from '@/components/products/ProductSparkline';
-import { SelectionCheckbox } from '@/components/common/SelectionCheckbox';
-import { cn } from '@/lib/utils';
-import type { NoveltyWithDetails } from '@/hooks/products';
-import { productCardStyles } from '@/components/products/product-card-styles';
+import type { NoveltyWithDetails } from '@/hooks/products/useNovelties';
 
-function isFresh(detectedAt: string): boolean {
-  return Math.floor((Date.now() - new Date(detectedAt).getTime()) / 86400000) <= 2;
-}
-function formatPrice(price: number) {
-  return price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-
-function getStockStatusColor(status: string) {
-  switch (status) {
-    case 'in-stock':
-      return 'in-stock';
-    case 'low-stock':
-      return 'low-stock';
-    case 'out-of-stock':
-      return 'out-of-stock';
-    default:
-      return 'in-stock';
-  }
-}
-
-function getStockStatusLabel(status: string) {
-  switch (status) {
-    case 'in-stock':
-      return 'Em estoque';
-    case 'low-stock':
-      return 'Estoque baixo';
-    case 'out-of-stock':
-      return 'Sem estoque';
-    default:
-      return 'Em estoque';
-  }
-}
-
-export interface NoveltyCardProps {
+interface NoveltyCardProps {
   product: NoveltyWithDetails;
-  onClick: () => void;
-  selectionMode: boolean;
-  isSelected: boolean;
-  onToggleSelect: () => void;
-  onStatusClick?: (type: string, value?: string | number) => void;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onSelect?: (id: string) => void;
+  onStatusClick?: (type: string) => void;
 }
 
+// ── Skeleton ─────────────────────────────────────────────────────────────────
+export function NoveltyGridSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex flex-col gap-2 rounded-xl border bg-card p-3">
+          <Skeleton className="aspect-square w-full rounded-lg" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-3 w-1/2" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function NoveltyListSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div className="flex flex-col gap-2">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3 rounded-lg border bg-card p-3">
+          <Skeleton className="h-16 w-16 flex-shrink-0 rounded-md" />
+          <div className="flex flex-1 flex-col gap-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Grid Card ────────────────────────────────────────────────────────────────
 export const NoveltyGridCard = memo(function NoveltyGridCard({
   product,
-  onClick,
-  selectionMode,
-  isSelected,
-  onToggleSelect,
+  selectionMode = false,
+  isSelected = false,
+  onSelect,
   onStatusClick,
 }: NoveltyCardProps) {
-  const fresh = isFresh(product.detected_at);
-  const stockQty = product.stock_quantity ?? 0;
-  const stockStatus = product.stock_status ?? 'in-stock';
-
-  const handleClick = useCallback(() => {
-    if (selectionMode) onToggleSelect();
-    else onClick();
-  }, [selectionMode, onToggleSelect, onClick]);
+  const p = product.product;
+  const fresh = product.days_remaining >= 25;
 
   return (
-    <Card
+    <article
       className={cn(
-        productCardStyles.container,
-        fresh && productCardStyles.recent,
-        isSelected && productCardStyles.selected,
+        'group relative flex cursor-pointer flex-col gap-2 rounded-xl border bg-card p-3 transition-all',
+        'hover:border-primary/40 hover:shadow-md',
+        isSelected && 'border-primary ring-2 ring-primary/20',
       )}
-      onClick={handleClick}
-      role="article"
-      aria-label={`${product.product_name} — ${getStockStatusLabel(stockStatus)}, ${formatPrice(product.base_price ?? 0)}`}
-      aria-selected={selectionMode ? isSelected : undefined}
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleClick();
-        }
-      }}
+      onClick={() => onSelect?.(product.product_id)}
     >
+      {/* Selection indicator */}
+      {selectionMode && (
+        <div
+          className={cn(
+            'absolute left-2 top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all',
+            isSelected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground bg-card',
+          )}
+        >
+          {isSelected && (
+            <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none">
+              <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+      )}
 
-      <CardContent className="p-0">
-        {/* Image */}
-        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30">
-          {product.product_image ? (
-            <img
-              src={product.product_image}
-              alt={product.product_name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <Package className="h-12 w-12 text-muted-foreground/20" />
-            </div>
-          )}
-          {selectionMode && (
-            <div className="absolute right-2 top-2 z-10" onClick={(e) => e.stopPropagation()}>
-              <SelectionCheckbox
-                checked={isSelected}
-                onChange={onToggleSelect}
-                size="md"
-                animateEntry
-              />
-            </div>
-          )}
-          <div className="absolute left-2 top-2 flex flex-col gap-1">
-            <NoveltyBadge 
-              daysRemaining={product.days_remaining} 
-              size="sm" 
+      {/* Image */}
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted/20">
+        {p?.primary_image_url ? (
+          <img
+            src={p.primary_image_url}
+            alt={p.name}
+            className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <Package className="h-8 w-8 text-muted-foreground/30" />
+          </div>
+        )}
+        <div className="absolute left-2 top-2 flex flex-col gap-1">
+          <NoveltyBadge
+            daysRemaining={product.days_remaining}
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onStatusClick?.('novelty');
+            }}
+          />
+        </div>
+        {fresh && !selectionMode && (
+          <div className="absolute right-2 top-2">
+            <ProductStatusBadge
+              type="novelty"
+              value="NEW"
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onStatusClick?.('novelty');
               }}
             />
           </div>
-          {fresh && !selectionMode && (
-            <div className="absolute right-2 top-2">
-              <ProductStatusBadge 
-                type="novelty" 
-                value="NEW" 
-                size="sm" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onStatusClick?.('novelty');
-                }}
-              />
-            </div>
-          )}
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-        </div>
+        )}
+      </div>
 
-        {/* Info section — matching catalog ProductCard */}
-        <div className={productCardStyles.infoSection}>
-          {/* SKU + Supplier */}
-          <div className="flex items-center justify-between gap-2">
-            {product.product_sku && (
-              <span className="truncate font-mono text-[10px] text-muted-foreground sm:text-xs">
-                {product.product_sku}
-              </span>
-            )}
-            {product.supplier_name && (
-              <span className="flex max-w-[120px] shrink-0 items-center gap-1 truncate rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-secondary-foreground sm:px-2 sm:text-xs">
-                <Building2 className="h-3 w-3 shrink-0" />
-                {product.supplier_name}
-              </span>
-            )}
-          </div>
-
-          {/* Product name */}
-          <h3 className={productCardStyles.title}>
-            {product.product_name}
-          </h3>
-
-          {/* Price + Stock */}
-          <div className={productCardStyles.priceStockSection}>
-            <div className={productCardStyles.priceContainer}>
-              {product.base_price !== null && product.base_price > 0 ? (
-                <>
-                  <p className="mb-0.5 text-[10px] text-muted-foreground sm:text-xs">A partir de</p>
-                  <span className="font-display text-base font-bold text-foreground sm:text-xl">
-                    {formatPrice(product.base_price)}
-                  </span>
-                </>
-              ) : (
-                <span className="text-xs text-muted-foreground">Preço sob consulta</span>
-              )}
-            </div>
-
-            <div className="flex flex-col items-end gap-0.5 sm:gap-1">
-              <span
-                className={cn(
-                  'stock-indicator text-[10px] sm:text-xs',
-                  getStockStatusColor(stockStatus),
-                )}
-              >
-                <Package className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span className="hidden sm:inline">{getStockStatusLabel(stockStatus)}</span>
-                <span className="sm:hidden">
-                  {stockStatus === 'in-stock' ? '✓' : stockStatus === 'low-stock' ? '!' : '✗'}
-                </span>
-              </span>
-              <span className="text-[10px] text-muted-foreground sm:text-xs">
-                {stockQty.toLocaleString('pt-BR')} un.
-              </span>
-            </div>
-          </div>
-
-          {/* Category badge */}
-          {product.category_name && (
-            <div className={productCardStyles.categoryBadgeSection}>
-              <span className="flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-[10px] font-semibold text-primary shadow-sm shadow-primary/10 sm:text-xs">
-                <FolderTree className="h-2.5 w-2.5" aria-hidden="true" />
-                {product.category_name}
-              </span>
-            </div>
-          )}
-
-          {/* Vendas 30d sparkline */}
-          <div className={productCardStyles.sparklineSection}>
-
-            <div className="mb-0.5 flex items-center justify-between">
-              <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground sm:text-[10px]">
-                Vendas 30d
-              </span>
-            </div>
-            <ProductSparkline productId={product.product_id} />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Info */}
+      <div className="flex flex-col gap-0.5">
+        <p className="line-clamp-2 text-sm font-medium leading-tight">{p?.name ?? '—'}</p>
+        <p className="text-xs text-muted-foreground">{p?.sku ?? '—'}</p>
+        {p?.sale_price != null && (
+          <p className="text-sm font-semibold text-primary">
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.sale_price)}
+          </p>
+        )}
+      </div>
+    </article>
   );
 });
 
+// ── List Card ────────────────────────────────────────────────────────────────
 export const NoveltyListCard = memo(function NoveltyListCard({
   product,
-  onClick,
-  selectionMode,
-  isSelected,
-  onToggleSelect,
+  selectionMode = false,
+  isSelected = false,
+  onSelect,
   onStatusClick,
 }: NoveltyCardProps) {
-  const fresh = isFresh(product.detected_at);
-  const stockQty = product.stock_quantity ?? 0;
-  const stockStatus = product.stock_status ?? 'in-stock';
+  const p = product.product;
+  const fresh = product.days_remaining >= 25;
+
   return (
-    <Card
+    <article
       className={cn(
-        'group cursor-pointer transition-all duration-200 hover:border-primary/30 hover:shadow-md',
-        fresh && 'border-success/30 shadow-[0_0_12px_hsl(var(--success)/0.08)]',
-        isSelected &&
-          'border-primary/50 shadow-[0_0_20px_hsl(var(--primary)/0.15)] ring-2 ring-primary',
+        'group relative flex cursor-pointer items-start gap-3 rounded-lg border bg-card p-3 transition-all',
+        'hover:border-primary/40 hover:shadow-sm',
+        isSelected && 'border-primary ring-2 ring-primary/20',
       )}
-      onClick={selectionMode ? onToggleSelect : onClick}
+      onClick={() => onSelect?.(product.product_id)}
     >
-      <CardContent className="flex items-center gap-2.5 p-2.5">
-        {selectionMode && (
-          <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-            <SelectionCheckbox
-              checked={isSelected}
-              onChange={onToggleSelect}
-              size="md"
-              animateEntry
-            />
+      {selectionMode && (
+        <div
+          className={cn(
+            'absolute left-2 top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all',
+            isSelected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground bg-card',
+          )}
+        >
+          {isSelected && (
+            <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none">
+              <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+      )}
+
+      {/* Thumbnail */}
+      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-muted/20">
+        {p?.primary_image_url ? (
+          <img
+            src={p.primary_image_url}
+            alt={p.name}
+            className="h-full w-full object-contain"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <Package className="h-5 w-5 text-muted-foreground/30" />
           </div>
         )}
-        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted sm:h-14 sm:w-14">
-          {product.product_image ? (
-            <img
-              src={product.product_image}
-              alt={product.product_name}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <Package className="h-5 w-5 text-muted-foreground/30" />
-            </div>
-          )}
-          {fresh && <div className="absolute inset-0 rounded-lg ring-2 ring-success/40" />}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="mb-0.5 flex items-center gap-2">
-            <NoveltyBadge 
-              daysRemaining={product.days_remaining} 
-              size="sm" 
+      </div>
+
+      {/* Info */}
+      <div className="min-w-0 flex-1">
+        <div className="mb-0.5 flex items-center gap-2">
+          <NoveltyBadge
+            daysRemaining={product.days_remaining}
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onStatusClick?.('novelty');
+            }}
+          />
+          {fresh && (
+            <ProductStatusBadge
+              type="novelty"
+              value="NEW"
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onStatusClick?.('novelty');
               }}
             />
-            {fresh && (
-              <ProductStatusBadge 
-                type="novelty" 
-                value="NEW" 
-                size="sm" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onStatusClick?.('novelty');
-                }}
-              />
-            )}
-          </div>
-          <h4 className="line-clamp-1 text-sm font-medium transition-colors group-hover:text-primary">
-            {product.product_name}
-          </h4>
-          <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-            {product.product_sku && (
-              <p className="text-[10px] text-muted-foreground">SKU: {product.product_sku}</p>
-            )}
-            {product.supplier_name && (
-              <Badge variant="outline" className="border-info/30 px-1 py-0 text-[9px] text-info">
-                <Building2 className="mr-0.5 h-2.5 w-2.5" />
-                {product.supplier_name}
-              </Badge>
-            )}
-            {product.category_name && (
-              <Badge variant="outline" className="px-1 py-0 text-[9px]">
-                <FolderTree className="mr-0.5 h-2.5 w-2.5" />
-                {product.category_name}
-              </Badge>
-            )}
-            <span className={cn('stock-indicator text-[9px]', getStockStatusColor(stockStatus))}>
-              <Package className="h-2.5 w-2.5" />
-              {getStockStatusLabel(stockStatus)}
-            </span>
-            <span className="text-[9px] text-muted-foreground">
-              {stockQty.toLocaleString('pt-BR')} un.
-            </span>
-          </div>
+          )}
         </div>
-        {product.base_price !== null && product.base_price > 0 && (
-          <div className="shrink-0 text-right">
-            <p className="text-[10px] text-muted-foreground">A partir de</p>
-            <p className="text-sm font-semibold tabular-nums">{formatPrice(product.base_price)}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        <p className="truncate text-sm font-medium">{p?.name ?? '—'}</p>
+        <p className="text-xs text-muted-foreground">{p?.sku ?? '—'}</p>
+        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+          {p?.category_name && (
+            <span className="flex items-center gap-0.5">
+              <FolderTree className="h-3 w-3" />
+              {p.category_name}
+            </span>
+          )}
+          {p?.supplier_name && (
+            <span className="flex items-center gap-0.5">
+              <Building2 className="h-3 w-3" />
+              {p.supplier_name}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Price */}
+      {p?.sale_price != null && (
+        <span className="flex-shrink-0 text-sm font-semibold text-primary">
+          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.sale_price)}
+        </span>
+      )}
+    </article>
   );
 });
 
+// ── Table View ───────────────────────────────────────────────────────────────
 export function NoveltyTableView({
   products,
-  onProductClick,
-  selectionMode,
-  selectedIds,
-  onToggleSelect,
+  selectionMode = false,
+  selectedIds = [],
+  onSelect,
+  onStatusClick,
 }: {
   products: NoveltyWithDetails[];
-  onProductClick: (id: string) => void;
-  selectionMode: boolean;
-  selectedIds: Set<string>;
-  onToggleSelect: (id: string) => void;
-  onStatusClick?: (type: string, value?: string | number) => void;
+  selectionMode?: boolean;
+  selectedIds?: string[];
+  onSelect?: (id: string) => void;
+  onStatusClick?: (type: string) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border/50">
+    <div className="overflow-x-auto rounded-lg border">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/30 hover:bg-muted/30">
-            {selectionMode && <TableHead className="w-[40px] px-2"></TableHead>}
-            <TableHead className="w-[44px] px-2">Img</TableHead>
-            <TableHead className="px-2">Produto</TableHead>
-            <TableHead className="hidden px-2 sm:table-cell">SKU</TableHead>
-            <TableHead className="hidden px-2 md:table-cell">Fornecedor</TableHead>
-            <TableHead className="hidden px-2 lg:table-cell">Categoria</TableHead>
-            <TableHead className="px-2 text-center">Status</TableHead>
-            <TableHead className="px-2 text-center">Estoque</TableHead>
-            <TableHead className="px-2 text-right">Preço</TableHead>
+          <TableRow>
+            {selectionMode && <TableHead className="w-10" />}
+            <TableHead className="min-w-[200px]">Produto</TableHead>
+            <TableHead>SKU</TableHead>
+            <TableHead>Novidade</TableHead>
+            <TableHead>Pre\u00e7o</TableHead>
+            <TableHead>Categoria</TableHead>
+            <TableHead>Fornecedor</TableHead>
+            <TableHead className="text-right">Estoque</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {products.map((product) => {
-            const fresh = isFresh(product.detected_at);
-            const isSelected = selectedIds.has(product.product_id);
-            const stockQty = product.stock_quantity ?? 0;
-            const stockStatus = product.stock_status ?? 'in-stock';
+            const p = product.product;
+            const isSelected = selectedIds.includes(product.product_id);
             return (
               <TableRow
-                key={product.novelty_id}
+                key={product.id}
                 className={cn(
-                  'cursor-pointer transition-colors',
-                  fresh && 'bg-success/5',
-                  isSelected && 'bg-primary/10',
+                  'cursor-pointer transition-colors hover:bg-muted/50',
+                  isSelected && 'bg-primary/5',
                 )}
-                onClick={() =>
-                  selectionMode
-                    ? onToggleSelect(product.product_id)
-                    : onProductClick(product.product_id)
-                }
+                onClick={() => onSelect?.(product.product_id)}
               >
                 {selectionMode && (
-                  <TableCell className="p-1.5">
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <SelectionCheckbox
-                        checked={isSelected}
-                        onChange={() => onToggleSelect(product.product_id)}
-                        size="sm"
-                      />
+                  <TableCell className="px-2 py-1.5">
+                    <div
+                      className={cn(
+                        'flex h-4 w-4 items-center justify-center rounded border-2',
+                        isSelected ? 'border-primary bg-primary' : 'border-muted-foreground',
+                      )}
+                    >
+                      {isSelected && (
+                        <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none">
+                          <path
+                            d="M2 6L5 9L10 3"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
                     </div>
                   </TableCell>
                 )}
-                <TableCell className="p-1.5">
-                  <div className="h-9 w-9 overflow-hidden rounded bg-muted">
-                    {product.product_image ? (
-                      <img
-                        src={product.product_image}
-                        alt={product.product_name}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <Package className="h-3.5 w-3.5 text-muted-foreground/30" />
-                      </div>
-                    )}
+                <TableCell className="px-2 py-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded bg-muted/20">
+                      {p?.primary_image_url ? (
+                        <img
+                          src={p.primary_image_url}
+                          alt={p.name}
+                          className="h-full w-full object-contain"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <Package className="h-4 w-4 text-muted-foreground/30" />
+                        </div>
+                      )}
+                    </div>
+                    <span className="line-clamp-1 text-sm font-medium">{p?.name ?? '—'}</span>
                   </div>
                 </TableCell>
-                <TableCell className="px-2 py-1.5">
-                  <p className="line-clamp-1 text-xs font-medium">{product.product_name}</p>
-                </TableCell>
-                <TableCell className="hidden px-2 py-1.5 sm:table-cell">
-                  <span className="text-[11px] text-muted-foreground">
-                    {product.product_sku || '—'}
-                  </span>
-                </TableCell>
-                <TableCell className="hidden px-2 py-1.5 md:table-cell">
-                  <span className="text-[11px] text-muted-foreground">
-                    {product.supplier_name || '—'}
-                  </span>
-                </TableCell>
-                <TableCell className="hidden px-2 py-1.5 lg:table-cell">
-                  <span className="text-[11px] text-muted-foreground">
-                    {product.category_name || '—'}
-                  </span>
-                </TableCell>
+                <TableCell className="px-2 py-1.5 text-xs text-muted-foreground">{p?.sku ?? '—'}</TableCell>
                 <TableCell className="px-2 py-1.5 text-center">
-                  <NoveltyBadge 
-                    daysRemaining={product.days_remaining} 
-                    size="sm" 
-                    onClick={() => {}} // placeholder para evitar erro de referência inexistente
+                  <NoveltyBadge
+                    daysRemaining={product.days_remaining}
+                    size="sm"
+                    onClick={() => {}}
                   />
                 </TableCell>
-                <TableCell className="px-2 py-1.5 text-center">
-                  <span
-                    className={cn('stock-indicator text-[10px]', getStockStatusColor(stockStatus))}
-                  >
-                    <Package className="h-2.5 w-2.5" />
-                    {getStockStatusLabel(stockStatus)}
-                  </span>
-                  <p className="text-[10px] text-muted-foreground">
-                    {stockQty.toLocaleString('pt-BR')} un.
-                  </p>
+                <TableCell className="px-2 py-1.5 text-sm font-medium">
+                  {p?.sale_price != null
+                    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.sale_price)
+                    : '—'}
                 </TableCell>
-                <TableCell className="px-2 py-1.5 text-right">
-                  {product.base_price !== null && product.base_price > 0 ? (
-                    <span className="text-xs font-semibold tabular-nums">
-                      {formatPrice(product.base_price)}
-                    </span>
-                  ) : (
-                    <span className="text-[11px] text-muted-foreground">—</span>
-                  )}
+                <TableCell className="px-2 py-1.5 text-xs text-muted-foreground">{p?.category_name ?? '—'}</TableCell>
+                <TableCell className="px-2 py-1.5 text-xs text-muted-foreground">{p?.supplier_name ?? '—'}</TableCell>
+                <TableCell className="px-2 py-1.5 text-right text-sm">
+                  <span
+                    className={cn(
+                      'font-medium',
+                      (p?.stock_quantity ?? 1) === 0 ? 'text-destructive' : 'text-foreground',
+                    )}
+                  >
+                    {p?.stock_quantity ?? 0}
+                  </span>
                 </TableCell>
               </TableRow>
             );
@@ -472,49 +363,5 @@ export function NoveltyTableView({
         </TableBody>
       </Table>
     </div>
-  );
-}
-
-type ViewMode = 'grid' | 'list' | 'table';
-
-export function NoveltyCardSkeleton({ viewMode }: { viewMode: ViewMode }) {
-  if (viewMode === 'list') {
-    return (
-      <Card className="border-border/50">
-        <CardContent className="flex items-center gap-2.5 p-2.5">
-          <Skeleton className="h-12 w-12 rounded-lg sm:h-14 sm:w-14" />
-          <div className="flex-1 space-y-1.5">
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-3.5 w-full" />
-            <Skeleton className="h-3 w-24" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-  if (viewMode === 'table') {
-    return (
-      <div className="flex items-center gap-2 border-b border-border/30 px-2 py-1.5">
-        <Skeleton className="h-9 w-9" />
-        <Skeleton className="h-3 flex-1" />
-        <Skeleton className="h-3 w-14" />
-        <Skeleton className="h-3 w-14" />
-      </div>
-    );
-  }
-  return (
-    <Card className="overflow-hidden border-border/50">
-      <CardContent className="p-0">
-        <Skeleton className="aspect-square" />
-        <div className="space-y-1.5 p-2.5">
-          <Skeleton className="h-3.5 w-full" />
-          <Skeleton className="h-3.5 w-3/4" />
-          <div className="flex justify-between">
-            <Skeleton className="h-3 w-14" />
-            <Skeleton className="h-4 w-12" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
