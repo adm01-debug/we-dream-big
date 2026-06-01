@@ -20,7 +20,8 @@ BEGIN
 END $$;
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='color_variations')
+     AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'color_variations' AND policyname = 'color_variations_public_read'
   ) THEN
@@ -29,7 +30,8 @@ BEGIN
 END $$;
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='product_materials')
+     AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'product_materials' AND policyname = 'product_materials_public_read'
   ) THEN
@@ -38,7 +40,8 @@ BEGIN
 END $$;
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='product_kit_components')
+     AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'product_kit_components' AND policyname = 'product_kit_components_public_read'
   ) THEN
@@ -47,7 +50,8 @@ BEGIN
 END $$;
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='material_types')
+     AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'material_types' AND policyname = 'material_types_public_read'
   ) THEN
@@ -73,7 +77,8 @@ BEGIN
 END $$;
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='tecnicas_gravacao')
+     AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'tecnicas_gravacao' AND policyname = 'tecnicas_gravacao_public_read'
   ) THEN
@@ -82,7 +87,8 @@ BEGIN
 END $$;
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='tabela_preco_gravacao_oficial_faixa')
+     AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'tabela_preco_gravacao_oficial_faixa' AND policyname = 'tabela_preco_gravacao_oficial_faixa_public_read'
   ) THEN
@@ -91,7 +97,8 @@ BEGIN
 END $$;
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='ramo_atividade')
+     AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'ramo_atividade' AND policyname = 'ramo_atividade_public_read'
   ) THEN
@@ -99,11 +106,24 @@ BEGIN
   END IF;
 END $$;
 
--- Phase 4: cleanup superseded policies
-DROP POLICY IF EXISTS auth_read_tecnicas_gravacao ON tecnicas_gravacao;
-DROP POLICY IF EXISTS tabela_preco_gravacao_oficial_faixa_authenticated_read ON tabela_preco_gravacao_oficial_faixa;
-DROP POLICY IF EXISTS ra_select_authenticated ON ramo_atividade;
-DROP POLICY IF EXISTS mt_select ON material_types;
-DROP POLICY IF EXISTS product_kit_components_select ON product_kit_components;
+-- Phase 4: cleanup superseded policies (DROP POLICY IF EXISTS é tolerante a tabelas ausentes? Não — falha 42P01)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='tecnicas_gravacao') THEN
+    DROP POLICY IF EXISTS auth_read_tecnicas_gravacao ON tecnicas_gravacao;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='tabela_preco_gravacao_oficial_faixa') THEN
+    DROP POLICY IF EXISTS tabela_preco_gravacao_oficial_faixa_authenticated_read ON tabela_preco_gravacao_oficial_faixa;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='ramo_atividade') THEN
+    DROP POLICY IF EXISTS ra_select_authenticated ON ramo_atividade;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='material_types') THEN
+    DROP POLICY IF EXISTS mt_select ON material_types;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='product_kit_components') THEN
+    DROP POLICY IF EXISTS product_kit_components_select ON product_kit_components;
+  END IF;
+END $$;
 
 -- Phase 4: v_products_public is in separate migration 20260530020000
