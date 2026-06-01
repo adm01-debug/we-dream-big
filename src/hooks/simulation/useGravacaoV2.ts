@@ -150,7 +150,39 @@ export function useCustomizationPriceLegacy() {
       try {
         // Placeholder: RPC call logic would go here if migrated, but plan says PostgREST calls
         // For now using supabase.rpc if defined or keep as is if RPC is still supported
-        const { data: rawResult, error: rpcError } = await (
+        type RpcCustomizationPriceResult = {
+          success?: boolean;
+          codigo_orcamento?: string;
+          area?: {
+            id?: string;
+            code?: string;
+            name?: string;
+            max_width?: number | null;
+            max_height?: number | null;
+          };
+          tabela?: { id?: string; codigo_tabela?: string; nome?: string; cobra_por_cor?: boolean };
+          faixa?: {
+            ordem?: number;
+            quantidade_minima?: number;
+            quantidade_maxima?: number;
+            prazo_dias?: number | null;
+          };
+          parametros?: { quantidade?: number; num_cores?: number };
+          custos?: {
+            custo_base_unitario?: number;
+            custo_unitario_total?: number;
+            custo_setup_base?: number;
+          };
+          precos?: {
+            markup_percent?: number;
+            preco_unitario_final?: number;
+            subtotal_pecas?: number;
+            faturamento_minimo_gravacao?: number;
+            aplica_minimo?: boolean;
+            total_final?: number;
+          };
+        };
+        const { data: rawResultRaw, error: rpcError } = await (
           supabase.rpc as unknown as (
             fn: string,
             args: Record<string, unknown>,
@@ -164,6 +196,7 @@ export function useCustomizationPriceLegacy() {
         });
 
         if (rpcError) throw rpcError;
+        const rawResult = rawResultRaw as RpcCustomizationPriceResult | null;
         if (!rawResult?.success) {
           setLoading(false);
           return null;

@@ -129,16 +129,14 @@ export function CatalogToolbar({
             </TooltipContent>
           </Tooltip>
           <SheetContent side="left" className="w-80 overflow-y-auto">
-            {filterSheetOpen && (
-              <Suspense fallback={<FilterPanelSkeleton />}>
-                <LazyFilterPanel
-                  filters={filters}
-                  onFilterChange={setFilters}
-                  onReset={resetFilters}
-                  activeFiltersCount={activeFiltersCount}
-                />
-              </Suspense>
-            )}
+            <Suspense fallback={<FilterPanelSkeleton />}>
+              <LazyFilterPanel
+                filters={filters}
+                onFilterChange={setFilters}
+                onReset={resetFilters}
+                activeFiltersCount={activeFiltersCount}
+              />
+            </Suspense>
           </SheetContent>
         </Sheet>
 

@@ -1,4 +1,31 @@
 // Hook CRUD para Tecnicas de Gravacao (via PostgREST nativo)
+//
+// FIX 2026-06-01 — 5 bugs corrigidos:
+//
+// BUG-TEC-01 + BUG-TEC-02 (useTecnicasGravacao lista):
+//   ANTES: variantesResult buscava tabela_preco_gravacao_oficial novamente
+//          tentando acessar v.tecnica_gravacao_id (campo inexistente)
+//          → variantesCount sempre 0 para todas as técnicas
+//   DEPOIS: busca tabela_preco_gravacao_oficial_faixa, agrupa por
+//           tabela_preco_gravacao_id (FK real) → count correto por técnica
+//
+// BUG-TEC-03 (useTecnicaGravacao singular):
+//   ANTES: variantesResult buscava tabela_preco_gravacao_oficial com
+//          .order('ordem_exibicao') — coluna não existe → PostgREST 400
+//   DEPOIS: busca tabela_preco_gravacao_oficial_faixa com
+//           .eq('tabela_preco_gravacao_id', id).order('ordem') → correto
+//
+// BUG-TEC-04 (deleteMutation):
+//   ANTES: verificava count da própria tabela (sempre ≥ 1 se ID existe)
+//          bloco "if count > 0" vazio = dead code
+//   DEPOIS: verifica faixas vinculadas em tabela_preco_gravacao_oficial_faixa
+//           lança erro com mensagem clara se houver faixas
+//
+// BUG-TEC-05 (createMutation):
+//   ANTES: insert com {slug} que não existe em tabela_preco_gravacao_oficial
+//          → PostgREST 400 Bad Request
+//   DEPOIS: slug removido do insert (campo não existe na tabela)
+
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
@@ -11,27 +38,20 @@ import { sanitizeError } from '@/lib/security/sanitize-error';
 
 const QUERY_KEY = 'tecnicas-gravacao';
 
-const generateSlug = (nome: string): string => {
-  return nome
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-};
-
 export function useTecnicasGravacao() {
   const queryClient = useQueryClient();
 
   const tecnicasQuery = useQuery({
     queryKey: [QUERY_KEY],
     queryFn: async (): Promise<TecnicaGravacaoWithVariantes[]> => {
-      const [tecnicasResult, variantesResult] = await Promise.all([
+      // FIX BUG-TEC-01: buscar faixas em paralelo com técnicas
+      // antes buscava tpgo duas vezes (sem utilidade)
+      const [tecnicasResult, faixasResult] = await Promise.all([
         supabase
           .from('tabela_preco_gravacao_oficial')
           .select('*')
           .order('nome', { ascending: true }),
-        supabase.from('tabela_preco_gravacao_oficial').select('id'),
+        supabase.from('tabela_preco_gravacao_oficial_faixa').select('tabela_preco_gravacao_id'), // só o FK — evita baixar 884 rows completos
       ]);
 
       if (tecnicasResult.error) {
@@ -51,11 +71,14 @@ export function useTecnicasGravacao() {
         throw tecnicasResult.error;
       }
 
+      // FIX BUG-TEC-02: agrupar faixas por tabela_preco_gravacao_id (FK correto)
+      // antes tentava v.tecnica_gravacao_id que não existe → sempre 0
       const variantesCount: Record<string, number> = {};
-      (variantesResult.data || []).forEach((v) => {
-        const row = v as { tecnica_gravacao_id?: string; id: string };
-        const vid = row.tecnica_gravacao_id || row.id;
-        variantesCount[vid] = (variantesCount[vid] || 0) + 1;
+      (faixasResult.data || []).forEach((f) => {
+        const tid = (f as { tabela_preco_gravacao_id: string }).tabela_preco_gravacao_id;
+        if (tid) {
+          variantesCount[tid] = (variantesCount[tid] || 0) + 1;
+        }
       });
 
       return (tecnicasResult.data || []).map((t) => {
@@ -72,10 +95,12 @@ export function useTecnicasGravacao() {
 
   const createMutation = useMutation({
     mutationFn: async (formData: TecnicaGravacaoFormData): Promise<TecnicaGravacao> => {
-      const slug = generateSlug(formData.nome);
+      // FIX BUG-TEC-05: removido {slug} do insert
+      // tabela_preco_gravacao_oficial NÃO tem coluna 'slug'
+      // (inserir campo inexistente → PostgREST 400)
       const { data, error } = await supabase
         .from('tabela_preco_gravacao_oficial')
-        .insert({ ...formData, slug })
+        .insert(formData)
         .select()
         .single();
       if (error) throw error;
@@ -95,13 +120,9 @@ export function useTecnicasGravacao() {
       id,
       ...updates
     }: Partial<TecnicaGravacaoFormData> & { id: string }): Promise<TecnicaGravacao> => {
-      const updateData: Record<string, unknown> = { ...updates };
-      if (updates.nome) {
-        updateData.slug = generateSlug(updates.nome);
-      }
       const { data, error } = await supabase
         .from('tabela_preco_gravacao_oficial')
-        .update(updateData)
+        .update(updates)
         .eq('id', id)
         .select()
         .single();
@@ -119,16 +140,20 @@ export function useTecnicasGravacao() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string): Promise<void> => {
-      // Verificar variantes vinculadas
-      const { count, error: countError } = await supabase
-        .from('tabela_preco_gravacao_oficial')
+      // FIX BUG-TEC-04: verificar FAIXAS vinculadas antes de deletar
+      // antes verificava count da própria tabela (dead code — sempre ≥ 1)
+      const { count: faixasCount, error: faixasError } = await supabase
+        .from('tabela_preco_gravacao_oficial_faixa')
         .select('id', { count: 'exact', head: true })
-        .eq('id', id);
+        .eq('tabela_preco_gravacao_id', id);
 
-      if (countError) throw countError;
+      if (faixasError) throw faixasError;
 
-      if ((count ?? 0) > 0) {
-        // throw new Error(...) if needed
+      if ((faixasCount ?? 0) > 0) {
+        throw new Error(
+          `Não é possível excluir: há ${faixasCount} faixa(s) de preço vinculada(s). ` +
+            `Remova as faixas antes de excluir a técnica.`,
+        );
       }
 
       const { error } = await supabase.from('tabela_preco_gravacao_oficial').delete().eq('id', id);
@@ -169,8 +194,6 @@ export function useTecnicasGravacao() {
     create: createMutation.mutateAsync,
     update: updateMutation.mutateAsync,
     delete: deleteMutation.mutateAsync,
-    // BUG-GRAVACAO-02 FIX: era toggleStatusMutation.mutate (fire-and-forget).
-    // Callers nao conseguiam await o resultado. Alinhado com create/update/delete.
     toggleStatus: toggleStatusMutation.mutateAsync,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
@@ -184,22 +207,28 @@ export function useTecnicaGravacao(id: string | undefined) {
     queryFn: async (): Promise<TecnicaGravacaoWithVariantes | null> => {
       if (!id) return null;
 
-      const [tecnicaResult, variantesResult] = await Promise.all([
+      // FIX BUG-TEC-03: variantesResult busca FAIXAS (tpgo_faixa) em vez de tpgo
+      // antes: .from('tpgo').eq('id',id).order('ordem_exibicao') — coluna inexistente → 400
+      // depois: .from('tpgo_faixa').eq('tabela_preco_gravacao_id',id).order('ordem')
+      const [tecnicaResult, faixasResult] = await Promise.all([
         supabase.from('tabela_preco_gravacao_oficial').select('*').eq('id', id).single(),
         supabase
-          .from('tabela_preco_gravacao_oficial')
+          .from('tabela_preco_gravacao_oficial_faixa')
           .select('*')
-          .eq('id', id)
-          .order('ordem_exibicao', { ascending: true }),
+          .eq('tabela_preco_gravacao_id', id)
+          .order('ordem', { ascending: true }),
       ]);
 
       const tecnica = tecnicaResult.data;
       if (!tecnica) return null;
 
+      // Graceful degradation: se faixas falhar, retorna técnica sem faixas
+      const faixas = faixasResult.error ? [] : faixasResult.data || [];
+
       return {
         ...tecnica,
-        variantes: (variantesResult.data || []) as TecnicaGravacaoWithVariantes['variantes'],
-        variantes_count: (variantesResult.data || []).length,
+        variantes: faixas as TecnicaGravacaoWithVariantes['variantes'],
+        variantes_count: faixas.length,
       };
     },
     enabled: !!id,

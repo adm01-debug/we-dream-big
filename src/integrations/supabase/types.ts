@@ -6369,6 +6369,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notification_preferences: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          in_app_enabled: boolean
+          push_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          in_app_enabled?: boolean
+          push_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          in_app_enabled?: boolean
+          push_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_onboarding: {
         Row: {
           completed_at: string | null
@@ -6959,6 +6989,17 @@ export type Database = {
       }
     }
     Views: {
+      product_popularity_30d: {
+        Row: {
+          category_name: string | null
+          id: string | null
+          image_url: string | null
+          name: string | null
+          sku: string | null
+          view_count: number | null
+        }
+        Relationships: []
+      }
       v_full_scope_grants: {
         Row: {
           audit_id: string | null
@@ -7663,6 +7704,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      refresh_product_popularity: { Args: never; Returns: undefined }
       repair_ownership_orphans: {
         Args: {
           _dry_run?: boolean

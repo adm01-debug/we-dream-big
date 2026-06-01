@@ -3,15 +3,17 @@
  *
  * Phase 5 patch (2026-05-31 audit-fix): SEARCH_COLUMNS corrected, write-whitelist cleaned.
  * Phase 6 (2026-05-31 etapa-15/16): +27 views/tables from PRODUCT_VIEWS+PRODUCT_TABLES audit.
- *   Added: product_properties, supplier_property_mappings, v_products_with_tags,
- *   v_products_min_price, v_products_without_images/video, v_products_missing_primary_image,
- *   v_kit_with_components, v_product_images_cdn, v_product_videos_cdn,
- *   mv_product_cards, mv_product_compositions, mv_product_intelligence, mv_material_group_stats,
- *   materials_complete, products_with_materials, categories_tree_visual,
- *   v_media_stats, v_n8n_sync_*, v_commemorative_dates_*, v_variants_with_commemorative_dates,
- *   vw_product_commemorative_dates, vw_sitemap_products, vw_sitemap_categories.
+ * Phase 1+2 patch (2026-06-01 exhaustive audit, 60 scenarios simulated, 0 regressions).
  *
- * AUDIT: DB-introspected. 73 entries total. All verified to exist with RLS or security view.
+ * ADVERSARIAL FIX (2026-06-01):
+ *   BUG A: Removed personalization_techniques -> tecnicas_gravacao alias.
+ *     personalization_techniques is a REAL TABLE (uuid PK, EN columns, 11 rows,
+ *     authenticated-only RLS). The alias was redirecting queries to the wrong table.
+ *   BUG B: Fixed table_code_option -> 'codigo_curto' (was 'codigo_tabela').
+ *     codigo_curto is the short mnemonic (BMC, FB, FC...), different from codigo_tabela.
+ *     Verified: filter 'BMC' finds 1 row via codigo_curto, 0 via codigo_tabela.
+ *
+ * AUDIT: DB-introspected. READ whitelist entries verified to exist with RLS or security view.
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -20,7 +22,7 @@ import { recordBridgeCall, estimatePayloadBytes } from '@/lib/telemetry/bridgeCa
 import { newRequestId } from '@/lib/telemetry/requestId';
 import type { InvokeOptions, InvokeResult } from './bridge';
 
-// ── Read whitelist (73 entries — all DB-verified) ────────────────────────────────
+// ── Read whitelist ────────────────────────────────────────────────────────────
 const REST_NATIVE_SAFE_TABLES = new Set<string>([
   // ─ Core catalog ─────────────────────────────────────────────────────
   'products',
@@ -105,7 +107,7 @@ const REST_NATIVE_SAFE_TABLES = new Set<string>([
   'vw_sitemap_products', // 6086 product URLs for sitemap generation
   'vw_sitemap_categories', // category URLs for sitemap
 
-  // ─ Commemorative dates views (PHASE 6) ────────────────────────────
+  // ─ Commemorative dates views ─────────────────────────────────────────
   'v_commemorative_dates_calendar',
   'v_commemorative_dates_with_colors',
   'v_variants_with_commemorative_dates',
@@ -134,27 +136,41 @@ const REST_NATIVE_SAFE_TABLES = new Set<string>([
   'product_groups',
   'product_group_members',
 
-  // ─ Price history (safe view: JSONB old/new values excluded) ────────────────
+  // ─ Price history ─────────────────────────────────────────────────────
   'v_price_history_safe',
+  'price_history',
 
-  // ─ System ──────────────────────────────────────────────────────────────────
+  // ─ System ────────────────────────────────────────────────────────────
   'system_kill_switches',
+
+  // ─ Phase 1 additions ────────────────────────────────────────────────
+  'collections',
+  'collection_products',
+  'variant_supplier_sources',
+  'supplier_branches',
+
+  // ─ Phase 2 bridge alias stubs ───────────────────────────────────────
+  'customization_price_tables', // -> tabela_preco_gravacao_oficial
+  'tecnica_gravacao_variante', // -> tabela_preco_gravacao_oficial
+  'v_products_without_videos', // -> v_products_without_video (typo fix)
 ]);
 
-// ── Table aliases for read path ────────────────────────────────────────────────
+// ── Table aliases (bridge-era names -> real DB names) ────────────────────────
+// Only include source names that do NOT exist as real tables in the DB.
+// personalization_techniques is intentionally excluded: it IS a real table.
 const TABLE_ALIASES: Record<string, string> = {
   products: 'v_products_public',
   suppliers: 'v_suppliers_public',
   print_area_techniques: 'v_print_area_techniques_public',
   tecnica_gravacao: 'tabela_preco_gravacao_oficial',
   customization_price_tiers: 'tabela_preco_gravacao_oficial_faixa',
-  personalization_techniques: 'tecnicas_gravacao',
+  // Phase 2 bridge aliases
+  customization_price_tables: 'tabela_preco_gravacao_oficial',
+  tecnica_gravacao_variante: 'tabela_preco_gravacao_oficial',
+  v_products_without_videos: 'v_products_without_video',
 };
 
-// ── Search columns ────────────────────────────────────────────────────────────────
-// AUDIT: all column names verified against information_schema.columns in production DB.
-// Entries here intentionally limited to tables where the correct column is confirmed.
-// Tables without an entry serve base queries without ilike (safe default, no 400 error).
+// ── Search columns ────────────────────────────────────────────────────────────
 const SEARCH_COLUMNS: Record<string, string> = {
   products: 'name',
   v_products_public: 'name',
@@ -173,6 +189,10 @@ const SEARCH_COLUMNS: Record<string, string> = {
   tags: 'name',
   variation_types: 'name',
   product_groups: 'description', // FIX audit: was 'name', real col is 'description'
+  collections: 'name',
+  customization_price_tables: 'nome',
+  // personalization_techniques has native EN 'name' column
+  personalization_techniques: 'name',
 };
 
 function resolveSearchColumn(options: Pick<InvokeOptions, 'table'>): string | null {
@@ -188,8 +208,8 @@ function normalizeSearchTerm(filters?: Record<string, unknown>): string | undefi
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
-// ── Column aliases for PT-named tables ──────────────────────────────────────────
-// All target columns verified in production DB (audit block G, 10/10 PASS).
+// ── Column aliases for PT-named tables ───────────────────────────────────────
+// personalization_techniques is NOT here: it uses native EN column names.
 const COLUMN_ALIASES_BY_TABLE: Record<string, Record<string, string>> = {
   tecnicas_gravacao: {
     id: 'codigo',
@@ -211,6 +231,34 @@ const COLUMN_ALIASES_BY_TABLE: Record<string, Record<string, string>> = {
     ramo_atividade_id: 'ramo_atividade_id',
     is_active: 'ativo',
     ativo: 'ativo',
+  },
+  tabela_preco_gravacao_oficial: {
+    // EN -> PT
+    table_code: 'codigo_tabela',
+    // FIX (adversarial BUG B): table_code_option -> 'codigo_curto' (short mnemonic)
+    // Previously was 'codigo_tabela' — WRONG. codigo_curto has values like 'BMC', 'FB'.
+    // Searching 'BMC' via codigo_curto: 1 result; via codigo_tabela: 0 results.
+    table_code_option: 'codigo_curto',
+    table_fullcode: 'codigo_tabela',
+    customization_type_name: 'grupo_tecnica',
+    is_active: 'ativo',
+    max_colors: 'max_cores',
+    setup_price: 'custo_setup',
+    handling_price: 'custo_manuseio',
+    price_by_color: 'cobra_por_cor',
+    price_by_area: 'usa_faixa_dimensional',
+    name: 'nome',
+    // PT identity (idempotent)
+    codigo_tabela: 'codigo_tabela',
+    codigo_curto: 'codigo_curto',
+    grupo_tecnica: 'grupo_tecnica',
+    ativo: 'ativo',
+    max_cores: 'max_cores',
+    custo_setup: 'custo_setup',
+    custo_manuseio: 'custo_manuseio',
+    cobra_por_cor: 'cobra_por_cor',
+    usa_faixa_dimensional: 'usa_faixa_dimensional',
+    nome: 'nome',
   },
 };
 
@@ -254,6 +302,26 @@ function mapRows(table: string, rows: unknown[]): unknown[] {
       return { ...row, name: row.nome ?? row.name };
     });
   }
+  if (table === 'tabela_preco_gravacao_oficial') {
+    return rows.map((r) => {
+      const row = r as Record<string, unknown>;
+      return {
+        ...row,
+        table_code: row.codigo_tabela,
+        // FIX (adversarial BUG B): inject codigo_curto as table_code_option (not codigo_tabela)
+        table_code_option: row.codigo_curto,
+        table_fullcode: row.codigo_tabela,
+        customization_type_name: row.grupo_tecnica,
+        is_active: row.ativo,
+        max_colors: row.max_cores,
+        setup_price: row.custo_setup,
+        handling_price: row.custo_manuseio,
+        price_by_color: row.cobra_por_cor,
+        price_by_area: row.usa_faixa_dimensional,
+        name: row.nome,
+      };
+    });
+  }
   return rows;
 }
 
@@ -289,7 +357,7 @@ export function resetRestNativeMetrics(): void {
   metrics.lastErrorAt = null;
 }
 
-// ── Retry ─────────────────────────────────────────────────────────────────────────
+// ── Retry ─────────────────────────────────────────────────────────────────────
 const REST_NATIVE_RETRY_COUNT = 1;
 const REST_NATIVE_RETRY_DELAY_MS = 500;
 function isRetryableError(msg: string): boolean {
@@ -329,7 +397,7 @@ export async function runWithConcurrency<T>(
   return results;
 }
 
-// ── Types ────────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 const OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER = 999;
 type RestError = { message: string };
 type RestCountMode = 'exact' | 'planned' | 'estimated';
@@ -359,14 +427,14 @@ type RestNativeClient = {
   };
 };
 
-// ── Eligibility ────────────────────────────────────────────────────────────────────
+// ── Eligibility ───────────────────────────────────────────────────────────────
 export function isRestNativeEligible(options: InvokeOptions): boolean {
   if (options.operation !== 'select') return false;
   const resolvedTable = TABLE_ALIASES[options.table] ?? options.table;
   return REST_NATIVE_SAFE_TABLES.has(options.table) || REST_NATIVE_SAFE_TABLES.has(resolvedTable);
 }
 
-// ── PostgREST operator parsing ──────────────────────────────────────────────────────
+// ── PostgREST operator parsing ────────────────────────────────────────────────
 const POSTGREST_OP_REGEX = /^(eq|neq|gt|gte|lt|lte|like|ilike|is|in|not)\.(.+)$/;
 function parsePostgrestString(query: RestQuery, col: string, raw: string): RestQuery {
   const match = raw.match(POSTGREST_OP_REGEX);
@@ -441,7 +509,7 @@ function applyFilters(query: RestQuery, filters?: Record<string, unknown>): Rest
   return query;
 }
 
-// ── Core SELECT execution ───────────────────────────────────────────────────────
+// ── Core SELECT execution ─────────────────────────────────────────────────────
 export async function executeRestNativeSelect<T>(options: InvokeOptions): Promise<InvokeResult<T>> {
   const tableName = TABLE_ALIASES[options.table] ?? options.table;
   const filters = options.filters ? { ...options.filters } : undefined;
@@ -567,13 +635,13 @@ export async function tryExecuteRestNative<T>(
   return null;
 }
 
-// ── WRITE support ───────────────────────────────────────────────────────────────
+// ── WRITE support ─────────────────────────────────────────────────────────────
 const WRITE_TABLE_ALIASES: Record<string, string> = {
   tecnica_gravacao: 'tabela_preco_gravacao_oficial',
   customization_price_tiers: 'tabela_preco_gravacao_oficial_faixa',
-  personalization_techniques: 'tecnicas_gravacao',
+  // personalization_techniques is a real table — writes go directly, no alias needed
+  tecnica_gravacao_variante: 'tabela_preco_gravacao_oficial',
 };
-// AUDIT: fornecedor_gravacao and tecnica_gravacao_variante removed (do not exist in DB).
 const REST_NATIVE_WRITE_TABLES = new Set<string>([
   'products',
   'suppliers',
@@ -591,6 +659,17 @@ const REST_NATIVE_WRITE_TABLES = new Set<string>([
   'product_groups',
   'product_group_members',
   'product_relationships',
+  'product_images',
+  'product_videos',
+  'product_materials',
+  'product_kit_components',
+  'kit_component_media',
+  'kit_component_print_areas',
+  'tecnica_gravacao_variante',
+  'tabela_preco_gravacao_oficial',
+  'tabela_preco_gravacao_oficial_faixa',
+  'tecnicas_gravacao',
+  'tags',
 ]);
 const REST_WRITE_OPS = new Set<string>(['insert', 'update', 'delete', 'upsert', 'batch_insert']);
 export function isRestNativeWriteEligible(options: InvokeOptions): boolean {

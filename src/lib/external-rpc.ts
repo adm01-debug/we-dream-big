@@ -1,11 +1,9 @@
 /**
  * Módulo compartilhado para invocar RPCs no banco externo Promobrind.
  *
- * IMPORTANTE: Este é o ÚNICO local onde invokeExternalRpc deve ser definido.
- * Todos os hooks e utils devem importar daqui.
- *
- * Usa a edge function 'external-db-bridge' como proxy autenticado.
- * Inclui retry automático com backoff exponencial para erros transientes.
+ * FIX-BRIDGE-01 (2026-06-01): migrated from supabase.functions.invoke('external-db-bridge')
+ * to supabase.rpc() direct calls. Bridge is permanently OFF (kill-switch enabled=false).
+ * RPCs listed in rpc-native.ts are routed to PostgREST natively.
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -18,19 +16,12 @@ const RETRYABLE_PATTERNS = [
   '502',
   '503',
   '504',
-  'FunctionsHttpError',
   'network',
   'fetch',
   'ECONNRESET',
   'socket hang up',
   'AbortError',
   'Failed to fetch',
-  // Cold-start / runtime boot do isolate (plataforma)
-  'supabase_edge_runtime_error',
-  'service is temporarily unavailable',
-  'boot_error',
-  'function failed to start',
-  'bad gateway',
 ];
 
 function isRetryableError(msg: string): boolean {
@@ -39,7 +30,7 @@ function isRetryableError(msg: string): boolean {
 }
 
 /**
- * Invoca uma RPC no banco externo via edge function.
+ * Invoca uma RPC no banco externo via supabase.rpc() (REST nativo).
  * Retry automático (3x, backoff exponencial) para erros de timeout/rede.
  */
 export async function invokeExternalRpc<T>(
@@ -47,19 +38,10 @@ export async function invokeExternalRpc<T>(
   params: Record<string, unknown>,
 ): Promise<T> {
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-      body: {
-        operation: 'rpc',
-        rpcName,
-        rpcParams: params,
-      },
-    });
-
-    if (!error && data?.success) {
-      return data.data as T;
-    }
-
-    const msg = error?.message || data?.error || 'Erro na RPC';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.rpc as any)(rpcName, params);
+    if (!error) return data as T;
+    const msg = error?.message || 'Erro na RPC';
     if (attempt < MAX_RETRIES && isRetryableError(msg)) {
       const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
       logger.warn(
@@ -68,9 +50,7 @@ export async function invokeExternalRpc<T>(
       await new Promise((r) => setTimeout(r, delay));
       continue;
     }
-
     throw new Error(msg);
   }
-
   throw new Error('Max retries exceeded');
 }

@@ -80,7 +80,7 @@ export function useProductVariantsWithStock(productId: string | undefined) {
         throw error;
       }
 
-      type VariantRow = Record<string, unknown> & {
+      type VariantRow = VariantWithStock & {
         variant_supplier_sources?: Array<{
           next_date_1?: string | null;
           next_quantity_1?: number | null;
@@ -92,18 +92,18 @@ export function useProductVariantsWithStock(productId: string | undefined) {
       };
       const records = (data as unknown as VariantRow[]) || [];
 
-      return records.map((v) => {
+      return records.map((v): VariantWithStock => {
         const source = v.variant_supplier_sources?.[0];
         return {
           ...v,
           next_entry_date: source?.next_date_1 || null,
           next_entry_quantity: source?.next_quantity_1 || null,
-          next_date_1: source?.next_date_1,
-          next_quantity_1: source?.next_quantity_1,
-          next_date_2: source?.next_date_2,
-          next_quantity_2: source?.next_quantity_2,
-          next_date_3: source?.next_date_3,
-          next_quantity_3: source?.next_quantity_3,
+          next_date_1: source?.next_date_1 ?? null,
+          next_quantity_1: source?.next_quantity_1 ?? null,
+          next_date_2: source?.next_date_2 ?? null,
+          next_quantity_2: source?.next_quantity_2 ?? null,
+          next_date_3: source?.next_date_3 ?? null,
+          next_quantity_3: source?.next_quantity_3 ?? null,
         };
       });
     },

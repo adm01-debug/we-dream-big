@@ -14,6 +14,7 @@ import { X, Users, Calendar, Megaphone, ChevronDown, Search, Loader2 } from 'luc
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { PUBLICO_ALVO, DATAS_COMEMORATIVAS, ENDOMARKETING } from '@/data/mockData';
+import { dbInvoke } from '@/lib/db/postgrest';
 
 interface ProductMarketingSectionProps {
   productId: string;
@@ -38,12 +39,14 @@ function toArray(value: unknown): string[] {
 }
 
 async function fetchProductTags(productId: string): Promise<ProductTags> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'products', operation: 'select', id: productId },
+  // FIX-BRIDGE-01: migrated from bridge to dbInvoke
+  const result = await dbInvoke({
+    table: 'products',
+    operation: 'select',
+    filters: { id: productId },
+    limit: 1,
   });
-  if (error) throw new Error(error.message);
-
-  const product = data?.data?.records?.[0] || data?.data;
+  const product = result.records?.[0];
   const raw = product?.tags;
   const tags =
     typeof raw === 'string'
@@ -72,9 +75,11 @@ async function saveProductTags(productId: string, tags: ProductTags): Promise<vo
     datas_comemorativas: tags.datasComemorativas,
   };
 
-  const { error } = await supabase.functions.invoke('external-db-bridge', {
-    body: { table: 'products', operation: 'update', id: productId, data: { tags: payload } },
-  });
+  // FIX-BRIDGE-01: migrated from bridge to dbInvoke (REST native write)
+  const { error } = await supabase
+    .from('v_products_public')
+    .update({ tags: payload })
+    .eq('id', productId);
   if (error) throw new Error(error.message);
 }
 
@@ -204,7 +209,6 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
 
   return (
     <div className="space-y-3">
-      {/* Badges dos selecionados */}
       {totalSelected > 0 && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-2.5">
           <div className="mb-2 flex items-center justify-between">
@@ -252,8 +256,6 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
           </div>
         </div>
       )}
-
-      {/* Busca */}
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -272,8 +274,6 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
           </button>
         )}
       </div>
-
-      {/* Estatísticas */}
       <div className="flex items-center justify-between px-1 text-[11px] text-muted-foreground">
         <span>{CATEGORIES.length} categorias</span>
         <span>•</span>
@@ -283,8 +283,6 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
           {totalSelected} selecionados
         </span>
       </div>
-
-      {/* Árvore de categorias */}
       <ScrollArea className="h-56">
         <div className="space-y-1.5 pr-3">
           {CATEGORIES.map(({ key, label, icon: Icon, options }) => {
@@ -293,18 +291,15 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
             const filteredOptions = search
               ? options.filter((o) => o.toLowerCase().includes(searchLower))
               : options;
-
             if (
               search &&
               filteredOptions.length === 0 &&
               !label.toLowerCase().includes(searchLower)
             )
               return null;
-
             const linkedInCat = selected.length;
             const isOpen = openGroups.has(key) || !!search;
             const hasAnySelection = linkedInCat > 0;
-
             return (
               <div
                 key={key}
@@ -315,7 +310,6 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
                     : 'bg-muted/30 hover:bg-muted/50',
                 )}
               >
-                {/* Header */}
                 <div className="flex items-center gap-2 p-2.5">
                   <button
                     type="button"
@@ -332,25 +326,19 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
                       )}
                     />
                   </button>
-
                   <div
                     className={cn(
                       'h-4 w-4 flex-shrink-0 rounded-full ring-2 ring-offset-1 ring-offset-background transition-all',
                       hasAnySelection ? 'scale-110 ring-primary/50' : 'ring-border/50',
                     )}
-                    style={{
-                      backgroundColor: color,
-                      boxShadow: `0 2px 8px ${color}40`,
-                    }}
+                    style={{ backgroundColor: color, boxShadow: `0 2px 8px ${color}40` }}
                   />
-
                   <Icon
                     className={cn(
                       'h-3.5 w-3.5 flex-shrink-0 transition-colors',
                       hasAnySelection ? 'text-primary' : 'text-muted-foreground',
                     )}
                   />
-
                   <span
                     className={cn(
                       'flex-1 truncate text-sm font-medium transition-colors',
@@ -359,7 +347,6 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
                   >
                     {label}
                   </span>
-
                   <div className="flex flex-shrink-0 items-center gap-1.5">
                     {linkedInCat > 0 && (
                       <span className="min-w-[18px] rounded-full bg-primary px-1.5 py-0.5 text-center text-[10px] font-bold text-primary-foreground">
@@ -378,8 +365,6 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
                     </span>
                   </div>
                 </div>
-
-                {/* Opções */}
                 {isOpen && filteredOptions.length > 0 && (
                   <div className="space-y-0.5 px-2.5 pb-2.5">
                     <div className="ml-8 border-t border-border/30 pt-2">
@@ -418,7 +403,6 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
                     </div>
                   </div>
                 )}
-
                 {isOpen && filteredOptions.length === 0 && (
                   <div className="px-2.5 pb-2.5">
                     <div className="ml-8 border-t border-border/30 pt-2">

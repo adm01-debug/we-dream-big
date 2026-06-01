@@ -7,12 +7,12 @@
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.views WHERE table_schema='public' AND table_name='v_products_public') THEN
-    REVOKE INSERT, UPDATE, DELETE ON v_products_public FROM anon, authenticated, public;
+    REVOKE INSERT, UPDATE, DELETE ON public.v_products_public FROM anon, authenticated, public;
   END IF;
   IF EXISTS (SELECT 1 FROM information_schema.views WHERE table_schema='public' AND table_name='v_suppliers_public') THEN
-    REVOKE INSERT, UPDATE, DELETE ON v_suppliers_public FROM anon, authenticated, public;
+    REVOKE INSERT, UPDATE, DELETE ON public.v_suppliers_public FROM anon, authenticated, public;
   END IF;
   IF EXISTS (SELECT 1 FROM information_schema.views WHERE table_schema='public' AND table_name='v_print_area_techniques_public') THEN
-    REVOKE INSERT, UPDATE, DELETE ON v_print_area_techniques_public FROM anon, authenticated, public;
+    REVOKE INSERT, UPDATE, DELETE ON public.v_print_area_techniques_public FROM anon, authenticated, public;
   END IF;
 END $$;

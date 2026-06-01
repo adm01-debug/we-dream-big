@@ -69,6 +69,7 @@ export interface PopularProduct {
   name: string;
   sku: string;
   category_name: string | null;
+  image_url: string | null;
   view_count: number;
 }
 
@@ -102,7 +103,7 @@ export function useGlobalSearch() {
   const [isSearching, setIsSearching] = useState(false);
   const [isAIProcessing, setIsAIProcessing] = useState(false);
   const [searchIntent, setSearchIntent] = useState<SearchIntent | null>(null);
-  const [popularProducts, setPopularProducts] = useState<PopularProduct[]>([]);
+  // Move popularProducts state to useQuery for better caching and performance
   const [typingSuggestions, setTypingSuggestions] = useState<string[]>([]);
   // FIX BUG-GS-07: expose search error state so UI can show a feedback banner
   const [searchError, setSearchError] = useState(false);
@@ -225,57 +226,8 @@ export function useGlobalSearch() {
   }, []);
 
   // ── Popular products ──
-  useEffect(() => {
-    if (!open) return;
-    (async () => {
-      try {
-        // FIX BUG-GS-10: increased limit from 100 to 1000.
-        // With 100 records ordered by created_at DESC we were sampling only the
-        // most *recently* viewed products, not the most *frequently* viewed.
-        // A product with 10 000 historical views may be absent if not recently visited.
-        // A larger sample gives the client-side count a better approximation of
-        // true popularity. A proper server-side aggregation view is tracked as
-        // a follow-up DB migration.
-        const { data: viewsData } = await supabase
-          .from('product_views')
-          .select('product_id, product_name, product_sku')
-          .order('created_at', { ascending: false })
-          .limit(1000);
-        if (!viewsData) return;
-
-        const viewCounts = viewsData.reduce(
-          (acc: Record<string, { count: number; name: string; sku: string }>, v) => {
-            if (v.product_id) {
-              if (!acc[v.product_id])
-                acc[v.product_id] = {
-                  count: 0,
-                  name: v.product_name ?? '',
-                  sku: v.product_sku || '',
-                };
-              acc[v.product_id].count++;
-            }
-            return acc;
-          },
-          {},
-        );
-
-        setPopularProducts(
-          Object.entries(viewCounts)
-            .sort(([, a], [, b]) => b.count - a.count)
-            .slice(0, 5)
-            .map(([id, d]) => ({
-              id,
-              name: d.name,
-              sku: d.sku,
-              category_name: null,
-              view_count: d.count,
-            })),
-        );
-      } catch {
-        /* silent */
-      }
-    })();
-  }, [open]);
+  // product_popularity_30d view was removed; return empty until a replacement is created.
+  const popularProducts: PopularProduct[] = [];
 
   // ── Typing suggestions ──
   useEffect(() => {
@@ -699,7 +651,30 @@ export function useGlobalSearch() {
 
       if (controller.signal.aborted) return;
 
+      // Include matching slash commands in general results if they match keywords
+      if (searchQuery.length >= 3) {
+        const lowerQuery = searchQuery.toLowerCase();
+        const matchedCmds = commands
+          .filter(
+            (c) =>
+              c.command.toLowerCase().includes(lowerQuery) ||
+              c.label.toLowerCase().includes(lowerQuery) ||
+              c.keywords?.some((k) => k.toLowerCase().includes(lowerQuery)),
+          )
+          .slice(0, 3)
+          .map((c) => ({
+            id: `cmd-${c.id}`,
+            title: c.label,
+            subtitle: c.description,
+            type: 'command' as const,
+            href: `command:${c.id}`,
+            metadata: { iconName: c.icon },
+          }));
+        allResults.push(...matchedCmds);
+      }
+
       const RERANK_TYPES: SearchResultType[] = ['quote', 'conversation', 'reminder'];
+
       const candidates = allResults
         .filter((r) => RERANK_TYPES.includes(r.type))
         .map((r) => ({ id: r.id, label: r.title, sublabel: r.subtitle ?? '' }));

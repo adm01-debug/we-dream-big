@@ -1,9 +1,9 @@
 /**
  * Hook for managing product supplier sources via external DB bridge.
- * Uses variant_supplier_sources table in the external catalog DB.
+ * FIX-BRIDGE-01 (2026-06-01): migrated from supabase.functions.invoke to dbInvoke.
  */
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { dbInvoke } from '@/lib/db/postgrest';
 import { toast } from 'sonner';
 
 export interface SupplierSource {
@@ -29,10 +29,56 @@ export type SupplierSourceInput = Omit<SupplierSource, 'id' | 'created_at' | 'up
 const BRIDGE_TABLE = 'variant_supplier_sources';
 
 async function bridgeInvoke(body: Record<string, unknown>) {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', { body });
-  if (error) throw new Error(error.message);
-  if (!data?.success) throw new Error(data?.error || 'Erro na operação');
-  return data;
+  const op = (body.operation as string) || 'select';
+  if (op === 'select') {
+    const result = await dbInvoke({
+      table: body.table as string,
+      operation: 'select',
+      select: body.select as string | undefined,
+      filters: body.filters as Record<string, unknown> | undefined,
+      orderBy: body.orderBy as { column: string; ascending?: boolean } | undefined,
+      limit: body.limit as number | undefined,
+      offset: body.offset as number | undefined,
+    });
+    return { success: true, data: { records: result.records, count: result.count } };
+  }
+  const table = body.table as string;
+  if (op === 'insert') {
+    const { data, error } = await (
+      await import('@/integrations/supabase/client')
+    ).supabase
+      .from(table)
+      .insert(body.data as Record<string, unknown>)
+      .select();
+    if (error) throw new Error(error.message);
+    return { success: true, data: { records: data ?? [], count: (data ?? []).length } };
+  }
+  if (op === 'update') {
+    const client = (await import('@/integrations/supabase/client')).supabase;
+    let q = client.from(table).update(body.data as Record<string, unknown>);
+    if (body.id)
+      q = (q as unknown as { eq: (c: string, v: unknown) => typeof q }).eq(
+        'id',
+        body.id,
+      ) as unknown as typeof q;
+    const { data, error } = await (
+      q as unknown as {
+        select: () => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
+      }
+    ).select();
+    if (error) throw new Error(error.message);
+    return { success: true, data: { records: data ?? [], count: (data ?? []).length } };
+  }
+  if (op === 'delete') {
+    const client = (await import('@/integrations/supabase/client')).supabase;
+    const { error } = await client
+      .from(table)
+      .delete()
+      .eq('id', body.id as string);
+    if (error) throw new Error(error.message);
+    return { success: true, data: { records: [], count: 0 } };
+  }
+  throw new Error(`bridgeInvoke: unsupported operation '${op}'`);
 }
 
 export function useProductSupplierSources(productId?: string) {
@@ -53,8 +99,7 @@ export function useProductSupplierSources(productId?: string) {
         limit: 100,
         orderBy: { column: 'is_preferred', ascending: false },
       });
-      const records = (result.data?.records || []) as SupplierSource[];
-      // Secondary sort by sale_price
+      const records = (result.data?.records || result.records || []) as SupplierSource[];
       records.sort((a, b) => {
         if (a.is_preferred !== b.is_preferred) return a.is_preferred ? -1 : 1;
         return (a.sale_price ?? 0) - (b.sale_price ?? 0);
@@ -74,19 +119,14 @@ export function useProductSupplierSources(productId?: string) {
   const addSource = useCallback(
     async (input: SupplierSourceInput) => {
       try {
-        await bridgeInvoke({
-          table: BRIDGE_TABLE,
-          operation: 'insert',
-          data: input,
-        });
+        await bridgeInvoke({ table: BRIDGE_TABLE, operation: 'insert', data: input });
         toast.success('Fonte de fornecimento adicionada');
         await fetchSources();
         return true;
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : '';
-        if (!msg.includes('duplicate') && !msg.includes('23505')) {
+        if (!msg.includes('duplicate') && !msg.includes('23505'))
           toast.error('Erro ao adicionar fonte');
-        }
         return false;
       }
     },
@@ -96,12 +136,7 @@ export function useProductSupplierSources(productId?: string) {
   const updateSource = useCallback(
     async (id: string, updates: Partial<SupplierSourceInput>) => {
       try {
-        await bridgeInvoke({
-          table: BRIDGE_TABLE,
-          operation: 'update',
-          id,
-          data: updates,
-        });
+        await bridgeInvoke({ table: BRIDGE_TABLE, operation: 'update', id, data: updates });
         toast.success('Fonte atualizada');
         await fetchSources();
         return true;
@@ -116,11 +151,7 @@ export function useProductSupplierSources(productId?: string) {
   const removeSource = useCallback(
     async (id: string) => {
       try {
-        await bridgeInvoke({
-          table: BRIDGE_TABLE,
-          operation: 'delete',
-          id,
-        });
+        await bridgeInvoke({ table: BRIDGE_TABLE, operation: 'delete', id });
         toast.success('Fonte removida');
         await fetchSources();
         return true;
@@ -136,18 +167,15 @@ export function useProductSupplierSources(productId?: string) {
     async (id: string) => {
       if (!productId) return false;
       try {
-        // First unset all preferred for this product
         for (const src of sources) {
-          if (src.is_preferred && src.id !== id) {
+          if (src.is_preferred && src.id !== id)
             await bridgeInvoke({
               table: BRIDGE_TABLE,
               operation: 'update',
               id: src.id,
               data: { is_preferred: false },
             });
-          }
         }
-        // Set new preferred
         await bridgeInvoke({
           table: BRIDGE_TABLE,
           operation: 'update',

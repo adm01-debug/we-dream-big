@@ -6,13 +6,14 @@ test.describe('Global Search Voice Tooltip @smoke', () => {
     await loginAs(page);
     await page.goto('/');
     // Wait for header/search to be stable
-    await expect(page.locator('button[aria-label="Microfone"]')).toBeVisible();
+    await expect(page.locator('button[aria-label="Fale com o Flow"]')).toBeVisible();
   });
 
   test('Tooltip shows and disappears on Desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     
-    const micButton = page.locator('button[aria-label="Microfone"]');
+    const micButton = page.locator('button[aria-label="Fale com o Flow"]');
+
     
     // Hover to trigger tooltip
     await micButton.hover();
@@ -40,7 +41,7 @@ test.describe('Global Search Voice Tooltip @smoke', () => {
   test('Tooltip shows and disappears on Mobile @mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     
-    const micButton = page.locator('button[aria-label="Microfone"]');
+    const micButton = page.locator('button[aria-label="Fale com o Flow"]');
     
     // On mobile, tap/focus usually triggers the tooltip
     await micButton.focus();

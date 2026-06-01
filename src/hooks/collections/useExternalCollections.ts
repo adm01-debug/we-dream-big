@@ -1,6 +1,22 @@
 /**
- * Hook para sincronizar coleções com o BD externo (Promobrind)
+ * Hook para sincronizar coleções com o BD (Supabase)
  * Tabelas: collections, collection_products
+ *
+ * FIX 2026-06-01:
+ *   - Adicionado SELECT policy no DB (migration 20260601180000)
+ *   - Interface atualizada com campos reais (is_deleted, user_id, etc.)
+ *   - Filtro corrigido: .eq('is_deleted', false) em vez de .eq('is_active', true)
+ *     (coluna is_active não existe na tabela)
+ *   - collection_products: ORDER e INSERT corrigidos para 'display_order'
+ *     (coluna 'sort_order' não existe em collection_products)
+ *
+ * FIX 2026-06-01 (CRASH FIX — name clash):
+ *   - useCollections() renomeado para useExternalCollectionsManager() para evitar
+ *     conflito com useCollections() de useCollections.ts no barrel export index.ts.
+ *     O clash fazia o bundle resolver para o shape errado ({ isLoading } em vez de
+ *     { isLoaded }) → externalCollections = undefined → .map() crash no CollectionsPage.
+ *   - Adicionado useExternalCollectionProductCounts() que estava sendo importado
+ *     em useCollectionsPageState mas não existia neste arquivo.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +26,7 @@ import { sanitizeError } from '@/lib/security/sanitize-error';
 // Interface que reflete a estrutura do BD externo
 export interface ExternalCollection {
   id: string;
+  user_id: string;
   name: string;
   slug?: string;
   description?: string | null;

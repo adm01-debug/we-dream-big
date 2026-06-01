@@ -9,9 +9,16 @@ WHERE id = '35c6a2a6-5d6d-4ddb-8dbd-8e842a0118e5';
 CREATE OR REPLACE FUNCTION public.auto_assign_user_to_promo_brindes()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.organization_members (organization_id, user_id, role)
-  VALUES ('35c6a2a6-5d6d-4ddb-8dbd-8e842a0118e5', NEW.user_id, 'member')
-  ON CONFLICT (organization_id, user_id) DO NOTHING;
+  -- Guard: em preview snapshots sem a organização Promo Brindes, viramos no-op
+  -- para evitar FK violation em todo INSERT em profiles.
+  IF EXISTS (
+    SELECT 1 FROM public.organizations
+    WHERE id = '35c6a2a6-5d6d-4ddb-8dbd-8e842a0118e5'
+  ) THEN
+    INSERT INTO public.organization_members (organization_id, user_id, role)
+    VALUES ('35c6a2a6-5d6d-4ddb-8dbd-8e842a0118e5', NEW.user_id, 'member')
+    ON CONFLICT (organization_id, user_id) DO NOTHING;
+  END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

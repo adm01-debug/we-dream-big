@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { notificationsMetrics, type FetchSource } from '@/lib/notifications-metrics';
@@ -65,10 +65,20 @@ function debugLog(event: string, payload: Record<string, unknown>) {
 export function useWorkspaceNotifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<WorkspaceNotification[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
   const [isMutationRehydrating, setIsMutationRehydrating] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('all');
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
+  const [page, setPage] = useState(1);
+  const limit = 20;
   const lastFetchAtRef = useRef<number>(0);
   const hydratedRef = useRef<string | null>(null);
   const mountAtRef = useRef<number>(
@@ -136,9 +146,28 @@ export function useWorkspaceNotifications() {
 
   // BUG-08 FIX: deps agora so [user] - sem notifications.length
   const fetchNotifications = useCallback(
-    async (opts: { silent?: boolean; source?: FetchSource } = {}) => {
+    async (
+      opts: {
+        silent?: boolean;
+        source?: FetchSource;
+        page?: number;
+        search?: string;
+        category?: string;
+        unreadOnly?: boolean;
+        startDate?: string;
+        endDate?: string;
+      } = {},
+    ) => {
       if (!user) return;
-      // FIX: le via ref estavel em vez de closure sobre notifications
+
+      const targetPage = opts.page ?? page;
+      const targetSearch = opts.search ?? search;
+      const targetCategory = opts.category ?? category;
+      const targetUnreadOnly = opts.unreadOnly ?? unreadOnly;
+      const targetStartDate = opts.startDate ?? dateRange.from?.toISOString();
+      const targetEndDate = opts.endDate ?? dateRange.to?.toISOString();
+      const offset = (targetPage - 1) * limit;
+
       const hasData = notificationsLengthRef.current > 0;
       const silent = opts.silent ?? hasData;
 
@@ -148,17 +177,48 @@ export function useWorkspaceNotifications() {
       notificationsMetrics.recordFetch(opts.source ?? 'initial');
       const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('workspace_notifications')
-          .select('*')
+          .select('*', { count: 'exact' })
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(50);
+          .range(offset, offset + limit - 1);
+
+        if (targetCategory && targetCategory !== 'all') {
+          query = query.eq('category', targetCategory);
+        }
+
+        if (targetUnreadOnly) {
+          query = query.eq('is_read', false);
+        }
+
+        if (targetStartDate) {
+          query = query.gte('created_at', targetStartDate);
+        }
+
+        if (targetEndDate) {
+          query = query.lte('created_at', targetEndDate);
+        }
+
+        if (targetSearch) {
+          query = query.ilike('title', `%${targetSearch}%`); // Simplified for frontend ilike search
+        }
+
+        const { data, error, count } = await query;
 
         if (error) throw error;
         const items = (data || []) as WorkspaceNotification[];
         setNotifications(items);
-        setUnreadCount(items.filter((n) => !n.is_read).length);
+        setTotalCount(count ?? 0);
+
+        // Also fetch unread count separately to keep badge sync
+        const { count: unread } = await supabase
+          .from('workspace_notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_read', false);
+
+        setUnreadCount(unread ?? 0);
         lastFetchAtRef.current = Date.now();
         writeCache(user.id, items);
         if (badgeSourceRef.current !== 'cache') {
@@ -207,12 +267,14 @@ export function useWorkspaceNotifications() {
     [user], // FIX: removido notifications.length - agora usa notificationsLengthRef
   );
 
-  // Initial fetch (always, but in background if cache hydrated)
+  // Fetch notifications when filters or page changes
   useEffect(() => {
     if (!user) return;
-    fetchNotifications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+
+    // Use a small delay for search to avoid too many requests if not handled by caller
+    // but the Drawer already has a 400ms debounce.
+    fetchNotifications({ source: 'filter-change' });
+  }, [user, page, search, category, unreadOnly, dateRange.from, dateRange.to, fetchNotifications]);
 
   // Polling every 30s - agora estavel: fetchNotifications nao recria com notifications.length
   useEffect(() => {
@@ -221,6 +283,35 @@ export function useWorkspaceNotifications() {
       fetchNotifications({ silent: true, source: 'polling' });
     }, 30_000);
     return () => clearInterval(interval);
+  }, [user, fetchNotifications]);
+
+  // Real-time synchronization
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('workspace_notifications_realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'workspace_notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          debugLog('realtime-event', { event: payload.eventType, payload });
+
+          // Re-fetch everything to ensure consistent state (including badge)
+          // Use silent fetch to avoid UI flicker
+          fetchNotifications({ silent: true, source: 'mutation' });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user, fetchNotifications]);
 
   // Final summary on unmount
@@ -251,6 +342,25 @@ export function useWorkspaceNotifications() {
         return next;
       });
       setUnreadCount((prev) => Math.max(0, prev - 1));
+    },
+    [user],
+  );
+
+  const undoMarkAsRead = useCallback(
+    async (id: string) => {
+      if (!user) return;
+      const { error } = await supabase
+        .from('workspace_notifications')
+        .update({ is_read: false })
+        .eq('id', id);
+
+      if (error) return;
+      setNotifications((prev) => {
+        const next = prev.map((n) => (n.id === id ? { ...n, is_read: false } : n));
+        writeCache(user.id, next);
+        return next;
+      });
+      setUnreadCount((prev) => prev + 1);
     },
     [user],
   );
@@ -318,10 +428,22 @@ export function useWorkspaceNotifications() {
   return {
     notifications,
     unreadCount,
+    totalCount,
     isLoading,
     isRefetching,
     isMutationRehydrating,
+    page,
+    search,
+    category,
+    unreadOnly,
+    dateRange,
+    setPage,
+    setSearch,
+    setCategory,
+    setUnreadOnly,
+    setDateRange,
     markAsRead,
+    undoMarkAsRead,
     markAllAsRead,
     clearAll,
     refresh: fetchNotifications,

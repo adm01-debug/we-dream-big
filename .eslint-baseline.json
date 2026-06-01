@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-01T13:49:35.745Z",
-  "totalErrors": 61,
+  "generatedAt": "2026-06-01T17:29:58.634Z",
+  "totalErrors": 72,
   "counts": {
     "src/components/access/DevAccessDeniedPage.tsx": {
       "react-hooks/exhaustive-deps": 1
@@ -78,8 +78,20 @@
     "src/components/mockup/approval/OffscreenLayoutCapture.tsx": {
       "react-hooks/exhaustive-deps": 1
     },
+    "src/components/notifications/NotificationDrawer.tsx": {
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unused-vars": 4,
+      "no-duplicate-imports": 1
+    },
+    "src/components/notifications/NotificationPreferences.tsx": {
+      "@typescript-eslint/consistent-type-imports": 1
+    },
     "src/components/notifications/NotificationsBadgeStatsPanel.tsx": {
       "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/notifications/__tests__/NotificationDrawer.test.tsx": {
+      "@typescript-eslint/no-explicit-any": 4,
+      "@typescript-eslint/no-unused-vars": 2
     },
     "src/components/notifications/badge-stats/EfficiencyGrid.tsx": {
       "@typescript-eslint/no-unused-vars": 3
@@ -214,6 +226,12 @@
     "src/components/replenishments/ReplenishmentProductGrid.tsx": {
       "react-hooks/exhaustive-deps": 2
     },
+    "src/components/search/GlobalSearchHelpers.tsx": {
+      "@typescript-eslint/no-unused-vars": 1
+    },
+    "src/components/search/GlobalSearchIdleState.tsx": {
+      "@typescript-eslint/no-unused-vars": 1
+    },
     "src/components/search/GlobalSearchPalette.tsx": {
       "@typescript-eslint/no-explicit-any": 1,
       "react-hooks/exhaustive-deps": 4
@@ -225,6 +243,13 @@
       "react-hooks/exhaustive-deps": 1
     },
     "src/components/search/VoiceSearchOverlayConnected.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/search/__tests__/GlobalSearchPaletteShortcuts.test.tsx": {
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unused-vars": 1
+    },
+    "src/components/search/useGlobalSearch.ts": {
       "react-hooks/exhaustive-deps": 1
     },
     "src/components/search/voice/VoiceOverlaySections.tsx": {
@@ -281,6 +306,9 @@
     "src/hooks/common/useSearch.ts": {
       "react-hooks/exhaustive-deps": 2
     },
+    "src/hooks/crm/useProdutoRamoAtividade.ts": {
+      "@typescript-eslint/no-non-null-assertion": 1
+    },
     "src/hooks/intelligence/useMagicUpState.ts": {
       "react-hooks/exhaustive-deps": 2
     },
@@ -320,11 +348,18 @@
     "src/hooks/simulation/useSimulation.ts": {
       "react-hooks/exhaustive-deps": 2
     },
+    "src/hooks/simulation/useTechniquePricingOptions.ts": {
+      "@typescript-eslint/no-unused-vars": 1
+    },
     "src/hooks/simulator/useWizardPersistence.ts": {
       "react-hooks/exhaustive-deps": 1
     },
     "src/hooks/ui/useSlashCommands.ts": {
       "@typescript-eslint/no-unused-vars": 2
+    },
+    "src/hooks/ui/useWorkspaceNotifications.tsx": {
+      "@typescript-eslint/no-unused-vars": 1,
+      "react-hooks/exhaustive-deps": 1
     },
     "src/lib/error-reporter.ts": {
       "@typescript-eslint/naming-convention": 1

@@ -5,17 +5,28 @@
 -- Guard: colunas como trading_name/is_product_supplier/etc podem não existir
 -- em preview snapshots (adicionadas out-of-band em produção).
 DO $$
+DECLARE
+  desired text[] := ARRAY['id','name','code','trading_name','logo_url','website','active','is_product_supplier','is_engraving_supplier','state_uf'];
+  available text;
 BEGIN
-  IF (
-    SELECT count(*) FROM information_schema.columns
-    WHERE table_schema='public' AND table_name='suppliers'
-      AND column_name IN ('id','name','code','trading_name','logo_url','website','active','is_product_supplier','is_engraving_supplier','state_uf')
-  ) = 10 THEN
-    EXECUTE 'CREATE OR REPLACE VIEW v_suppliers_public AS SELECT id,name,code,trading_name,logo_url,website,active,is_product_supplier,is_engraving_supplier,state_uf FROM suppliers';
-    EXECUTE 'ALTER VIEW v_suppliers_public SET (security_invoker = false)';
-    EXECUTE 'GRANT SELECT ON v_suppliers_public TO anon, authenticated';
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='suppliers') THEN
+    RAISE NOTICE 'v_suppliers_public não criada: tabela suppliers ausente';
   ELSE
-    RAISE NOTICE 'v_suppliers_public não criada: colunas ausentes em suppliers';
+    -- Build column list from intersection of desired columns and what actually exists.
+    -- Garante que TABLE_ALIASES suppliers→v_suppliers_public sempre encontre a view,
+    -- mesmo em preview snapshots onde colunas opcionais (trading_name, etc) estão ausentes.
+    SELECT string_agg(quote_ident(column_name), ',' ORDER BY array_position(desired, column_name))
+      INTO available
+    FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='suppliers'
+      AND column_name = ANY(desired);
+    IF available IS NULL OR available = '' THEN
+      RAISE NOTICE 'v_suppliers_public não criada: nenhuma coluna desejada presente em suppliers';
+    ELSE
+      EXECUTE format('CREATE OR REPLACE VIEW public.v_suppliers_public AS SELECT %s FROM public.suppliers', available);
+      EXECUTE 'ALTER VIEW public.v_suppliers_public SET (security_invoker = false)';
+      EXECUTE 'GRANT SELECT ON public.v_suppliers_public TO anon, authenticated';
+    END IF;
   END IF;
 END $$;
 DO $$
@@ -62,17 +73,25 @@ END $$;
 -- Phase 3: print areas VIEW + technique policies
 -- Guard: colunas podem não existir em preview snapshots.
 DO $$
+DECLARE
+  desired text[] := ARRAY['id','product_id','tabela_preco_id','location_code','location_name','max_width','max_height','is_curved','shape','technique_order','location_order','is_active','created_at','updated_at'];
+  available text;
 BEGIN
-  IF (
-    SELECT count(*) FROM information_schema.columns
-    WHERE table_schema='public' AND table_name='print_area_techniques'
-      AND column_name IN ('id','product_id','tabela_preco_id','location_code','location_name','max_width','max_height','is_curved','shape','technique_order','location_order','is_active','created_at','updated_at')
-  ) = 14 THEN
-    EXECUTE 'CREATE OR REPLACE VIEW v_print_area_techniques_public AS SELECT id,product_id,tabela_preco_id,location_code,location_name,max_width,max_height,is_curved,shape,technique_order,location_order,is_active,created_at,updated_at FROM print_area_techniques';
-    EXECUTE 'ALTER VIEW v_print_area_techniques_public SET (security_invoker = false)';
-    EXECUTE 'GRANT SELECT ON v_print_area_techniques_public TO anon, authenticated';
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='print_area_techniques') THEN
+    RAISE NOTICE 'v_print_area_techniques_public não criada: tabela print_area_techniques ausente';
   ELSE
-    RAISE NOTICE 'v_print_area_techniques_public não criada: colunas ausentes em print_area_techniques';
+    SELECT string_agg(quote_ident(column_name), ',' ORDER BY array_position(desired, column_name))
+      INTO available
+    FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='print_area_techniques'
+      AND column_name = ANY(desired);
+    IF available IS NULL OR available = '' THEN
+      RAISE NOTICE 'v_print_area_techniques_public não criada: nenhuma coluna desejada presente';
+    ELSE
+      EXECUTE format('CREATE OR REPLACE VIEW public.v_print_area_techniques_public AS SELECT %s FROM public.print_area_techniques', available);
+      EXECUTE 'ALTER VIEW public.v_print_area_techniques_public SET (security_invoker = false)';
+      EXECUTE 'GRANT SELECT ON public.v_print_area_techniques_public TO anon, authenticated';
+    END IF;
   END IF;
 END $$;
 DO $$

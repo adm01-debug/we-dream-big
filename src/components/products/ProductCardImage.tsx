@@ -120,7 +120,6 @@ export const ProductCardImage = memo(function ProductCardImage({
         {onSale && (
           <ProductStatusBadge
             type="promotion"
-            value="-20%"
             size="sm"
             onClick={() => onStatusClick?.('promotion')}
           />

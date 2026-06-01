@@ -67,11 +67,9 @@ export function MainLayout({ children }: MainLayoutProps) {
   useEffect(() => {
     if (prevPathRef.current !== location.pathname) {
       prevPathRef.current = location.pathname;
-      // Delay to allow page transition animation to start
-      const timer = setTimeout(() => {
-        mainRef.current?.focus({ preventScroll: true });
-      }, 100);
-      return () => clearTimeout(timer);
+      // Focus main content immediately to be caught by screen readers
+      // but prevent scroll to allow RouteScrollReset or manual scroll restoration to work.
+      mainRef.current?.focus({ preventScroll: true });
     }
   }, [location.pathname]);
 
@@ -113,8 +111,11 @@ export function MainLayout({ children }: MainLayoutProps) {
               'theme-transitioning sticky z-30 transition-all duration-300 print:hidden',
               'bg-background/20 backdrop-blur-xl',
               'border-b border-border/40',
-              isHome && 'hidden',
+              !isHome
+                ? 'translate-y-0 opacity-100'
+                : 'pointer-events-none -translate-y-full opacity-0',
             )}
+            aria-hidden={isHome}
             style={{ top: 'var(--header-h, 56px)' }}
             data-testid="breadcrumb-bar"
           >

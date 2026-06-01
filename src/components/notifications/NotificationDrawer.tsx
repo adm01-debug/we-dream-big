@@ -9,6 +9,12 @@ import {
   XCircle,
   ExternalLink,
   Loader2,
+  Search,
+  Settings2,
+  ArrowLeft,
+  Download,
+  Calendar as CalendarIcon,
+  Filter,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -16,7 +22,22 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { useNotifications, type WorkspaceNotification } from '@/hooks/ui';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 import { useAriaLive } from '@/components/a11y/AriaLive';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -24,6 +45,8 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { notificationsMetrics, type TriggerSource } from '@/lib/notifications-metrics';
 import { NotificationsBadgeStatsPanel } from './NotificationsBadgeStatsPanel';
+import { NotificationPreferences } from './NotificationPreferences';
+import { toast } from 'sonner';
 
 const typeConfig = {
   info: { icon: Info, color: 'text-primary', bg: 'bg-primary/10' },
@@ -232,17 +255,34 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
     const {
       notifications,
       unreadCount,
+      totalCount,
       isLoading,
       isRefetching,
       isMutationRehydrating,
-      markAsRead,
+      page,
+      search,
+      category,
+      unreadOnly,
+      dateRange,
+      setPage,
+      setSearch,
+      setCategory,
+      setUnreadOnly,
+      setDateRange,
+      markAsRead: baseMarkAsRead,
+      undoMarkAsRead,
       markAllAsRead,
       clearAll,
       prefetch,
-    } = useNotifications();
+    } = useNotifications() as any; // Cast for extended props
     const navigate = useNavigate();
     const [shouldShake, setShouldShake] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const [showPreferences, setShowPreferences] = useState(false);
+    const [localSearch, setLocalSearch] = useState(search);
+    const [localCategory, setLocalCategory] = useState(category);
+    const [localUnreadOnly, setLocalUnreadOnly] = useState(unreadOnly);
+    const [localDateRange, setLocalDateRange] = useState(dateRange);
     const prevCountRef = React.useRef(unreadCount);
     const { announce } = useAriaLive();
     const prevRefetchingRef = useRef(false);
@@ -271,6 +311,88 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
       }
       prevRefetchingRef.current = isRefetching;
     }, [isRefetching, unreadCount, announce]);
+
+    // Debounced search and filters update
+    useEffect(() => {
+      const timeout = setTimeout(() => {
+        setSearch(localSearch);
+        setCategory(localCategory);
+        setUnreadOnly(localUnreadOnly);
+        setDateRange(localDateRange);
+      }, 400);
+      return () => clearTimeout(timeout);
+    }, [
+      localSearch,
+      localCategory,
+      localUnreadOnly,
+      localDateRange,
+      setSearch,
+      setCategory,
+      setUnreadOnly,
+      setDateRange,
+    ]);
+
+    const markAsRead = useCallback(
+      async (id: string) => {
+        await baseMarkAsRead(id);
+        toast.success('Notificação marcada como lida', {
+          action: {
+            label: 'Desfazer',
+            onClick: () => undoMarkAsRead(id),
+          },
+        });
+      },
+      [baseMarkAsRead, undoMarkAsRead],
+    );
+
+    const handleClearFilters = () => {
+      setLocalSearch('');
+      setLocalCategory('all');
+      setLocalUnreadOnly(false);
+      setLocalDateRange({ from: undefined, to: undefined });
+    };
+
+    const hasActiveFilters =
+      localSearch !== '' ||
+      localCategory !== 'all' ||
+      localUnreadOnly ||
+      localDateRange.from ||
+      localDateRange.to;
+
+    const handleExportCSV = useCallback(() => {
+      if (notifications.length === 0) return;
+
+      const headers = ['Data', 'Título', 'Mensagem', 'Tipo', 'Categoria', 'Lida'];
+      const filteredNotifications = notifications.filter((n) => {
+        // Since we are using filtered list from hook, we just use notifications
+        // but it's good to note we export the currently visible list.
+        return true;
+      });
+      const rows = filteredNotifications.map((n) => [
+        new Date(n.created_at).toLocaleString('pt-BR'),
+        n.title,
+        n.message,
+        n.type,
+        n.category,
+        n.is_read ? 'Sim' : 'Não',
+      ]);
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+      ].join('\n');
+
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `notificacoes_${new Date().getTime()}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Exportação concluída');
+    }, [notifications]);
 
     const handleNavigate = (url: string) => {
       if (url.startsWith('/')) {
@@ -343,10 +465,14 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
         onOpenChange={(open) => {
           setIsOpen(open);
           if (open) {
-            // If a debounce was already pending, fold its burst into the drawer-open
-            // sample (so the timing represents the user's intent end-to-end).
+            // BUG-NOTIF-11: Marcação automática como lida ao abrir
+            if (unreadCount > 0) {
+              markAllAsRead();
+            }
+            setShowPreferences(false);
+
             const burstStart = burstStartRef.current ?? performance.now();
-            const coalesced = burstCountRef.current; // may be 0 for direct clicks
+            const coalesced = burstCountRef.current;
             if (prefetchDebounceRef.current) {
               clearTimeout(prefetchDebounceRef.current);
               prefetchDebounceRef.current = null;
@@ -403,11 +529,56 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
           <SheetHeader className="border-b border-border px-4 pb-3 pt-4">
             <div className="flex items-center justify-between">
               <SheetTitle className="flex items-center gap-2 text-lg">
-                <DrawerHeaderTitle unreadCount={unreadCount} />
+                {showPreferences ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setShowPreferences(false)}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Bell className="h-5 w-5 text-primary" />
+                )}
+                {showPreferences ? 'Preferências' : 'Notificações'}
+                {!showPreferences && unreadCount > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {unreadCount} nova{unreadCount > 1 ? 's' : ''}
+                  </Badge>
+                )}
                 <RefetchSpinner isRefetching={isRefetching} />
               </SheetTitle>
               <div className="flex items-center gap-1">
-                {unreadCount > 0 && (
+                {!showPreferences && notifications.length > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={handleExportCSV}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Exportar CSV</TooltipContent>
+                  </Tooltip>
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn('h-8 w-8', showPreferences && 'bg-primary/10 text-primary')}
+                      onClick={() => setShowPreferences(!showPreferences)}
+                    >
+                      <Settings2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Configurações</TooltipContent>
+                </Tooltip>
+                {!showPreferences && unreadCount > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -444,39 +615,164 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
           </SheetHeader>
 
           <ScrollArea className="flex-1">
-            {isLoading && notifications.length === 0 ? (
-              <div className="space-y-3 p-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="flex animate-pulse gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-muted" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-3 w-3/4 rounded bg-muted" />
-                      <div className="h-3 w-1/2 rounded bg-muted" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-                <div className="mb-4 rounded-full bg-muted/50 p-4">
-                  <Bell className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <p className="text-sm font-medium text-muted-foreground">Nenhuma notificação</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Você será notificado sobre atividades importantes
-                </p>
+            {showPreferences ? (
+              <div className="p-4">
+                <NotificationPreferences />
               </div>
             ) : (
-              <div className="space-y-1 p-2">
-                {notifications.map((n) => (
-                  <NotificationItem
-                    key={n.id}
-                    notification={n}
-                    onRead={markAsRead}
-                    onNavigate={handleNavigate}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="sticky top-0 z-10 space-y-3 border-b bg-background p-4">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar notificações..."
+                      className="pl-9"
+                      value={localSearch}
+                      onChange={(e) => setLocalSearch(e.target.value)}
+                    />
+                  </div>
+                  <Tabs value={localCategory} onValueChange={setLocalCategory}>
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="all">Todas</TabsTrigger>
+                      <TabsTrigger value="security">Segurança</TabsTrigger>
+                      <TabsTrigger value="system">Sistema</TabsTrigger>
+                      <TabsTrigger value="marketing">Marketing</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="unread-only"
+                        checked={localUnreadOnly}
+                        onCheckedChange={setLocalUnreadOnly}
+                      />
+                      <Label htmlFor="unread-only" className="text-xs">
+                        Não lidas
+                      </Label>
+                    </div>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={cn(
+                            'h-8 justify-start text-left text-xs font-normal',
+                            !localDateRange.from && 'text-muted-foreground',
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-3 w-3" />
+                          {localDateRange?.from ? (
+                            localDateRange.to ? (
+                              <>
+                                {format(localDateRange.from, 'dd/MM/yy')} -{' '}
+                                {format(localDateRange.to, 'dd/MM/yy')}
+                              </>
+                            ) : (
+                              format(localDateRange.from, 'dd/MM/yy')
+                            )
+                          ) : (
+                            <span>Intervalo de datas</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          initialFocus
+                          mode="range"
+                          defaultMonth={localDateRange?.from}
+                          selected={localDateRange}
+                          onSelect={setLocalDateRange}
+                          numberOfMonths={1}
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    {hasActiveFilters && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs text-muted-foreground"
+                        onClick={handleClearFilters}
+                      >
+                        Limpar
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {isLoading && notifications.length === 0 ? (
+                  <div className="space-y-3 p-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="flex animate-pulse gap-3">
+                        <div className="h-9 w-9 rounded-lg bg-muted" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 w-3/4 rounded bg-muted" />
+                          <div className="h-3 w-1/2 rounded bg-muted" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+                    <div className="mb-4 rounded-full bg-muted/50 p-4">
+                      <Bell className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">Nenhuma notificação</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Você será notificado sobre atividades importantes
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1 p-2">
+                    {notifications.map((n) => (
+                      <NotificationItem
+                        key={n.id}
+                        notification={n}
+                        onRead={markAsRead}
+                        onNavigate={handleNavigate}
+                      />
+                    ))}
+                    {totalCount > 20 && (
+                      <div className="border-t border-border p-4">
+                        <Pagination>
+                          <PaginationContent>
+                            <PaginationItem>
+                              <PaginationPrevious
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (page > 1) setPage(page - 1);
+                                }}
+                                className={cn(page === 1 && 'pointer-events-none opacity-50')}
+                              />
+                            </PaginationItem>
+                            <PaginationItem>
+                              <span className="px-2 text-xs text-muted-foreground">
+                                Página {page} de {Math.ceil(totalCount / 20)}
+                              </span>
+                            </PaginationItem>
+                            <PaginationItem>
+                              <PaginationNext
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (page < Math.ceil(totalCount / 20)) setPage(page + 1);
+                                }}
+                                className={cn(
+                                  page === Math.ceil(totalCount / 20) &&
+                                    'pointer-events-none opacity-50',
+                                )}
+                              />
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </ScrollArea>
           <NotificationsBadgeStatsPanel />

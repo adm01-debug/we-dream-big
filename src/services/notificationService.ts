@@ -21,6 +21,14 @@ export interface WorkspaceNotification {
 export interface GetNotificationsOptions {
   /** Filtrar apenas não lidas. Default: false (retorna todas). */
   unreadOnly?: boolean;
+  /** Busca textual (title ou message). */
+  search?: string;
+  /** Filtro por categoria. */
+  category?: string;
+  /** Data inicial (ISO). */
+  startDate?: string;
+  /** Data final (ISO). */
+  endDate?: string;
   /** Número máximo de registros. Default: 50. */
   limit?: number;
   /** Offset para paginação. Default: 0. */
@@ -35,11 +43,19 @@ export interface GetNotificationsOptions {
 export async function getNotifications(
   options: GetNotificationsOptions = {},
 ): Promise<WorkspaceNotification[]> {
-  const { unreadOnly = false, limit = 50, offset = 0 } = options;
+  const {
+    unreadOnly = false,
+    search,
+    category,
+    startDate,
+    endDate,
+    limit = 50,
+    offset = 0,
+  } = options;
 
   let query = supabase
     .from('workspace_notifications')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -47,15 +63,37 @@ export async function getNotifications(
     query = query.eq('is_read', false);
   }
 
-  const { data, error } = await query;
+  if (category && category !== 'all') {
+    query = query.eq('category', category);
+  }
+
+  if (search) {
+    // BUG-NOTIF-10: Usando search textual via textSearch para melhor performance
+    query = query.textSearch('search_vector', search, { config: 'portuguese', type: 'plain' });
+  }
+
+  if (startDate) {
+    query = query.gte('created_at', startDate);
+  }
+
+  if (endDate) {
+    query = query.lte('created_at', endDate);
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error('[notificationService] getNotifications error:', error.message);
     throw error;
   }
 
-  return (data ?? []) as WorkspaceNotification[];
+  return {
+    data: (data ?? []) as WorkspaceNotification[],
+    total: count ?? 0,
+  };
 }
+
+// Add return type to getNotifications above (implicitly handled by JS/TS but good to note)
 
 /**
  * Conta notificações não lidas do usuário autenticado.
