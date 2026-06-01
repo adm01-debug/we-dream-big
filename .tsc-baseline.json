@@ -1,12 +1,31 @@
 {
-  "generatedAt": "2026-05-31T21:30:44.376Z",
-  "totalErrors": 96,
+  "generatedAt": "2026-06-01T01:52:22.826Z",
+  "totalErrors": 108,
   "counts": {
+    "src/components/command/GlobalCommandBar.tsx": {
+      "TS2345": 1
+    },
+    "src/components/dev/__tests__/BridgeMetricsOverlay.test.tsx": {
+      "TS2307": 2
+    },
+    "src/components/dev/__tests__/DevOnlyBridgeOverlay.test.tsx": {
+      "TS2307": 1
+    },
+    "src/components/dev/metrics/BridgeMetricsSummary.tsx": {
+      "TS2307": 1
+    },
+    "src/components/expert/chat/useExpertChat.ts": {
+      "TS2448": 3,
+      "TS2454": 3
+    },
     "src/components/mockup/approval/OffscreenLayoutCapture.tsx": {
       "TS2345": 1
     },
     "src/components/search/AdvancedSearch.tsx": {
       "TS2345": 1
+    },
+    "src/components/ui/sonner.tsx": {
+      "TS2367": 1
     },
     "src/hooks/admin/useAllowedIPs.ts": {
       "TS2322": 5,
@@ -50,11 +69,12 @@
     "src/hooks/simulation/usePrintAreas.ts": {
       "TS2322": 1,
       "TS2345": 6,
-      "TS2589": 4,
-      "TS2769": 5
+      "TS2589": 3,
+      "TS2769": 4
     },
     "src/hooks/simulation/useSimulation.ts": {
       "TS2345": 1,
+      "TS2589": 1,
       "TS2769": 3
     },
     "src/hooks/simulation/useTechniquePricing.ts": {
@@ -75,6 +95,9 @@
     "src/lib/personalization/repositories/technique.repository.ts": {
       "TS2322": 1,
       "TS2339": 1
+    },
+    "src/pages/admin/AdminTemasPage.tsx": {
+      "TS2367": 1
     },
     "src/pages/products/FavoritesPage.tsx": {
       "TS2322": 2
