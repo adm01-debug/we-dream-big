@@ -11,7 +11,7 @@ vi.mock('@/integrations/supabase/client', () => {
 });
 
 import { __mockFrom as mockFrom } from '@/integrations/supabase/client';
-import { tryExecuteRestNative as dbInvoke } from '@/lib/external-db/rest-native';
+import * as restNative from '@/lib/external-db/rest-native';
 import { reportSilentEmpty } from '@/lib/external-db/silent-empty-report';
 
 // Mock silent-empty-report
@@ -30,6 +30,9 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 describe('rest-native fallback and 410 handling', () => {
+  it('isRestNativeEligible works', () => {
+    expect(restNative.isRestNativeEligible({ table: 'products', operation: 'select' })).toBe(true);
+  });
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -47,7 +50,7 @@ describe('rest-native fallback and 410 handling', () => {
 
     (mockFrom as any).mockReturnValue(mockQuery);
 
-    await dbInvoke({ table: 'products', operation: 'select' });
+    await restNative.tryExecuteRestNative({ table: 'products', operation: 'select' });
 
     expect(reportSilentEmpty).toHaveBeenCalledWith(expect.objectContaining({
       reason: 'gone_410',
@@ -69,7 +72,7 @@ describe('rest-native fallback and 410 handling', () => {
 
     (mockFrom as any).mockReturnValue(mockQuery);
 
-    const result = await dbInvoke({ table: 'products', operation: 'select' });
+    const result = await restNative.tryExecuteRestNative({ table: 'products', operation: 'select' });
 
     expect(result!.records).toEqual(mockData);
     expect(result!.count).toBe(1);
