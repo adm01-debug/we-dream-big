@@ -25,6 +25,7 @@ export interface UseNotificationsReturn {
   isRefetching: boolean;
   isMutationRehydrating: boolean;
   markAsRead: (id: string) => Promise<void>;
+  undoMarkAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
   clearAll: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -45,6 +46,7 @@ export function useNotifications(): UseNotificationsReturn {
     isRefetching: workspace.isRefetching,
     isMutationRehydrating: workspace.isMutationRehydrating,
     markAsRead: workspace.markAsRead,
+    undoMarkAsRead: workspace.undoMarkAsRead,
     markAllAsRead: workspace.markAllAsRead,
     clearAll: workspace.clearAll,
     refresh: workspace.refresh,

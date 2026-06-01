@@ -284,6 +284,25 @@ export function useWorkspaceNotifications() {
     [user],
   );
 
+  const undoMarkAsRead = useCallback(
+    async (id: string) => {
+      if (!user) return;
+      const { error } = await supabase
+        .from('workspace_notifications')
+        .update({ is_read: false })
+        .eq('id', id);
+
+      if (error) return;
+      setNotifications((prev) => {
+        const next = prev.map((n) => (n.id === id ? { ...n, is_read: false } : n));
+        writeCache(user.id, next);
+        return next;
+      });
+      setUnreadCount((prev) => prev + 1);
+    },
+    [user],
+  );
+
   const markAllAsRead = useCallback(async () => {
     if (!user) return;
     if (markAllInFlightRef.current) return;
@@ -358,6 +377,7 @@ export function useWorkspaceNotifications() {
     setSearch,
     setCategory,
     markAsRead,
+    undoMarkAsRead,
     markAllAsRead,
     clearAll,
     refresh: fetchNotifications,
