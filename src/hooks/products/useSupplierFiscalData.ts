@@ -144,11 +144,13 @@ export function useSupplierFiscalData(
         for (const variantId of variantIds.slice(0, 5)) {
           const vssResult = await supabase
             .from('variant_supplier_sources')
-            .select('id, cst, cfop, icms_rate, pis_rate, cofins_rate, cest, csosn, operation_nature, supplier_branch_id, variant_id')
+            .select(
+              'id, cst, cfop, icms_rate, pis_rate, cofins_rate, cest, csosn, operation_nature, supplier_branch_id, variant_id',
+            )
             .eq('supplier_id', supplierId)
             .eq('variant_id', variantId)
             .limit(1);
-          
+
           if (vssResult.data?.length) {
             vss = vssResult.data[0] as VSSRecord;
             matchedVariantId = variantId;
@@ -313,15 +315,13 @@ export function useSupplierFiscalData(
           }
 
           // Create new VSS with supplier_branch_id from inherited data
-          await supabase
-            .from('variant_supplier_sources')
-            .insert({
-              ...payload,
-              supplier_id: supplierId,
-              variant_id: variantId,
-              supplier_branch_id: currentData?.supplier_branch_id || null,
-              ...(organizationId ? { organization_id: organizationId } : {}),
-            });
+          await supabase.from('variant_supplier_sources').insert({
+            ...payload,
+            supplier_id: supplierId,
+            variant_id: variantId,
+            supplier_branch_id: currentData?.supplier_branch_id || null,
+            ...(organizationId ? { organization_id: organizationId } : {}),
+          });
         }
 
         // Invalidate and refetch
@@ -355,10 +355,7 @@ export function useSupplierFiscalData(
         .limit(1);
 
       if (vssResult.data?.length) {
-        await supabase
-          .from('variant_supplier_sources')
-          .delete()
-          .eq('id', vssResult.data[0].id);
+        await supabase.from('variant_supplier_sources').delete().eq('id', vssResult.data[0].id);
       }
 
       await queryClient.invalidateQueries({ queryKey });

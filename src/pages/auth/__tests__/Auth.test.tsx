@@ -48,7 +48,7 @@ describe('Auth Page', () => {
     expect(screen.getByTestId('login-email-input')).toBeInTheDocument();
     expect(screen.getByTestId('login-password-input')).toBeInTheDocument();
     expect(screen.getByTestId('login-submit')).toBeInTheDocument();
-    
+
     // Ensure the status card and related elements are NOT rendered
     expect(screen.queryByText(/status da infraestrutura/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/banco de dados/i)).not.toBeInTheDocument();

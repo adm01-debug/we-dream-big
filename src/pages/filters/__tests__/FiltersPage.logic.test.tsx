@@ -17,14 +17,49 @@ vi.mock('react-router-dom', async () => {
 vi.mock('@/hooks/products/useProductsLightweight', () => ({
   useProductsCatalog: vi.fn(() => ({
     data: {
-      pages: [{
-        products: [
-          { id: '1', name: 'Caneta Metal', price: 10, category_id: 'cat1', brand: 'Fornecedor A', materials: ['Metal'], stock: 100, featured: true, newArrival: false, gender: 'Unissex' },
-          { id: '2', name: 'Caneta Plastico', price: 5, category_id: 'cat1', brand: 'Fornecedor B', materials: ['Plastico'], stock: 50, featured: false, newArrival: true, gender: 'Masculino' },
-          { id: '3', name: 'Mochila Notebook', price: 50, category_id: 'cat2', brand: 'Fornecedor A', materials: ['Nylon'], stock: 0, featured: false, newArrival: false, gender: 'Feminino' },
-        ],
-        totalEstimate: 3
-      }]
+      pages: [
+        {
+          products: [
+            {
+              id: '1',
+              name: 'Caneta Metal',
+              price: 10,
+              category_id: 'cat1',
+              brand: 'Fornecedor A',
+              materials: ['Metal'],
+              stock: 100,
+              featured: true,
+              newArrival: false,
+              gender: 'Unissex',
+            },
+            {
+              id: '2',
+              name: 'Caneta Plastico',
+              price: 5,
+              category_id: 'cat1',
+              brand: 'Fornecedor B',
+              materials: ['Plastico'],
+              stock: 50,
+              featured: false,
+              newArrival: true,
+              gender: 'Masculino',
+            },
+            {
+              id: '3',
+              name: 'Mochila Notebook',
+              price: 50,
+              category_id: 'cat2',
+              brand: 'Fornecedor A',
+              materials: ['Nylon'],
+              stock: 0,
+              featured: false,
+              newArrival: false,
+              gender: 'Feminino',
+            },
+          ],
+          totalEstimate: 3,
+        },
+      ],
     },
     isLoading: false,
     hasNextPage: false,
@@ -35,7 +70,9 @@ vi.mock('@/hooks/products/useProductsLightweight', () => ({
 
 vi.mock('@/hooks/products/useProductsByCategory', () => ({
   useProductsByCategory: vi.fn(({ categoryIds }) => ({
-    productIds: new Set(categoryIds.includes('cat1') ? ['1', '2'] : categoryIds.includes('cat2') ? ['3'] : []),
+    productIds: new Set(
+      categoryIds.includes('cat1') ? ['1', '2'] : categoryIds.includes('cat2') ? ['3'] : [],
+    ),
     hasFilter: categoryIds.length > 0,
     isLoading: false,
   })),
@@ -74,7 +111,7 @@ describe('useFiltersPageState Logic - Extended Validation', () => {
 
   it('should initialize with all products', () => {
     const { result } = renderHook(() => useFiltersPageState(), { wrapper });
-    
+
     expect(result.current.realProducts.length).toBe(3);
     expect(result.current.filteredProducts.length).toBe(3);
   });
@@ -110,7 +147,7 @@ describe('useFiltersPageState Logic - Extended Validation', () => {
 
     // 1 and 2 have stock, 3 has 0
     expect(result.current.filteredProducts.length).toBe(2);
-    expect(result.current.filteredProducts.some(p => p.id === '3')).toBe(false);
+    expect(result.current.filteredProducts.some((p) => p.id === '3')).toBe(false);
   });
 
   it('should filter by gender', () => {
@@ -139,10 +176,10 @@ describe('useFiltersPageState Logic - Extended Validation', () => {
     const { result } = renderHook(() => useFiltersPageState(), { wrapper });
 
     act(() => {
-      result.current.handleFilterChange({ 
-        ...result.current.filters, 
+      result.current.handleFilterChange({
+        ...result.current.filters,
         categories: ['cat1'],
-        priceRange: [0, 8]
+        priceRange: [0, 8],
       });
     });
 
@@ -155,15 +192,14 @@ describe('useFiltersPageState Logic - Extended Validation', () => {
     const { result } = renderHook(() => useFiltersPageState(), { wrapper });
 
     act(() => {
-      result.current.handleFilterChange({ 
-        ...result.current.filters, 
+      result.current.handleFilterChange({
+        ...result.current.filters,
         search: 'a',
         featured: true,
-        priceRange: [10, 20]
+        priceRange: [10, 20],
       });
     });
 
     expect(result.current.activeFiltersCount).toBe(3);
   });
 });
-

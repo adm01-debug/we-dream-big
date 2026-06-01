@@ -41,9 +41,7 @@ export function QuantityCalculator({
             <TooltipTrigger>
               <Info className="h-3.5 w-3.5 text-muted-foreground/50" />
             </TooltipTrigger>
-            <TooltipContent>
-              Digite a quantidade desejada para ver o preço aplicado
-            </TooltipContent>
+            <TooltipContent>Digite a quantidade desejada para ver o preço aplicado</TooltipContent>
           </Tooltip>
         </div>
         <div className="flex items-center gap-3">
@@ -100,9 +98,7 @@ export function QuantityCalculator({
           <TooltipTrigger>
             <Info className="h-4 w-4 text-muted-foreground" />
           </TooltipTrigger>
-          <TooltipContent>
-            Digite a quantidade desejada para ver o preço aplicado
-          </TooltipContent>
+          <TooltipContent>Digite a quantidade desejada para ver o preço aplicado</TooltipContent>
         </Tooltip>
       </div>
       <div className="flex flex-col gap-4 sm:flex-row">

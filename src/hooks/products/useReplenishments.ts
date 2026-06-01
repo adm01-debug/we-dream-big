@@ -10,7 +10,7 @@ const MIN_REPLENISHMENT_DELTA_MS = 86_400_000;
 const REPLENISHMENT_SELECT =
   'id, name, sku, primary_image_url, sale_price, category_id, supplier_id, created_at, updated_at, stock_quantity, min_quantity' as const;
 
-// ─── Date Utilities ───────────────────────────────────────────
+// ─── Date Utilities ──────────────────────────────────────────────
 
 function getCutoffDate(days: number = REPLENISHMENT_WINDOW_DAYS): string {
   const d = new Date();
@@ -29,7 +29,7 @@ function calcDaysRemaining(updatedAt: string): number {
   return Math.max(0, REPLENISHMENT_WINDOW_DAYS - elapsed);
 }
 
-// ─── Types ────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────
 
 export type ReplenishmentStatus = 'active' | 'expiring_soon' | 'expired';
 export type StockStatus = 'in-stock' | 'low-stock' | 'out-of-stock';
@@ -88,7 +88,7 @@ interface RawProduct {
   readonly min_quantity: number | null;
 }
 
-// ─── Data Logic ──────────────────────────────────────────────
+// ─── Data Logic ──────────────────────────────────────────────────
 
 function getStockStatus(stock: number, minQty: number): StockStatus {
   if (stock === 0) return 'out-of-stock';
@@ -147,7 +147,7 @@ function toReplenishment(p: RawProduct): ReplenishmentWithDetails {
   };
 }
 
-// ─── Enrichment ──────────────────────────────────────────────
+// ─── Enrichment ──────────────────────────────────────────────────
 
 async function enrichReplenishments(
   items: ReplenishmentWithDetails[],
@@ -164,7 +164,11 @@ async function enrichReplenishments(
       ? supabase.from('categories').select('id, name').in('id', categoryIds).limit(500)
       : Promise.resolve({ data: [], error: null }),
     supplierIds.length > 0
-      ? supabase.from('v_suppliers_public').select('id, name, code').in('id', supplierIds).limit(200)
+      ? supabase
+          .from('v_suppliers_public')
+          .select('id, name, code')
+          .in('id', supplierIds)
+          .limit(200)
       : Promise.resolve({ data: [], error: null }),
   ]);
 
@@ -181,7 +185,7 @@ async function enrichReplenishments(
   }));
 }
 
-// ─── Hooks ────────────────────────────────────────────────
+// ─── Hooks ───────────────────────────────────────────────────────
 
 export interface UseReplenishmentsOptions {
   readonly limit?: number;
@@ -208,19 +212,18 @@ export function useReplenishmentsWithDetails(options: UseReplenishmentsOptions =
         const isGone = error.message?.includes('410') || error.message?.includes('Gone');
         if (isGone) {
           const { reportSilentEmpty } = await import('@/lib/external-db/silent-empty-report');
-          reportSilentEmpty({ 
-            reason: 'gone_410', 
-            table: 'v_products_public', 
-            operation: 'select', 
-            message: error.message 
+          reportSilentEmpty({
+            reason: 'gone_410',
+            table: 'v_products_public',
+            operation: 'select',
+            message: error.message,
           });
           return [];
         }
         throw error;
       }
 
-
-      let items = (data as unknown as RawProduct[] || [])
+      let items = ((data as unknown as RawProduct[]) || [])
         .filter(isReplenishment)
         .map(toReplenishment)
         .filter((n) => n.is_active);
@@ -257,7 +260,10 @@ export function useReplenishmentStats() {
       ]);
 
       if (repResult.error || totalResult.error) {
-        if (repResult.error?.message?.includes('410') || totalResult.error?.message?.includes('410')) {
+        if (
+          repResult.error?.message?.includes('410') ||
+          totalResult.error?.message?.includes('410')
+        ) {
           return {
             totalReplenishments: 0,
             activeReplenishments: 0,

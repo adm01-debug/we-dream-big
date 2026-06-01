@@ -58,7 +58,7 @@ describe('PriceFreshnessBadge Component', () => {
 
     // No PDP agora mostramos apenas a data curta
     expect(screen.getByText(/Atualizado em 03\/01\/2026/i)).toBeInTheDocument();
-    
+
     // Detalhes como "há 120 dias" ou recomendações não devem estar no badge (vão para o tooltip)
     expect(screen.queryByText(/\(há 120 dias\)/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Confirme com o fornecedor/i)).not.toBeInTheDocument();

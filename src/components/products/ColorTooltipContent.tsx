@@ -8,7 +8,7 @@ interface ColorTooltipContentProps {
 
 export function ColorTooltipContent({ colorName, colorHex, className }: ColorTooltipContentProps) {
   return (
-    <div className={cn("flex items-center gap-1.5", className)}>
+    <div className={cn('flex items-center gap-1.5', className)}>
       <span
         className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/20"
         data-testid="color-tooltip-swatch"
@@ -19,4 +19,5 @@ export function ColorTooltipContent({ colorName, colorHex, className }: ColorToo
   );
 }
 
-export const colorTooltipClassName = "border border-border/40 bg-popover/95 px-2.5 py-1 text-xs font-medium text-popover-foreground shadow-md backdrop-blur-sm";
+export const colorTooltipClassName =
+  'border border-border/40 bg-popover/95 px-2.5 py-1 text-xs font-medium text-popover-foreground shadow-md backdrop-blur-sm';

@@ -50,7 +50,7 @@ const VIEW_MODE_KEY = 'catalog-view-mode';
 
 // BUG-SORT-01 FIX: Conjunto dos valores válidos derivado do SSOT (SORT_OPTIONS).
 // Declarado fora do hook para não ser recriado a cada render.
-const VALID_SORT_VALUES = new Set<string>(SORT_OPTIONS.map(o => o.value));
+const VALID_SORT_VALUES = new Set<string>(SORT_OPTIONS.map((o) => o.value));
 
 /**
  * BUG-SORT-09 FIX: Mapa de aliases conhecidos → valores canônicos de SortOption.
@@ -61,8 +61,8 @@ const VALID_SORT_VALUES = new Set<string>(SORT_OPTIONS.map(o => o.value));
  * Ex: voice agent envia sortBy='popularity' → normaliza para 'best-seller-promo'.
  */
 const SORT_ALIASES: Readonly<Record<string, SortOption>> = {
-  popularity: 'best-seller-promo',  // alias do voice agent
-  relevance: 'name',                // valor legado da versão anterior do app
+  popularity: 'best-seller-promo', // alias do voice agent
+  relevance: 'name', // valor legado da versão anterior do app
 } as const;
 
 /**
@@ -100,13 +100,19 @@ export function useCatalogState() {
   const favQuickAdd = useFavoriteQuickAdd();
   const { isInCompare, toggleCompare: baseToggleCompare, canAddMore } = useComparisonStore();
 
-  const toggleFavorite = useCallback((productId: string) => {
-    baseToggleFavorite(productId);
-  }, [baseToggleFavorite]);
+  const toggleFavorite = useCallback(
+    (productId: string) => {
+      baseToggleFavorite(productId);
+    },
+    [baseToggleFavorite],
+  );
 
-  const toggleCompare = useCallback((productId: string) => {
-    return baseToggleCompare(productId);
-  }, [baseToggleCompare]);
+  const toggleCompare = useCallback(
+    (productId: string) => {
+      return baseToggleCompare(productId);
+    },
+    [baseToggleCompare],
+  );
   const { registerProducts } = useProductsContext();
   const { data: promoSalesMap } = usePromoSalesRanking();
   const { data: supplierSalesMap } = useSupplierSalesRanking();
@@ -171,12 +177,12 @@ export function useCatalogState() {
     [sortBy],
   );
 
-  // BUG-G10 FIX: Consolidate side-effects (URL, Preferences, Analytics) 
+  // BUG-G10 FIX: Consolidate side-effects (URL, Preferences, Analytics)
   // into a single effect reactive to sortBy changes.
   const lastSortByRef = useRef<SortOption>(initialSortBy);
   useEffect(() => {
     if (sortBy === lastSortByRef.current) return;
-    
+
     const previousSort = lastSortByRef.current;
     lastSortByRef.current = sortBy;
 
@@ -339,9 +345,9 @@ export function useCatalogState() {
         resultsCount: filteredProductsRef.current.length,
         filtersUsed: { sortBy },
       });
-      updatePreferences({ 
+      updatePreferences({
         lastSearchTerm: searchQueryFromUrl,
-        lastSearchSortBy: sortBy 
+        lastSearchSortBy: sortBy,
       });
     }
   }, [searchQueryFromUrl, trackSearch, sortBy, updatePreferences]);

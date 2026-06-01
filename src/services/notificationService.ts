@@ -43,7 +43,15 @@ export interface GetNotificationsOptions {
 export async function getNotifications(
   options: GetNotificationsOptions = {},
 ): Promise<WorkspaceNotification[]> {
-  const { unreadOnly = false, search, category, startDate, endDate, limit = 50, offset = 0 } = options;
+  const {
+    unreadOnly = false,
+    search,
+    category,
+    startDate,
+    endDate,
+    limit = 50,
+    offset = 0,
+  } = options;
 
   let query = supabase
     .from('workspace_notifications')
@@ -81,7 +89,7 @@ export async function getNotifications(
 
   return {
     data: (data ?? []) as WorkspaceNotification[],
-    total: count ?? 0
+    total: count ?? 0,
   };
 }
 

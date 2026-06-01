@@ -131,7 +131,7 @@ async function fetchCatalogPage(
 
   let batchResults;
   try {
-    batchResults = await Promise.all(batchQueries.map(q => dbInvoke(q)));
+    batchResults = await Promise.all(batchQueries.map((q) => dbInvoke(q)));
   } catch {
     const restQueries = Array.from({ length: pagesToFetch }, (_, i) =>
       dbInvoke<LightweightProduct>({
@@ -153,9 +153,12 @@ async function fetchCatalogPage(
     let fallbackTotalEstimate: number | null = null;
     let fallbackLastPageSize = 0;
     for (const result of pageResults) {
-      fallbackProducts.push(...result.records.map((p) => mapLightweightToProduct(p, categoriesById)));
+      fallbackProducts.push(
+        ...result.records.map((p) => mapLightweightToProduct(p, categoriesById)),
+      );
       fallbackLastPageSize = result.records.length;
-      if (result.count !== null && fallbackTotalEstimate === null) fallbackTotalEstimate = result.count;
+      if (result.count !== null && fallbackTotalEstimate === null)
+        fallbackTotalEstimate = result.count;
     }
     const fallbackFetchedUpTo = offset + pagesToFetch * CATALOG_PAGE_SIZE;
     return {

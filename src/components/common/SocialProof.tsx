@@ -193,9 +193,7 @@ export const TrustBadge = React.forwardRef<HTMLDivElement, TrustBadgeProps>(func
           {content}
         </div>
       </TooltipTrigger>
-      <TooltipContent side="bottom">
-        {tooltip}
-      </TooltipContent>
+      <TooltipContent side="bottom">{tooltip}</TooltipContent>
     </Tooltip>
   );
 });

@@ -151,16 +151,19 @@ export function CatalogToolbar({
                 <span className="relative inline-flex">
                   <SelectTrigger
                     className={cn(
-                      "relative h-9 w-10 text-xs font-medium transition-all sm:h-10 sm:w-52 sm:text-sm",
-                      sortBy !== DEFAULT_SORT_VALUE && "border-primary bg-primary/5 ring-1 ring-primary/20"
+                      'relative h-9 w-10 text-xs font-medium transition-all sm:h-10 sm:w-52 sm:text-sm',
+                      sortBy !== DEFAULT_SORT_VALUE &&
+                        'border-primary bg-primary/5 ring-1 ring-primary/20',
                     )}
                     aria-label="Ordenar por"
                     data-testid="catalog-sort-trigger"
                   >
-                    <ArrowUpDown className={cn(
-                      "h-3.5 w-3.5 shrink-0 sm:mr-2",
-                      sortBy !== DEFAULT_SORT_VALUE ? "text-primary" : "text-muted-foreground"
-                    )} />
+                    <ArrowUpDown
+                      className={cn(
+                        'h-3.5 w-3.5 shrink-0 sm:mr-2',
+                        sortBy !== DEFAULT_SORT_VALUE ? 'text-primary' : 'text-muted-foreground',
+                      )}
+                    />
                     <span className="hidden sm:inline">
                       <SelectValue placeholder="Ordenar" />
                     </span>
@@ -176,16 +179,16 @@ export function CatalogToolbar({
                   ? `Ordenado por: ${
                       // BUG-TOOLTIP FIX: fallback para sortBy fora de SORT_OPTIONS (ex: 'color-match').
                       // Antes: `?.label` retornava undefined → tooltip exibia "Ordenado por: undefined".
-                      SORT_OPTIONS.find(o => o.value === sortBy)?.label ?? 'Relevância de cor'
+                      SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? 'Relevância de cor'
                     }`
                   : 'Ordenar produtos (nome, preço, novidades…)'}
               </TooltipContent>
             </Tooltip>
             <SelectContent>
               {SORT_OPTIONS.map((option) => (
-                <SelectItem 
-                  key={option.value} 
-                  value={option.value} 
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
                   className="text-xs sm:text-sm"
                   data-testid={`catalog-sort-item-${option.value}`}
                 >

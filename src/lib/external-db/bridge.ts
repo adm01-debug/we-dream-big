@@ -10,10 +10,7 @@
  * Phase 4B removed ~200 lines of dead retry/backoff/auth code from invokeBridge.
  */
 import { logger } from '@/lib/logger';
-import {
-  getKillSwitchState,
-  KillSwitchActiveError,
-} from './kill-switch-client';
+import { getKillSwitchState, KillSwitchActiveError } from './kill-switch-client';
 import {
   tryExecuteRestNative,
   isRestNativeEligible,

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  PRODUCT_SELECT_FIELDS_WITH_SALE, 
-  PRODUCT_SELECT_FIELDS_LEGACY, 
-  PRODUCT_SELECT_FIELDS_DETAIL 
+import {
+  PRODUCT_SELECT_FIELDS_WITH_SALE,
+  PRODUCT_SELECT_FIELDS_LEGACY,
+  PRODUCT_SELECT_FIELDS_DETAIL,
 } from '../product-types';
 
 describe('Product Select Fields - Price Freshness', () => {

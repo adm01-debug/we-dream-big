@@ -21,7 +21,8 @@ export function useSupplierNames(supplierIds: string[]) {
           limit: 1,
           cacheKey: `supplier-${id}`,
         }));
-        const results = await Promise.all(queries.map(q => dbInvoke(q)));
+
+        const results = await Promise.all(queries.map((q) => dbInvoke(q)));
         const map = new Map<string, string>();
         results.forEach((result, idx) => {
           // FIX-CATALOG-01: dbInvoke returns InvokeResult { records, count }, not BatchResult { success, data }

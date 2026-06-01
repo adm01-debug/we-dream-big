@@ -237,7 +237,10 @@ export async function generateMockupApi(
   });
 
   const timeout = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('Timeout: geração demorou mais de 60s')), GENERATE_TIMEOUT_MS),
+    setTimeout(
+      () => reject(new Error('Timeout: geração demorou mais de 60s')),
+      GENERATE_TIMEOUT_MS,
+    ),
   );
 
   const { data, error } = await Promise.race([generateCall, timeout]);
@@ -250,7 +253,11 @@ export async function generateMockupApi(
   };
 }
 
-export function downloadMockupAsPdf(mockupUrl: string, product: { sku?: string | null }, technique: Technique): void {
+export function downloadMockupAsPdf(
+  mockupUrl: string,
+  product: { sku?: string | null },
+  technique: Technique,
+): void {
   const safeSku = product.sku?.replace(/[^a-zA-Z0-9]/g, '-') || 'mockup';
   const safeTechnique = (technique.code || technique.name).replace(/[^a-zA-Z0-9]/g, '-');
   const fileName = `mockup-${safeSku}-${safeTechnique}.pdf`;
@@ -298,8 +305,7 @@ export function buildMockupToastMessage(
 export function buildTechniqueList(techniquesRaw: unknown[]): Technique[] {
   return techniquesRaw
     .filter(
-      (t): t is Record<string, unknown> =>
-        !!t && typeof t === 'object' && 'id' in t && 'name' in t,
+      (t): t is Record<string, unknown> => !!t && typeof t === 'object' && 'id' in t && 'name' in t,
     )
     .map((t) => ({
       id: String(t.id),

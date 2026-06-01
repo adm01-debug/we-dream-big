@@ -52,8 +52,7 @@ interface HeaderProps {
 }
 
 export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: HeaderProps) {
-  const { actualTheme, tooltipStyle, setTooltipStyle, isFallback } =
-    useTheme();
+  const { actualTheme, tooltipStyle, setTooltipStyle, isFallback } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -117,7 +116,6 @@ export const Header = React.memo(function Header({ onMenuToggle, sidebarOpen }: 
       obs.disconnect();
     };
   }, []);
-
 
   const handleToggleBadges = async () => {
     const success = await toggleBadges(location.pathname, actualTheme, user?.id);

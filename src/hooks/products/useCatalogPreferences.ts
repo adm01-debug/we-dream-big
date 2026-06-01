@@ -23,7 +23,7 @@ const STORAGE_KEY = 'catalog_preferences';
 // BUG-PREF-01 FIX: Conjunto dos valores válidos de sortBy derivado do SSOT.
 // Localizado aqui para validar antes de gravar no state — sem depender
 // da validação em useCatalogState (defense-in-depth).
-const CATALOG_VALID_SORT_VALUES = new Set(SORT_OPTIONS.map(o => o.value));
+const CATALOG_VALID_SORT_VALUES = new Set(SORT_OPTIONS.map((o) => o.value));
 
 /**
  * BUG-PREF-01 FIX: Sanitiza um valor de sortBy antes de aplicar ao state.
@@ -142,23 +142,24 @@ export function useCatalogPreferences() {
     (newPrefs: Partial<CatalogPreferences>) => {
       setPreferencesState((prev) => {
         const updated = { ...prev, ...newPrefs };
-        
+
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
         } catch (e) {
           console.warn('LocalStorage save failed', e);
         }
-        
+
         if (user) {
           saveToCloud(updated, {
             onError: (err) => {
               console.warn('Cloud sync failed, will retry on next change', err);
               toast({
                 title: 'Erro ao salvar preferência',
-                description: 'Sua escolha foi aplicada nesta sessão, mas não pôde ser salva na nuvem.',
+                description:
+                  'Sua escolha foi aplicada nesta sessão, mas não pôde ser salva na nuvem.',
                 variant: 'destructive',
               });
-            }
+            },
           });
         }
 

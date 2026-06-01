@@ -76,7 +76,10 @@ export const useBadgeVisibilityStore = create<BadgeVisibilityStore>()(
             return true;
           } catch (err) {
             console.error('[BadgeVisibilityStore] Sync failed:', err);
-            set({ syncError: 'Erro ao sincronizar prefer\u00eancias com o servidor. As altera\u00e7\u00f5es foram salvas apenas localmente.' });
+            set({
+              syncError:
+                'Erro ao sincronizar prefer\u00eancias com o servidor. As altera\u00e7\u00f5es foram salvas apenas localmente.',
+            });
             return false;
           }
         }

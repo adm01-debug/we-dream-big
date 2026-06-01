@@ -1,4 +1,3 @@
-
 import { PromoFlixPlayer } from '@/components/products/gallery/PromoFlixPlayer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -33,52 +32,98 @@ export default function PromoFlixPlayground() {
                 autoPlay={false}
               />
             </div>
-            <div className="rounded-lg bg-zinc-900/50 p-6 border border-white/5">
+            <div className="rounded-lg border border-white/5 bg-zinc-900/50 p-6">
               <h2 className="mb-4 text-xl font-semibold">Instruções de Teste</h2>
               <ul className="list-inside list-disc space-y-2 text-zinc-400">
-                <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">Space</kbd> ou <kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">K</kbd>: Play/Pause</li>
-                <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">←</kbd> / <kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">→</kbd> ou <kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">J</kbd> / <kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">L</kbd>: Voltar/Avançar 10s</li>
-                <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">↑</kbd> / <kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">↓</kbd>: Volume</li>
-                <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">M</kbd>: Mute</li>
-                <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">F</kbd>: Fullscreen</li>
-                <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">P</kbd>: Picture-in-Picture</li>
-                <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">S</kbd>: Screenshot (Print)</li>
-                <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">&lt;</kbd> / <kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">&gt;</kbd>: Velocidade (0.5x a 2x)</li>
-                <li><kbd className="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">X</kbd>: Ativar/Desativar Raio-X</li>
+                <li>
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">
+                    Space
+                  </kbd>{' '}
+                  ou{' '}
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">K</kbd>:
+                  Play/Pause
+                </li>
+                <li>
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">←</kbd>{' '}
+                  /{' '}
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">→</kbd>{' '}
+                  ou{' '}
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">J</kbd>{' '}
+                  /{' '}
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">L</kbd>:
+                  Voltar/Avançar 10s
+                </li>
+                <li>
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">↑</kbd>{' '}
+                  /{' '}
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">↓</kbd>:
+                  Volume
+                </li>
+                <li>
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">M</kbd>:
+                  Mute
+                </li>
+                <li>
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">F</kbd>:
+                  Fullscreen
+                </li>
+                <li>
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">P</kbd>:
+                  Picture-in-Picture
+                </li>
+                <li>
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">S</kbd>:
+                  Screenshot (Print)
+                </li>
+                <li>
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">
+                    &lt;
+                  </kbd>{' '}
+                  /{' '}
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">
+                    &gt;
+                  </kbd>
+                  : Velocidade (0.5x a 2x)
+                </li>
+                <li>
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5">X</kbd>:
+                  Ativar/Desativar Raio-X
+                </li>
               </ul>
             </div>
           </div>
 
           <aside className="space-y-6">
-            <div className="rounded-lg bg-zinc-900 p-6 border border-white/5">
+            <div className="rounded-lg border border-white/5 bg-zinc-900 p-6">
               <h3 className="mb-3 text-lg font-medium text-white">Status da Implementação</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400">HLS Support</span>
-                  <span className="text-green-500 text-sm font-bold uppercase">OK</span>
+                  <span className="text-sm font-bold uppercase text-green-500">OK</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400">Netflix UI</span>
-                  <span className="text-green-500 text-sm font-bold uppercase">OK</span>
+                  <span className="text-sm font-bold uppercase text-green-500">OK</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400">Keyboard shortcuts</span>
-                  <span className="text-green-500 text-sm font-bold uppercase">OK</span>
+                  <span className="text-sm font-bold uppercase text-green-500">OK</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400">Screenshot Tool</span>
-                  <span className="text-green-500 text-sm font-bold uppercase">OK</span>
+                  <span className="text-sm font-bold uppercase text-green-500">OK</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400">Raio-X (AI Scan)</span>
-                  <span className="text-green-500 text-sm font-bold uppercase">OK</span>
+                  <span className="text-sm font-bold uppercase text-green-500">OK</span>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-lg bg-primary/10 p-6 border border-primary/20">
+            <div className="rounded-lg border border-primary/20 bg-primary/10 p-6">
               <p className="text-sm text-primary-foreground/80">
-                Este playground é utilizado para validar visualmente o reprodutor <strong>PromoFlix</strong> antes do envio para produção.
+                Este playground é utilizado para validar visualmente o reprodutor{' '}
+                <strong>PromoFlix</strong> antes do envio para produção.
               </p>
             </div>
           </aside>

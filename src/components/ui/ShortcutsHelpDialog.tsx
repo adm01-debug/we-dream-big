@@ -75,11 +75,7 @@ export function ShortcutsHelpDialog() {
             </h3>
             <div className="space-y-3">
               <ShortcutItem icon={Search} label="Buscar Produto / Comando" keys={['Ctrl', 'K']} />
-              <ShortcutItem
-                icon={MessageSquare}
-                label="Fale com o Flow"
-                keys={['Ctrl', 'J']}
-              />
+              <ShortcutItem icon={MessageSquare} label="Fale com o Flow" keys={['Ctrl', 'J']} />
               <ShortcutItem
                 icon={Search}
                 label="Busca por Voz (Flow)"

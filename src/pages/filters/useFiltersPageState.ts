@@ -420,8 +420,7 @@ export function useFiltersPageState() {
     // BUG-15c FIX (parte 2): hasPersonalization — tipo corrigido em commit anterior; filtro aplicado aqui.
     if (filters.hasPersonalization)
       result = result.filter((product) => product.hasPersonalization === true);
-    if (filters.onSale)
-      result = result.filter((product) => product.onSale === true);
+    if (filters.onSale) result = result.filter((product) => product.onSale === true);
     // BUG-16 FIX: gender era contabilizado/chipeado mas sem bloco de filtro.
     if (filters.gender?.length) {
       const genderSet = new Set(filters.gender.map((g) => g.toLowerCase().trim()));

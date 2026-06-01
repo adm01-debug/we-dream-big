@@ -30,7 +30,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
   TecnicaGravacao,
-  TecnicaGravacaoVariante,
   TecnicaGravacaoFormData,
   TecnicaGravacaoWithVariantes,
 } from '@/types/gravacao-database';
@@ -52,9 +51,7 @@ export function useTecnicasGravacao() {
           .from('tabela_preco_gravacao_oficial')
           .select('*')
           .order('nome', { ascending: true }),
-        supabase
-          .from('tabela_preco_gravacao_oficial_faixa')
-          .select('tabela_preco_gravacao_id'),  // só o FK — evita baixar 884 rows completos
+        supabase.from('tabela_preco_gravacao_oficial_faixa').select('tabela_preco_gravacao_id'), // só o FK — evita baixar 884 rows completos
       ]);
 
       if (tecnicasResult.error) {
@@ -84,11 +81,14 @@ export function useTecnicasGravacao() {
         }
       });
 
-      return ((tecnicasResult.data || []) as unknown as TecnicaGravacao[]).map((t) => ({
-        ...t,
-        variantes: [] as TecnicaGravacaoVariante[],
-        variantes_count: variantesCount[t.id] || 0,
-      }));
+      return (tecnicasResult.data || []).map((t) => {
+        const row = t as TecnicaGravacao & { id: string };
+        return {
+          ...row,
+          variantes: [],
+          variantes_count: variantesCount[row.id] || 0,
+        };
+      });
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -152,14 +152,11 @@ export function useTecnicasGravacao() {
       if ((faixasCount ?? 0) > 0) {
         throw new Error(
           `Não é possível excluir: há ${faixasCount} faixa(s) de preço vinculada(s). ` +
-          `Remova as faixas antes de excluir a técnica.`
+            `Remova as faixas antes de excluir a técnica.`,
         );
       }
 
-      const { error } = await supabase
-        .from('tabela_preco_gravacao_oficial')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('tabela_preco_gravacao_oficial').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -214,11 +211,7 @@ export function useTecnicaGravacao(id: string | undefined) {
       // antes: .from('tpgo').eq('id',id).order('ordem_exibicao') — coluna inexistente → 400
       // depois: .from('tpgo_faixa').eq('tabela_preco_gravacao_id',id).order('ordem')
       const [tecnicaResult, faixasResult] = await Promise.all([
-        supabase
-          .from('tabela_preco_gravacao_oficial')
-          .select('*')
-          .eq('id', id)
-          .single(),
+        supabase.from('tabela_preco_gravacao_oficial').select('*').eq('id', id).single(),
         supabase
           .from('tabela_preco_gravacao_oficial_faixa')
           .select('*')
@@ -230,11 +223,11 @@ export function useTecnicaGravacao(id: string | undefined) {
       if (!tecnica) return null;
 
       // Graceful degradation: se faixas falhar, retorna técnica sem faixas
-      const faixas = faixasResult.error ? [] : (faixasResult.data || []);
+      const faixas = faixasResult.error ? [] : faixasResult.data || [];
 
       return {
         ...tecnica,
-        variantes: faixas as unknown as TecnicaGravacaoVariante[],
+        variantes: faixas as TecnicaGravacaoWithVariantes['variantes'],
         variantes_count: faixas.length,
       };
     },

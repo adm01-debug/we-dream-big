@@ -15,10 +15,8 @@ export function useSystemSettings() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['system_settings'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('system_settings')
-        .select('*');
-      
+      const { data, error } = await supabase.from('system_settings').select('*');
+
       if (error) throw error;
       return data as SystemSetting[];
     },
@@ -30,7 +28,7 @@ export function useSystemSettings() {
         .from('system_settings')
         .update({ value, updated_at: new Date().toISOString() })
         .eq('key', key);
-      
+
       if (error) throw error;
       return { key, value };
     },
@@ -45,7 +43,7 @@ export function useSystemSettings() {
   });
 
   const getSetting = (key: string, defaultValue: string) => {
-    const setting = settings?.find(s => s.key === key);
+    const setting = settings?.find((s) => s.key === key);
     return setting ? setting.value : defaultValue;
   };
 

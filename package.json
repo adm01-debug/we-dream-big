@@ -110,7 +110,7 @@
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "prettier --write",
-      "eslint --fix"
+      "node scripts/check-eslint-baseline.mjs"
     ],
     "src/**/*.css": [
       "prettier --write"

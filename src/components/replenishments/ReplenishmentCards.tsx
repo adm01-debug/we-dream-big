@@ -16,7 +16,6 @@ import { cn } from '@/lib/utils';
 import type { ReplenishmentWithDetails, StockStatus } from '@/hooks/products';
 import { productCardStyles } from '@/components/products/product-card-styles';
 
-
 // ─── Helpers ─────────────────────────────────────────────────────
 
 function isRecent(replenishedAt: string): boolean {
@@ -72,7 +71,6 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
         isSelected && productCardStyles.selected,
       )}
       onClick={handleClick}
-
       role="article"
       aria-label={`${product.product_name} — ${stockConfig.label}, ${formatPrice(product.base_price ?? 0)}`}
       aria-selected={selectionMode ? isSelected : undefined}
@@ -146,9 +144,7 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
           </div>
 
           {/* Name */}
-          <h3 className={productCardStyles.title}>
-            {product.product_name}
-          </h3>
+          <h3 className={productCardStyles.title}>{product.product_name}</h3>
 
           {/* Price + Stock */}
           <div className={productCardStyles.priceStockSection}>
@@ -179,7 +175,6 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
             </div>
           </div>
 
-
           {/* Category */}
           {product.category_name && (
             <div className={productCardStyles.categoryBadgeSection}>
@@ -199,7 +194,6 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
             </div>
             <ProductSparkline productId={product.product_id} />
           </div>
-
         </div>
       </CardContent>
     </Card>

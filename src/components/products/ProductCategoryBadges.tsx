@@ -129,7 +129,7 @@ export function ProductCategoryBadges({
                   'cursor-pointer px-2.5 py-1 text-sm font-medium',
                   'border border-border/50 bg-secondary/80 hover:bg-secondary',
                   'transition-all duration-300 hover:scale-105 group-hover:shadow-md',
-                  'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full hover:before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent',
+                  'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent hover:before:animate-[shimmer_2s_infinite]',
                 )}
               >
                 <span className="mr-1.5">{getIcon(cat)}</span>
@@ -163,7 +163,7 @@ export function ProductCategoryBadges({
                 'border-primary/50 bg-primary/10 hover:bg-primary/20',
                 'text-primary hover:text-primary',
                 'transition-all duration-300 hover:scale-105 hover:border-primary group-hover:shadow-md',
-                'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full hover:before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent',
+                'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent hover:before:animate-[shimmer_2s_infinite]',
               )}
             >
               <Palette className="mr-1.5 h-3.5 w-3.5" />
@@ -200,7 +200,7 @@ export function ProductCategoryBadges({
                 'border-success/50 bg-success/15 hover:bg-success/25',
                 'text-success hover:text-success/80',
                 'transition-all duration-300 hover:scale-105 hover:border-success group-hover:shadow-md',
-                'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full hover:before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent',
+                'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent hover:before:animate-[shimmer_2s_infinite]',
               )}
             >
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
@@ -226,7 +226,7 @@ export function ProductCategoryBadges({
                 'border-warning/50 bg-warning/15 hover:bg-warning/25',
                 'text-warning hover:text-warning',
                 'transition-all duration-300 hover:scale-105 hover:border-warning group-hover:shadow-md',
-                'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full hover:before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent',
+                'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent hover:before:animate-[shimmer_2s_infinite]',
               )}
             >
               <Package className="mr-1.5 h-3.5 w-3.5" />

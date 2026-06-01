@@ -94,9 +94,7 @@ export const BackButton = forwardRef<HTMLButtonElement, BackButtonProps>(functio
           </Button>
         </motion.div>
       </TooltipTrigger>
-      <TooltipContent side="bottom" >
-        {ariaLabel}
-      </TooltipContent>
+      <TooltipContent side="bottom">{ariaLabel}</TooltipContent>
     </Tooltip>
   );
 });

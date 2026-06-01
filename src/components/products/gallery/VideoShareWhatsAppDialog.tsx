@@ -56,10 +56,7 @@ function buildSalesMessage(opts: {
   productSku?: string | null;
   productMinQuantity?: number | null;
 }): string {
-  const greetingTarget =
-    opts.contactFirstName?.trim() ||
-    opts.companyName?.trim() ||
-    'tudo bem?';
+  const greetingTarget = opts.contactFirstName?.trim() || opts.companyName?.trim() || 'tudo bem?';
   const greeting = opts.contactFirstName?.trim()
     ? `Olá, ${opts.contactFirstName.trim()}! 👋`
     : opts.companyName?.trim()
@@ -69,9 +66,7 @@ function buildSalesMessage(opts: {
   const lines: string[] = [];
   lines.push(greeting);
   lines.push('');
-  lines.push(
-    `Separei um vídeo rápido desse brinde que tem tudo a ver com o que vocês buscam:`,
-  );
+  lines.push(`Separei um vídeo rápido desse brinde que tem tudo a ver com o que vocês buscam:`);
   lines.push('');
   lines.push(`🎁 *${opts.productName}*`);
   if (opts.videoTitle && opts.videoTitle !== opts.productName) {
@@ -122,7 +117,7 @@ export function VideoShareWhatsAppDialog({
   // Compute the default message based on current selection / props.
   const defaultMessage = useMemo(() => {
     const firstName = selection?.contactName?.split(' ')[0];
-    
+
     // Sanitize shareUrl to remove tracking or auth bypass params
     let sanitizedShareUrl = shareUrl;
     if (sanitizedShareUrl) {
@@ -148,15 +143,7 @@ export function VideoShareWhatsAppDialog({
       productSku,
       productMinQuantity,
     });
-  }, [
-    selection,
-    productName,
-    videoTitle,
-    shareUrl,
-    productPrice,
-    productSku,
-    productMinQuantity,
-  ]);
+  }, [selection, productName, videoTitle, shareUrl, productPrice, productSku, productMinQuantity]);
 
   // Keep message in sync with selection unless the user manually edited it.
   useEffect(() => {
@@ -201,8 +188,7 @@ export function VideoShareWhatsAppDialog({
     } else {
       toast({
         title: 'Não foi possível abrir o WhatsApp',
-        description:
-          'Verifique se o navegador permite popups ou copie a mensagem manualmente.',
+        description: 'Verifique se o navegador permite popups ou copie a mensagem manualmente.',
         variant: 'destructive',
       });
     }
@@ -244,15 +230,11 @@ export function VideoShareWhatsAppDialog({
               </TabsList>
 
               <TabsContent value="crm" className="mt-3">
-                <ShareContactSelector
-                  selection={selection}
-                  onSelect={(s) => setSelection(s)}
-                />
+                <ShareContactSelector selection={selection} onSelect={(s) => setSelection(s)} />
                 {selection && !phoneFromCrm && (
                   <p className="mt-2 text-[11px] text-warning">
-                    Esse contato não tem telefone cadastrado. O WhatsApp abrirá
-                    sem destinatário — escolha outro contato ou use a aba
-                   "Número manual".
+                    Esse contato não tem telefone cadastrado. O WhatsApp abrirá sem destinatário —
+                    escolha outro contato ou use a aba "Número manual".
                   </p>
                 )}
               </TabsContent>
@@ -266,8 +248,8 @@ export function VideoShareWhatsAppDialog({
                   className="h-9"
                 />
                 <p className="mt-1.5 text-[11px] text-muted-foreground">
-                  Pode digitar com ou sem máscara. DDI 55 é adicionado
-                  automaticamente para números brasileiros.
+                  Pode digitar com ou sem máscara. DDI 55 é adicionado automaticamente para números
+                  brasileiros.
                 </p>
               </TabsContent>
             </Tabs>
@@ -309,7 +291,7 @@ export function VideoShareWhatsAppDialog({
           <div className="text-[11px] text-muted-foreground">
             {phoneToSend ? (
               <>
-                Enviando para{' '}<span className="font-mono text-foreground">{phoneToSend}</span>
+                Enviando para <span className="font-mono text-foreground">{phoneToSend}</span>
               </>
             ) : (
               'Sem destinatário — você escolhe no WhatsApp'

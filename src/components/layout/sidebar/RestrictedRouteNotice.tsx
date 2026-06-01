@@ -81,7 +81,7 @@ export function RestrictedRouteNotice({ isCollapsed }: RestrictedRouteNoticeProp
                 asChild
                 size="sm"
                 variant="ghost"
-                className="h-5 px-1.5 text-tooltip hover:bg-amber-500/10 hover:text-amber-600"
+                className="text-tooltip h-5 px-1.5 hover:bg-amber-500/10 hover:text-amber-600"
               >
                 <Link to="/">Sair</Link>
               </Button>

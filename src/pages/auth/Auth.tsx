@@ -241,15 +241,18 @@ export default function Auth() {
 
         if (error.message.includes('Invalid login credentials') || error.status === 400) {
           title = 'E-mail ou Senha Incorretos';
-          description = 'Não encontramos uma conta com esses dados. Verifique se digitou corretamente ou use "Esqueci minha senha".';
+          description =
+            'Não encontramos uma conta com esses dados. Verifique se digitou corretamente ou use "Esqueci minha senha".';
           hint = 'Dica: Verifique se o Caps Lock está ativado.';
         } else if (error.message.includes('Email not confirmed')) {
           title = 'E-mail não confirmado';
-          description = 'Sua conta ainda não foi ativada. Verifique sua caixa de entrada e spam pelo e-mail de confirmação.';
+          description =
+            'Sua conta ainda não foi ativada. Verifique sua caixa de entrada e spam pelo e-mail de confirmação.';
           hint = 'Ainda não recebeu? Aguarde alguns minutos antes de solicitar um novo envio.';
         } else if (error.message.includes('rate limit') || error.status === 429) {
           title = 'Acesso Temporariamente Suspenso';
-          description = 'Detectamos muitas tentativas seguidas. Por segurança, sua conta foi bloqueada por alguns minutos.';
+          description =
+            'Detectamos muitas tentativas seguidas. Por segurança, sua conta foi bloqueada por alguns minutos.';
           hint = 'Tome um café e tente novamente em instantes.';
         } else if (
           error.status === 0 ||
@@ -257,14 +260,16 @@ export default function Auth() {
           error.message.includes('Fetch')
         ) {
           title = 'Erro de Conexão';
-          description = 'Parece que você está sem internet ou nosso servidor está temporariamente inacessível.';
+          description =
+            'Parece que você está sem internet ou nosso servidor está temporariamente inacessível.';
           hint = 'Verifique sua conexão Wi-Fi ou dados móveis.';
         } else if (
           error.message.includes('Database error') ||
           (error.status !== undefined && error.status >= 500)
         ) {
           title = 'Sistema em Manutenção';
-          description = 'Estamos ajustando os motores das nossas galáxias. O serviço deve voltar ao normal em breve.';
+          description =
+            'Estamos ajustando os motores das nossas galáxias. O serviço deve voltar ao normal em breve.';
           hint = 'Nossa equipe técnica já foi notificada.';
         }
 
@@ -286,7 +291,7 @@ export default function Auth() {
                 <button
                   type="button"
                   className={authButtonClass(
-                    'h-8 rounded-lg bg-white/5 px-3 text-[10px] uppercase tracking-widest text-white/40 hover:bg-white/10 hover:text-white'
+                    'h-8 rounded-lg bg-white/5 px-3 text-[10px] uppercase tracking-widest text-white/40 hover:bg-white/10 hover:text-white',
                   )}
                   onClick={() => window.location.reload()}
                 >
@@ -791,7 +796,6 @@ export default function Auth() {
           )}
 
           {/* Backend Status Widget removido a pedido do PO */}
-
 
           <LegalFooter />
         </div>

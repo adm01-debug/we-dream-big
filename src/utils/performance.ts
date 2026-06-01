@@ -39,7 +39,7 @@ class PerformanceTracker {
   private saveHistory() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.history.slice(-MAX_HISTORY)));
-    } catch (_e) {
+    } catch {
       // Ignore quota errors
     }
   }
@@ -76,7 +76,7 @@ class PerformanceTracker {
         }
 
         return measure;
-      } catch (_e) {
+      } catch {
         // Mark might not exist yet
       }
     }

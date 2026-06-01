@@ -17,20 +17,29 @@ END $$;
 
 -- PASSO 46: Adicionar RLS à tabela _asia_api_staging (T36)
 -- Tinha DELETE, INSERT, SELECT, UPDATE liberados para anon sem RLS
-ALTER TABLE _asia_api_staging ENABLE ROW LEVEL SECURITY;
-
--- Apenas service_role acessa — tabela de staging interna
+-- Guard: tabela pode não existir em preview branches (criada fora de migration
+-- em produção, ou dropped após o snapshot ser feito).
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE tablename = '_asia_api_staging'
-      AND policyname = '_asia_staging_service_only'
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = '_asia_api_staging'
   ) THEN
-    CREATE POLICY "_asia_staging_service_only" ON _asia_api_staging
-      AS RESTRICTIVE
-      FOR ALL
-      TO authenticated
-      USING (false);
+    ALTER TABLE _asia_api_staging ENABLE ROW LEVEL SECURITY;
+
+    -- Apenas service_role acessa — tabela de staging interna
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies
+      WHERE tablename = '_asia_api_staging'
+        AND policyname = '_asia_staging_service_only'
+    ) THEN
+      CREATE POLICY "_asia_staging_service_only" ON _asia_api_staging
+        AS RESTRICTIVE
+        FOR ALL
+        TO authenticated
+        USING (false);
+    END IF;
+  ELSE
+    RAISE NOTICE '_asia_api_staging não existe — RLS/policy pulados (tabela criada fora de migration em produção)';
   END IF;
 END $$;

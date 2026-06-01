@@ -52,11 +52,14 @@ export function ProductRamosSection({ productId }: ProductRamosSectionProps) {
 
   const segmentosByRamo = useMemo(
     () =>
-      segmentos.reduce<Record<string, typeof segmentos>>((acc: Record<string, typeof segmentos>, s) => {
-        if (!acc[s.ramo_atividade_id]) acc[s.ramo_atividade_id] = [];
-        acc[s.ramo_atividade_id].push(s);
-        return acc;
-      }, {}),
+      segmentos.reduce<Record<string, typeof segmentos>>(
+        (acc: Record<string, typeof segmentos>, s) => {
+          if (!acc[s.ramo_atividade_id]) acc[s.ramo_atividade_id] = [];
+          acc[s.ramo_atividade_id].push(s);
+          return acc;
+        },
+        {},
+      ),
     [segmentos],
   );
 

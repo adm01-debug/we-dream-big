@@ -344,7 +344,9 @@ export function FutureStockModal({
                             <div className="flex flex-col gap-1">
                               <span className="font-semibold">{color.name}</span>
                               <span>Atual: {color.currentStock.toLocaleString('pt-BR')} un.</span>
-                              <span>Previsto: +{color.incomingTotal.toLocaleString('pt-BR')} un.</span>
+                              <span>
+                                Previsto: +{color.incomingTotal.toLocaleString('pt-BR')} un.
+                              </span>
                             </div>
                           </TooltipContent>
                         </Tooltip>

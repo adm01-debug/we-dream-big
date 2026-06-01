@@ -42,8 +42,16 @@ ALTER TABLE IF EXISTS public.admin_audit_log_y2026m02 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.admin_audit_log_y2026m06 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.frontend_telemetry ENABLE ROW LEVEL SECURITY;
 
-GRANT ALL ON public.admin_audit_log_y2026m02 TO service_role;
-GRANT ALL ON public.admin_audit_log_y2026m06 TO service_role;
+-- Guards: partitions admin_audit_log_y2026m* podem não existir em preview snapshots
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname='public' AND tablename='admin_audit_log_y2026m02') THEN
+    GRANT ALL ON public.admin_audit_log_y2026m02 TO service_role;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname='public' AND tablename='admin_audit_log_y2026m06') THEN
+    GRANT ALL ON public.admin_audit_log_y2026m06 TO service_role;
+  END IF;
+END $$;
 GRANT ALL ON public.frontend_telemetry TO service_role;
 GRANT ALL ON public.password_reset_requests TO service_role;
 

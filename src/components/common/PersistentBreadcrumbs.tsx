@@ -151,14 +151,19 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
                   <span className="inline">Teletransporte</span>
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-[200px] text-xs" data-testid="teleport-tooltip-content">
+              <TooltipContent
+                side="bottom"
+                className="max-w-[200px] text-xs"
+                data-testid="teleport-tooltip-content"
+              >
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-1.5 font-semibold text-sky-400">
                     <Zap className="h-3 w-3" />
                     <span>Teletransporte</span>
                   </div>
                   <p className="leading-relaxed text-muted-foreground">
-                    Retorna para a <strong>página anterior</strong> que você visitou. Diferente do Início, ele mantém seu progresso anterior.
+                    Retorna para a <strong>página anterior</strong> que você visitou. Diferente do
+                    Início, ele mantém seu progresso anterior.
                   </p>
                 </div>
               </TooltipContent>
@@ -184,7 +189,12 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
 
                 const itemElement = item.href ? (
                   <BreadcrumbLink asChild>
-                    <Link to={item.href} className="group" onClick={isHome ? handleHomeClick : undefined} data-testid={isHome ? "home-breadcrumb-link" : undefined}>
+                    <Link
+                      to={item.href}
+                      className="group"
+                      onClick={isHome ? handleHomeClick : undefined}
+                      data-testid={isHome ? 'home-breadcrumb-link' : undefined}
+                    >
                       {content}
                     </Link>
                   </BreadcrumbLink>
@@ -199,14 +209,19 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
                         <TooltipTrigger asChild>
                           <BreadcrumbItem className="cursor-help">{itemElement}</BreadcrumbItem>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom" className="max-w-[200px] text-xs" data-testid="inicio-tooltip-content">
+                        <TooltipContent
+                          side="bottom"
+                          className="max-w-[200px] text-xs"
+                          data-testid="inicio-tooltip-content"
+                        >
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-1.5 font-semibold text-primary">
                               <Home className="h-3 w-3" />
                               <span>Início</span>
                             </div>
                             <p className="leading-relaxed text-muted-foreground">
-                              Leva você de volta ao <strong>Catálogo (Home)</strong>. Use para recomeçar sua busca do zero, ignorando o histórico.
+                              Leva você de volta ao <strong>Catálogo (Home)</strong>. Use para
+                              recomeçar sua busca do zero, ignorando o histórico.
                             </p>
                           </div>
                         </TooltipContent>

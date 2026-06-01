@@ -7,12 +7,7 @@ import { useBadgeVisibilityStore } from '@/stores/useBadgeVisibilityStore';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export type ProductStatusBadgeType = 
-  | 'novelty' 
-  | 'promotion' 
-  | 'featured' 
-  | 'kit' 
-  | 'urgency';
+export type ProductStatusBadgeType = 'novelty' | 'promotion' | 'featured' | 'kit' | 'urgency';
 
 export type UrgencyType = 'limited-stock' | 'trending' | 'ending-soon';
 
@@ -39,7 +34,7 @@ export function ProductStatusBadge({
 }: ProductStatusBadgeProps) {
   const location = useLocation();
   const { actualTheme } = useTheme();
-  
+
   const badgesEnabled = useBadgeVisibilityStore((s) => {
     const settings = s.routeSettings[location.pathname];
     if (settings) {
@@ -47,10 +42,10 @@ export function ProductStatusBadge({
     }
     return s.badgesEnabled;
   });
-  
+
   // Hide all status badges when user has disabled them (urgency badges always show as they're contextual)
   if (!badgesEnabled && type !== 'urgency') return null;
-  
+
   const isClickable = !!onClick;
 
   const getSizeClasses = () => {
@@ -66,9 +61,12 @@ export function ProductStatusBadge({
 
   const getIconSize = () => {
     switch (size) {
-      case 'sm': return 'h-2.5 w-2.5';
-      case 'lg': return 'h-4 w-4';
-      default: return 'h-2.5 w-2.5 sm:h-3 sm:w-3';
+      case 'sm':
+        return 'h-2.5 w-2.5';
+      case 'lg':
+        return 'h-4 w-4';
+      default:
+        return 'h-2.5 w-2.5 sm:h-3 sm:w-3';
     }
   };
 
@@ -111,7 +109,7 @@ export function ProductStatusBadge({
 
   const getContent = () => {
     const iconSize = getIconSize();
-    
+
     switch (type) {
       case 'featured':
         return (
@@ -137,9 +135,12 @@ export function ProductStatusBadge({
         );
       case 'novelty': {
         const daysElapsed = daysRemaining !== undefined ? 30 - daysRemaining : 0;
-        const label = daysElapsed === 0 ? 'Novidade hoje!' : 
-                      daysElapsed === 1 ? 'Novidade 1 dia' : 
-                      `Novidade ${daysElapsed} dias`;
+        const label =
+          daysElapsed === 0
+            ? 'Novidade hoje!'
+            : daysElapsed === 1
+              ? 'Novidade 1 dia'
+              : `Novidade ${daysElapsed} dias`;
         return (
           <>
             {daysElapsed <= 5 && <Sparkles className={iconSize} />}
@@ -218,12 +219,12 @@ export function ProductStatusBadge({
         'inline-flex items-center rounded-full font-semibold transition-all duration-300',
         'group-hover:scale-105 group-hover:shadow-lg', // Animation on card hover
         'hover:brightness-110 active:scale-95',
-        isClickable && 'cursor-pointer pointer-events-auto',
+        isClickable && 'pointer-events-auto cursor-pointer',
         getVariantStyles(),
         getSizeClasses(),
         // Subtle shimmer/pulse animation
         'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent',
-        className
+        className,
       )}
       onClick={(e) => {
         if (onClick) {

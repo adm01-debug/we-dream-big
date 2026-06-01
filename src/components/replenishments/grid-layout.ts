@@ -64,4 +64,3 @@ export function getGridGapClass(cols: ColumnCount): string {
   if (cols >= 6) return 'gap-x-6 gap-y-8';
   return 'gap-x-8 gap-y-8';
 }
-

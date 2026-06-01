@@ -22,7 +22,11 @@ const mockItem = {
   weightG: 1200,
 } as unknown as KitComponent;
 
-const normalize = (s: string) => s.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+const normalize = (s: string) =>
+  s
+    .replace(/\u00a0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 describe('ShareKitDialog Message Generation Logic', () => {
   describe('generateKitCompleteMessage', () => {

@@ -67,13 +67,11 @@ export const ProductCardImage = memo(function ProductCardImage({
         alt={name}
         lqip={activeLqip}
         className={cn('h-full w-full object-contain')}
-        style={
-          {
-            transform: `scale(${computedImageScale})`,
-            willChange: 'transform',
-            transition: 'transform 0.3s ease-out',
-          }
-        }
+        style={{
+          transform: `scale(${computedImageScale})`,
+          willChange: 'transform',
+          transition: 'transform 0.3s ease-out',
+        }}
         containerClassName="h-full w-full"
         {...DEFAULT_IMAGE_CONFIG}
       />
@@ -158,7 +156,9 @@ export const ProductCardImage = memo(function ProductCardImage({
                   type="button"
                   className={cn(
                     'h-3 w-3 rounded-full border transition-all hover:scale-125',
-                    activeColorIdx === idx ? 'border-primary scale-125 shadow-sm' : 'border-transparent',
+                    activeColorIdx === idx
+                      ? 'scale-125 border-primary shadow-sm'
+                      : 'border-transparent',
                   )}
                   style={{ backgroundColor: color.hex }}
                   onClick={(e) => {

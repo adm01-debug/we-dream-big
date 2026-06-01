@@ -162,19 +162,16 @@ export function useAIRecommendations() {
             // poderia apontar para outro projeto e invalidar o JWT (401
             // "Token inválido ou expirado").
             const supabaseUrl = (supabase as unknown as { supabaseUrl: string }).supabaseUrl;
-            const response = await fetch(
-              `${supabaseUrl}/functions/v1/ai-recommendations`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  apikey: (supabase as unknown as { supabaseKey: string }).supabaseKey,
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ client, products }),
-                signal: controller.signal,
+            const response = await fetch(`${supabaseUrl}/functions/v1/ai-recommendations`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                apikey: (supabase as unknown as { supabaseKey: string }).supabaseKey,
+                Authorization: `Bearer ${token}`,
               },
-            );
+              body: JSON.stringify({ client, products }),
+              signal: controller.signal,
+            });
 
             if (!response.ok) {
               if (response.status === 429) {
@@ -196,7 +193,6 @@ export function useAIRecommendations() {
               const errMsg = await extractErrorMessage(response);
               throw new Error(errMsg);
             }
-
 
             const result: AIRecommendationsResult = await response.json();
             cacheRef.current.set(key, result);

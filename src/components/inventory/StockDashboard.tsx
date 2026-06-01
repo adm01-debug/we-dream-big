@@ -233,7 +233,9 @@ export function StockDashboard() {
           <div className="space-y-2">
             <h3 className="text-xl font-bold text-destructive">Falha ao carregar estoque</h3>
             <p className="max-w-md text-muted-foreground">
-              {error instanceof Error ? error.message : 'Não foi possível conectar ao banco de dados externo.'}
+              {error instanceof Error
+                ? error.message
+                : 'Não foi possível conectar ao banco de dados externo.'}
             </p>
           </div>
           <Button onClick={fetchStockData} variant="outline" className="gap-2">

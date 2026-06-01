@@ -96,7 +96,7 @@ export function ZoneQuickNav({
                     <span>{z.label}</span>
                   </a>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" >
+                <TooltipContent side="bottom">
                   <p className="text-xs">
                     {isVisible
                       ? 'Clique para rolar até a zona.'

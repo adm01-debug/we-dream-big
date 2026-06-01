@@ -63,8 +63,8 @@ interface BuildActionsParams {
 
 export function buildActions({
   goTo,
-  actualTheme,
-  setTheme,
+  actualTheme: _actualTheme,
+  setTheme: _setTheme,
   setOpen,
 }: BuildActionsParams): CommandAction[] {
   return [

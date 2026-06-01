@@ -8,7 +8,6 @@
  * Uses incremental enrichment: keeps a growing cache of results and only
  * fetches data for NEW product IDs that haven't been enriched yet.
  */
-import { dbInvoke } from '@/lib/db/postgrest';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useMemo, useEffect } from 'react';
 import { logger } from '@/lib/logger';

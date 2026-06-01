@@ -11,9 +11,17 @@ import { logger } from '@/lib/logger';
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 800;
 const RETRYABLE_PATTERNS = [
-  'statement timeout', '57014', '502', '503', '504',
-  'network', 'fetch', 'ECONNRESET', 'socket hang up',
-  'AbortError', 'Failed to fetch',
+  'statement timeout',
+  '57014',
+  '502',
+  '503',
+  '504',
+  'network',
+  'fetch',
+  'ECONNRESET',
+  'socket hang up',
+  'AbortError',
+  'Failed to fetch',
 ];
 
 function isRetryableError(msg: string): boolean {
@@ -36,7 +44,9 @@ export async function invokeExternalRpc<T>(
     const msg = error?.message || 'Erro na RPC';
     if (attempt < MAX_RETRIES && isRetryableError(msg)) {
       const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
-      logger.warn(`[external-rpc] Retry ${attempt + 1}/${MAX_RETRIES} for ${rpcName} after ${delay}ms: ${msg}`);
+      logger.warn(
+        `[external-rpc] Retry ${attempt + 1}/${MAX_RETRIES} for ${rpcName} after ${delay}ms: ${msg}`,
+      );
       await new Promise((r) => setTimeout(r, delay));
       continue;
     }

@@ -5,7 +5,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { BrowserRouter } from 'react-router-dom';
 import { Command } from '@/components/ui/command';
 
-
 describe('GlobalSearchIdleState Rendering', () => {
   const mockProps = {
     history: [],
@@ -16,7 +15,7 @@ describe('GlobalSearchIdleState Rendering', () => {
         sku: 'CAN-001',
         view_count: 100,
         image_url: 'https://example.com/image.jpg',
-        category_name: 'Cozinha'
+        category_name: 'Cozinha',
       },
       {
         id: '2',
@@ -24,7 +23,7 @@ describe('GlobalSearchIdleState Rendering', () => {
         sku: 'CAN-002',
         view_count: 50,
         // No image to test RankBadge fallback
-      }
+      },
     ],
     contextualSuggestions: [],
     quickSuggestions: [],
@@ -43,9 +42,8 @@ describe('GlobalSearchIdleState Rendering', () => {
             <GlobalSearchIdleState {...mockProps} />
           </Command>
         </TooltipProvider>
-      </BrowserRouter>
+      </BrowserRouter>,
     );
-
 
     const img = screen.getByAltText('Caneca Top');
     expect(img).toBeDefined();
@@ -60,9 +58,8 @@ describe('GlobalSearchIdleState Rendering', () => {
             <GlobalSearchIdleState {...mockProps} />
           </Command>
         </TooltipProvider>
-      </BrowserRouter>
+      </BrowserRouter>,
     );
-
 
     expect(screen.getByText(/TOP 1/i)).toBeDefined();
   });
@@ -73,10 +70,10 @@ describe('GlobalSearchIdleState Rendering', () => {
       ...mockProps,
       popularProducts: [
         ...mockProps.popularProducts,
-        { id: '3', name: 'Caneca Low', sku: 'CAN-003', view_count: 10 }
-      ]
+        { id: '3', name: 'Caneca Low', sku: 'CAN-003', view_count: 10 },
+      ],
     };
-    
+
     render(
       <BrowserRouter>
         <TooltipProvider>
@@ -84,10 +81,9 @@ describe('GlobalSearchIdleState Rendering', () => {
             <GlobalSearchIdleState {...propsWith3} />
           </Command>
         </TooltipProvider>
-      </BrowserRouter>
+      </BrowserRouter>,
     );
-    
+
     expect(screen.getByText('3º')).toBeDefined();
   });
-
 });

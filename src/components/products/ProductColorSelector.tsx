@@ -177,7 +177,9 @@ export function ProductColorSelector({
                 <div className="text-center">
                   <ColorTooltipContent colorName={formatColorName(color)} colorHex={colorHex} />
                   {color.groupName && color.groupName !== color.variationName && (
-                    <p className="mt-0.5 text-[10px] text-muted-foreground opacity-80">Grupo: {color.groupName}</p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground opacity-80">
+                      Grupo: {color.groupName}
+                    </p>
                   )}
                 </div>
               </TooltipContent>
@@ -272,9 +274,9 @@ export function CompactColorDots({ colors, maxVisible = 5, size = 'sm' }: Compac
             />
           </TooltipTrigger>
           <TooltipContent side="top" className={colorTooltipClassName}>
-            <ColorTooltipContent 
-              colorName={`${color.variationName || color.name}${color.nuanceName ? ` ${color.nuanceName}` : ''}`} 
-              colorHex={color.hex || '#CCCCCC'} 
+            <ColorTooltipContent
+              colorName={`${color.variationName || color.name}${color.nuanceName ? ` ${color.nuanceName}` : ''}`}
+              colorHex={color.hex || '#CCCCCC'}
             />
           </TooltipContent>
         </Tooltip>

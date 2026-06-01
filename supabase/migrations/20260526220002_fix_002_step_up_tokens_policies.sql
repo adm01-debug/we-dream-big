@@ -3,11 +3,15 @@
 -- Bug: Authenticated users cannot create or consume their own step-up tokens
 -- Note: service_role always bypasses RLS — edge functions remain unaffected
 -- Applied: 2026-05-26
+-- Guard: tabela step_up_tokens pode não existir em preview snapshots.
 -- =============================================================================
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'step_up_tokens'
+  ) AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'step_up_tokens' AND policyname = 'step_up_tokens_insert_own'
   ) THEN
@@ -23,7 +27,10 @@ END $$;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'step_up_tokens'
+  ) AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'step_up_tokens' AND policyname = 'step_up_tokens_update_own'
   ) THEN
@@ -44,7 +51,10 @@ END $$;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'step_up_tokens'
+  ) AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'step_up_tokens' AND policyname = 'step_up_tokens_delete_admin'
   ) THEN

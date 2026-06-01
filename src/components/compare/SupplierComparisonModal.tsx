@@ -610,9 +610,7 @@ function ComparisonRow({ row, formatCurrency, formatPercent }: ComparisonItemPro
                   <TooltipTrigger>
                     <AlertCircle className="h-3.5 w-3.5 text-warning" />
                   </TooltipTrigger>
-                  <TooltipContent>
-                    MOQ Elevado: {p.minQuantity} un.
-                  </TooltipContent>
+                  <TooltipContent>MOQ Elevado: {p.minQuantity} un.</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -856,7 +854,7 @@ function ScoreBreakdown({
           </div>
           <div className="rounded-2xl border border-dashed border-muted-foreground/30 bg-muted/50 p-3">
             <p className="text-[10px] font-medium italic leading-relaxed text-muted-foreground">
-             "Esta pontuação é dinâmica e reflete o equilíbrio entre custo operacional,
+              "Esta pontuação é dinâmica e reflete o equilíbrio entre custo operacional,
               disponibilidade imediata e confiabilidade do fornecedor."
             </p>
           </div>

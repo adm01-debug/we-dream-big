@@ -62,7 +62,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe('useQuoteBuilderState E2E Logic', () => {
   it('should initialize with default state', () => {
     const { result } = renderHook(() => useQuoteBuilderState(), { wrapper });
-    
+
     expect(result.current.activeStep).toBe('client');
     expect(result.current.clientId).toBe('');
     expect(result.current.items).toEqual([]);
@@ -76,7 +76,7 @@ describe('useQuoteBuilderState E2E Logic', () => {
       result.current.setClientId('client-1');
       result.current.setContactId('contact-1');
     });
-    
+
     expect(result.current.completedSteps).toContain('client');
 
     // Step 2: Conditions

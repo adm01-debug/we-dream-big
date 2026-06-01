@@ -5,7 +5,7 @@ import type { Product, SupplierSalesEntry } from '@/hooks/products';
 
 /**
  * Bateria de testes validando as opções de ordenação do catálogo.
- * 
+ *
  * Agora com 7 opções (Removidos: relevance, store-default)
  */
 

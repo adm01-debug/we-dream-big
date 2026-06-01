@@ -26,7 +26,7 @@ export default function ReplenishmentsPage() {
               >
                 Reposição
               </h1>
-              <p 
+              <p
                 data-testid="replenishment-description"
                 className="mt-1 text-sm font-medium text-muted-foreground sm:text-base"
               >

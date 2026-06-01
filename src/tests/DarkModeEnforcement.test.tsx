@@ -8,7 +8,7 @@ describe('Dark Mode Enforcement', () => {
     const { result } = renderHook(() => useTheme(), {
       wrapper: ({ children }) => <ThemeProvider>{children}</ThemeProvider>,
     });
-    
+
     expect(result.current.actualTheme).toBe('dark');
     expect(result.current.theme).toBe('dark');
   });
@@ -18,7 +18,7 @@ describe('Dark Mode Enforcement', () => {
     renderHook(() => useTheme(), {
       wrapper: ({ children }) => <ThemeProvider>{children}</ThemeProvider>,
     });
-    
+
     expect(document.documentElement.classList.contains('dark')).toBe(true);
     expect(document.documentElement.classList.contains('light')).toBe(false);
   });

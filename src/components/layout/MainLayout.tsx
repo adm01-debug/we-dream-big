@@ -111,7 +111,9 @@ export function MainLayout({ children }: MainLayoutProps) {
               'theme-transitioning sticky z-30 transition-all duration-300 print:hidden',
               'bg-background/20 backdrop-blur-xl',
               'border-b border-border/40',
-              !isHome ? 'opacity-100 translate-y-0' : 'pointer-events-none opacity-0 -translate-y-full',
+              !isHome
+                ? 'translate-y-0 opacity-100'
+                : 'pointer-events-none -translate-y-full opacity-0',
             )}
             aria-hidden={isHome}
             style={{ top: 'var(--header-h, 56px)' }}

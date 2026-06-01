@@ -41,7 +41,7 @@ export function ThemeProvider({
     const root = window.document.documentElement;
     root.classList.remove('light');
     root.classList.add('dark');
-    
+
     // Cleanup any old theme preference
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(storageKey);

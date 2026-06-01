@@ -109,7 +109,7 @@ export function EnrichedOrdersTimeline({ clientId }: Props) {
                     fontWeight: 600,
                     padding: '4px 6px',
                     backdropFilter: 'blur(8px)',
-                    color: '#fff'
+                    color: '#fff',
                   }}
                   itemStyle={{ padding: 0 }}
                   labelStyle={{ display: 'none' }}

@@ -30,7 +30,7 @@ export interface UseNotificationsReturn {
   clearAll: () => Promise<void>;
   refresh: () => Promise<void>;
   prefetch: () => Promise<void>;
-  
+
   // Filters
   page: number;
   search: string;

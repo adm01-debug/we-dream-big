@@ -84,10 +84,16 @@ export function HardeningTrendChart() {
                     fontWeight: 600,
                     padding: '4px 6px',
                     backdropFilter: 'blur(8px)',
-                    color: '#fff'
+                    color: '#fff',
                   }}
                   itemStyle={{ padding: 0 }}
-                  labelStyle={{ fontSize: '5.5px', opacity: 0.7, marginBottom: '2px', fontWeight: 800, textTransform: 'uppercase' }}
+                  labelStyle={{
+                    fontSize: '5.5px',
+                    opacity: 0.7,
+                    marginBottom: '2px',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                  }}
                 />
                 <Line
                   type="monotone"

@@ -25,70 +25,87 @@ import type { InvokeOptions, InvokeResult } from './bridge';
 // ── Read whitelist ────────────────────────────────────────────────────────────
 const REST_NATIVE_SAFE_TABLES = new Set<string>([
   // ─ Core catalog ─────────────────────────────────────────────────────
-  'products', 'v_products_public', 'product_variants', 'product_images', 'product_videos',
-  'product_kit_components', 'product_materials',
-  'product_properties',
-  'supplier_property_mappings',
+  'products',
+  'v_products_public',
+  'product_variants',
+  'product_images',
+  'product_videos',
+  'product_kit_components',
+  'product_materials',
+  'product_properties', // PHASE 6: real table name for product attributes
+  'supplier_property_mappings', // PHASE 6: real table name for supplier attr mappings
 
-  // ─ Suppliers ─────────────────────────────────────────────────────────
-  'suppliers', 'v_suppliers_public',
+  // ─ Suppliers (read via security VIEW — api_credentials hidden) ─────────────────
+  'suppliers',
+  'v_suppliers_public',
 
-  // ─ Colors ────────────────────────────────────────────────────────────
-  'color_variations', 'color_groups', 'color_nuances', 'color_equivalences', 'supplier_colors',
+  // ─ Colors ───────────────────────────────────────────────────────────────
+  'color_variations',
+  'color_groups',
+  'color_nuances',
+  'color_equivalences',
+  'supplier_colors',
 
-  // ─ Categories ────────────────────────────────────────────────────────
-  'categories', 'product_category_assignments',
-  'categories_tree_visual',
+  // ─ Categories ─────────────────────────────────────────────────────────
+  'categories',
+  'product_category_assignments',
+  'categories_tree_visual', // PHASE 6: hierarchical category tree view (222 rows)
 
-  // ─ Materials ─────────────────────────────────────────────────────────
-  'material_types', 'material_groups', 'material_variations', 'supplier_materials',
-  'materials_complete',
-  'products_with_materials',
-  'mv_material_group_stats',
+  // ─ Materials ──────────────────────────────────────────────────────────
+  'material_types',
+  'material_groups',
+  'material_variations',
+  'supplier_materials',
+  'materials_complete', // PHASE 6: denormalized view (exists in DB)
+  'products_with_materials', // PHASE 6: 9645 rows
+  'mv_material_group_stats', // PHASE 6: 10 rows, aggregated
 
-  // ─ Tags ──────────────────────────────────────────────────────────────
-  'tags', 'product_tags',
+  // ─ Tags ──────────────────────────────────────────────────────────────────
+  'tags',
+  'product_tags',
 
-  // ─ Variations ────────────────────────────────────────────────────────
-  'variation_types', 'variation_values',
+  // ─ Variations ───────────────────────────────────────────────────────────
+  'variation_types',
+  'variation_values',
 
-  // ─ Attributes ────────────────────────────────────────────────────────
-  'category_attributes', 'supplier_attribute_definitions',
+  // ─ Attributes ──────────────────────────────────────────────────────────
+  'category_attributes',
+  'supplier_attribute_definitions',
 
-  // ─ Personalization techniques (real table, uuid PK, EN columns) ──────
-  // NOTE: personalization_techniques is a REAL TABLE — access it directly.
-  // Do NOT alias to tecnicas_gravacao (different schema, different data).
+  // ─ Print areas & techniques (read via security VIEW — unit_cost hidden) ─────────
+  'print_area_techniques',
+  'v_print_area_techniques_public',
+  'tabela_preco_gravacao_oficial',
+  'tabela_preco_gravacao_oficial_faixa',
+  'tecnicas_gravacao',
+  // Bridge aliases (resolve via TABLE_ALIASES)
+  'tecnica_gravacao',
+  'customization_price_tiers',
   'personalization_techniques',
 
-  // ─ Print areas & engraving pricing ───────────────────────────────────
-  'print_area_techniques', 'v_print_area_techniques_public',
-  'tabela_preco_gravacao_oficial', 'tabela_preco_gravacao_oficial_faixa', 'tecnicas_gravacao',
-  // Bridge aliases (resolve via TABLE_ALIASES below)
-  'tecnica_gravacao', 'customization_price_tiers',
+  // ─ Product media views (PHASE 6) ─────────────────────────────────────────
+  'v_product_images_cdn', // 46122 rows — CDN URLs for product images
+  'v_product_videos_cdn', // 139 rows — CDN URLs for product videos
+  'v_media_stats', // media counts/stats per product
 
-  // ─ Product media views ───────────────────────────────────────────────
-  'v_product_images_cdn',
-  'v_product_videos_cdn',
-  'v_media_stats',
+  // ─ Product listing views (PHASE 6) ─────────────────────────────────────
+  'v_products_with_tags', // 6123 rows
+  'v_products_min_price', // 6086 rows — lowest price per product
+  'v_products_without_images', // 61 rows — admin QA view
+  'v_products_without_video', // admin QA view
+  'v_products_missing_primary_image', // admin QA view
 
-  // ─ Product listing views ─────────────────────────────────────────────
-  'v_products_with_tags',
-  'v_products_min_price',
-  'v_products_without_images',
-  'v_products_without_video',
-  'v_products_missing_primary_image',
+  // ─ Kit builder views (PHASE 6) ─────────────────────────────────────────
+  'v_kit_with_components', // 3424 rows — kit + component details
 
-  // ─ Kit builder views ─────────────────────────────────────────────────
-  'v_kit_with_components',
+  // ─ Materialized product views (PHASE 6) ──────────────────────────────
+  'mv_product_cards', // 6090 rows — denormalized product cards
+  'mv_product_compositions', // 6123 rows — product material compositions
+  'mv_product_intelligence', // AI-enriched product metadata
 
-  // ─ Materialized product views ────────────────────────────────────────
-  'mv_product_cards',
-  'mv_product_compositions',
-  'mv_product_intelligence',
-
-  // ─ SEO / Sitemap views ───────────────────────────────────────────────
-  'vw_sitemap_products',
-  'vw_sitemap_categories',
+  // ─ SEO / Sitemap views (PHASE 6) ─────────────────────────────────────
+  'vw_sitemap_products', // 6086 product URLs for sitemap generation
+  'vw_sitemap_categories', // category URLs for sitemap
 
   // ─ Commemorative dates views ─────────────────────────────────────────
   'v_commemorative_dates_calendar',
@@ -96,20 +113,28 @@ const REST_NATIVE_SAFE_TABLES = new Set<string>([
   'v_variants_with_commemorative_dates',
   'vw_product_commemorative_dates',
 
-  // ─ n8n sync views ────────────────────────────────────────────────────
-  'v_n8n_sync_summary', 'v_n8n_sync_errors', 'v_n8n_sync_success_recent',
+  // ─ n8n sync views (PHASE 6) ─────────────────────────────────────────
+  'v_n8n_sync_summary',
+  'v_n8n_sync_errors',
+  'v_n8n_sync_success_recent',
 
-  // ─ Sector / segment reference data ───────────────────────────────────
-  'ramo_atividade', 'ramo_atividade_filho', 'produto_ramo_atividade',
+  // ─ Sector / segment reference data ────────────────────────────────────
+  'ramo_atividade',
+  'ramo_atividade_filho',
+  'produto_ramo_atividade',
 
-  // ─ Stock & inventory ─────────────────────────────────────────────────
-  'stock_snapshots', 'stock_daily_summary', 'mv_stock_velocity',
+  // ─ Stock & inventory (auth required, confirmed: stock_snapshots/daily_summary exist) ─
+  'stock_snapshots',
+  'stock_daily_summary',
+  'mv_stock_velocity',
 
-  // ─ Pricing views ─────────────────────────────────────────────────────
-  'v_variant_sale_prices_public',
+  // ─ Pricing views (security views: cost_price hidden) ─────────────────────
+  'v_variant_sale_prices_public', // hides cost_price_1..5 and markup_percent
 
-  // ─ Product relationships & groups ────────────────────────────────────
-  'product_relationships', 'product_groups', 'product_group_members',
+  // ─ Product relationships & groups ───────────────────────────────────
+  'product_relationships',
+  'product_groups',
+  'product_group_members',
 
   // ─ Price history ─────────────────────────────────────────────────────
   'v_price_history_safe',
@@ -125,9 +150,9 @@ const REST_NATIVE_SAFE_TABLES = new Set<string>([
   'supplier_branches',
 
   // ─ Phase 2 bridge alias stubs ───────────────────────────────────────
-  'customization_price_tables',    // -> tabela_preco_gravacao_oficial
-  'tecnica_gravacao_variante',     // -> tabela_preco_gravacao_oficial
-  'v_products_without_videos',     // -> v_products_without_video (typo fix)
+  'customization_price_tables', // -> tabela_preco_gravacao_oficial
+  'tecnica_gravacao_variante', // -> tabela_preco_gravacao_oficial
+  'v_products_without_videos', // -> v_products_without_video (typo fix)
 ]);
 
 // ── Table aliases (bridge-era names -> real DB names) ────────────────────────
@@ -157,13 +182,13 @@ const SEARCH_COLUMNS: Record<string, string> = {
   color_variations: 'name',
   color_groups: 'name',
   color_nuances: 'name',
-  tecnicas_gravacao: 'nome',
-  tabela_preco_gravacao_oficial: 'nome',
-  ramo_atividade: 'nome',
-  ramo_atividade_filho: 'nome',
+  tecnicas_gravacao: 'nome', // PT column name (verified)
+  tabela_preco_gravacao_oficial: 'nome', // PT column name (verified)
+  ramo_atividade: 'nome', // FIX audit: was 'name', real col is 'nome'
+  ramo_atividade_filho: 'nome', // FIX audit: was 'name', real col is 'nome'
   tags: 'name',
   variation_types: 'name',
-  product_groups: 'description',
+  product_groups: 'description', // FIX audit: was 'name', real col is 'description'
   collections: 'name',
   customization_price_tables: 'nome',
   // personalization_techniques has native EN 'name' column
@@ -187,16 +212,25 @@ function normalizeSearchTerm(filters?: Record<string, unknown>): string | undefi
 // personalization_techniques is NOT here: it uses native EN column names.
 const COLUMN_ALIASES_BY_TABLE: Record<string, Record<string, string>> = {
   tecnicas_gravacao: {
-    id: 'codigo', code: 'codigo', codigo: 'codigo',
-    name: 'nome', nome: 'nome', slug: 'slug',
-    is_active: 'ativo', ativo: 'ativo',
-    display_order: 'ordem_exibicao', ordem_exibicao: 'ordem_exibicao',
+    id: 'codigo',
+    code: 'codigo',
+    codigo: 'codigo',
+    name: 'nome',
+    nome: 'nome',
+    slug: 'slug',
+    is_active: 'ativo',
+    ativo: 'ativo',
+    display_order: 'ordem_exibicao',
+    ordem_exibicao: 'ordem_exibicao',
   },
   ramo_atividade: { name: 'nome', nome: 'nome', is_active: 'ativo', ativo: 'ativo' },
   ramo_atividade_filho: {
-    name: 'nome', nome: 'nome',
-    parent_id: 'ramo_atividade_id', ramo_atividade_id: 'ramo_atividade_id',
-    is_active: 'ativo', ativo: 'ativo',
+    name: 'nome',
+    nome: 'nome',
+    parent_id: 'ramo_atividade_id',
+    ramo_atividade_id: 'ramo_atividade_id',
+    is_active: 'ativo',
+    ativo: 'ativo',
   },
   tabela_preco_gravacao_oficial: {
     // EN -> PT
@@ -228,7 +262,10 @@ const COLUMN_ALIASES_BY_TABLE: Record<string, Record<string, string>> = {
   },
 };
 
-function remapFilters(table: string, filters?: Record<string, unknown>): Record<string, unknown> | undefined {
+function remapFilters(
+  table: string,
+  filters?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
   const map = COLUMN_ALIASES_BY_TABLE[table];
   if (!map || !filters) return filters;
   const out: Record<string, unknown> = {};
@@ -249,11 +286,21 @@ function mapRows(table: string, rows: unknown[]): unknown[] {
   if (table === 'tecnicas_gravacao') {
     return rows.map((r) => {
       const row = r as Record<string, unknown>;
-      return { ...row, id: row.codigo, code: row.codigo, name: row.nome, is_active: row.ativo, display_order: row.ordem_exibicao };
+      return {
+        ...row,
+        id: row.codigo,
+        code: row.codigo,
+        name: row.nome,
+        is_active: row.ativo,
+        display_order: row.ordem_exibicao,
+      };
     });
   }
   if (table === 'ramo_atividade' || table === 'ramo_atividade_filho') {
-    return rows.map((r) => { const row = r as Record<string, unknown>; return { ...row, name: row.nome ?? row.name }; });
+    return rows.map((r) => {
+      const row = r as Record<string, unknown>;
+      return { ...row, name: row.nome ?? row.name };
+    });
   }
   if (table === 'tabela_preco_gravacao_oficial') {
     return rows.map((r) => {
@@ -278,14 +325,36 @@ function mapRows(table: string, rows: unknown[]): unknown[] {
   return rows;
 }
 
-// ── Metrics ───────────────────────────────────────────────────────────────────
-interface RestNativeMetrics { success: number; fail: number; retried: number; totalMs: number; lastError: string | null; lastErrorAt: number | null; }
-const metrics: RestNativeMetrics = { success: 0, fail: 0, retried: 0, totalMs: 0, lastError: null, lastErrorAt: null };
+// ── Metrics ───────────────────────────────────────────────────────────────────────
+interface RestNativeMetrics {
+  success: number;
+  fail: number;
+  retried: number;
+  totalMs: number;
+  lastError: string | null;
+  lastErrorAt: number | null;
+}
+const metrics: RestNativeMetrics = {
+  success: 0,
+  fail: 0,
+  retried: 0,
+  totalMs: 0,
+  lastError: null,
+  lastErrorAt: null,
+};
 export function getRestNativeMetrics(): Readonly<RestNativeMetrics & { avgMs: number }> {
-  return { ...metrics, avgMs: metrics.success > 0 ? Math.round(metrics.totalMs / metrics.success) : 0 };
+  return {
+    ...metrics,
+    avgMs: metrics.success > 0 ? Math.round(metrics.totalMs / metrics.success) : 0,
+  };
 }
 export function resetRestNativeMetrics(): void {
-  metrics.success = 0; metrics.fail = 0; metrics.retried = 0; metrics.totalMs = 0; metrics.lastError = null; metrics.lastErrorAt = null;
+  metrics.success = 0;
+  metrics.fail = 0;
+  metrics.retried = 0;
+  metrics.totalMs = 0;
+  metrics.lastError = null;
+  metrics.lastErrorAt = null;
 }
 
 // ── Retry ─────────────────────────────────────────────────────────────────────
@@ -293,21 +362,35 @@ const REST_NATIVE_RETRY_COUNT = 1;
 const REST_NATIVE_RETRY_DELAY_MS = 500;
 function isRetryableError(msg: string): boolean {
   const lower = msg.toLowerCase();
-  return lower.includes('fetch') || lower.includes('network') || lower.includes('timeout') ||
-    lower.includes('aborted') || lower.includes('econnreset') || lower.includes('socket hang up') ||
-    lower.includes('502') || lower.includes('503') || lower.includes('504');
+  return (
+    lower.includes('fetch') ||
+    lower.includes('network') ||
+    lower.includes('timeout') ||
+    lower.includes('aborted') ||
+    lower.includes('econnreset') ||
+    lower.includes('socket hang up') ||
+    lower.includes('502') ||
+    lower.includes('503') ||
+    lower.includes('504')
+  );
 }
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// ── Concurrency limiter ───────────────────────────────────────────────────────
-export async function runWithConcurrency<T>(tasks: (() => Promise<T>)[], limit = 6): Promise<PromiseSettledResult<T>[]> {
+// ── Concurrency limiter ───────────────────────────────────────────────────────────
+export async function runWithConcurrency<T>(
+  tasks: (() => Promise<T>)[],
+  limit = 6,
+): Promise<PromiseSettledResult<T>[]> {
   const results: PromiseSettledResult<T>[] = new Array(tasks.length);
   let nextIndex = 0;
   async function worker() {
     while (nextIndex < tasks.length) {
       const idx = nextIndex++;
-      try { results[idx] = { status: 'fulfilled', value: await tasks[idx]() }; }
-      catch (e) { results[idx] = { status: 'rejected', reason: e }; }
+      try {
+        results[idx] = { status: 'fulfilled', value: await tasks[idx]() };
+      } catch (e) {
+        results[idx] = { status: 'rejected', reason: e };
+      }
     }
   }
   await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, () => worker()));
@@ -318,18 +401,31 @@ export async function runWithConcurrency<T>(tasks: (() => Promise<T>)[], limit =
 const OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER = 999;
 type RestError = { message: string };
 type RestCountMode = 'exact' | 'planned' | 'estimated';
-type RestQueryResult = { data: Record<string, unknown>[] | null; error: RestError | null; count: number | null };
+type RestQueryResult = {
+  data: Record<string, unknown>[] | null;
+  error: RestError | null;
+  count: number | null;
+};
 type RestQuery = PromiseLike<RestQueryResult> & {
-  eq(column: string, value: unknown): RestQuery; in(column: string, values: readonly unknown[]): RestQuery;
-  is(column: string, value: null): RestQuery; gte(column: string, value: unknown): RestQuery;
-  lte(column: string, value: unknown): RestQuery; gt(column: string, value: unknown): RestQuery;
-  lt(column: string, value: unknown): RestQuery; like(column: string, value: unknown): RestQuery;
-  ilike(column: string, value: unknown): RestQuery; neq(column: string, value: unknown): RestQuery;
+  eq(column: string, value: unknown): RestQuery;
+  in(column: string, values: readonly unknown[]): RestQuery;
+  is(column: string, value: null): RestQuery;
+  gte(column: string, value: unknown): RestQuery;
+  lte(column: string, value: unknown): RestQuery;
+  gt(column: string, value: unknown): RestQuery;
+  lt(column: string, value: unknown): RestQuery;
+  like(column: string, value: unknown): RestQuery;
+  ilike(column: string, value: unknown): RestQuery;
+  neq(column: string, value: unknown): RestQuery;
   not(column: string, operator: string, value: unknown): RestQuery;
   order(column: string, options: { ascending: boolean }): RestQuery;
   range(from: number, to: number): RestQuery;
 };
-type RestNativeClient = { from(table: string): { select(columns: string, options?: { count?: RestCountMode; head?: boolean }): RestQuery } };
+type RestNativeClient = {
+  from(table: string): {
+    select(columns: string, options?: { count?: RestCountMode; head?: boolean }): RestQuery;
+  };
+};
 
 // ── Eligibility ───────────────────────────────────────────────────────────────
 export function isRestNativeEligible(options: InvokeOptions): boolean {
@@ -345,34 +441,69 @@ function parsePostgrestString(query: RestQuery, col: string, raw: string): RestQ
   if (!match) return query.eq(col, raw);
   const [, op, rest] = match;
   switch (op) {
-    case 'eq': return query.eq(col, rest); case 'neq': return query.neq(col, rest);
-    case 'gt': return query.gt(col, rest); case 'gte': return query.gte(col, rest);
-    case 'lt': return query.lt(col, rest); case 'lte': return query.lte(col, rest);
-    case 'like': return query.like(col, rest); case 'ilike': return query.ilike(col, rest);
-    case 'is': return rest === 'null' ? query.is(col, null) : query.eq(col, raw);
+    case 'eq':
+      return query.eq(col, rest);
+    case 'neq':
+      return query.neq(col, rest);
+    case 'gt':
+      return query.gt(col, rest);
+    case 'gte':
+      return query.gte(col, rest);
+    case 'lt':
+      return query.lt(col, rest);
+    case 'lte':
+      return query.lte(col, rest);
+    case 'like':
+      return query.like(col, rest);
+    case 'ilike':
+      return query.ilike(col, rest);
+    case 'is':
+      return rest === 'null' ? query.is(col, null) : query.eq(col, raw);
     case 'in': {
       const inner = rest.replace(/^\(/, '').replace(/\)$/, '');
-      return query.in(col, inner.split(',').map((v) => v.trim()).filter(Boolean));
+      return query.in(
+        col,
+        inner
+          .split(',')
+          .map((v) => v.trim())
+          .filter(Boolean),
+      );
     }
-    case 'not': return query.not(col, op, rest);
-    default: logger.warn(`[rest-native] Unknown PostgREST op '${op}' for '${col}', treating as eq`); return query.eq(col, raw);
+    case 'not':
+      return query.not(col, op, rest);
+    default:
+      logger.warn(`[rest-native] Unknown PostgREST op '${op}' for '${col}', treating as eq`);
+      return query.eq(col, raw);
   }
 }
 function applyFilters(query: RestQuery, filters?: Record<string, unknown>): RestQuery {
   if (!filters) return query;
   for (const [col, val] of Object.entries(filters)) {
-    if (val === null) { query = query.is(col, null); continue; }
-    if (Array.isArray(val)) { query = val.length === 0 ? query.in(col, ['__no_match__']) : query.in(col, val); continue; }
+    if (val === null) {
+      query = query.is(col, null);
+      continue;
+    }
+    if (Array.isArray(val)) {
+      query = val.length === 0 ? query.in(col, ['__no_match__']) : query.in(col, val);
+      continue;
+    }
     if (typeof val === 'object' && val !== null) {
-      const op = (val as { op?: string }).op; const opVal = (val as { value?: unknown }).value;
-      if (op === 'gte') query = query.gte(col, opVal); else if (op === 'lte') query = query.lte(col, opVal);
-      else if (op === 'gt') query = query.gt(col, opVal); else if (op === 'lt') query = query.lt(col, opVal);
-      else if (op === 'like') query = query.like(col, opVal); else if (op === 'ilike') query = query.ilike(col, opVal);
+      const op = (val as { op?: string }).op;
+      const opVal = (val as { value?: unknown }).value;
+      if (op === 'gte') query = query.gte(col, opVal);
+      else if (op === 'lte') query = query.lte(col, opVal);
+      else if (op === 'gt') query = query.gt(col, opVal);
+      else if (op === 'lt') query = query.lt(col, opVal);
+      else if (op === 'like') query = query.like(col, opVal);
+      else if (op === 'ilike') query = query.ilike(col, opVal);
       else if (op === 'neq') query = query.neq(col, opVal);
       else throw new Error(`rest-native: unsupported filter op '${op}' for column '${col}'`);
       continue;
     }
-    if (typeof val === 'string') { query = parsePostgrestString(query, col, val); continue; }
+    if (typeof val === 'string') {
+      query = parsePostgrestString(query, col, val);
+      continue;
+    }
     query = query.eq(col, val);
   }
   return query;
@@ -384,13 +515,22 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
   const filters = options.filters ? { ...options.filters } : undefined;
   const searchTerm = normalizeSearchTerm(filters);
   if (filters && '_search' in filters) delete filters._search;
-  if (!isRestNativeEligible(options)) throw new Error(`rest-native: not eligible for table=${options.table} op=${options.operation}`);
+  if (!isRestNativeEligible(options))
+    throw new Error(`rest-native: not eligible for table=${options.table} op=${options.operation}`);
   if (filters && Object.values(filters).some((v) => Array.isArray(v) && v.length === 0)) {
-    logger.debug(`[rest-native] empty IN() filter on ${tableName} → short-circuit empty`); return { records: [], count: 0 };
+    logger.debug(`[rest-native] empty IN() filter on ${tableName} → short-circuit empty`);
+    return { records: [], count: 0 };
   }
   const countMode = options.countMode ?? 'none';
   const selectCols = remapSelect(tableName, options.select ?? '*');
-  const countOption = countMode === 'none' ? undefined : countMode === 'exact' ? 'exact' : countMode === 'planned' ? 'planned' : 'estimated';
+  const countOption =
+    countMode === 'none'
+      ? undefined
+      : countMode === 'exact'
+        ? 'exact'
+        : countMode === 'planned'
+          ? 'planned'
+          : 'estimated';
   const client = supabase as unknown as RestNativeClient;
   let query = countOption
     ? client.from(tableName).select(selectCols, { count: countOption, head: false })
@@ -398,25 +538,39 @@ export async function executeRestNativeSelect<T>(options: InvokeOptions): Promis
   query = applyFilters(query, remapFilters(tableName, filters));
   if (searchTerm) {
     const searchCol = resolveSearchColumn(options);
-    if (searchCol) { query = query.ilike(searchCol, `%${searchTerm}%`); }
-    else { logger.warn(`[rest-native] _search ignored on '${tableName}': no SEARCH_COLUMNS entry (term len: ${searchTerm.length}).`); }
+    if (searchCol) {
+      query = query.ilike(searchCol, `%${searchTerm}%`);
+    } else {
+      logger.warn(
+        `[rest-native] _search ignored on '${tableName}': no SEARCH_COLUMNS entry (term len: ${searchTerm.length}).`,
+      );
+    }
   }
   if (options.orderBy) {
-    query = query.order(remapOrderByCol(tableName, options.orderBy.column), { ascending: options.orderBy.ascending ?? true });
+    query = query.order(remapOrderByCol(tableName, options.orderBy.column), {
+      ascending: options.orderBy.ascending ?? true,
+    });
   }
   if (typeof options.limit === 'number') {
-    const offset = options.offset ?? 0; query = query.range(offset, offset + options.limit - 1);
+    const offset = options.offset ?? 0;
+    query = query.range(offset, offset + options.limit - 1);
   } else if (typeof options.offset === 'number' && options.offset > 0) {
-    logger.warn(`[rest-native] PAGINATION WARNING: offset=${options.offset} without limit on table=${tableName}. Capping at ${OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER}.`);
+    logger.warn(
+      `[rest-native] PAGINATION WARNING: offset=${options.offset} without limit on table=${tableName}. Capping at ${OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER}.`,
+    );
     query = query.range(options.offset, options.offset + OFFSET_WITHOUT_LIMIT_FALLBACK_UPPER);
   }
   const { data, error, count } = await query;
   if (error) throw new Error(`rest-native error (${tableName}): ${error.message}`);
-  return { records: mapRows(tableName, data ?? []) as T[], count: typeof count === 'number' ? count : null };
+  return {
+    records: mapRows(tableName, data ?? []) as T[],
+    count: typeof count === 'number' ? count : null,
+  };
 }
 
 export async function tryExecuteRestNative<T>(
-  options: InvokeOptions, ctx?: { bridgeEnabled?: boolean },
+  options: InvokeOptions,
+  ctx?: { bridgeEnabled?: boolean },
 ): Promise<InvokeResult<T> | null> {
   if (!isRestNativeEligible(options)) return null;
   const resolvedTable = TABLE_ALIASES[options.table] ?? options.table;
@@ -425,18 +579,56 @@ export async function tryExecuteRestNative<T>(
     try {
       const result = await executeRestNativeSelect<T>(options);
       const elapsed = Date.now() - t0;
-      metrics.success++; metrics.totalMs += elapsed;
+      metrics.success++;
+      metrics.totalMs += elapsed;
       if (attempt > 0) metrics.retried++;
-      logger.debug(`[rest-native] OK table=${resolvedTable} rows=${result.records.length} count=${result.count} ${elapsed}ms${attempt > 0 ? ` (retry #${attempt})` : ''}`);
-      recordBridgeCall({ bridge: 'external-db-bridge', op: 'select', target: options.table, durationMs: elapsed, reqBytes: estimatePayloadBytes(options.filters ?? null), respBytes: estimatePayloadBytes(result), ok: true, requestId: newRequestId() });
+      logger.debug(
+        `[rest-native] OK table=${resolvedTable} rows=${result.records.length} count=${result.count} ${elapsed}ms${attempt > 0 ? ` (retry #${attempt})` : ''}`,
+      );
+      recordBridgeCall({
+        bridge: 'external-db-bridge',
+        op: 'select',
+        target: options.table,
+        durationMs: elapsed,
+        reqBytes: estimatePayloadBytes(options.filters ?? null),
+        respBytes: estimatePayloadBytes(result),
+        ok: true,
+        requestId: newRequestId(),
+      });
       return result;
     } catch (e) {
       const msg = (e as Error).message;
-      if (attempt < REST_NATIVE_RETRY_COUNT && isRetryableError(msg)) { logger.warn(`[rest-native] transient error for ${resolvedTable}, retrying: ${msg}`); await sleep(REST_NATIVE_RETRY_DELAY_MS); continue; }
-      metrics.fail++; metrics.lastError = msg; metrics.lastErrorAt = Date.now();
-      recordBridgeCall({ bridge: 'external-db-bridge', op: 'select', target: options.table, durationMs: Date.now() - t0, reqBytes: estimatePayloadBytes(options.filters ?? null), respBytes: 0, ok: false, errorMessage: msg, requestId: newRequestId() });
-      if (ctx?.bridgeEnabled) { logger.debug(`[rest-native] error for table=${options.table}, falling back to bridge: ${msg}`); }
-      else { reportSilentEmpty({ reason: 'rest_error', table: options.table, operation: options.operation, message: msg }); }
+      if (attempt < REST_NATIVE_RETRY_COUNT && isRetryableError(msg)) {
+        logger.warn(`[rest-native] transient error for ${resolvedTable}, retrying: ${msg}`);
+        await sleep(REST_NATIVE_RETRY_DELAY_MS);
+        continue;
+      }
+      metrics.fail++;
+      metrics.lastError = msg;
+      metrics.lastErrorAt = Date.now();
+      recordBridgeCall({
+        bridge: 'external-db-bridge',
+        op: 'select',
+        target: options.table,
+        durationMs: Date.now() - t0,
+        reqBytes: estimatePayloadBytes(options.filters ?? null),
+        respBytes: 0,
+        ok: false,
+        errorMessage: msg,
+        requestId: newRequestId(),
+      });
+      if (ctx?.bridgeEnabled) {
+        logger.debug(
+          `[rest-native] error for table=${options.table}, falling back to bridge: ${msg}`,
+        );
+      } else {
+        reportSilentEmpty({
+          reason: 'rest_error',
+          table: options.table,
+          operation: options.operation,
+          message: msg,
+        });
+      }
       return null;
     }
   }
@@ -451,14 +643,28 @@ const WRITE_TABLE_ALIASES: Record<string, string> = {
   tecnica_gravacao_variante: 'tabela_preco_gravacao_oficial',
 };
 const REST_NATIVE_WRITE_TABLES = new Set<string>([
-  'products', 'suppliers', 'categories',
-  'print_area_techniques', 'personalization_techniques', 'product_variants',
-  'product_tags', 'product_category_assignments',
-  'variant_supplier_sources', 'supplier_branches',
-  'tecnica_gravacao', 'collections', 'collection_products',
-  'product_groups', 'product_group_members', 'product_relationships',
-  'product_images', 'product_videos', 'product_materials', 'product_kit_components',
-  'kit_component_media', 'kit_component_print_areas',
+  'products',
+  'suppliers',
+  'categories',
+  'print_area_techniques',
+  'personalization_techniques',
+  'product_variants',
+  'product_tags',
+  'product_category_assignments',
+  'variant_supplier_sources',
+  'supplier_branches',
+  'tecnica_gravacao',
+  'collections',
+  'collection_products',
+  'product_groups',
+  'product_group_members',
+  'product_relationships',
+  'product_images',
+  'product_videos',
+  'product_materials',
+  'product_kit_components',
+  'kit_component_media',
+  'kit_component_print_areas',
   'tecnica_gravacao_variante',
   'tabela_preco_gravacao_oficial',
   'tabela_preco_gravacao_oficial_faixa',
@@ -469,52 +675,98 @@ const REST_WRITE_OPS = new Set<string>(['insert', 'update', 'delete', 'upsert', 
 export function isRestNativeWriteEligible(options: InvokeOptions): boolean {
   return REST_WRITE_OPS.has(options.operation) && REST_NATIVE_WRITE_TABLES.has(options.table);
 }
-function resolveWriteTable(table: string): string { return WRITE_TABLE_ALIASES[table] ?? table; }
+function resolveWriteTable(table: string): string {
+  return WRITE_TABLE_ALIASES[table] ?? table;
+}
 function remapData(table: string, data: Record<string, unknown>): Record<string, unknown> {
-  const map = COLUMN_ALIASES_BY_TABLE[table]; if (!map) return data;
+  const map = COLUMN_ALIASES_BY_TABLE[table];
+  if (!map) return data;
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(data)) out[map[k] ?? k] = v;
   return out;
 }
 type RestWriteBuilder = PromiseLike<RestQueryResult> & {
-  eq(column: string, value: unknown): RestWriteBuilder; in(column: string, values: readonly unknown[]): RestWriteBuilder;
-  is(column: string, value: null): RestWriteBuilder; select(columns?: string): RestWriteBuilder;
+  eq(column: string, value: unknown): RestWriteBuilder;
+  in(column: string, values: readonly unknown[]): RestWriteBuilder;
+  is(column: string, value: null): RestWriteBuilder;
+  select(columns?: string): RestWriteBuilder;
 };
-type RestWriteClient = { from(table: string): { insert(values: unknown): RestWriteBuilder; update(values: unknown): RestWriteBuilder; delete(): RestWriteBuilder; upsert(values: unknown): RestWriteBuilder; }; };
+type RestWriteClient = {
+  from(table: string): {
+    insert(values: unknown): RestWriteBuilder;
+    update(values: unknown): RestWriteBuilder;
+    delete(): RestWriteBuilder;
+    upsert(values: unknown): RestWriteBuilder;
+  };
+};
 export async function executeRestNativeWrite<T>(options: InvokeOptions): Promise<InvokeResult<T>> {
-  if (!isRestNativeWriteEligible(options)) throw new Error(`rest-native: not write-eligible for table=${options.operation} op=${options.operation}`);
+  if (!isRestNativeWriteEligible(options))
+    throw new Error(
+      `rest-native: not write-eligible for table=${options.table} op=${options.operation}`,
+    );
   const table = resolveWriteTable(options.table);
   const hasScope = !!options.id || (!!options.filters && Object.keys(options.filters).length > 0);
   if ((options.operation === 'update' || options.operation === 'delete') && !hasScope)
-    throw new Error(`rest-native: ${options.operation} on '${table}' without filter/id forbidden (mass mutation guard).`);
-  const client = supabase as unknown as RestWriteClient; const tbl = client.from(table);
-  const scoped = (b: RestWriteBuilder): RestWriteBuilder => { let q = b as unknown as RestQuery; if (options.id) q = q.eq('id', options.id); q = applyFilters(q, remapFilters(table, options.filters)); return q as unknown as RestWriteBuilder; };
-  const payloadOf = (d: unknown): unknown => Array.isArray(d) ? (d as Record<string, unknown>[]).map((row) => remapData(table, row)) : remapData(table, (d ?? {}) as Record<string, unknown>);
+    throw new Error(
+      `rest-native: ${options.operation} on '${table}' without filter/id forbidden (mass mutation guard).`,
+    );
+  const client = supabase as unknown as RestWriteClient;
+  const tbl = client.from(table);
+  const scoped = (b: RestWriteBuilder): RestWriteBuilder => {
+    let q = b as unknown as RestQuery;
+    if (options.id) q = q.eq('id', options.id);
+    q = applyFilters(q, remapFilters(table, options.filters));
+    return q as unknown as RestWriteBuilder;
+  };
+  const payloadOf = (d: unknown): unknown =>
+    Array.isArray(d)
+      ? (d as Record<string, unknown>[]).map((row) => remapData(table, row))
+      : remapData(table, (d ?? {}) as Record<string, unknown>);
   let builder: RestWriteBuilder;
   switch (options.operation) {
-    case 'insert': case 'batch_insert': builder = tbl.insert(payloadOf(options.data)).select(); break;
-    case 'upsert': builder = tbl.upsert(payloadOf(options.data)).select(); break;
-    case 'update': builder = scoped(tbl.update(payloadOf(options.data))).select(); break;
-    case 'delete': builder = scoped(tbl.delete()).select(); break;
-    default: throw new Error(`rest-native: unsupported write operation '${options.operation}'`);
+    case 'insert':
+    case 'batch_insert':
+      builder = tbl.insert(payloadOf(options.data)).select();
+      break;
+    case 'upsert':
+      builder = tbl.upsert(payloadOf(options.data)).select();
+      break;
+    case 'update':
+      builder = scoped(tbl.update(payloadOf(options.data))).select();
+      break;
+    case 'delete':
+      builder = scoped(tbl.delete()).select();
+      break;
+    default:
+      throw new Error(`rest-native: unsupported write operation '${options.operation}'`);
   }
   const { data, error } = await builder;
-  if (error) throw new Error(`rest-native write error (${table}/${options.operation}): ${error.message}`);
+  if (error)
+    throw new Error(`rest-native write error (${table}/${options.operation}): ${error.message}`);
   const rows = mapRows(table, data ?? []) as T[];
   return { records: rows, count: rows.length };
 }
-export async function tryExecuteRestNativeWrite<T>(options: InvokeOptions): Promise<InvokeResult<T> | null> {
+export async function tryExecuteRestNativeWrite<T>(
+  options: InvokeOptions,
+): Promise<InvokeResult<T> | null> {
   if (!isRestNativeWriteEligible(options)) return null;
   const t0 = Date.now();
   try {
     const result = await executeRestNativeWrite<T>(options);
-    metrics.success++; metrics.totalMs += Date.now() - t0;
-    logger.debug(`[rest-native] WRITE OK ${options.operation} table=${resolveWriteTable(options.table)} rows=${result.records.length} ${Date.now() - t0}ms`);
+    metrics.success++;
+    metrics.totalMs += Date.now() - t0;
+    logger.debug(
+      `[rest-native] WRITE OK ${options.operation} table=${resolveWriteTable(options.table)} rows=${result.records.length} ${Date.now() - t0}ms`,
+    );
     return result;
   } catch (e) {
     const msg = (e as Error).message;
-    metrics.fail++; metrics.lastError = msg; metrics.lastErrorAt = Date.now();
-    logger.warn(`[rest-native] WRITE FAIL ${options.operation} table=${resolveWriteTable(options.table)}: ${msg}`);
+    metrics.fail++;
+    metrics.lastError = msg;
+    metrics.lastErrorAt = Date.now();
+    logger.warn(
+      `[rest-native] WRITE FAIL ${options.operation} table=${resolveWriteTable(options.table)}: ${msg}`,
+    );
     throw e;
   }
 }

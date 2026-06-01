@@ -27,7 +27,9 @@ describe('productService', () => {
       stock: 100,
     };
 
-    fetchPromobrindProductsMock.mockResolvedValue([mockRawProduct] as unknown as PromobrindProduct[]);
+    fetchPromobrindProductsMock.mockResolvedValue([
+      mockRawProduct,
+    ] as unknown as PromobrindProduct[]);
 
     const products = await productService.fetchProducts();
 

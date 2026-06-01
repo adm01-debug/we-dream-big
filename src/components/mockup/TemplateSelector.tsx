@@ -127,7 +127,7 @@ export function TemplateSelector({
                       </Button>
                     </DropdownMenuItem>
                   </HoverCardTrigger>
-              <HoverCardContent side="right" align="start">
+                  <HoverCardContent side="right" align="start">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-primary" />

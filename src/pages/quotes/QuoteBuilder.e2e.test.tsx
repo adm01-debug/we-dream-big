@@ -60,12 +60,16 @@ describe('QuoteBuilder Full E2E Flow (Logic)', () => {
     expect(result.current.validationErrors).toContain('contato');
 
     // 2. Preencher parcialmente
-    act(() => { result.current.setClientId('client-1'); });
+    act(() => {
+      result.current.setClientId('client-1');
+    });
     expect(result.current.validationErrors).not.toContain('empresa');
     expect(result.current.validationErrors).toContain('contato');
 
     // 3. Completar Step 1
-    act(() => { result.current.setContactId('contact-1'); });
+    act(() => {
+      result.current.setContactId('contact-1');
+    });
     expect(result.current.completedSteps).toContain('client');
 
     // 4. Step 2 (Condições) deve estar pendente
@@ -94,7 +98,7 @@ describe('QuoteBuilder Full E2E Flow (Logic)', () => {
       result.current.setShippingType('fob_pre');
     });
 
-    // Se é fob_pre, deve exigir valor_frete se for 0? 
+    // Se é fob_pre, deve exigir valor_frete se for 0?
     // Em useQuoteBuilderState.ts: if (shippingType !== 'fob_pre' || shippingCost > 0) steps.push('conditions');
     expect(result.current.validationErrors).toContain('valor_frete');
 
@@ -125,24 +129,30 @@ describe('QuoteBuilder Full E2E Flow (Logic)', () => {
 
     // 3. Itens
     act(() => {
-      result.current.setItems([{
-        product_id: 'prod-1',
-        product_name: 'Caneta',
-        quantity: 100,
-        unit_price: 10,
-        personalizations: []
-      }]);
+      result.current.setItems([
+        {
+          product_id: 'prod-1',
+          product_name: 'Caneta',
+          quantity: 100,
+          unit_price: 10,
+          personalizations: [],
+        },
+      ]);
     });
     expect(result.current.completedSteps).toContain('items');
 
     // 4. Revisão e "Envio" (Validação de Form)
     expect(result.current.isFormValid).toBe(true);
-    
+
     // Testar transição de steps
-    act(() => { result.current.goToStep('conditions'); });
+    act(() => {
+      result.current.goToStep('conditions');
+    });
     expect(result.current.activeStep).toBe('conditions');
-    
-    act(() => { result.current.goToStep('review'); });
+
+    act(() => {
+      result.current.goToStep('review');
+    });
     expect(result.current.activeStep).toBe('review');
   });
 });

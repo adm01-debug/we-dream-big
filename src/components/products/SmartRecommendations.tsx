@@ -65,10 +65,13 @@ function MiniCard({ product, score, reason, isBestChoice, badgeLabel, onClick }:
     <Card
       className={cn(
         'group/card min-w-[240px] max-w-[240px] shrink-0 overflow-hidden rounded-xl border-[1.5px] border-border',
-        'animate-fade-in relative transition-all duration-300',
-        interactive && 'cursor-pointer hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg',
+        'relative animate-fade-in transition-all duration-300',
+        interactive &&
+          'cursor-pointer hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg',
         isBestChoice && 'border-amber-400/60 shadow-[0_0_20px_-5px_rgba(251,191,36,0.3)]',
-        isHighMatch && !isBestChoice && 'border-primary/40 shadow-[0_0_15px_-5px_rgba(59,130,246,0.2)]',
+        isHighMatch &&
+          !isBestChoice &&
+          'border-primary/40 shadow-[0_0_15px_-5px_rgba(59,130,246,0.2)]',
       )}
       onClick={onClick}
       role={interactive ? 'button' : undefined}
@@ -87,11 +90,11 @@ function MiniCard({ product, score, reason, isBestChoice, badgeLabel, onClick }:
     >
       {/* Glow Effect for High Match */}
       {(isHighMatch || isBestChoice) && (
-        <div 
+        <div
           className={cn(
-           "absolute -inset-px opacity-0 transition-opacity duration-300 group-hover/card:opacity-100",
-            isBestChoice ? "bg-amber-400/10" : "bg-primary/5"
-          )} 
+            'absolute -inset-px opacity-0 transition-opacity duration-300 group-hover/card:opacity-100',
+            isBestChoice ? 'bg-amber-400/10' : 'bg-primary/5',
+          )}
         />
       )}
 
@@ -120,17 +123,23 @@ function MiniCard({ product, score, reason, isBestChoice, badgeLabel, onClick }:
             </div>
           ) : badgeLabel ? (
             <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary">
-              {badgeLabel === 'Mais Pedido' ? <TrendingUp className="h-2.5 w-2.5" /> : <Star className="h-2.5 w-2.5" />}
+              {badgeLabel === 'Mais Pedido' ? (
+                <TrendingUp className="h-2.5 w-2.5" />
+              ) : (
+                <Star className="h-2.5 w-2.5" />
+              )}
               {badgeLabel.toUpperCase()}
             </div>
-          ) : <div className="h-4" />}
+          ) : (
+            <div className="h-4" />
+          )}
 
           <span
             className={cn(
-             "shrink-0 rounded-full border-[1.5px] px-1.5 py-0.5 font-display text-[10px] font-bold",
-              isBestChoice 
-                ? "border-amber-400/50 bg-amber-50 text-amber-600" 
-                : "border-primary/30 bg-primary/5 text-primary"
+              'shrink-0 rounded-full border-[1.5px] px-1.5 py-0.5 font-display text-[10px] font-bold',
+              isBestChoice
+                ? 'border-amber-400/50 bg-amber-50 text-amber-600'
+                : 'border-primary/30 bg-primary/5 text-primary',
             )}
             aria-label={`Score ${scorePct} por cento`}
           >
@@ -139,7 +148,7 @@ function MiniCard({ product, score, reason, isBestChoice, badgeLabel, onClick }:
         </div>
 
         <div className="space-y-1">
-          <h4 className="line-clamp-2 min-h-[2.5rem] font-display text-sm font-semibold leading-tight group-hover/card:text-primary transition-colors">
+          <h4 className="line-clamp-2 min-h-[2.5rem] font-display text-sm font-semibold leading-tight transition-colors group-hover/card:text-primary">
             {product.name}
           </h4>
           <p className="line-clamp-2 font-display text-[11px] leading-relaxed text-muted-foreground">
@@ -294,7 +303,9 @@ export function SmartRecommendations({
                   score={rec.score}
                   reason={rec.reason}
                   isBestChoice={rec.score === maxScore && rec.score > 0.8}
-                  badgeLabel={rec.score > 0.9 ? 'Mais Pedido' : rec.score > 0.7 ? 'Tendência' : undefined}
+                  badgeLabel={
+                    rec.score > 0.9 ? 'Mais Pedido' : rec.score > 0.7 ? 'Tendência' : undefined
+                  }
                   onClick={onProductClick ? () => onProductClick(rec.productId) : undefined}
                 />
               </div>

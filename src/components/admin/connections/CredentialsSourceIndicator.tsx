@@ -215,7 +215,7 @@ export function CredentialsSourceIndicator({ secrets, isLoading, onRefresh, clas
                   DB · {counts.db}
                 </Badge>
               </TooltipTrigger>
-              <TooltipContent side="top" className=" space-y-1.5 ">
+              <TooltipContent side="top" className="space-y-1.5">
                 <p className="font-semibold">Origem: banco (SSOT) — {counts.db}</p>
                 <p>
                   Valor persistido em <code className="font-mono">integration_credentials</code> e
@@ -244,7 +244,7 @@ export function CredentialsSourceIndicator({ secrets, isLoading, onRefresh, clas
                   ENV · {counts.env}
                 </Badge>
               </TooltipTrigger>
-              <TooltipContent side="top" className=" space-y-1.5 ">
+              <TooltipContent side="top" className="space-y-1.5">
                 <p className="font-semibold">
                   Origem: variável de ambiente (legado) — {counts.env}
                 </p>
@@ -276,7 +276,7 @@ export function CredentialsSourceIndicator({ secrets, isLoading, onRefresh, clas
                   AUSENTE · {counts.none}
                 </Badge>
               </TooltipTrigger>
-              <TooltipContent side="top" className=" space-y-1.5 ">
+              <TooltipContent side="top" className="space-y-1.5">
                 <p className="font-semibold">Sem valor em DB nem em ENV — {counts.none}</p>
                 <p>
                   O <code className="font-mono">secrets-manager</code> não encontrou o segredo em

@@ -150,9 +150,7 @@ export function PersonalizationSummary({
                             </AlertDialogTrigger>
                           </span>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                          Remover todas
-                        </TooltipContent>
+                        <TooltipContent side="bottom">Remover todas</TooltipContent>
                       </Tooltip>
                       <AlertDialogContent>
                         <AlertDialogHeader>
@@ -396,9 +394,7 @@ function PersonalizationRow({
               <Pencil className="h-3 w-3" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">
-            Editar
-          </TooltipContent>
+          <TooltipContent side="bottom">Editar</TooltipContent>
         </Tooltip>
 
         {unusedLocations.length > 0 && (
@@ -418,9 +414,7 @@ function PersonalizationRow({
                   </DropdownMenuTrigger>
                 </span>
               </TooltipTrigger>
-              <TooltipContent side="bottom">
-                Duplicar
-              </TooltipContent>
+              <TooltipContent side="bottom">Duplicar</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end" className="min-w-[160px]">
               {unusedLocations.map((loc) => (

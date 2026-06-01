@@ -42,7 +42,7 @@ describe('NotificationBell', () => {
     render(
       <BrowserRouter>
         <NotificationBell />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     expect(screen.getByText('1')).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe('NotificationBell', () => {
     render(
       <BrowserRouter>
         <NotificationBell />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     const bellButton = screen.getByRole('button', { name: /Notificações/i });
@@ -88,18 +88,18 @@ describe('NotificationBell', () => {
     render(
       <BrowserRouter>
         <NotificationBell />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     fireEvent.click(screen.getByRole('button', { name: /Notificações/i }));
-    
+
     const exportButton = screen.getByRole('button', { name: /Exportar CSV/i });
     expect(exportButton).toBeInTheDocument();
-    
+
     // Mock URL.createObjectURL
     global.URL.createObjectURL = vi.fn(() => 'mock-url');
     global.URL.revokeObjectURL = vi.fn();
-    
+
     fireEvent.click(exportButton);
     // Should have triggered a download link click (hard to test directly without more mocks, but presence is good)
   });
@@ -107,7 +107,7 @@ describe('NotificationBell', () => {
   it('provides undo option after marking as read', async () => {
     const undoMarkAsRead = vi.fn();
     const markAsRead = vi.fn();
-    
+
     (useNotifications as any).mockReturnValue({
       notifications: mockNotifications,
       unreadCount: 1,
@@ -123,14 +123,14 @@ describe('NotificationBell', () => {
     render(
       <BrowserRouter>
         <NotificationBell />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     fireEvent.click(screen.getByRole('button', { name: /Notificações/i }));
-    
+
     const notificationItem = screen.getByText('Test Notification');
     fireEvent.click(notificationItem);
-    
+
     expect(markAsRead).toHaveBeenCalledWith('1');
     // The toast behavior is harder to test in unit tests without more setup,
     // but we can verify the function is called.

@@ -2,11 +2,15 @@
 -- FIX-003: step_up_challenges — Add missing INSERT / UPDATE / DELETE policies
 -- Bug: Authenticated users cannot create or consume their own MFA challenges
 -- Applied: 2026-05-26
+-- Guard: tabela step_up_challenges pode não existir em preview snapshots.
 -- =============================================================================
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'step_up_challenges'
+  ) AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'step_up_challenges' AND policyname = 'step_up_challenges_insert_own'
   ) THEN
@@ -22,7 +26,10 @@ END $$;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'step_up_challenges'
+  ) AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'step_up_challenges' AND policyname = 'step_up_challenges_update_own'
   ) THEN
@@ -43,7 +50,10 @@ END $$;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'step_up_challenges'
+  ) AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'step_up_challenges' AND policyname = 'step_up_challenges_delete_own_or_admin'
   ) THEN

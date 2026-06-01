@@ -139,7 +139,6 @@ export function GlobalSearchIdleState({
                   )}
                 </div>
 
-
                 <div className="min-w-0 flex-1">
                   <p
                     className={cn('truncate text-[13px]', idx === 0 ? 'font-bold' : 'font-medium')}
@@ -163,7 +162,6 @@ export function GlobalSearchIdleState({
                 </div>
 
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 [color:hsl(var(--command-text-subtle))]" />
-
               </CommandItem>
             ))}
           </div>

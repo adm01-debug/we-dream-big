@@ -28,12 +28,23 @@ export function useProductsByColor({
   const [isLoading, setIsLoading] = useState(false);
 
   const hasFilter = useMemo(
-    () => colorGroups.length > 0 || colorVariations.length > 0 || colorNuances.length > 0 || colors.length > 0,
+    () =>
+      colorGroups.length > 0 ||
+      colorVariations.length > 0 ||
+      colorNuances.length > 0 ||
+      colors.length > 0,
     [colorGroups.length, colorVariations.length, colorNuances.length, colors.length],
   );
 
   const filterKey = useMemo(
-    () => [...colorGroups].sort().join(',') + '|' + [...colorVariations].sort().join(',') + '|' + [...colorNuances].sort().join(',') + '|' + [...colors].sort().join(','),
+    () =>
+      [...colorGroups].sort().join(',') +
+      '|' +
+      [...colorVariations].sort().join(',') +
+      '|' +
+      [...colorNuances].sort().join(',') +
+      '|' +
+      [...colors].sort().join(','),
     [colorGroups, colorVariations, colorNuances, colors],
   );
 
@@ -43,18 +54,38 @@ export function useProductsByColor({
   const fetchProductIds = useCallback(async () => {
     if (isFetchingRef.current) return;
     if (lastFetchedKey.current === filterKey) return;
-    if (!hasFilter) { setProductIds(new Set()); lastFetchedKey.current = ''; return; }
+    if (!hasFilter) {
+      setProductIds(new Set());
+      lastFetchedKey.current = '';
+      return;
+    }
 
     isFetchingRef.current = true;
     setIsLoading(true);
 
     try {
       const refQueries = [
-        { table: 'color_groups', operation: 'select' as const, select: 'id, name, slug', filters: { is_active: true }, limit: 200, offset: 0, cacheKey: 'ref:color_groups' },
-        { table: 'color_variations', operation: 'select' as const, select: 'id, name, slug, group_id', filters: { is_active: true }, limit: 500, offset: 0, cacheKey: 'ref:color_variations' },
+        {
+          table: 'color_groups',
+          operation: 'select' as const,
+          select: 'id, name, slug',
+          filters: { is_active: true },
+          limit: 200,
+          offset: 0,
+          cacheKey: 'ref:color_groups',
+        },
+        {
+          table: 'color_variations',
+          operation: 'select' as const,
+          select: 'id, name, slug, group_id',
+          filters: { is_active: true },
+          limit: 500,
+          offset: 0,
+          cacheKey: 'ref:color_variations',
+        },
       ];
 
-      const refResults = await Promise.all(refQueries.map(q => dbInvoke(q)));
+      const refResults = await Promise.all(refQueries.map((q) => dbInvoke(q)));
 
       const groupsData = (refResults[0]?.records || []) as Record<string, unknown>[];
       const variationsData = (refResults[1]?.records || []) as Record<string, unknown>[];
@@ -63,11 +94,29 @@ export function useProductsByColor({
       const variationsBySlug = new Map(variationsData.map((v) => [v.slug as string, v]));
 
       const targetColorIds = new Set<string>();
-      for (const slug of colorVariations) { const v = variationsBySlug.get(slug); if (v) targetColorIds.add(v.id as string); }
-      for (const slug of colorGroups) { const gid = groupsBySlug.get(slug); if (gid) for (const v of variationsData) if ((v as Record<string, unknown>).group_id === gid) targetColorIds.add((v as Record<string, unknown>).id as string); }
-      for (const colorName of colors) { const lower = colorName.toLowerCase(); for (const v of variationsData) if (((v as Record<string, unknown>).name as string)?.toLowerCase() === lower) targetColorIds.add((v as Record<string, unknown>).id as string); }
+      for (const slug of colorVariations) {
+        const v = variationsBySlug.get(slug);
+        if (v) targetColorIds.add(v.id as string);
+      }
+      for (const slug of colorGroups) {
+        const gid = groupsBySlug.get(slug);
+        if (gid)
+          for (const v of variationsData)
+            if ((v as Record<string, unknown>).group_id === gid)
+              targetColorIds.add((v as Record<string, unknown>).id as string);
+      }
+      for (const colorName of colors) {
+        const lower = colorName.toLowerCase();
+        for (const v of variationsData)
+          if (((v as Record<string, unknown>).name as string)?.toLowerCase() === lower)
+            targetColorIds.add((v as Record<string, unknown>).id as string);
+      }
 
-      if (targetColorIds.size === 0 && colorNuances.length === 0) { setProductIds(new Set()); lastFetchedKey.current = filterKey; return; }
+      if (targetColorIds.size === 0 && colorNuances.length === 0) {
+        setProductIds(new Set());
+        lastFetchedKey.current = filterKey;
+        return;
+      }
 
       const colorIdArray = [...targetColorIds];
       const matchingProductIds = new Set<string>();
@@ -76,8 +125,18 @@ export function useProductsByColor({
         const CHUNK = 50;
         for (let i = 0; i < colorIdArray.length; i += CHUNK) {
           const chunk = colorIdArray.slice(i, i + CHUNK);
-          const variantQueries = [{ table: 'product_variants', operation: 'select' as const, select: 'product_id', filters: { is_active: true, color_id: chunk }, limit: 5000, offset: 0 }];
-          const variantResults = await Promise.all(variantQueries.map(q => dbInvoke(q)));
+          const variantQueries = [
+            {
+              table: 'product_variants',
+              operation: 'select' as const,
+              select: 'product_id',
+              filters: { is_active: true, color_id: chunk },
+              limit: 5000,
+              offset: 0,
+            },
+          ];
+
+          const variantResults = await Promise.all(variantQueries.map((q) => dbInvoke(q)));
           // FIX-CATALOG-01: dbInvoke returns InvokeResult { records, count }, not BatchResult { success, data }
           if (variantResults[0]?.records) {
             for (const r of variantResults[0].records as Array<{ product_id: string }>) {
@@ -89,7 +148,9 @@ export function useProductsByColor({
 
       setProductIds(matchingProductIds);
       lastFetchedKey.current = filterKey;
-      logger.log(`[useProductsByColor] Found ${matchingProductIds.size} products for ${colorIdArray.length} color IDs`);
+      logger.log(
+        `[useProductsByColor] Found ${matchingProductIds.size} products for ${colorIdArray.length} color IDs`,
+      );
     } catch (err) {
       logger.error('[useProductsByColor] Critical Error:', err);
       setProductIds(new Set());

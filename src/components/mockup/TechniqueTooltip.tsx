@@ -137,16 +137,19 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
         <div className={cn('bg-gradient-to-r p-3 text-primary-foreground', info.gradient)}>
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold leading-tight">{technique.name}</h4>
-            <Badge variant="secondary" className="border-0 bg-white/20 text-tooltip font-bold px-1 py-0 text-primary-foreground">
+            <Badge
+              variant="secondary"
+              className="text-tooltip border-0 bg-white/20 px-1 py-0 font-bold text-primary-foreground"
+            >
               {technique.code || 'PRO'}
             </Badge>
           </div>
-          <p className="mt-1 text-tooltip opacity-90">{info.description}</p>
+          <p className="text-tooltip mt-1 opacity-90">{info.description}</p>
         </div>
 
         {/* Details */}
         <div className="space-y-2 p-3">
-          <div className="flex items-start gap-1.5 text-tooltip">
+          <div className="text-tooltip flex items-start gap-1.5">
             <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
             <div>
               <span className="text-muted-foreground">Durabilidade:</span>
@@ -154,7 +157,7 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
             </div>
           </div>
 
-          <div className="flex items-start gap-1.5 text-tooltip">
+          <div className="text-tooltip flex items-start gap-1.5">
             <Palette className="mt-0.5 h-4 w-4 text-muted-foreground" />
             <div>
               <span className="text-muted-foreground">Cores:</span>
@@ -162,7 +165,7 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
             </div>
           </div>
 
-          <div className="flex items-start gap-1.5 text-tooltip">
+          <div className="text-tooltip flex items-start gap-1.5">
             <Info className="mt-0.5 h-4 w-4 text-muted-foreground" />
             <div>
               <span className="text-muted-foreground">Ideal para:</span>
@@ -180,7 +183,7 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
             technique.isCurved) && (
             <div className="mt-1.5 space-y-1 border-t border-white/5 pt-2">
               {technique.locationName && (
-                <div className="flex items-start gap-1.5 text-tooltip">
+                <div className="text-tooltip flex items-start gap-1.5">
                   <Layers className="mt-0.5 h-3.5 w-3.5 text-muted-foreground" />
                   <div>
                     <span className="text-muted-foreground">Local:</span>
@@ -189,7 +192,7 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
                 </div>
               )}
               {technique.variationLabel && (
-                <div className="flex items-start gap-1.5 text-tooltip">
+                <div className="text-tooltip flex items-start gap-1.5">
                   <Info className="mt-0.5 h-3.5 w-3.5 text-muted-foreground" />
                   <div>
                     <span className="text-muted-foreground">Variação:</span>
@@ -201,7 +204,7 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
                 </div>
               )}
               {technique.maxWidth && technique.maxHeight && (
-                <div className="flex items-start gap-1.5 text-tooltip">
+                <div className="text-tooltip flex items-start gap-1.5">
                   <Ruler className="mt-0.5 h-3.5 w-3.5 text-muted-foreground" />
                   <div>
                     <span className="text-muted-foreground">Máx:</span>
@@ -212,13 +215,13 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
                 </div>
               )}
               {technique.maxColors !== null && (
-                <div className="flex items-start gap-1.5 text-tooltip">
+                <div className="text-tooltip flex items-start gap-1.5">
                   <Palette className="mt-0.5 h-3.5 w-3.5 text-muted-foreground" />
                   <div>
                     <span className="text-muted-foreground">Máx cores:</span>
                     <span className="ml-1 font-medium">{technique.maxColors}</span>
                     {technique.chargesPerColor && (
-                      <span className="ml-1 text-tooltip text-muted-foreground">
+                      <span className="text-tooltip ml-1 text-muted-foreground">
                         (cobra por cor)
                       </span>
                     )}
@@ -226,7 +229,7 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
                 </div>
               )}
               {typeof technique.setupCost === 'number' && technique.setupCost > 0 && (
-                <div className="flex items-start gap-1.5 text-tooltip">
+                <div className="text-tooltip flex items-start gap-1.5">
                   <Wrench className="mt-0.5 h-3.5 w-3.5 text-muted-foreground" />
                   <div>
                     <span className="text-muted-foreground">Setup:</span>
@@ -237,7 +240,7 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
                 </div>
               )}
               {technique.isCurved && (
-                <Badge variant="outline" className="text-tooltip px-1.5 py-0.5 h-auto">
+                <Badge variant="outline" className="text-tooltip h-auto px-1.5 py-0.5">
                   Suporta curvo
                 </Badge>
               )}

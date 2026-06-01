@@ -2,12 +2,7 @@ import { useMemo } from 'react';
 import { type Product, useProducts } from '@/hooks/products';
 
 /** Opções de ranking/filtragem para o comparador. */
-export type SupplierComparisonSort =
-  | 'score'
-  | 'price'
-  | 'stock'
-  | 'leadTime'
-  | 'commonColors';
+export type SupplierComparisonSort = 'score' | 'price' | 'stock' | 'leadTime' | 'commonColors';
 
 export interface SupplierComparisonOptions {
   /** Mostra apenas fornecedores com produto ativo (proxy de "verificado"). */
@@ -155,7 +150,9 @@ export function useSupplierComparison(
 
     // Score composto — calculado depois de termos o range completo
     const maxLead = Math.max(
-      ...rawAlternatives.map((a) => a.leadTimeDays ?? Number.POSITIVE_INFINITY).filter((n) => Number.isFinite(n)),
+      ...rawAlternatives
+        .map((a) => a.leadTimeDays ?? Number.POSITIVE_INFINITY)
+        .filter((n) => Number.isFinite(n)),
       1,
     );
     const maxCommonColors = Math.max(...rawAlternatives.map((a) => a.commonColors.length), 1);
@@ -166,7 +163,10 @@ export function useSupplierComparison(
         stock: highestStock > 0 ? clamp01(a.product.stock / highestStock) * 20 : 0,
         colors: maxCommonColors > 0 ? clamp01(a.commonColors.length / maxCommonColors) * 15 : 0,
         moq: clamp01(1 - (a.product.minQuantity ?? 1) / 100) * 15,
-        lead: typeof a.leadTimeDays === 'number' && maxLead > 0 ? clamp01(1 - a.leadTimeDays / maxLead) * 10 : 5,
+        lead:
+          typeof a.leadTimeDays === 'number' && maxLead > 0
+            ? clamp01(1 - a.leadTimeDays / maxLead) * 10
+            : 5,
         verified: a.isVerified ? 10 : 0,
       };
 
@@ -181,7 +181,10 @@ export function useSupplierComparison(
 
     const alternativesUnfiltered = sortAlternatives(withScore, sortBy);
     const alternatives = onlyVerified
-      ? sortAlternatives(withScore.filter((a) => a.isVerified), sortBy)
+      ? sortAlternatives(
+          withScore.filter((a) => a.isVerified),
+          sortBy,
+        )
       : alternativesUnfiltered;
 
     const maxEconomiaPorMOQ = Math.max(0, ...alternativesUnfiltered.map((a) => a.economiaPorMOQ));
@@ -232,11 +235,40 @@ export function getSupplierProductsInCategory(
 /* -------------------------------------------------------------------------- */
 
 const STOPWORDS_PT = new Set([
-  'a', 'o', 'as', 'os', 'um', 'uma', 'uns', 'umas',
-  'de', 'da', 'do', 'das', 'dos', 'em', 'no', 'na', 'nos', 'nas',
-  'para', 'por', 'pra', 'com', 'sem', 'sob', 'sobre',
-  'e', 'ou', 'que', 'se',
-  'ml', 'cm', 'mm', 'kg', 'g',
+  'a',
+  'o',
+  'as',
+  'os',
+  'um',
+  'uma',
+  'uns',
+  'umas',
+  'de',
+  'da',
+  'do',
+  'das',
+  'dos',
+  'em',
+  'no',
+  'na',
+  'nos',
+  'nas',
+  'para',
+  'por',
+  'pra',
+  'com',
+  'sem',
+  'sob',
+  'sobre',
+  'e',
+  'ou',
+  'que',
+  'se',
+  'ml',
+  'cm',
+  'mm',
+  'kg',
+  'g',
 ]);
 
 /* -------------------------------------------------------------------------- */

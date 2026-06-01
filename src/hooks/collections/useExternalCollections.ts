@@ -23,91 +23,87 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { sanitizeError } from '@/lib/security/sanitize-error';
 
-// ─── Interfaces alinhadas com schema real do DB ───────────────────────────────
-
+// Interface que reflete a estrutura do BD externo
 export interface ExternalCollection {
   id: string;
   user_id: string;
   name: string;
+  slug?: string;
   description?: string | null;
-  is_featured: boolean;
-  icon_color?: string | null;
+  image_url?: string | null;
+  banner_url?: string | null;
+  color?: string | null;
   icon?: string | null;
-  created_at: string;
-  updated_at: string;
-  client_id?: string | null;
-  client_name?: string | null;
-  share_token?: string | null;
-  share_expires_at?: string | null;
-  is_public: boolean;
-  is_deleted: boolean;
+  is_active?: boolean;
+  is_featured?: boolean;
+  display_order?: number;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ExternalCollectionProduct {
   id: string;
   collection_id: string;
   product_id: string;
-  display_order: number;  // FIX: era sort_order — campo real é display_order
-  created_at: string;
+  display_order?: number;
+  created_at?: string;
 }
 
-type NewCollection = Omit<ExternalCollection, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'is_deleted'>;
-type UpdateCollection = Partial<NewCollection>;
+const QUERY_KEY = 'external-collections';
 
-const COLLECTIONS_QUERY_KEY = ['external-collections'];
-const COLLECTION_PRODUCTS_QUERY_KEY = (id: string) => ['external-collection-products', id];
-
+/**
+ * Busca coleções do BD externo
+ */
 export function useExternalCollections() {
   return useQuery({
-    queryKey: COLLECTIONS_QUERY_KEY,
+    queryKey: [QUERY_KEY],
     queryFn: async () => {
-      // FIX: era .eq('is_active', true) — coluna is_active não existe
-      // Correto: filtrar por is_deleted=false (campo real, NOT NULL, DEFAULT false)
-      const { data, error } = await supabase
-        .from('collections')
-        .select('*')
-        .eq('is_deleted', false)
-        .order('name');
+      const { data, error } = await supabase.from('collections').select('*').limit(100);
 
-      if (error) throw new Error(sanitizeError(error));
-      return (data as ExternalCollection[]) || [];
+      if (error) {
+        const isGone = error.message?.includes('410') || error.message?.includes('Gone');
+        if (isGone) {
+          const { reportSilentEmpty } = await import('@/lib/external-db/silent-empty-report');
+          reportSilentEmpty({
+            reason: 'gone_410',
+            table: 'collections',
+            operation: 'select',
+            message: error.message,
+          });
+          return [];
+        }
+        throw error;
+      }
+
+      return (data || []).filter((c) => c.is_active !== false);
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutos
   });
 }
 
-export function useExternalCollection(id: string | undefined) {
+/**
+ * Busca produtos de uma coleção específica
+ */
+export function useExternalCollectionProducts(collectionId: string | null) {
   return useQuery({
-    queryKey: ['external-collection', id],
-    queryFn: async () => {
-      if (!id) return null;
-      const { data, error } = await supabase
-        .from('collections')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw new Error(sanitizeError(error));
-      return data as ExternalCollection | null;
-    },
-    enabled: !!id,
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
-export function useExternalCollectionProducts(collectionId: string | undefined) {
-  return useQuery({
-    queryKey: COLLECTION_PRODUCTS_QUERY_KEY(collectionId || ''),
+    queryKey: [QUERY_KEY, 'products', collectionId],
     queryFn: async () => {
       if (!collectionId) return [];
+
       const { data, error } = await supabase
         .from('collection_products')
         .select('*')
         .eq('collection_id', collectionId)
-        .order('display_order');  // FIX: era sort_order — campo real é display_order
+        .order('display_order', { ascending: true })
+        .limit(500);
 
-      if (error) throw new Error(sanitizeError(error));
-      return (data as ExternalCollectionProduct[]) || [];
+      if (error) {
+        if (error.message?.includes('410')) return [];
+        throw error;
+      }
+      return data || [];
     },
     enabled: !!collectionId,
     staleTime: 5 * 60 * 1000,
@@ -115,28 +111,29 @@ export function useExternalCollectionProducts(collectionId: string | undefined) 
 }
 
 /**
- * Retorna um mapa de { collectionId → productCount } para múltiplas coleções.
- * Usado em useCollectionsPageState para exibir contagens nas listagem externos.
- * Faz uma única query em collection_products e agrega no cliente para evitar
- * N+1 queries.
+ * Busca contagem de produtos para todas as coleções externas
  */
 export function useExternalCollectionProductCounts(collectionIds: string[]) {
   return useQuery({
-    queryKey: ['external-collection-product-counts', collectionIds],
+    queryKey: [QUERY_KEY, 'product-counts', collectionIds],
     queryFn: async () => {
-      if (!collectionIds.length) return {} as Record<string, number>;
+      if (collectionIds.length === 0) return new Map<string, number>();
 
       const { data, error } = await supabase
         .from('collection_products')
-        .select('collection_id')
-        .in('collection_id', collectionIds);
+        .select('collection_id, product_id')
+        .in('collection_id', collectionIds)
+        .limit(5000);
 
-      if (error) throw new Error(sanitizeError(error));
+      if (error) {
+        if (error.message?.includes('410')) return new Map<string, number>();
+        throw error;
+      }
 
-      const counts: Record<string, number> = {};
-      (data || []).forEach((row) => {
-        counts[row.collection_id] = (counts[row.collection_id] || 0) + 1;
-      });
+      const counts = new Map<string, number>();
+      for (const r of data || []) {
+        counts.set(r.collection_id, (counts.get(r.collection_id) || 0) + 1);
+      }
       return counts;
     },
     enabled: collectionIds.length > 0,
@@ -144,67 +141,71 @@ export function useExternalCollectionProductCounts(collectionIds: string[]) {
   });
 }
 
+/**
+ * Mutations para gerenciar coleções
+ */
 export function useExternalCollectionMutations() {
   const queryClient = useQueryClient();
 
   const createCollection = useMutation({
-    mutationFn: async (collection: NewCollection) => {
-      const { data, error } = await supabase
+    mutationFn: async (data: Partial<ExternalCollection>) => {
+      const slug =
+        data.name
+          ?.toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, '') || `col-${Date.now()}`;
+      const { data: inserted, error } = await supabase
         .from('collections')
-        .insert(collection)
+        .insert({
+          ...data,
+          slug,
+          is_active: true,
+        })
         .select()
         .single();
-
-      if (error) throw new Error(sanitizeError(error));
-      return data as ExternalCollection;
+      if (error) throw error;
+      return inserted as ExternalCollection;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: COLLECTIONS_QUERY_KEY });
-      toast.success('Coleção criada com sucesso');
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success('Coleção criada com sucesso!');
     },
     onError: (error) => {
-      toast.error(`Erro ao criar coleção: ${error.message}`);
+      toast.error('Erro ao criar coleção', { description: sanitizeError(error) });
     },
   });
 
   const updateCollection = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: UpdateCollection }) => {
-      const { data, error } = await supabase
+    mutationFn: async ({ id, data }: { id: string; data: Partial<ExternalCollection> }) => {
+      const { data: updated, error } = await supabase
         .from('collections')
-        .update(updates)
+        .update(data)
         .eq('id', id)
         .select()
         .single();
-
-      if (error) throw new Error(sanitizeError(error));
-      return data as ExternalCollection;
+      if (error) throw error;
+      return updated as ExternalCollection;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: COLLECTIONS_QUERY_KEY });
-      toast.success('Coleção atualizada com sucesso');
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success('Coleção atualizada!');
     },
     onError: (error) => {
-      toast.error(`Erro ao atualizar coleção: ${error.message}`);
+      toast.error('Erro ao atualizar', { description: sanitizeError(error) });
     },
   });
 
   const deleteCollection = useMutation({
     mutationFn: async (id: string) => {
-      // Soft delete via is_deleted=true em vez de DELETE físico
-      // preserva integridade referencial com collection_products
-      const { error } = await supabase
-        .from('collections')
-        .update({ is_deleted: true })
-        .eq('id', id);
-
-      if (error) throw new Error(sanitizeError(error));
+      const { error } = await supabase.from('collections').delete().eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: COLLECTIONS_QUERY_KEY });
-      toast.success('Coleção excluída com sucesso');
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success('Coleção excluída!');
     },
     onError: (error) => {
-      toast.error(`Erro ao excluir coleção: ${error.message}`);
+      toast.error('Erro ao excluir', { description: sanitizeError(error) });
     },
   });
 
@@ -212,72 +213,55 @@ export function useExternalCollectionMutations() {
     mutationFn: async ({
       collectionId,
       productId,
-      sortOrder,
     }: {
       collectionId: string;
       productId: string;
-      sortOrder?: number;
     }) => {
-      const { data, error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('collection_products')
-        // FIX: era {sort_order} — campo real é display_order
-        .insert({ collection_id: collectionId, product_id: productId, display_order: sortOrder ?? 0 })
+        .insert({
+          collection_id: collectionId,
+          product_id: productId,
+        })
         .select()
         .single();
-
-      if (error) throw new Error(sanitizeError(error));
-      return data as ExternalCollectionProduct;
+      if (error) throw error;
+      return inserted as ExternalCollectionProduct;
     },
-    onSuccess: (_, { collectionId }) => {
-      queryClient.invalidateQueries({ queryKey: COLLECTION_PRODUCTS_QUERY_KEY(collectionId) });
-      queryClient.invalidateQueries({ queryKey: COLLECTIONS_QUERY_KEY });
-      toast.success('Produto adicionado à coleção');
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY, 'products', variables.collectionId] });
+      toast.success('Produto adicionado à coleção!');
     },
     onError: (error) => {
-      toast.error(`Erro ao adicionar produto: ${error.message}`);
+      toast.error('Operação não pôde ser concluída', { description: sanitizeError(error) });
     },
   });
 
   const removeProductFromCollection = useMutation({
-    mutationFn: async ({ collectionId, productId }: { collectionId: string; productId: string }) => {
-      const { error } = await supabase
-        .from('collection_products')
-        .delete()
-        .eq('collection_id', collectionId)
-        .eq('product_id', productId);
-
-      if (error) throw new Error(sanitizeError(error));
+    mutationFn: async (relationId: string) => {
+      const { error } = await supabase.from('collection_products').delete().eq('id', relationId);
+      if (error) throw error;
     },
-    onSuccess: (_, { collectionId }) => {
-      queryClient.invalidateQueries({ queryKey: COLLECTION_PRODUCTS_QUERY_KEY(collectionId) });
-      queryClient.invalidateQueries({ queryKey: COLLECTIONS_QUERY_KEY });
-      toast.success('Produto removido da coleção');
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success('Produto removido da coleção!');
     },
     onError: (error) => {
-      toast.error(`Erro ao remover produto: ${error.message}`);
+      toast.error('Operação não pôde ser concluída', { description: sanitizeError(error) });
     },
   });
 
   return {
-    createCollection: createCollection.mutateAsync,
-    updateCollection: updateCollection.mutateAsync,
-    deleteCollection: deleteCollection.mutateAsync,
-    addProductToCollection: addProductToCollection.mutateAsync,
-    removeProductFromCollection: removeProductFromCollection.mutateAsync,
-    isCreating: createCollection.isPending,
-    isUpdating: updateCollection.isPending,
-    isDeleting: deleteCollection.isPending,
+    createCollection,
+    updateCollection,
+    deleteCollection,
+    addProductToCollection,
+    removeProductFromCollection,
   };
 }
 
 /**
- * Hook composto para gerenciar coleções externas — agrupa query + mutations.
- *
- * IMPORTANTE: este hook se chamava useCollections() antes do fix de 2026-06-01.
- * Foi renomeado para useExternalCollectionsManager() para evitar conflito de nome
- * com useCollections() em useCollections.ts — ambos eram exportados pelo index.ts
- * via export*, causando um name clash que fazia o CollectionsPage crashar com
- * TypeError: Cannot read properties of undefined (reading 'map').
+ * Hook combinado para usar coleções do BD externo
  */
 export function useExternalCollectionsManager() {
   const { data: collections = [], isLoading, error, refetch } = useExternalCollections();

@@ -36,8 +36,12 @@ export function useSpeechRecognition({
   // sem triggerar recriacao da instancia.
   const onResultRef = useRef(onResult);
   const onErrorRef = useRef(onError);
-  useEffect(() => { onResultRef.current = onResult; }, [onResult]);
-  useEffect(() => { onErrorRef.current = onError; }, [onError]);
+  useEffect(() => {
+    onResultRef.current = onResult;
+  }, [onResult]);
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
 
   useEffect(() => {
     if (!isSupported) return;
@@ -101,8 +105,8 @@ export function useSpeechRecognition({
     return () => {
       recognitionInstance.abort();
     };
-  // BUG-VOICE-01 FIX: onResult e onError removidos das deps -- agora usam refs.
-  // O efeito so recria a instancia quando isSupported ou language mudam.
+    // BUG-VOICE-01 FIX: onResult e onError removidos das deps -- agora usam refs.
+    // O efeito so recria a instancia quando isSupported ou language mudam.
   }, [isSupported, language]);
 
   const startListening = useCallback(() => {

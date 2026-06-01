@@ -47,6 +47,11 @@ DECLARE
   t text; pj jsonb; fk text; pt text; r record; remaining int;
 BEGIN
   FOREACH t IN ARRAY direct LOOP
+    -- Skip tabelas que não existem ou não têm coluna organization_id no preview snapshot
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name=t)
+       OR NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name=t AND column_name='organization_id') THEN
+      CONTINUE;
+    END IF;
     FOR r IN SELECT polname, polcmd, pg_get_expr(polqual,polrelid) q FROM pg_policy
        WHERE polrelid=('public.'||t)::regclass AND polcmd IN ('a','w','d','*')
        AND (coalesce(pg_get_expr(polqual,polrelid),'')~*'user_is_org_member|user_belongs_to_org'
@@ -67,6 +72,13 @@ BEGIN
 
   FOR pj IN SELECT * FROM jsonb_array_elements(parent) LOOP
     t := pj->>'t'; fk := pj->>'fk'; pt := pj->>'pt';
+    -- Skip se tabela filho/pai ou coluna FK/organization_id estão ausentes no preview snapshot
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name=t)
+       OR NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name=pt)
+       OR NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name=t AND column_name=fk)
+       OR NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name=pt AND column_name='organization_id') THEN
+      CONTINUE;
+    END IF;
     FOR r IN SELECT polname FROM pg_policy WHERE polrelid=('public.'||t)::regclass AND polcmd IN ('a','w','d','*')
        AND (coalesce(pg_get_expr(polqual,polrelid),'')~*'user_is_org_member|user_belongs_to_org'
          OR coalesce(pg_get_expr(polwithcheck,polrelid),'')~*'user_is_org_member|user_belongs_to_org') LOOP
@@ -81,6 +93,7 @@ BEGIN
   END LOOP;
 
   -- invariante: nenhuma policy de escrita nível-membro pode sobrar
+  -- (verifica apenas tabelas que realmente existem)
   SELECT count(*) INTO remaining FROM pg_policy pl JOIN pg_class c ON c.oid=pl.polrelid
    WHERE c.relname = any(direct || array(select jsonb_array_elements(parent)->>'t'))
      AND pl.polcmd IN ('a','w','d','*')

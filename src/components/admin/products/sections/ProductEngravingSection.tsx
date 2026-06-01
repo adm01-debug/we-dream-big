@@ -571,7 +571,9 @@ export default function ProductEngravingSection({ productId, isEdit, engravingFl
       {/* BUG-05 FIX: AlertDialog for area delete confirmation (no more confirm()) */}
       <AlertDialog
         open={!!w.deleteAreaConfirm}
-        onOpenChange={(open) => { if (!open) w.cancelDeleteArea(); }}
+        onOpenChange={(open) => {
+          if (!open) w.cancelDeleteArea();
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>

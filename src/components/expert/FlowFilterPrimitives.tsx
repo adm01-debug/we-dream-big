@@ -7,7 +7,13 @@ import { ChevronDown, Search, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-export function GroupSeparator({ label, icon: iconElement }: { label: string; icon: React.ElementType }) {
+export function GroupSeparator({
+  label,
+  icon: iconElement,
+}: {
+  label: string;
+  icon: React.ElementType;
+}) {
   const Icon = iconElement;
   return (
     <div className="flex items-center gap-2 px-1 pb-1.5 pt-5">

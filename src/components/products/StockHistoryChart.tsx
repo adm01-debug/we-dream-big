@@ -246,7 +246,8 @@ export function StockHistoryChart({ productId }: StockHistoryChartProps) {
             ariaLabel={`Vendas no mercado: ${safeNumber(bestVelocity?.avg_daily_depletion_7d)?.toFixed(1) ?? 'indisponível'} unidades por dia`}
             tooltip={
               <>
-                Velocidade média de saída do produto considerando a janela dos últimos 7 dias entre todos os fornecedores monitorados.
+                Velocidade média de saída do produto considerando a janela dos últimos 7 dias entre
+                todos os fornecedores monitorados.
                 <br />
                 <br />
                 <span className="font-semibold italic text-primary">Como usar:</span> quanto maior o
@@ -298,8 +299,8 @@ export function StockHistoryChart({ productId }: StockHistoryChartProps) {
             ariaLabel={`Tendência: ${trendDisplay.value} ${trendDisplay.sub}`}
             tooltip={
               <>
-                Variação da procura:{' '}
-                <span className="font-bold">{trendDisplay.value}</span> ({trendDisplay.sub}).
+                Variação da procura: <span className="font-bold">{trendDisplay.value}</span> (
+                {trendDisplay.sub}).
                 <br />
                 <br />
                 <span className="font-semibold italic text-primary">Como agir:</span> alta de
@@ -325,7 +326,6 @@ export function StockHistoryChart({ productId }: StockHistoryChartProps) {
               </>
             }
           />
-
         </div>
 
         {/* Period selector + supplier filter */}

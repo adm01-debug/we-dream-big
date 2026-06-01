@@ -12,9 +12,7 @@ export interface UserNotificationPreference {
 
 export const notificationPreferenceService = {
   async getPreferences(): Promise<UserNotificationPreference[]> {
-    const { data, error } = await supabase
-      .from('user_notification_preferences')
-      .select('*');
+    const { data, error } = await supabase.from('user_notification_preferences').select('*');
 
     if (error) {
       console.error('[notificationPreferenceService] getPreferences error:', error.message);
@@ -26,19 +24,20 @@ export const notificationPreferenceService = {
 
   async updatePreference(
     category: string,
-    updates: Partial<Pick<UserNotificationPreference, 'in_app_enabled' | 'push_enabled'>>
+    updates: Partial<Pick<UserNotificationPreference, 'in_app_enabled' | 'push_enabled'>>,
   ): Promise<boolean> {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return false;
 
-    const { error } = await supabase
-      .from('user_notification_preferences')
-      .upsert({
+    const { error } = await supabase.from('user_notification_preferences').upsert(
+      {
         user_id: userData.user.id,
         category,
         ...updates,
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id, category' });
+      },
+      { onConflict: 'user_id, category' },
+    );
 
     if (error) {
       console.error('[notificationPreferenceService] updatePreference error:', error.message);
@@ -48,9 +47,7 @@ export const notificationPreferenceService = {
     return true;
   },
 
-  subscribeToPreferences(
-    onUpdate: (preference: UserNotificationPreference) => void
-  ): () => void {
+  subscribeToPreferences(onUpdate: (preference: UserNotificationPreference) => void): () => void {
     const channel = supabase
       .channel('user_notification_preferences_realtime')
       .on(
@@ -62,12 +59,12 @@ export const notificationPreferenceService = {
         },
         (payload) => {
           onUpdate(payload.new as UserNotificationPreference);
-        }
+        },
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }
+  },
 };

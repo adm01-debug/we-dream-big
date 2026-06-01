@@ -3,6 +3,9 @@
 -- ("✅ PASS", "❌ FAIL", "⚠️ WARN"). Ajustar parser para usar LIKE.
 -- ================================================================
 
+-- Replay-safe: DROP antes de recriar para evitar 42P13 se o tipo de retorno diferir.
+DROP FUNCTION IF EXISTS public.fn_run_and_persist_smoke_tests();
+
 CREATE OR REPLACE FUNCTION public.fn_run_and_persist_smoke_tests()
 RETURNS TABLE(
   ran_at timestamptz,
@@ -50,28 +53,32 @@ END;
 $$;
 
 -- View latest_run ajustar ordenação para emoji prefix
-CREATE OR REPLACE VIEW public.v_smoke_tests_latest_run 
+-- Replay-safe: DROP antes evita 42P16 se o snapshot do preview já tiver a view
+-- com tipos de coluna diferentes (ex.: count(*)::integer da migration 063000).
+DROP VIEW IF EXISTS public.v_smoke_tests_latest_run;
+CREATE OR REPLACE VIEW public.v_smoke_tests_latest_run
 WITH (security_invoker = on) AS
 WITH latest AS (
   SELECT max(ran_at) AS ran_at FROM public.smoke_tests_runs
 )
-SELECT 
+SELECT
   r.ran_at, r.test_name, r.test_category, r.result, r.details, r.duration_ms
 FROM public.smoke_tests_runs r
 JOIN latest l ON r.ran_at = l.ran_at
-ORDER BY 
-  CASE 
-    WHEN r.result ILIKE '%FAIL%' THEN 1 
-    WHEN r.result ILIKE '%WARN%' THEN 2 
-    WHEN r.result ILIKE '%PASS%' THEN 3 
+ORDER BY
+  CASE
+    WHEN r.result ILIKE '%FAIL%' THEN 1
+    WHEN r.result ILIKE '%WARN%' THEN 2
+    WHEN r.result ILIKE '%PASS%' THEN 3
     ELSE 4
-  END, 
+  END,
   r.test_name;
 
 -- View trend ajustar
-CREATE OR REPLACE VIEW public.v_smoke_tests_trend 
+DROP VIEW IF EXISTS public.v_smoke_tests_trend;
+CREATE OR REPLACE VIEW public.v_smoke_tests_trend
 WITH (security_invoker = on) AS
-SELECT 
+SELECT
   ran_at,
   count(*) AS total,
   count(*) FILTER (WHERE result ILIKE '%PASS%') AS passed,

@@ -3,10 +3,16 @@
 -- Bug: Admin/owner cannot create, update, or delete markup configurations
 -- Applied: 2026-05-26
 -- =============================================================================
+-- Guards adicionais: cada DO block agora verifica também se a tabela existe.
+-- Em preview snapshots a tabela markup_configurations pode não estar presente
+-- (criada fora de migration em produção).
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'markup_configurations' AND column_name = 'organization_id'
+  ) AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'markup_configurations' AND policyname = 'markup_configurations_insert'
   ) THEN
@@ -22,7 +28,10 @@ END $$;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'markup_configurations' AND column_name = 'organization_id'
+  ) AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'markup_configurations' AND policyname = 'markup_configurations_update'
   ) THEN
@@ -37,7 +46,10 @@ END $$;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'markup_configurations' AND column_name = 'organization_id'
+  ) AND NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'markup_configurations' AND policyname = 'markup_configurations_delete'
   ) THEN

@@ -21,10 +21,10 @@ vi.mock('@/hooks/useNavigationAnalytics', () => ({
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => ({ 
+  useAuth: () => ({
     user: { id: 'test-user-id' },
-    isDev: false, 
-    isAdmin: false 
+    isDev: false,
+    isAdmin: false,
   }),
 }));
 
@@ -41,12 +41,12 @@ describe('PersistentBreadcrumbs - Teletransporte Logic', () => {
     render(
       <MemoryRouter>
         <PersistentBreadcrumbs showBackButton />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const teleportBtn = screen.getByTestId('back-teleport-button');
     const icon = teleportBtn.querySelector('svg');
-    
+
     expect(icon).toBeInTheDocument();
     expect(icon).toHaveClass('text-sky-400');
     expect(teleportBtn).toHaveAttribute('aria-label', 'Teletransporte — Voltar');
@@ -54,17 +54,17 @@ describe('PersistentBreadcrumbs - Teletransporte Logic', () => {
 
   it('should call navigate(-1) and track analytics when history is long enough', () => {
     (useLocation as ReturnType<typeof vi.fn>).mockReturnValue({ pathname: '/favoritos' });
-    
+
     // Simula history.length > 2
     Object.defineProperty(window, 'history', {
       value: { length: 5 },
-      writable: true
+      writable: true,
     });
 
     render(
       <MemoryRouter>
         <PersistentBreadcrumbs showBackButton />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const teleportBtn = screen.getByTestId('back-teleport-button');
@@ -76,17 +76,17 @@ describe('PersistentBreadcrumbs - Teletransporte Logic', () => {
 
   it('should fallback to home when history is shallow', () => {
     (useLocation as ReturnType<typeof vi.fn>).mockReturnValue({ pathname: '/produtos' });
-    
+
     // Simula history.length <= 2 (entrada direta)
     Object.defineProperty(window, 'history', {
       value: { length: 2 },
-      writable: true
+      writable: true,
     });
 
     render(
       <MemoryRouter>
         <PersistentBreadcrumbs showBackButton />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const teleportBtn = screen.getByTestId('back-teleport-button');
@@ -102,7 +102,7 @@ describe('PersistentBreadcrumbs - Teletransporte Logic', () => {
     render(
       <MemoryRouter>
         <PersistentBreadcrumbs showBackButton />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.queryByTestId('back-teleport-button')).not.toBeInTheDocument();

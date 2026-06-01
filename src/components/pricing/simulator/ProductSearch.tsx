@@ -58,9 +58,7 @@ export function ProductSearch({ onSelect, selectedProduct }: ProductSearchProps)
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <TruncatedTooltip className="font-medium">
-                {selectedProduct.name}
-              </TruncatedTooltip>
+              <TruncatedTooltip className="font-medium">{selectedProduct.name}</TruncatedTooltip>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>SKU: {selectedProduct.sku}</span>
                 <span>•</span>
@@ -133,9 +131,7 @@ export function ProductSearch({ onSelect, selectedProduct }: ProductSearchProps)
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <TruncatedTooltip className="font-medium">
-                    {product.name}
-                  </TruncatedTooltip>
+                  <TruncatedTooltip className="font-medium">{product.name}</TruncatedTooltip>
                   <p className="text-xs text-muted-foreground">
                     {product.sku} • {formatCurrency(product.price)}
                   </p>

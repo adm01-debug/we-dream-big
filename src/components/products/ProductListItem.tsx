@@ -433,32 +433,28 @@ export const ProductListItem = memo(function ProductListItem({
           {/* Top meta row */}
           <div className="mb-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground sm:text-xs">
             {product.featured && (
-              <ProductStatusBadge 
-                type="featured" 
-                size="sm" 
+              <ProductStatusBadge
+                type="featured"
+                size="sm"
                 onClick={() => handleStatusClick('featured')}
               />
             )}
             {isNovelty && noveltyDaysRemaining !== undefined && (
-              <NoveltyBadge 
-                daysRemaining={noveltyDaysRemaining} 
-                size="sm" 
+              <NoveltyBadge
+                daysRemaining={noveltyDaysRemaining}
+                size="sm"
                 onClick={() => handleStatusClick('novelty')}
               />
             )}
             {product.onSale && (
-              <ProductStatusBadge 
-                type="promotion" 
-                size="sm" 
+              <ProductStatusBadge
+                type="promotion"
+                size="sm"
                 onClick={() => handleStatusClick('promotion')}
               />
             )}
             {product.isKit && (
-              <ProductStatusBadge 
-                type="kit" 
-                size="sm" 
-                onClick={() => handleStatusClick('kit')}
-              />
+              <ProductStatusBadge type="kit" size="sm" onClick={() => handleStatusClick('kit')} />
             )}
             <span className="max-w-[120px] truncate">
               {product.category?.name || 'Sem categoria'}

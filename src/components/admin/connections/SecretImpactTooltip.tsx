@@ -54,7 +54,7 @@ export function SecretImpactTooltip({ secretName, children, isMissing, className
         <p className="font-bold leading-tight">{impact.system}</p>
         <span
           className={cn(
-            'rounded px-1 py-0.5 font-mono text-tooltip-header !opacity-100',
+            'text-tooltip-header rounded px-1 py-0.5 font-mono !opacity-100',
             impact.severity === 'critical' || impact.severity === 'high'
               ? 'bg-destructive/20 text-destructive'
               : impact.severity === 'medium'
@@ -68,16 +68,18 @@ export function SecretImpactTooltip({ secretName, children, isMissing, className
 
       <p className="text-tooltip leading-relaxed text-white/70">
         Se esta chave estiver{' '}
-        <strong className={cn('font-bold', SEVERITY_TONE[impact.severity])}>ausente ou vazia</strong>, os itens
-        abaixo deixam de funcionar:
+        <strong className={cn('font-bold', SEVERITY_TONE[impact.severity])}>
+          ausente ou vazia
+        </strong>
+        , os itens abaixo deixam de funcionar:
       </p>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="mb-1 text-tooltip-header">Telas Afetadas</p>
+          <p className="text-tooltip-header mb-1">Telas Afetadas</p>
           <ul className="space-y-0.5">
             {impact.screens.map((s) => (
-              <li key={s} className="flex items-center gap-1 text-tooltip font-mono text-white/80">
+              <li key={s} className="text-tooltip flex items-center gap-1 font-mono text-white/80">
                 <span className="h-0.5 w-0.5 rounded-full bg-white/20" />
                 {s}
               </li>
@@ -86,10 +88,10 @@ export function SecretImpactTooltip({ secretName, children, isMissing, className
         </div>
 
         <div>
-          <p className="mb-1 text-tooltip-header">Fluxos Afetados</p>
+          <p className="text-tooltip-header mb-1">Fluxos Afetados</p>
           <ul className="space-y-0.5">
             {impact.flows.map((f) => (
-              <li key={f} className="flex items-center gap-1 text-tooltip text-white/80">
+              <li key={f} className="text-tooltip flex items-center gap-1 text-white/80">
                 <span className="h-0.5 w-0.5 rounded-full bg-white/20" />
                 {f}
               </li>
@@ -101,9 +103,9 @@ export function SecretImpactTooltip({ secretName, children, isMissing, className
   ) : (
     <div className="max-w-xs space-y-1">
       <p className="text-tooltip-header">Aviso de Configuração</p>
-      <p className="text-white/70 leading-relaxed">
-        Sem mapeamento de impacto para <code className="font-mono text-primary">{secretName}</code>. Mantenha-a
-        populada se for usada por alguma edge function.
+      <p className="leading-relaxed text-white/70">
+        Sem mapeamento de impacto para <code className="font-mono text-primary">{secretName}</code>.
+        Mantenha-a populada se for usada por alguma edge function.
       </p>
     </div>
   );
@@ -135,9 +137,7 @@ export function SecretImpactTooltip({ secretName, children, isMissing, className
             )}
           </span>
         </TooltipTrigger>
-        <TooltipContent side="top" >
-          {content}
-        </TooltipContent>
+        <TooltipContent side="top">{content}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

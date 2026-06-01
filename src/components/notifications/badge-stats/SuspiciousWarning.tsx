@@ -50,7 +50,7 @@ export function SuspiciousWarning({
           </span>
         </ShadcnTooltipTrigger>
         <ShadcnTooltipContent side="bottom" align="end">
-          <div className="space-y-1 font-mono text-tooltip leading-snug">
+          <div className="text-tooltip space-y-1 font-mono leading-snug">
             <div className="flex items-center gap-1 font-semibold text-warning">
               <AlertTriangle className="h-2.5 w-2.5" aria-hidden="true" />
               Suspicious window
@@ -93,7 +93,7 @@ export function SuspiciousWarning({
                   <span className="font-semibold">💡 Suggestion</span>
                   <span
                     className={cn(
-                      'rounded px-1 text-tooltip font-semibold uppercase tracking-wide',
+                      'text-tooltip rounded px-1 font-semibold uppercase tracking-wide',
                       streakTrend.direction === 'rising'
                         ? 'bg-warning/15 text-warning'
                         : streakTrend.direction === 'falling'
@@ -112,7 +112,7 @@ export function SuspiciousWarning({
                   </span>
                 </div>
                 <div className="mt-0.5 text-foreground">→ {streakTrend.suggestion.primary}</div>
-                <div className="mt-0.5 text-tooltip text-muted-foreground">
+                <div className="text-tooltip mt-0.5 text-muted-foreground">
                   {streakTrend.suggestion.rationale}
                 </div>
               </div>

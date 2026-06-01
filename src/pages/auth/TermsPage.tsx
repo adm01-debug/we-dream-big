@@ -10,7 +10,7 @@ export default function TermsPage() {
     <main className="relative min-h-screen w-full overflow-x-hidden bg-[#030508] text-white">
       <SpaceScene />
       <PageSEO title="Termos de Uso" path="/termos" />
-      
+
       <div className="relative z-10 mx-auto w-full max-w-4xl animate-fade-in space-y-8 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <header className="space-y-6">
           <Link
@@ -18,7 +18,7 @@ export default function TermsPage() {
             data-testid="terms-back-link"
             className={cn(
               buttonVariants({ variant: 'ghost' }),
-              '-ml-2 gap-2 text-white/60 hover:bg-white/10 hover:text-white transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#030508]',
+              '-ml-2 gap-2 text-white/60 transition-all hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#030508]',
             )}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -31,7 +31,9 @@ export default function TermsPage() {
             >
               Termos de Uso
             </h1>
-            <p className="text-sm font-medium text-white/40">Última atualização: 16 de maio de 2026</p>
+            <p className="text-sm font-medium text-white/40">
+              Última atualização: 16 de maio de 2026
+            </p>
           </div>
         </header>
 
@@ -41,7 +43,8 @@ export default function TermsPage() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-white">1. Aceitação dos Termos</h2>
             <p className="leading-relaxed">
-              Ao acessar e utilizar a <strong className="text-blue-400">Plataforma de Produtos Promo Gifts</strong>, você
+              Ao acessar e utilizar a{' '}
+              <strong className="text-blue-400">Plataforma de Produtos Promo Gifts</strong>, você
               concorda em cumprir e estar vinculado aos seguintes Termos de Uso. Este sistema é
               propriedade intelectual exclusiva da Brasil Marcas.
             </p>

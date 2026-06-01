@@ -56,9 +56,13 @@ describe('whatsapp.ts - normalização e abertura', () => {
     const hrefSetter = vi.fn();
     Object.defineProperty(window, 'location', {
       configurable: true,
-      value: { 
-        get href() { return ''; },
-        set href(v: string) { hrefSetter(v); }
+      value: {
+        get href() {
+          return '';
+        },
+        set href(v: string) {
+          hrefSetter(v);
+        },
       },
     });
     const { opened } = openWhatsAppShare({ message: 'Oi', phone: '11987654321' });

@@ -85,9 +85,7 @@ const TableCellTruncated = React.forwardRef<
   React.TdHTMLAttributes<HTMLTableCellElement> & { children: string }
 >(({ className, children, ...props }, ref) => (
   <TableCell ref={ref} className={className} {...props}>
-    <TruncatedTooltip className="max-w-[200px]">
-      {children}
-    </TruncatedTooltip>
+    <TruncatedTooltip className="max-w-[200px]">{children}</TruncatedTooltip>
   </TableCell>
 ));
 TableCellTruncated.displayName = 'TableCellTruncated';
@@ -100,4 +98,14 @@ const TableCaption = React.forwardRef<
 ));
 TableCaption.displayName = 'TableCaption';
 
-export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCellTruncated, TableCaption };
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCellTruncated,
+  TableCaption,
+};

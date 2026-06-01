@@ -216,11 +216,11 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
                   <Activity className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-tooltip-header">
-                    Mercado · Dia {hoverIndex + 1}
-                  </span>
+                  <span className="text-tooltip-header">Mercado · Dia {hoverIndex + 1}</span>
                 </div>
-                <span className="text-tooltip font-bold text-foreground">{points[hoverIndex]} un</span>
+                <span className="text-tooltip font-bold text-foreground">
+                  {points[hoverIndex]} un
+                </span>
               </div>
               {/* Mini bar showing relative to peak */}
               <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
@@ -250,7 +250,7 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
 
             {/* Comparison bar */}
             <div className="border-t border-border/40 bg-muted/30 px-3 py-2">
-              <div className="flex items-center justify-between text-tooltip-header">
+              <div className="text-tooltip-header flex items-center justify-between">
                 <span className="opacity-60">1ª vs 2ª metade</span>
                 <div className="flex items-center gap-1">
                   <TrendIcon
@@ -334,7 +334,7 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
               </div>
               <div
                 className={cn(
-                  'flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-tooltip font-bold',
+                  'text-tooltip flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-bold',
                   summary.trend > 0
                     ? 'bg-success/10 text-success'
                     : summary.trend < 0

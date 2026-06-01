@@ -75,10 +75,7 @@ export function ProductTagsSection({ productId }: ProductTagsSectionProps) {
     enabled: !!productId,
   });
 
-  const linkedTagIds = useMemo(
-    () => new Set(productTags.map((pt) => pt.tag_id)),
-    [productTags],
-  );
+  const linkedTagIds = useMemo(() => new Set(productTags.map((pt) => pt.tag_id)), [productTags]);
 
   const toggleTag = useCallback(
     async (tagId: string, isLinked: boolean) => {

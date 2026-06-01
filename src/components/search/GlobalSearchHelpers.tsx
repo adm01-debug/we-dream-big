@@ -116,7 +116,6 @@ export function SectionHeader({
   );
 }
 
-
 /* ── CSS stagger animation style helper ── */
 export function staggerStyle(index: number, baseDelay = 0): React.CSSProperties {
   return {
@@ -196,4 +195,3 @@ export function NavCard({
     </CommandItem>
   );
 }
-

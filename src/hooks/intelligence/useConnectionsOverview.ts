@@ -63,7 +63,10 @@ export function useConnectionsOverview(pollMs = 30000) {
   useEffect(() => {
     mountedRef.current = true;
     load(true);
-    if (pollMs <= 0) return () => { mountedRef.current = false; };
+    if (pollMs <= 0)
+      return () => {
+        mountedRef.current = false;
+      };
     const id = setInterval(() => load(true), pollMs);
     return () => {
       mountedRef.current = false; // BUG-26 FIX: sinaliza unmount antes de clearInterval

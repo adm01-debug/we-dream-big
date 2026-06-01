@@ -115,9 +115,7 @@ export function renderQuoteCell(quote: Quote, columnId: string, navigate: (path:
               {compact}
             </span>
           </TooltipTrigger>
-          <TooltipContent side="top" >
-            {full}
-          </TooltipContent>
+          <TooltipContent side="top">{full}</TooltipContent>
         </Tooltip>
       );
     }

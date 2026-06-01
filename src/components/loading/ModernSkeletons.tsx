@@ -73,7 +73,10 @@ export function ProductCardSkeleton({
 
       {/* Image Section - Matches ProductCardImage: white product canvas + 4/5 ratio */}
       <div className="product-img-container relative aspect-[4/5] w-full overflow-hidden">
-        <Skeleton className="absolute inset-0 h-full w-full rounded-none bg-muted/30" animate={animate} />
+        <Skeleton
+          className="absolute inset-0 h-full w-full rounded-none bg-muted/30"
+          animate={animate}
+        />
       </div>
 
       {/* Info Section - Synchronized with ProductCard.tsx */}
@@ -97,8 +100,8 @@ export function ProductCardSkeleton({
         </div>
 
         {/* Price Section - Fixed min-height Matches product-card-styles.ts */}
-        <div className="min-h-[3.25rem] sm:min-h-[3.75rem] flex flex-col justify-end">
-          <Skeleton className="h-3 w-16 mb-1" animate={animate} />
+        <div className="flex min-h-[3.25rem] flex-col justify-end sm:min-h-[3.75rem]">
+          <Skeleton className="mb-1 h-3 w-16" animate={animate} />
           <Skeleton className="h-6 w-24" animate={animate} />
         </div>
 

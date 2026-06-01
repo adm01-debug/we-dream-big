@@ -100,4 +100,3 @@ export function getCloudflareMp4Url(url: string | null | undefined) {
   if (!streamId) return null;
   return `https://videodelivery.net/${streamId}/downloads/default.mp4`;
 }
-

@@ -52,7 +52,7 @@ describe('StockHistoryChart Tooltips', () => {
 
   it('renders all 4 KPI card tooltips info icons', () => {
     render(<StockHistoryChart productId="test-prod" />);
-    
+
     // Check for the info buttons (TooltipTrigger in KpiCard)
     const infoButtons = screen.getAllByRole('button', { name: /Sobre/i });
     expect(infoButtons).toHaveLength(4);
@@ -60,17 +60,17 @@ describe('StockHistoryChart Tooltips', () => {
 
   it('renders the Potencial badge tooltip trigger', () => {
     render(<StockHistoryChart productId="test-prod" />);
-    
+
     const potencialBadge = screen.getByText(/Potencial:/i);
     expect(potencialBadge).toBeInTheDocument();
   });
 
   it('shows tooltip content on hover (KpiCard)', async () => {
     render(<StockHistoryChart productId="test-prod" />);
-    
+
     const firstInfoButton = screen.getAllByRole('button', { name: /Sobre/i })[0];
     fireEvent.mouseEnter(firstInfoButton);
-    
+
     // Tooltip content should appear
     // Note: Radix UI tooltips might need some time or specific configuration in tests
     // But we can check if the trigger is there.
@@ -79,9 +79,9 @@ describe('StockHistoryChart Tooltips', () => {
 });
 
 describe('Gallery Tooltip Regression', () => {
-  it('ensures no title attribute exists on chart elements that shouldn\'t have them', () => {
+  it("ensures no title attribute exists on chart elements that shouldn't have them", () => {
     render(<StockHistoryChart productId="test-prod" />);
-    
+
     // Potencial badge used to have a title, now it shouldn't (it uses a Tooltip component)
     const potencialBadge = screen.queryByTitle(/Potencial comercial:/i);
     expect(potencialBadge).not.toBeInTheDocument();

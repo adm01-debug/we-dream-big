@@ -33,24 +33,21 @@ export function TruncatedTooltip({
 
   React.useLayoutEffect(() => {
     checkTruncation();
-    
+
     // Add resize listener
     const resizeObserver = new ResizeObserver(() => {
       checkTruncation();
     });
-    
+
     if (textRef.current) {
       resizeObserver.observe(textRef.current);
     }
-    
+
     return () => resizeObserver.disconnect();
   }, [checkTruncation, children]);
 
   const content = (
-    <span
-      ref={textRef}
-      className={cn('block truncate', className)}
-    >
+    <span ref={textRef} className={cn('block truncate', className)}>
       {children}
     </span>
   );
@@ -62,9 +59,7 @@ export function TruncatedTooltip({
   return (
     <TooltipProvider delayDuration={delayDuration}>
       <Tooltip>
-        <TooltipTrigger asChild>
-          {content}
-        </TooltipTrigger>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
         <TooltipContent side={side} className={tooltipClassName} variant="compact">
           {children}
         </TooltipContent>

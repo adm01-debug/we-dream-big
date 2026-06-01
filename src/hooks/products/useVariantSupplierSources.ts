@@ -55,10 +55,12 @@ export function useProductVariantsWithStock(productId: string | undefined) {
 
       const { data, error } = await supabase
         .from('product_variants')
-        .select(`
+        .select(
+          `
           id, product_id, sku, color_code, color_name, color_hex, stock_quantity, selected_thumbnail, 
           variant_supplier_sources(next_date_1, next_quantity_1, next_date_2, next_quantity_2, next_date_3, next_quantity_3)
-        `)
+        `,
+        )
         .eq('product_id', productId)
         .eq('is_active', true)
         .limit(200);
@@ -66,38 +68,42 @@ export function useProductVariantsWithStock(productId: string | undefined) {
       if (error) {
         if (error.message?.includes('410') || error.message?.includes('Gone')) {
           const { reportSilentEmpty } = await import('@/lib/external-db/silent-empty-report');
-          reportSilentEmpty({ reason: 'gone_410', table: 'product_variants', operation: 'select', message: error.message });
+          reportSilentEmpty({
+            reason: 'gone_410',
+            table: 'product_variants',
+            operation: 'select',
+            message: error.message,
+          });
           logger.warn('Bridge deprecated (410) for variant sources');
           return [];
         }
         throw error;
       }
 
-      const records = ((data ?? []) as unknown as Array<
-        VariantWithStock & {
-          variant_supplier_sources?: Array<{
-            next_date_1?: string | null;
-            next_quantity_1?: number | null;
-            next_date_2?: string | null;
-            next_quantity_2?: number | null;
-            next_date_3?: string | null;
-            next_quantity_3?: number | null;
-          }>;
-        }
-      >);
+      type VariantRow = VariantWithStock & {
+        variant_supplier_sources?: Array<{
+          next_date_1?: string | null;
+          next_quantity_1?: number | null;
+          next_date_2?: string | null;
+          next_quantity_2?: number | null;
+          next_date_3?: string | null;
+          next_quantity_3?: number | null;
+        }>;
+      };
+      const records = (data as unknown as VariantRow[]) || [];
 
-      return records.map((v) => {
+      return records.map((v): VariantWithStock => {
         const source = v.variant_supplier_sources?.[0];
         return {
           ...v,
           next_entry_date: source?.next_date_1 || null,
           next_entry_quantity: source?.next_quantity_1 || null,
-          next_date_1: source?.next_date_1,
-          next_quantity_1: source?.next_quantity_1,
-          next_date_2: source?.next_date_2,
-          next_quantity_2: source?.next_quantity_2,
-          next_date_3: source?.next_date_3,
-          next_quantity_3: source?.next_quantity_3,
+          next_date_1: source?.next_date_1 ?? null,
+          next_quantity_1: source?.next_quantity_1 ?? null,
+          next_date_2: source?.next_date_2 ?? null,
+          next_quantity_2: source?.next_quantity_2 ?? null,
+          next_date_3: source?.next_date_3 ?? null,
+          next_quantity_3: source?.next_quantity_3 ?? null,
         };
       });
     },

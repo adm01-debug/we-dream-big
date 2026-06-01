@@ -156,11 +156,7 @@ export function GalleryColorVariations({
                           />
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent
-                        side="top"
-                        sideOffset={8}
-                        className={colorTooltipClassName}
-                      >
+                      <TooltipContent side="top" sideOffset={8} className={colorTooltipClassName}>
                         <ColorTooltipContent colorName={color.name} colorHex={color.hex} />
                       </TooltipContent>
                     </Tooltip>

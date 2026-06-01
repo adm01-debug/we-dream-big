@@ -193,12 +193,23 @@ function mapRows<T>(resolvedTable: string, rows: T[]): T[] {
 }
 
 const SEARCH_COLUMNS: Record<string, string> = {
-  v_products_public: 'name', products: 'name', categories: 'name',
-  v_suppliers_public: 'name', suppliers: 'name', material_types: 'name',
-  material_groups: 'name', color_variations: 'name', color_groups: 'name',
-  color_nuances: 'name', tecnicas_gravacao: 'nome', tabela_preco_gravacao_oficial: 'nome',
-  ramo_atividade: 'nome', ramo_atividade_filho: 'nome', tags: 'name',
-  variation_types: 'name', product_groups: 'description',
+  v_products_public: 'name',
+  products: 'name',
+  categories: 'name',
+  v_suppliers_public: 'name',
+  suppliers: 'name',
+  material_types: 'name',
+  material_groups: 'name',
+  color_variations: 'name',
+  color_groups: 'name',
+  color_nuances: 'name',
+  tecnicas_gravacao: 'nome',
+  tabela_preco_gravacao_oficial: 'nome',
+  ramo_atividade: 'nome',
+  ramo_atividade_filho: 'nome',
+  tags: 'name',
+  variation_types: 'name',
+  product_groups: 'description',
   collections: 'name',
   customization_price_tables: 'nome',
   // personalization_techniques has native 'name' column (EN, no mapping needed)
@@ -243,10 +254,7 @@ export async function dbInvoke<T>(options: InvokeOptions): Promise<InvokeResult<
   if (searchTerm) {
     const searchCol = SEARCH_COLUMNS[table] ?? SEARCH_COLUMNS[options.table];
     if (searchCol) query = query.ilike(searchCol, `%${searchTerm}%`);
-    else
-      logger.warn(
-        `[postgrest] _search ignored on '${table}': no search column configured`,
-      );
+    else logger.warn(`[postgrest] _search ignored on '${table}': no search column configured`);
   }
 
   if (remappedFilters) {
@@ -264,10 +272,11 @@ export async function dbInvoke<T>(options: InvokeOptions): Promise<InvokeResult<
         else if (op === 'gte') query = query.gte(key, val);
         else if (op === 'eq') query = query.eq(key, val);
         else if (op === 'neq') query = query.neq(key, val);
-        else
+        else {
           logger.warn(
             `[postgrest] operador desconhecido '${op}' para coluna '${key}' -- filtro ignorado`,
           );
+        }
       } else {
         query = query.eq(key, value);
       }

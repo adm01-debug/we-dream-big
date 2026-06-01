@@ -370,9 +370,7 @@ export function PriceFreshnessBadge({
         >
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span className="tabular-nums">
-            {absolute
-              ? `Atualizado em ${absolute}`
-              : 'Preço pode estar defasado'}
+            {absolute ? `Atualizado em ${absolute}` : 'Preço pode estar defasado'}
             {relative && (
               <span className="text-amber-700/70 dark:text-amber-300/70"> · {relative}</span>
             )}

@@ -177,9 +177,7 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
             )}
           />
           {!isCollapsed && (
-            <TruncatedTooltip className="flex-1 text-sm">
-              {item.label}
-            </TruncatedTooltip>
+            <TruncatedTooltip className="flex-1 text-sm">{item.label}</TruncatedTooltip>
           )}
           {!isCollapsed && item.shortcut && (
             <kbd className="ml-auto hidden rounded bg-muted/30 px-1 py-0.5 font-mono text-[9px] text-muted-foreground/40 lg:inline-block">
@@ -204,12 +202,12 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
               <div className="flex items-center gap-2">
                 <span>{item.label}</span>
                 {item.shortcut && (
-                  <kbd className="rounded bg-muted/50 px-1 py-0.5 font-mono text-tooltip text-muted-foreground/60">
+                  <kbd className="text-tooltip rounded bg-muted/50 px-1 py-0.5 font-mono text-muted-foreground/60">
                     {item.shortcut}
                   </kbd>
                 )}
                 {item.badge !== null && (
-                  <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-tooltip font-semibold text-white">
+                  <span className="text-tooltip rounded-full bg-primary/20 px-1.5 py-0.5 font-semibold text-white">
                     {item.badge}
                   </span>
                 )}

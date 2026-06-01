@@ -67,7 +67,7 @@ export function ReplenishmentBadge({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{content}</TooltipTrigger>
-      <TooltipContent side="top" >
+      <TooltipContent side="top">
         <div className="text-sm">
           <p className="font-semibold">🔄 Produto Reposto</p>
           <p className="text-muted-foreground">

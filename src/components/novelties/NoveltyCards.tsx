@@ -83,12 +83,20 @@ export const NoveltyGridCard = memo(function NoveltyGridCard({
         <div
           className={cn(
             'absolute left-2 top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all',
-            isSelected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground bg-card',
+            isSelected
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-muted-foreground bg-card',
           )}
         >
           {isSelected && (
             <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none">
-              <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M2 6L5 9L10 3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           )}
         </div>
@@ -139,7 +147,9 @@ export const NoveltyGridCard = memo(function NoveltyGridCard({
         <p className="text-xs text-muted-foreground">{p?.sku ?? '—'}</p>
         {p?.sale_price != null && (
           <p className="text-sm font-semibold text-primary">
-            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.sale_price)}
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+              p.sale_price,
+            )}
           </p>
         )}
       </div>
@@ -171,12 +181,20 @@ export const NoveltyListCard = memo(function NoveltyListCard({
         <div
           className={cn(
             'absolute left-2 top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all',
-            isSelected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground bg-card',
+            isSelected
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-muted-foreground bg-card',
           )}
         >
           {isSelected && (
             <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none">
-              <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M2 6L5 9L10 3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           )}
         </div>
@@ -242,7 +260,9 @@ export const NoveltyListCard = memo(function NoveltyListCard({
       {/* Price */}
       {p?.sale_price != null && (
         <span className="flex-shrink-0 text-sm font-semibold text-primary">
-          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.sale_price)}
+          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+            p.sale_price,
+          )}
         </span>
       )}
     </article>
@@ -332,7 +352,9 @@ export function NoveltyTableView({
                     <span className="line-clamp-1 text-sm font-medium">{p?.name ?? '—'}</span>
                   </div>
                 </TableCell>
-                <TableCell className="px-2 py-1.5 text-xs text-muted-foreground">{p?.sku ?? '—'}</TableCell>
+                <TableCell className="px-2 py-1.5 text-xs text-muted-foreground">
+                  {p?.sku ?? '—'}
+                </TableCell>
                 <TableCell className="px-2 py-1.5 text-center">
                   <NoveltyBadge
                     daysRemaining={product.days_remaining}
@@ -342,11 +364,17 @@ export function NoveltyTableView({
                 </TableCell>
                 <TableCell className="px-2 py-1.5 text-sm font-medium">
                   {p?.sale_price != null
-                    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.sale_price)
+                    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                        p.sale_price,
+                      )
                     : '—'}
                 </TableCell>
-                <TableCell className="px-2 py-1.5 text-xs text-muted-foreground">{p?.category_name ?? '—'}</TableCell>
-                <TableCell className="px-2 py-1.5 text-xs text-muted-foreground">{p?.supplier_name ?? '—'}</TableCell>
+                <TableCell className="px-2 py-1.5 text-xs text-muted-foreground">
+                  {p?.category_name ?? '—'}
+                </TableCell>
+                <TableCell className="px-2 py-1.5 text-xs text-muted-foreground">
+                  {p?.supplier_name ?? '—'}
+                </TableCell>
                 <TableCell className="px-2 py-1.5 text-right text-sm">
                   <span
                     className={cn(

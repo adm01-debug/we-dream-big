@@ -96,10 +96,10 @@ export interface TecnicaGravacaoFormData {
   // ── Campos legados (sistema anterior) — não existem em tpgo ──────────
   // Mantidos como opcionais para não quebrar formulários existentes.
   // Não são enviados ao DB (PostgREST ignora campos desconhecidos).
-  codigo?: string;               // era codigo_tabela no schema antigo
+  codigo?: string; // era codigo_tabela no schema antigo
   codigo_interno?: string;
   permite_cores?: boolean;
-  cobra_por_area?: boolean;      // equivale a usa_faixa_dimensional em tpgo
+  cobra_por_area?: boolean; // equivale a usa_faixa_dimensional em tpgo
   cobra_por_pontos?: boolean;
   requer_setup?: boolean;
   tipo_setup?: TipoSetup;

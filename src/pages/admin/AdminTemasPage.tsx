@@ -139,7 +139,6 @@ export default function AdminTemasPage() {
           </div>
         </motion.div>
 
-
         {/* Classic Presets Grid */}
         <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={2}>
           <div className="mb-4 flex items-center gap-2">

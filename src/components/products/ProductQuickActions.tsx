@@ -48,33 +48,33 @@ type ModalType = 'precos' | 'personalizacao' | 'indicacao' | 'nicho' | null;
 type ActionKey = Exclude<ModalType, null>;
 
 const actions = [
-  { 
-    key: 'precos' as const, 
-    label: 'Preços', 
-    icon: TableProperties, 
+  {
+    key: 'precos' as const,
+    label: 'Preços',
+    icon: TableProperties,
     iconColor: 'text-primary',
-    description: 'Veja a tabela completa de preços por quantidade e variações'
+    description: 'Veja a tabela completa de preços por quantidade e variações',
   },
   {
     key: 'personalizacao' as const,
     label: 'Gravação',
     icon: Palette,
     iconColor: 'text-accent-foreground',
-    description: 'Confira técnicas de gravação, áreas e cores disponíveis'
+    description: 'Confira técnicas de gravação, áreas e cores disponíveis',
   },
-  { 
-    key: 'indicacao' as const, 
-    label: 'Indicação', 
-    icon: Target, 
+  {
+    key: 'indicacao' as const,
+    label: 'Indicação',
+    icon: Target,
     iconColor: 'text-primary',
-    description: 'Veja para qual público, datas e ocasiões este produto é indicado'
+    description: 'Veja para qual público, datas e ocasiões este produto é indicado',
   },
-  { 
-    key: 'nicho' as const, 
-    label: 'Nicho', 
-    icon: Layers, 
+  {
+    key: 'nicho' as const,
+    label: 'Nicho',
+    icon: Layers,
     iconColor: 'text-accent-foreground',
-    description: 'Descubra os nichos e segmentos onde este produto se encaixa'
+    description: 'Descubra os nichos e segmentos onde este produto se encaixa',
   },
 ];
 
@@ -104,9 +104,10 @@ export function ProductQuickActions({
 }: ProductQuickActionsProps) {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
 
-  const displayTagSections = Object.entries((tags && !Array.isArray(tags)) ? tags : {})
+  const displayTagSections = Object.entries(tags && !Array.isArray(tags) ? tags : {})
     .map(
-      ([category, items]) => [category, (items || []).filter((item) => item?.trim().length > 0)] as const,
+      ([category, items]) =>
+        [category, (items || []).filter((item) => item?.trim().length > 0)] as const,
     )
     .filter(([, items]) => items.length > 0);
 
@@ -186,20 +187,19 @@ export function ProductQuickActions({
                     {label}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent 
-                  side="top" 
+                <TooltipContent
+                  side="top"
                   className="max-w-[240px] border-border/40 bg-popover/95 backdrop-blur-sm"
                 >
                   <div className="flex flex-col gap-1.5 p-1">
                     <div className="flex items-center gap-2 font-semibold text-foreground">
-                      <Icon className={cn("h-3.5 w-3.5", !disabled && iconColor)} />
+                      <Icon className={cn('h-3.5 w-3.5', !disabled && iconColor)} />
                       <span>{label}</span>
                     </div>
                     <p className="text-[11px] leading-relaxed text-muted-foreground">
-                      {disabled 
+                      {disabled
                         ? `Sem dados de ${label.toLowerCase()} para este produto`
-                        : description
-                      }
+                        : description}
                     </p>
                   </div>
                 </TooltipContent>

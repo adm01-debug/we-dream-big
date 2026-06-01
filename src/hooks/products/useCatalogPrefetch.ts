@@ -25,7 +25,7 @@ export function prefetchCatalog(queryClient: QueryClient) {
         ...(i === 0 ? { countMode: 'exact' } : {}),
       }));
       const [batchResults, categoriesRaw] = await Promise.all([
-        Promise.all(batchQueries.map(q => dbInvoke(q))),
+        Promise.all(batchQueries.map((q) => dbInvoke(q))),
         fetchPromobrindCategories().catch(() => [] as { id: string; name: string }[]),
       ]);
       const categoriesById = new Map(categoriesRaw.map((c) => [String(c.id), c.name]));

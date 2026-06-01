@@ -29,16 +29,14 @@ export function sortProducts(
       products.sort((a, b) => (b.stock || 0) - (a.stock || 0));
       break;
     case 'newest':
-      products.sort(
-        (a, b) => {
-          const bTime = new Date(b.created_at || b.updated_at || 0).getTime();
-          const aTime = new Date(a.created_at || a.updated_at || 0).getTime();
-          if (bTime !== aTime) return bTime - aTime;
-          // Se datas iguais, prioriza os que têm flag newArrival
-          if (b.newArrival !== a.newArrival) return b.newArrival ? 1 : -1;
-          return a.name.localeCompare(b.name);
-        }
-      );
+      products.sort((a, b) => {
+        const bTime = new Date(b.created_at || b.updated_at || 0).getTime();
+        const aTime = new Date(a.created_at || a.updated_at || 0).getTime();
+        if (bTime !== aTime) return bTime - aTime;
+        // Se datas iguais, prioriza os que têm flag newArrival
+        if (b.newArrival !== a.newArrival) return b.newArrival ? 1 : -1;
+        return a.name.localeCompare(b.name);
+      });
       break;
     case 'best-seller-supplier': {
       const sMap = options?.supplierSalesMap;

@@ -138,7 +138,10 @@ export async function syncQuoteToBitrix({
 
   try {
     // rls-allow: update por id; RLS valida ownership
-    const { error: updateError } = await supabase.from('quotes').update(crmUpdates).eq('id', quoteId);
+    const { error: updateError } = await supabase
+      .from('quotes')
+      .update(crmUpdates)
+      .eq('id', quoteId);
     if (updateError) throw updateError;
   } catch (err) {
     logger.error('Failed to update quote status after Bitrix sync', { err, quoteId });

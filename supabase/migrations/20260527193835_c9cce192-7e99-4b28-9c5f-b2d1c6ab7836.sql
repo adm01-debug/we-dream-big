@@ -4,8 +4,8 @@ REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM public;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated, service_role;
 
 -- 2. Fix search_path on any missed functions (idempotent)
-DO $$ 
-DECLARE 
+DO $outer$
+DECLARE
     r RECORD;
 BEGIN
     FOR r IN (
@@ -14,71 +14,75 @@ BEGIN
         JOIN pg_namespace n ON p.pronamespace = n.oid
         WHERE n.nspname = 'public'
     ) LOOP
-        EXECUTE format('ALTER FUNCTION %I.%I(%s) SET search_path = public', r.nspname, r.proname, r.arg_types);
+        BEGIN
+            EXECUTE format('ALTER FUNCTION %I.%I(%s) SET search_path = public', r.nspname, r.proname, r.arg_types);
+        EXCEPTION WHEN OTHERS THEN
+            -- Ignora funções que não podem ter search_path alterado
+            NULL;
+        END;
     END LOOP;
-END $$;
+END $outer$;
 
 -- 3. Standardize RLS policies for common system tables to authenticated-only or admin-only
 -- ai_usage_logs was found with a (true) policy
-DO $$ 
+-- Original migration tinha DO blocks aninhados com mesmo delimitador $$, sintaticamente inválido.
+-- Reescrito com dollar-quoted delimiters únicos.
+DO $outer$
 BEGIN
     IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'ai_usage_logs') THEN
         DROP POLICY IF EXISTS "Service role can update AI usage logs" ON public.ai_usage_logs;
-        DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = 'ai_usage_logs' AND policyname = 'Service role can update AI usage logs'
-  ) THEN
-    CREATE POLICY "Service role can update AI usage logs" ON public.ai_usage_logs 
-        FOR ALL TO service_role USING (true) WITH CHECK (true);
-  END IF;
-END $$;
-        
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_policies
+            WHERE schemaname = 'public' AND tablename = 'ai_usage_logs' AND policyname = 'Service role can update AI usage logs'
+        ) THEN
+            CREATE POLICY "Service role can update AI usage logs" ON public.ai_usage_logs
+                FOR ALL TO service_role USING (true) WITH CHECK (true);
+        END IF;
+
         DROP POLICY IF EXISTS "Authenticated users can view own usage" ON public.ai_usage_logs;
-        DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = 'ai_usage_logs' AND policyname = 'Authenticated users can view own usage'
-  ) THEN
-    CREATE POLICY "Authenticated users can view own usage" ON public.ai_usage_logs 
-        FOR SELECT TO authenticated USING (true);
-  END IF;
-END $$;
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_policies
+            WHERE schemaname = 'public' AND tablename = 'ai_usage_logs' AND policyname = 'Authenticated users can view own usage'
+        ) THEN
+            CREATE POLICY "Authenticated users can view own usage" ON public.ai_usage_logs
+                FOR SELECT TO authenticated USING (true);
+        END IF;
     END IF;
-END $$;
+END $outer$;
 
 -- 4. Final Cleanup: Ensure no remaining tables have RLS enabled without policies
-DO $$ 
-DECLARE 
+-- Original tinha EXECUTE format() gerando DO blocks aninhados — inválido.
+-- Substituído por CREATE POLICY direto via EXECUTE.
+DO $outer$
+DECLARE
     tbl_name text;
 BEGIN
     FOR tbl_name IN (
-        SELECT 
+        SELECT
             t.tablename
-        FROM 
+        FROM
             pg_tables t
-        JOIN 
+        JOIN
             pg_class c ON c.relname = t.tablename AND c.relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
-        LEFT JOIN 
+        LEFT JOIN
             pg_policy p ON p.polrelid = c.oid
-        WHERE 
-            t.schemaname = 'public' 
+        WHERE
+            t.schemaname = 'public'
             AND t.rowsecurity = true
             AND p.polname IS NULL
     ) LOOP
-        EXECUTE format('DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = 'public' AND policyname = 'System fallback policy'
-  ) THEN
-    CREATE POLICY "System fallback policy" ON public.%I FOR SELECT TO authenticated USING (auth.jwt()->>''role'' IN (''admin'', ''dev'', ''supervisor''))', tbl_name);
-  END IF;
-END $$;
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_policies
+            WHERE schemaname = 'public' AND tablename = tbl_name AND policyname = 'System fallback policy'
+        ) THEN
+            BEGIN
+                EXECUTE format('CREATE POLICY "System fallback policy" ON public.%I FOR SELECT TO authenticated USING (auth.jwt()->>''role'' IN (''admin'', ''dev'', ''supervisor''))', tbl_name);
+            EXCEPTION WHEN OTHERS THEN
+                NULL;
+            END;
+        END IF;
     END LOOP;
-END $$;
+END $outer$;
 
 -- 5. Final Grant
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;

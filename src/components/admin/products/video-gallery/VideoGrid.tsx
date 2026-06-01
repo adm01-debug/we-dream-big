@@ -145,9 +145,7 @@ export function VideoGrid({
                         style={{ backgroundColor: link.variant_color_hex || '#999' }}
                       />
                     </TooltipTrigger>
-                    <TooltipContent>
-                      {link.variant_name || 'Variação'}
-                    </TooltipContent>
+                    <TooltipContent>{link.variant_name || 'Variação'}</TooltipContent>
                   </Tooltip>
                 ))}
               </div>
@@ -250,7 +248,7 @@ export function VideoGrid({
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </TooltipTrigger>
-                  <TooltipContent>Remover vídeo</TooltipContent>
+                <TooltipContent>Remover vídeo</TooltipContent>
               </Tooltip>
             </div>
 

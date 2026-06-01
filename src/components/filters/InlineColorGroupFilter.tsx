@@ -75,7 +75,7 @@ function InlineColorSwatch({
             )}
           </button>
         </TooltipTrigger>
-        <TooltipContent side="top" >
+        <TooltipContent side="top">
           {label}
           {hasVariations ? ' (clique ▾ para variações)' : ''}
         </TooltipContent>
@@ -158,7 +158,8 @@ export function InlineColorGroupFilter({
   const toggleExpand = (groupId: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      if (next.has(groupId)) next.delete(groupId); else next.add(groupId);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
       return next;
     });
   };

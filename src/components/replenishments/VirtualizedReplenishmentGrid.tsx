@@ -23,7 +23,7 @@ export function VirtualizedReplenishmentGrid({
   onProductClick,
 }: VirtualizedGridProps) {
   const parentRef = useRef<HTMLDivElement>(null);
-  
+
   // Usamos o hook reativo para que o número de colunas mude com a tela
   const numCols = useResponsiveColumns(gridColumns);
   const rowCount = Math.ceil(products.length / numCols);
@@ -89,4 +89,3 @@ export function VirtualizedReplenishmentGrid({
     </div>
   );
 }
-

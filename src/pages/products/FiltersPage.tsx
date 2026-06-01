@@ -326,16 +326,19 @@ export default function FiltersPage() {
                     <Select value={state.sortBy} onValueChange={state.setSortBy}>
                       <SelectTrigger
                         className={cn(
-                          "w-44 shrink-0 transition-all sm:w-52",
-                          state.sortBy !== 'name' && "border-primary bg-primary/5 ring-1 ring-primary/20"
+                          'w-44 shrink-0 transition-all sm:w-52',
+                          state.sortBy !== 'name' &&
+                            'border-primary bg-primary/5 ring-1 ring-primary/20',
                         )}
                         aria-label="Ordenar produtos"
                         data-testid="catalog-sort-trigger"
                       >
-                        <ArrowUpDown className={cn(
-                          "mr-2 h-4 w-4",
-                          state.sortBy !== 'name' ? "text-primary" : "text-muted-foreground"
-                        )} />
+                        <ArrowUpDown
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            state.sortBy !== 'name' ? 'text-primary' : 'text-muted-foreground',
+                          )}
+                        />
                         <SelectValue placeholder="Ordenar" />
                         {/* BUG-G7: Mobile indicator when sorted */}
                         {state.sortBy !== 'name' && (
@@ -344,8 +347,8 @@ export default function FiltersPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {SORT_OPTIONS.map((option) => (
-                          <SelectItem 
-                            key={option.value} 
+                          <SelectItem
+                            key={option.value}
                             value={option.value}
                             data-testid={`catalog-sort-item-${option.value}`}
                           >
@@ -357,7 +360,7 @@ export default function FiltersPage() {
                   </TooltipTrigger>
                   <TooltipContent>
                     {state.sortBy !== 'name'
-                      ? `Ordenado por: ${SORT_OPTIONS.find(o => o.value === state.sortBy)?.label}`
+                      ? `Ordenado por: ${SORT_OPTIONS.find((o) => o.value === state.sortBy)?.label}`
                       : 'Ordenar resultados (nome, preço, novidades, popularidade)'}
                   </TooltipContent>
                 </Tooltip>

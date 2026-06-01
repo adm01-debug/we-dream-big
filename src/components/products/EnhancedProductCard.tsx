@@ -43,12 +43,14 @@ export function EnhancedProductCard({
   const [quantity, setQuantity] = useState(product.minOrder || 1);
   const cardRef = useRef<HTMLElement>(null);
 
-  const urgencyType = product.stockStatus === 'critical' ? 'critical'
-    : product.stockStatus === 'low' ? 'low'
-    : undefined;
-  const urgencyText = urgencyType === 'critical' ? 'Crítico'
-    : urgencyType === 'low' ? 'Baixo'
-    : undefined;
+  const urgencyType =
+    product.stockStatus === 'critical'
+      ? 'critical'
+      : product.stockStatus === 'low'
+        ? 'low'
+        : undefined;
+  const urgencyText =
+    urgencyType === 'critical' ? 'Crítico' : urgencyType === 'low' ? 'Baixo' : undefined;
 
   return (
     <article
@@ -147,11 +149,16 @@ export function EnhancedProductCard({
               {product.salePrice ? (
                 <>
                   <span className="text-base font-bold text-primary">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.salePrice)}
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                      product.salePrice,
+                    )}
                   </span>
                   {product.listPrice && product.listPrice > product.salePrice && (
                     <span className="text-xs text-muted-foreground line-through">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.listPrice)}
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(product.listPrice)}
                     </span>
                   )}
                 </>
@@ -281,7 +288,9 @@ export function EnhancedProductCard({
                   variant="ghost"
                   size="icon"
                   className="h-5 w-5"
-                  onClick={() => setQuantity((q) => Math.max(product.minOrder || 1, q - (product.minOrder || 1)))}
+                  onClick={() =>
+                    setQuantity((q) => Math.max(product.minOrder || 1, q - (product.minOrder || 1)))
+                  }
                 >
                   <span className="text-sm font-bold">-</span>
                 </Button>

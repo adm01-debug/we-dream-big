@@ -47,7 +47,7 @@ describe('useSupplierComparison logic', () => {
         maxLead: 10,
         commonColors: 5,
         maxCommonColors: 5,
-        isVerified: true
+        isVerified: true,
       });
       expect(score).toBeGreaterThan(0);
       expect(score).toBeLessThanOrEqual(100);
@@ -62,7 +62,7 @@ describe('useSupplierComparison logic', () => {
         maxLead: 0,
         commonColors: 0,
         maxCommonColors: 0,
-        isVerified: false
+        isVerified: false,
       });
       expect(score).toBeDefined();
       expect(typeof score).toBe('number');

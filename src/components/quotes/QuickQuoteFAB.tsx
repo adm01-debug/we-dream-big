@@ -201,9 +201,7 @@ export function QuickQuoteFAB({ productId, productName }: QuickQuoteFABProps) {
               </motion.div>
             </motion.button>
           </TooltipTrigger>
-          <TooltipContent side="left">
-            Ações Rápidas
-          </TooltipContent>
+          <TooltipContent side="left">Ações Rápidas</TooltipContent>
         </Tooltip>
       </div>
 

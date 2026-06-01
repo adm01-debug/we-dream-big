@@ -364,9 +364,7 @@ export function ProductPersonalizationRules({
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent>
-                <p>
-                  Técnicas e locais disponíveis para personalização deste produto
-                </p>
+                <p>Técnicas e locais disponíveis para personalização deste produto</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

@@ -97,7 +97,10 @@ describe('OptimizedImage', () => {
 
   it('handles Cloudflare edge cases: trailing slashes and query strings', () => {
     const { unmount } = render(
-      <OptimizedImage {...defaultProps} src="https://imagedelivery.net/abc123/product-id/public/" />,
+      <OptimizedImage
+        {...defaultProps}
+        src="https://imagedelivery.net/abc123/product-id/public/"
+      />,
     );
     expect(document.querySelector('img[aria-hidden="true"]')).toHaveAttribute(
       'src',
@@ -106,7 +109,10 @@ describe('OptimizedImage', () => {
     unmount();
 
     render(
-      <OptimizedImage {...defaultProps} src="https://imagedelivery.net/abc123/product-id/public?v=123" />,
+      <OptimizedImage
+        {...defaultProps}
+        src="https://imagedelivery.net/abc123/product-id/public?v=123"
+      />,
     );
     expect(document.querySelector('img[aria-hidden="true"]')).toHaveAttribute(
       'src',

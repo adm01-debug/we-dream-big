@@ -48,9 +48,12 @@ export function SharePreviewDialog({
   const mainImages = useMemo(() => {
     const preferredImages: string[] = [];
 
-    const variantImages = selectedVariant?.variantImages && selectedVariant.variantImages.length > 0 
-      ? selectedVariant.variantImages 
-      : (selectedVariant?.thumbnailUrl ? [selectedVariant.thumbnailUrl] : []);
+    const variantImages =
+      selectedVariant?.variantImages && selectedVariant.variantImages.length > 0
+        ? selectedVariant.variantImages
+        : selectedVariant?.thumbnailUrl
+          ? [selectedVariant.thumbnailUrl]
+          : [];
 
     preferredImages.push(...variantImages);
 
@@ -72,7 +75,7 @@ export function SharePreviewDialog({
     // Fallback: if everything empty, at least use the product's primary image
     const final = Array.from(new Set(preferredImages)).filter(Boolean);
     if (final.length === 0 && product.images?.[0]) return [product.images[0]];
-    
+
     return final;
   }, [product.images, product.colors, selectedVariant]);
 
