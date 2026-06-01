@@ -20,7 +20,6 @@ import type { SortOption, ViewMode } from '@/hooks/products/useCatalogState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const LazyFilterPanel = lazyWithRetry(() =>
   import('@/components/filters/FilterPanel').then((m) => ({ default: m.FilterPanel })),
@@ -100,23 +99,16 @@ export const CatalogToolbar = memo(function CatalogToolbar({
                     <Filter className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">Filtros</span>
                     <div className="relative w-0 sm:w-auto">
-                      <AnimatePresence>
-                        {activeFiltersCount > 0 && (
-                          <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            className="sm:ml-2"
+                      {activeFiltersCount > 0 && (
+                        <div className="duration-200 animate-in fade-in zoom-in-0 sm:ml-2">
+                          <Badge
+                            variant="secondary"
+                            className="flex h-5 min-w-5 items-center justify-center text-xs"
                           >
-                            <Badge
-                              variant="secondary"
-                              className="flex h-5 min-w-5 items-center justify-center text-xs"
-                            >
-                              {activeFiltersCount}
-                            </Badge>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                            {activeFiltersCount}
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                   </Button>
                 </SheetTrigger>
@@ -226,22 +218,13 @@ export const CatalogToolbar = memo(function CatalogToolbar({
                 {selectionMode ? 'Cancelar' : 'Selecionar'}
               </span>
 
-              {/* Animated counter badge */}
-              <AnimatePresence>
-                {selectionMode && selectedCount > 0 && (
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                    className="absolute -right-2 -top-2"
-                  >
-                    <Badge className="flex h-5 min-w-5 items-center justify-center bg-destructive px-1.5 py-0 text-[10px] font-bold tabular-nums text-destructive-foreground shadow-lg">
-                      {selectedCount}
-                    </Badge>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {selectionMode && selectedCount > 0 && (
+                <div className="absolute -right-2 -top-2 duration-200 animate-in fade-in zoom-in-0">
+                  <Badge className="flex h-5 min-w-5 items-center justify-center bg-destructive px-1.5 py-0 text-[10px] font-bold tabular-nums text-destructive-foreground shadow-lg">
+                    {selectedCount}
+                  </Badge>
+                </div>
+              )}
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -252,21 +235,14 @@ export const CatalogToolbar = memo(function CatalogToolbar({
         </Tooltip>
 
         <div className="hidden items-center gap-2 sm:flex">
-          <AnimatePresence>
-            {deferredIsTransitioning && (
-              <motion.div
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-muted/30 px-2 py-1"
-              >
-                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-                <span className="text-[10px] font-medium uppercase tracking-tighter text-muted-foreground">
-                  Otimizando...
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {deferredIsTransitioning && (
+            <div className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-muted/30 px-2 py-1 duration-200 animate-in fade-in slide-in-from-right-2">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+              <span className="text-[10px] font-medium uppercase tracking-tighter text-muted-foreground">
+                Otimizando...
+              </span>
+            </div>
+          )}
 
           <LayoutPopover
             viewMode={viewMode}
