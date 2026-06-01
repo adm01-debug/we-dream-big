@@ -7,12 +7,13 @@ ALTER FUNCTION submit_quote_response SET search_path = '';
 ALTER FUNCTION get_quote_token_by_value SET search_path = '';
 
 -- Funções de rate limit e autenticação chamadas por edge functions
+-- Fix: qualificar p.oid (ambíguo entre pg_proc e pg_namespace que ambos têm coluna `oid`)
 DO $$
 DECLARE
   r RECORD;
 BEGIN
   FOR r IN
-    SELECT proname, oid
+    SELECT p.proname, p.oid AS func_oid
     FROM pg_proc p
     JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'public'
