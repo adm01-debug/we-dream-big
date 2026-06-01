@@ -9,7 +9,6 @@ import {
   AlertDialogTitle,
 } from './alert-dialog';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 import { AlertTriangle, Trash2, Info, HelpCircle, Loader2, type LucideIcon } from 'lucide-react';
 
 interface ConfirmDialogProps {
@@ -105,17 +104,14 @@ export function ConfirmDialog({
       <AlertDialogContent className="max-w-md" data-testid={testId}>
         <AlertDialogHeader>
           <div className="flex items-start gap-4">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            <div
               className={cn(
-                'flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full',
+                'flex h-12 w-12 flex-shrink-0 animate-scale-in items-center justify-center rounded-full',
                 config.iconBg,
               )}
             >
               <Icon className={cn('h-6 w-6', config.iconColor)} />
-            </motion.div>
+            </div>
             <div className="space-y-2">
               <AlertDialogTitle className="text-lg" data-testid={titleTestId}>
                 {title}
@@ -131,29 +127,20 @@ export function ConfirmDialog({
 
         {/* Impact Preview */}
         {impactPreview && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="my-4 rounded-lg border border-border bg-muted/50 p-4"
+          <div
+            className="animate-fade-in-up my-4 rounded-lg border border-border bg-muted/50 p-4"
             data-testid={testId ? `${testId}-impact` : 'confirm-dialog-impact'}
           >
             <h4 className="mb-2 text-sm font-medium">{impactPreview.title}</h4>
             <ul className="space-y-1">
               {impactPreview.items.map((item, index) => (
-                <motion.li
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + index * 0.05 }}
-                  className="flex items-center gap-2 text-sm text-muted-foreground"
-                >
+                <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
                   {item}
-                </motion.li>
+                </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
         )}
 
         <AlertDialogFooter>

@@ -2,20 +2,17 @@
  * ProductCard — Main catalog card component.
  * Refactored: image section in ProductCardImage, FAB actions in ProductCardActions.
  */
-import { useState, useRef, useEffect, memo, forwardRef, useCallback } from 'react';
+import { useState, useRef, useEffect, memo, forwardRef, useCallback, lazy, Suspense } from 'react';
 import { GenderBadge } from './GenderBadge';
 import { Building2, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { getCdnUrl, getSrcSet } from '@/utils/image-utils';
 import { cn } from '@/lib/utils';
-import { useProductBounds } from '@/hooks/products/useProductBounds';
+import { formatCurrency } from '@/lib/format';
 import { usePrefetchProduct } from '@/hooks/products/usePrefetchProduct';
 import type { ExternalVariantStock } from '@/hooks/products/useExternalVariantStock';
 import type { Product } from '@/types/product-catalog';
 import { toast } from 'sonner';
-import { AddToCollectionModal } from '@/components/collections/AddToCollectionModal';
-import { ProductQuickView } from './ProductQuickView';
 import { ProductCategoryBadges } from './ProductCategoryBadges';
 import { useLeafCategory } from '@/hooks/products/useProductLeafCategories';
 import { showUndoToast, showErrorToast } from '@/utils/undoToast';
@@ -29,15 +26,29 @@ import {
 import { resolveHighlightHex } from '@/utils/color-group-hex';
 import { resolveAllMatchingColors } from '@/utils/color-variant-carousel';
 import { ProductSparkline } from './ProductSparkline';
-import { VariantPickerDialog, type VariantActionMode } from './VariantPickerDialog';
+import type { VariantActionMode } from './VariantPickerDialog';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useComparisonStore } from '@/stores/useComparisonStore';
-import { SharePreviewDialog } from './share/SharePreviewDialog';
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardActions } from './ProductCardActions';
 import { PriceFreshnessBadge } from './PriceFreshnessBadge';
 import { feedback } from '@/lib/feedback';
 import { telemetryService } from '@/services/telemetryService';
+
+const LazyVariantPickerDialog = lazy(() =>
+  import('./VariantPickerDialog').then((m) => ({ default: m.VariantPickerDialog })),
+);
+const LazyAddToCollectionModal = lazy(() =>
+  import('@/components/collections/AddToCollectionModal').then((m) => ({
+    default: m.AddToCollectionModal,
+  })),
+);
+const LazyProductQuickView = lazy(() =>
+  import('./ProductQuickView').then((m) => ({ default: m.ProductQuickView })),
+);
+const LazySharePreviewDialog = lazy(() =>
+  import('./share/SharePreviewDialog').then((m) => ({ default: m.SharePreviewDialog })),
+);
 
 export interface ProductCardProps {
   product: Product;
@@ -83,7 +94,6 @@ export const ProductCard = memo(
     ref,
   ) {
     const navigate = useNavigate();
-    const _queryClient = useQueryClient();
     const { prefetchProduct } = usePrefetchProduct();
     // Categoria-FOLHA (mais específica) resolvida em lote pelo ProductLeafCategoryProvider.
     // Quando disponível, sobrepõe a categoria "rasa" (raiz/intermediária) no badge.
@@ -257,8 +267,7 @@ export const ProductCard = memo(
       }
     };
 
-    const formatPrice = (price: number) =>
-      new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
+    const formatPrice = formatCurrency;
 
     const getStockStatusColor = (status: string) => {
       switch (status) {
@@ -308,15 +317,7 @@ export const ProductCard = memo(
         : undefined;
     const activeColorName = currentVariant?.name || getActiveColorName(product, activeColorFilter);
 
-    const imageBounds = useProductBounds(
-      cardImageUrl !== '/placeholder.svg' ? cardImageUrl : null,
-      { whiteThreshold: 230, margin: 0.01, maxSize: 384 },
-    );
-    const isOversizedImage =
-      imageBounds.detected && imageBounds.fractionX >= 0.86 && imageBounds.fractionY >= 0.86;
-    const computedImageScale = Number(
-      ((isOversizedImage ? 0.88 : 1) * (isHovered ? 1.03 : 1)).toFixed(3),
-    );
+    const computedImageScale = isHovered ? 1.03 : 1;
 
     return (
       <article
@@ -324,13 +325,11 @@ export const ProductCard = memo(
         data-testid="product-card"
         data-product-id={product.id}
         className={cn(
-          'card-lift group relative cursor-pointer overflow-hidden rounded-xl bg-card sm:rounded-2xl card-glow',
-          'touch-manipulation transition-all duration-500 ease-out',
+          'card-lift card-glow group relative cursor-pointer overflow-hidden rounded-xl bg-card sm:rounded-2xl',
+          'touch-manipulation transition-[transform,box-shadow] duration-300 ease-out',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
           product.featured && 'shadow-lg ring-2 ring-primary/20',
-          hasHighlightedColor
-            ? 'border-2 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)]'
-            : '',
+          hasHighlightedColor ? 'border-2 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)]' : '',
         )}
         style={
           hasHighlightedColor && matchedHighlightColor
@@ -452,8 +451,8 @@ export const ProductCard = memo(
         {/* Info section */}
         <div
           className={cn(
-            'relative space-y-2.5 p-3 transition-all duration-500 sm:space-y-4 sm:p-5',
-            isHovered ? 'translate-y-[-2px] bg-background/95 backdrop-blur-md' : 'bg-background',
+            'relative space-y-2.5 p-3 transition-[transform,background-color] duration-300 sm:space-y-4 sm:p-5',
+            isHovered ? 'translate-y-[-2px] bg-background/95' : 'bg-background',
           )}
           style={{ zIndex: 10 }}
         >
@@ -566,38 +565,54 @@ export const ProductCard = memo(
           </div>
         </div>
 
-        {/* Dialogs */}
-        <VariantPickerDialog
-          open={variantPickerOpen}
-          onOpenChange={setVariantPickerOpen}
-          productId={product.id}
-          productName={product.name}
-          mode={variantPickerMode}
-          onComplete={handleVariantComplete}
-        />
-        <AddToCollectionModal
-          open={collectionModalOpen}
-          onOpenChange={setCollectionModalOpen}
-          productId={product.id}
-          productName={product.name}
-          variant={collectionVariant}
-        />
-        <ProductQuickView
-          product={product}
-          open={quickViewOpen}
-          onOpenChange={setQuickViewOpen}
-          isFavorited={isFavorited}
-          onToggleFavorite={onToggleFavorite}
-          isInCompare={isInCompare}
-          onToggleCompare={onToggleCompare}
-          onShare={onShare}
-        />
-        <SharePreviewDialog
-          open={shareDialogOpen}
-          onOpenChange={setShareDialogOpen}
-          product={product}
-          selectedVariant={shareVariant}
-        />
+        {/* Dialogs — lazy-mounted only when opened to save ~200KB per card */}
+        {variantPickerOpen && (
+          <Suspense fallback={null}>
+            <LazyVariantPickerDialog
+              open={variantPickerOpen}
+              onOpenChange={setVariantPickerOpen}
+              productId={product.id}
+              productName={product.name}
+              mode={variantPickerMode}
+              onComplete={handleVariantComplete}
+            />
+          </Suspense>
+        )}
+        {collectionModalOpen && (
+          <Suspense fallback={null}>
+            <LazyAddToCollectionModal
+              open={collectionModalOpen}
+              onOpenChange={setCollectionModalOpen}
+              productId={product.id}
+              productName={product.name}
+              variant={collectionVariant}
+            />
+          </Suspense>
+        )}
+        {quickViewOpen && (
+          <Suspense fallback={null}>
+            <LazyProductQuickView
+              product={product}
+              open={quickViewOpen}
+              onOpenChange={setQuickViewOpen}
+              isFavorited={isFavorited}
+              onToggleFavorite={onToggleFavorite}
+              isInCompare={isInCompare}
+              onToggleCompare={onToggleCompare}
+              onShare={onShare}
+            />
+          </Suspense>
+        )}
+        {shareDialogOpen && (
+          <Suspense fallback={null}>
+            <LazySharePreviewDialog
+              open={shareDialogOpen}
+              onOpenChange={setShareDialogOpen}
+              product={product}
+              selectedVariant={shareVariant}
+            />
+          </Suspense>
+        )}
       </article>
     );
   }),

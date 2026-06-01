@@ -107,23 +107,25 @@ function ProductCardWrapper({
       className={cn(
         reducedMotion
           ? ''
-          : `transition-all duration-500 ease-out ${
+          : `transition-[transform,opacity] duration-500 ease-out ${
               hasAnimated
                 ? 'translate-y-0 scale-100 opacity-100'
                 : 'translate-y-8 scale-95 opacity-0'
             }`,
         'relative',
-        // Placeholder mantém footprint visual (altura ~card) enquanto não monta
         !inView && 'min-h-[480px] sm:min-h-[520px]',
         isSelected && 'rounded-xl ring-2 ring-primary/40',
       )}
-      style={
-        reducedMotion
+      style={{
+        contain: 'layout style paint',
+        contentVisibility: inView ? 'visible' : 'auto',
+        containIntrinsicSize: '0 520px',
+        ...(reducedMotion
           ? undefined
           : {
               transitionDelay: hasAnimated ? '0ms' : `${Math.min(index * 80, 800)}ms`,
-            }
-      }
+            }),
+      }}
     >
       {inView && selectionMode && onToggleSelect && (
         <div
@@ -255,6 +257,7 @@ export function ProductGrid({
     <div
       ref={gridRef}
       className={`grid ${columnClasses[columns] || columnClasses[5]} ${columns >= 8 ? 'gap-x-4 gap-y-8' : columns >= 6 ? 'gap-x-6 gap-y-8' : 'gap-x-4 gap-y-8 sm:gap-x-6 lg:gap-x-8'}`}
+      style={{ contain: 'layout style' }}
     >
       {displayProducts.map((product, index) =>
         'isSkeleton' in product && product.isSkeleton ? (

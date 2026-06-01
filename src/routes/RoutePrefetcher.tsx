@@ -61,13 +61,20 @@ export function RoutePrefetcher() {
       import('@/pages/tools/PriceSimulatorPage');
     }
 
-    // Secondary priority prefetch
-    const timeoutId = setTimeout(() => {
+    // Secondary priority prefetch — use requestIdleCallback to avoid blocking main thread
+    const schedule =
+      typeof requestIdleCallback === 'function'
+        ? requestIdleCallback
+        : (fn: () => void) => setTimeout(fn, 2500);
+    const idleId = schedule(() => {
       if (pathname !== '/orcamentos/novo') import('@/pages/quotes/QuoteBuilderPage');
       if (pathname === '/produtos') import('@/pages/mockups/MockupGenerator');
-    }, 2500);
+    });
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      if (typeof cancelIdleCallback === 'function') cancelIdleCallback(idleId as number);
+      else clearTimeout(idleId as ReturnType<typeof setTimeout>);
+    };
   }, [pathname, user]);
 
   return null;

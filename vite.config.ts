@@ -98,6 +98,21 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/@dnd-kit/')) {
               return 'dnd-vendor';
             }
+            if (id.includes('node_modules/lucide-react/')) {
+              return 'icons-vendor';
+            }
+            if (
+              id.includes('node_modules/@sentry/') ||
+              id.includes('node_modules/hls.js/') ||
+              id.includes('node_modules/pptxgenjs/')
+            ) {
+              return 'heavy-vendor';
+            }
+            if (
+              id.includes('node_modules/fuse.js/')
+            ) {
+              return 'search-vendor';
+            }
           },
         },
       },
@@ -120,6 +135,13 @@ export default defineConfig(({ mode }) => {
         'react-router-dom',
         'react-hook-form',
         '@hookform/resolvers/zod',
+        '@supabase/supabase-js',
+        '@tanstack/react-query',
+        'zustand',
+        'clsx',
+        'tailwind-merge',
+        'sonner',
+        'date-fns',
       ],
     },
 

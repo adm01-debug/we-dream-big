@@ -102,7 +102,7 @@ export function OptimizedImage({
           observer.disconnect();
         }
       },
-      { rootMargin: '50px' },
+      { rootMargin: '200px' },
     );
     if (imgRef.current) observer.observe(imgRef.current);
     return () => observer.disconnect();
