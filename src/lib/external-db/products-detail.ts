@@ -1,7 +1,7 @@
 /**
  * Product detail fetching — fetchById, bySku, categories, colors.
  */
-import { dbInvoke, dbBatch } from '@/lib/db/postgrest';
+import { dbInvoke } from '@/lib/db/postgrest';
 import { logger } from '@/lib/logger';
 import { type InvokeResult, type BatchQuery } from './bridge';
 import { getCachedByIds, getFreshFromCacheSafe, putInCacheSafe } from './immutableCache';
@@ -178,13 +178,13 @@ export async function fetchPromobrindProductById(
   const enrichmentPromise: Promise<{ materialIds: string[] }> =
     enrichmentQueries.length === 0
       ? Promise.resolve({ materialIds: [] })
-      : dbBatch(enrichmentQueries)
+      : Promise.all(enrichmentQueries.map(q => dbInvoke<any>(q)))
           .then((batchResults) => {
             const materialIds: string[] = [];
             enrichmentSlots.forEach((slot, idx) => {
               const r = batchResults[idx];
-              if (!r?.success || !r.data) return;
-              const records = r.data.records;
+              if (!r) return;
+              const records = r.records;
               if (slot === 'category') {
                 const rec = records[0] as { id?: string; name?: string } | undefined;
                 if (rec?.name) {
