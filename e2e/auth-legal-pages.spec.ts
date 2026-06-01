@@ -23,7 +23,7 @@ test.describe('Auth Legal Pages', () => {
     await expect(page).toHaveURL(/\/auth/);
   });
 
-  test('should render Privacy Policy page with correct styling and back link', async ({ page }) => {
+  test('should render Privacy Policy page with correct styling and back link @mobile', async ({ page }) => {
     await page.goto('/privacidade');
     
     // Check page title
