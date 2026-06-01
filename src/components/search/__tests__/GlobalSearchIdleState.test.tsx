@@ -39,10 +39,13 @@ describe('GlobalSearchIdleState Rendering', () => {
     render(
       <BrowserRouter>
         <TooltipProvider>
-          <GlobalSearchIdleState {...mockProps} />
+          <Command>
+            <GlobalSearchIdleState {...mockProps} />
+          </Command>
         </TooltipProvider>
       </BrowserRouter>
     );
+
 
     const img = screen.getByAltText('Caneca Top');
     expect(img).toBeDefined();
