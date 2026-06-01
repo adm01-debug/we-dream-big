@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/test-base';
 import { loginAs } from '../helpers/auth';
 
-test.describe('Global Search Voice Tooltip', () => {
+test.describe('Global Search Voice Tooltip @smoke', () => {
   test.beforeEach(async ({ page }) => {
     await loginAs(page);
     await page.goto('/');
@@ -9,7 +9,7 @@ test.describe('Global Search Voice Tooltip', () => {
     await expect(page.locator('button[aria-label="Microfone"]')).toBeVisible();
   });
 
-  test('Tooltip shows "Fale com o Flow" on Desktop', async ({ page }) => {
+  test('Tooltip shows and disappears on Desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     
     const micButton = page.locator('button[aria-label="Microfone"]');
@@ -25,23 +25,35 @@ test.describe('Global Search Voice Tooltip', () => {
     
     // Visual Regression
     await expect(tooltip).toHaveScreenshot('voice-tooltip-desktop.png');
+
+    // Move mouse away and check if it disappears
+    await page.mouse.move(0, 0);
+    await expect(tooltip).not.toBeVisible();
+
+    // Test focus trigger and blur
+    await micButton.focus();
+    await expect(tooltip).toBeVisible();
+    await micButton.blur();
+    await expect(tooltip).not.toBeVisible();
   });
 
-  test('Tooltip shows "Fale com o Flow" on Mobile', async ({ page }) => {
+  test('Tooltip shows and disappears on Mobile @mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     
-    // On mobile, tooltips are often triggered by tap or remain hidden if not supported 
-    // but we can force hover/focus to verify the content exists in DOM/rendered state
     const micButton = page.locator('button[aria-label="Microfone"]');
     
-    await micButton.tap(); // Tap might open overlay if not handled as hover, but we want to see tooltip
+    // On mobile, tap/focus usually triggers the tooltip
     await micButton.focus();
     
     const tooltip = page.locator('[role="tooltip"]');
-    // If Radix tooltip on mobile shows on focus
+    await expect(tooltip).toBeVisible();
     await expect(tooltip).toContainText('Fale com o Flow');
     
     // Visual Regression mobile
     await expect(tooltip).toHaveScreenshot('voice-tooltip-mobile.png');
+
+    // Lose focus and check if it disappears
+    await micButton.blur();
+    await expect(tooltip).not.toBeVisible();
   });
 });
