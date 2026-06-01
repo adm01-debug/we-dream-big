@@ -228,58 +228,64 @@ export function useGlobalSearch() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  // ── Popular products ──
-  useEffect(() => {
-    if (!open) return;
-    (async () => {
-      try {
-        // FIX BUG-GS-10: increased limit from 100 to 1000.
-        // With 100 records ordered by created_at DESC we were sampling only the
-        // most *recently* viewed products, not the most *frequently* viewed.
-        // A product with 10 000 historical views may be absent if not recently visited.
-        // A larger sample gives the client-side count a better approximation of
-        // true popularity. A proper server-side aggregation view is tracked as
-        // a follow-up DB migration.
-        const { data: viewsData } = await supabase
-          .from('product_views')
-          .select('product_id, product_name, product_sku')
-          .order('created_at', { ascending: false })
-          .limit(1000);
-        if (!viewsData) return;
+  // ── Popular products with TanStack Query ──
+  const { data: popularProducts = [] } = useQuery({
+    queryKey: ['popular-products'],
+    queryFn: async () => {
+      // FIX BUG-GS-10: sample 1000 recent views to approximate popularity.
+      // Now joining with products to get image_url and category_name.
+      const { data: viewsData, error } = await supabase
+        .from('product_views')
+        .select(`
+          product_id,
+          product_name,
+          product_sku,
+          products!inner (
+            image_url,
+            category_name
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(1000);
 
-        const viewCounts = viewsData.reduce(
-          (acc: Record<string, { count: number; name: string; sku: string }>, v) => {
-            if (v.product_id) {
-              if (!acc[v.product_id])
-                acc[v.product_id] = {
-                  count: 0,
-                  name: v.product_name ?? '',
-                  sku: v.product_sku || '',
-                };
-              acc[v.product_id].count++;
+      if (error || !viewsData) return [];
+
+      const viewCounts = viewsData.reduce(
+        (acc: Record<string, { count: number; name: string; sku: string; image_url: string; category: string }>, v: any) => {
+          const id = v.product_id;
+          if (id) {
+            if (!acc[id]) {
+              acc[id] = {
+                count: 0,
+                name: v.product_name || '',
+                sku: v.product_sku || '',
+                image_url: v.products?.image_url || '',
+                category: v.products?.category_name || '',
+              };
             }
-            return acc;
-          },
-          {},
-        );
+            acc[id].count++;
+          }
+          return acc;
+        },
+        {},
+      );
 
-        setPopularProducts(
-          Object.entries(viewCounts)
-            .sort(([, a], [, b]) => b.count - a.count)
-            .slice(0, 5)
-            .map(([id, d]) => ({
-              id,
-              name: d.name,
-              sku: d.sku,
-              category_name: null,
-              view_count: d.count,
-            })),
-        );
-      } catch {
-        /* silent */
-      }
-    })();
-  }, [open]);
+      return Object.entries(viewCounts)
+        .sort(([, a], [, b]) => b.count - a.count)
+        .slice(0, 5)
+        .map(([id, d]) => ({
+          id,
+          name: d.name,
+          sku: d.sku,
+          image_url: d.image_url,
+          category_name: d.category,
+          view_count: d.count,
+        })) as PopularProduct[];
+    },
+    enabled: open,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
+
 
   // ── Typing suggestions ──
   useEffect(() => {
