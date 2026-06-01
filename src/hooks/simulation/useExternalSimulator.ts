@@ -1,7 +1,6 @@
 // Hook para buscar dados do simulador do banco externo Promobrind
 import { useQuery } from '@tanstack/react-query';
 import Fuse from 'fuse.js';
-import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import {
   createProductFuseOptions,
