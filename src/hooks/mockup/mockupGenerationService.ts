@@ -34,6 +34,18 @@ export interface Technique {
   [key: string]: unknown;
 }
 
+export function createDefaultArea(): PersonalizationArea {
+  return {
+    id: crypto.randomUUID(),
+    name: 'Área 1',
+    positionX: 50,
+    positionY: 50,
+    logoWidth: 10,
+    logoHeight: 5,
+    logoPreview: null,
+  };
+}
+
 export interface GeneratedMockup {
   id: string;
   product_id: string | null;
