@@ -6,7 +6,6 @@ import { Separator } from '@/components/ui/separator';
 import { Search, Package, Folder, Building2, Zap, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HighlightMatch } from './HighlightMatch';
-import { motion } from 'framer-motion';
 import type { SearchResult } from '@/hooks/common';
 import { getCdnUrl } from '@/utils/image-utils';
 
@@ -46,15 +45,13 @@ export function SearchResultItem({
     isProduct && result.data?.images?.[0] ? getCdnUrl(result.data.images[0], 'card') : null;
 
   return (
-    <motion.button
+    <button
       key={result.id}
-      initial={{ opacity: 0, x: -8 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.02, duration: 0.15 }}
       className={cn(
-        'group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all duration-150',
+        'group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all duration-150 animate-in fade-in slide-in-from-left-1',
         selectedIndex === index ? 'bg-primary/10 text-foreground shadow-sm' : 'hover:bg-muted/80',
       )}
+      style={{ animationDelay: `${index * 20}ms`, animationFillMode: 'both' }}
       onClick={() => onSelect(result)}
       onMouseEnter={() => onHover(index)}
     >
@@ -112,7 +109,7 @@ export function SearchResultItem({
           )}
         />
       </div>
-    </motion.button>
+    </button>
   );
 }
 

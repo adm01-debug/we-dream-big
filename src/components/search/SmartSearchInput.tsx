@@ -16,7 +16,6 @@ import { cn } from '@/lib/utils';
 import { useDebounce, useSearch, useSearchHistory, type SearchResult } from '@/hooks/common';
 import { useSpeechRecognition } from '@/hooks/intelligence';
 import { GroupedSearchResults } from './SearchResultGroups';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface SmartSearchInputProps {
   /** Unique id for the underlying <input>. Defaults to 'search'.
@@ -218,13 +217,9 @@ export const SmartSearchInput = forwardRef<HTMLDivElement, SmartSearchInputProps
 
               <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
                 {isSearching && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                  >
+                  <div className="duration-150 animate-in fade-in zoom-in-75">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  </motion.div>
+                  </div>
                 )}
                 {query && (
                   <Button
@@ -248,156 +243,143 @@ export const SmartSearchInput = forwardRef<HTMLDivElement, SmartSearchInputProps
           </TooltipContent>
         </Tooltip>
 
-        <AnimatePresence>
-          {showDropdown && (
-            <motion.div
-              initial={{ opacity: 0, y: -4, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -4, scale: 0.98 }}
-              transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-border bg-popover shadow-xl"
-              role="listbox"
-            >
-              <ScrollArea className="max-h-[420px]">
-                {query && suggestions.length > 0 && (
-                  <GroupedSearchResults
-                    suggestions={suggestions}
-                    selectedIndex={selectedIndex}
-                    query={query}
-                    onSelect={handleSelectResult}
-                    onHover={setSelectedIndex}
-                  />
-                )}
+        {showDropdown && (
+          <div
+            className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-border bg-popover shadow-xl duration-150 animate-in fade-in zoom-in-[0.98] slide-in-from-top-1"
+            role="listbox"
+          >
+            <ScrollArea className="max-h-[420px]">
+              {query && suggestions.length > 0 && (
+                <GroupedSearchResults
+                  suggestions={suggestions}
+                  selectedIndex={selectedIndex}
+                  query={query}
+                  onSelect={handleSelectResult}
+                  onHover={setSelectedIndex}
+                />
+              )}
 
-                {!query && (
-                  <>
-                    {history.length > 0 && (
-                      <div className="p-2">
-                        <div className="flex items-center justify-between px-2 py-1.5">
-                          <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            Buscas Recentes
-                          </span>
+              {!query && (
+                <>
+                  {history.length > 0 && (
+                    <div className="p-2">
+                      <div className="flex items-center justify-between px-2 py-1.5">
+                        <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          Buscas Recentes
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-xs text-muted-foreground hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearHistory();
+                          }}
+                        >
+                          Limpar
+                        </Button>
+                      </div>
+                      {history.slice(0, 5).map((item, index) => (
+                        <div
+                          key={item.id}
+                          className="group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors animate-in fade-in slide-in-from-left-1 hover:bg-muted"
+                          style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'both' }}
+                          onClick={() => {
+                            addToHistory(item);
+                            submitSearch(item.label);
+                          }}
+                        >
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="flex-1 truncate text-sm">{item.label}</span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 text-xs text-muted-foreground hover:text-destructive"
+                            className="h-6 w-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
                             onClick={(e) => {
                               e.stopPropagation();
-                              clearHistory();
+                              removeFromHistory(item.id);
                             }}
                           >
-                            Limpar
+                            <X className="h-3 w-3" />
                           </Button>
                         </div>
-                        {history.slice(0, 5).map((item, index) => (
-                          <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, x: -8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.03 }}
-                            className="group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-muted"
-                            onClick={() => {
-                              addToHistory(item);
-                              submitSearch(item.label);
-                            }}
-                          >
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span className="flex-1 truncate text-sm">{item.label}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 w-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeFromHistory(item.id);
-                              }}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </motion.div>
-                        ))}
-                      </div>
-                    )}
-
-                    <Separator className="opacity-50" />
-
-                    <div className="p-2">
-                      <div className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                        <TrendingUp className="h-3 w-3" />
-                        Sugestões Populares
-                      </div>
-                      <div className="flex flex-wrap gap-2 px-2 py-2">
-                        {quickSuggestions.map((suggestion, index) => (
-                          <motion.div
-                            key={suggestion.label}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: index * 0.04 }}
-                          >
-                            <Badge
-                              variant="secondary"
-                              className="cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-primary hover:text-primary-foreground"
-                              onClick={() => submitSearch(suggestion.label)}
-                            >
-                              {suggestion.icon} {suggestion.label}
-                            </Badge>
-                          </motion.div>
-                        ))}
-                      </div>
+                      ))}
                     </div>
-                  </>
-                )}
+                  )}
 
-                {query && suggestions.length === 0 && !isSearching && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="p-8 text-center text-muted-foreground"
+                  <Separator className="opacity-50" />
+
+                  <div className="p-2">
+                    <div className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                      <TrendingUp className="h-3 w-3" />
+                      Sugestões Populares
+                    </div>
+                    <div className="flex flex-wrap gap-2 px-2 py-2">
+                      {quickSuggestions.map((suggestion, index) => (
+                        <div
+                          key={suggestion.label}
+                          className="animate-in fade-in zoom-in-90"
+                          style={{ animationDelay: `${index * 40}ms`, animationFillMode: 'both' }}
+                        >
+                          <Badge
+                            variant="secondary"
+                            className="cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-primary hover:text-primary-foreground"
+                            onClick={() => submitSearch(suggestion.label)}
+                          >
+                            {suggestion.icon} {suggestion.label}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {query && suggestions.length === 0 && !isSearching && (
+                <div className="p-8 text-center text-muted-foreground duration-200 animate-in fade-in">
+                  <Search className="mx-auto mb-2 h-8 w-8 opacity-30" />
+                  <p className="font-medium">
+                    Nenhum resultado para "<span className="text-foreground">{query}</span>"
+                  </p>
+                  <p className="mt-1.5 text-xs text-muted-foreground/70">
+                    Tente buscar por nome, SKU ou categoria
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 text-xs"
+                    onClick={() => submitSearch(query)}
                   >
-                    <Search className="mx-auto mb-2 h-8 w-8 opacity-30" />
-                    <p className="font-medium">
-                      Nenhum resultado para "<span className="text-foreground">{query}</span>"
-                    </p>
-                    <p className="mt-1.5 text-xs text-muted-foreground/70">
-                      Tente buscar por nome, SKU ou categoria
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-3 text-xs"
-                      onClick={() => submitSearch(query)}
-                    >
-                      <Search className="mr-1.5 h-3 w-3" />
-                      Buscar "{query}" no catálogo completo
-                    </Button>
-                  </motion.div>
-                )}
-              </ScrollArea>
-
-              <div className="flex items-center justify-between border-t border-border/50 bg-muted/30 px-3 py-1.5 text-[10px] text-muted-foreground/70">
-                <div className="flex items-center gap-3">
-                  <span>
-                    <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[9px]">↑↓</kbd>{' '}
-                    navegar
-                  </span>
-                  <span>
-                    <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[9px]">Enter</kbd>{' '}
-                    selecionar
-                  </span>
-                  <span>
-                    <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[9px]">Esc</kbd>{' '}
-                    fechar
-                  </span>
+                    <Search className="mr-1.5 h-3 w-3" />
+                    Buscar "{query}" no catálogo completo
+                  </Button>
                 </div>
-                <span className="flex items-center gap-1">
-                  <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">⌘K</kbd> busca
-                  global
+              )}
+            </ScrollArea>
+
+            <div className="flex items-center justify-between border-t border-border/50 bg-muted/30 px-3 py-1.5 text-[10px] text-muted-foreground/70">
+              <div className="flex items-center gap-3">
+                <span>
+                  <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[9px]">↑↓</kbd>{' '}
+                  navegar
+                </span>
+                <span>
+                  <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[9px]">Enter</kbd>{' '}
+                  selecionar
+                </span>
+                <span>
+                  <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[9px]">Esc</kbd>{' '}
+                  fechar
                 </span>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <span className="flex items-center gap-1">
+                <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">⌘K</kbd> busca
+                global
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     );
   },

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   X,
@@ -228,26 +227,17 @@ export function GlobalSearch({
   );
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm duration-150 animate-in fade-in"
           />
 
           {/* Search Dialog */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ duration: 0.15 }}
-            className="fixed left-1/2 top-[10%] z-50 w-full max-w-2xl -translate-x-1/2 px-4"
-          >
+          <div className="fixed left-1/2 top-[10%] z-50 w-full max-w-2xl -translate-x-1/2 px-4 duration-150 animate-in fade-in zoom-in-95 slide-in-from-top-2">
             <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
               {/* Search Input */}
               <div className="flex items-center gap-3 border-b border-border px-4 py-3">
@@ -443,10 +433,10 @@ export function GlobalSearch({
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </>
       )}
-    </AnimatePresence>
+    </>
   );
 }
 
