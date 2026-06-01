@@ -16,10 +16,25 @@ A edge function `external-db-bridge` (aposentada no Caminho B) ainda recebia **3
 | Rotação de `cron.job_run_details` | ✅ Job semanal criado |
 | Índice em `collection_products.product_id` | ✅ Criado |
 | **Código** da `external-db-bridge` honrando o kill-switch (410) | ✅ **FEITO** (2ª sessão) — `assertSwitchEnabled` no topo do handler |
-| **Deploy** da `external-db-bridge` com o código novo | ⏳ **PENDENTE** — via pipeline Supabase (PR merge) |
+| **Deploy** da `external-db-bridge` com o código novo | ✅ **FEITO** (3ª sessão) — PR #574 mergeado → pipeline Supabase deployou |
+| Cron `external-db-bridge-keepalive` (14 falhas/h) | ✅ **REMOVIDO** (3ª sessão) — migration `20260601140000` |
+| Cron `connections-auto-test` (URL NULL) | ✅ **CORRIGIDO** (3ª sessão) — migration `20260601140100` — URL hardcoded |
+| REVOKE SELECT `anon` em 27 tabelas internas | ✅ **FEITO** (2ª sessão) |
+| DROP de 67 índices ociosos | ✅ **FEITO** (2ª sessão) |
+| `fn_run_schema_drift_check` hold 30s→15s | ✅ **FEITO** (2ª sessão) |
+| FK index + policy consolidation `system_kill_switches` | ✅ **FEITO** (2ª sessão) |
 | `idle_session_timeout` / `idle_in_transaction` | ⏳ **PENDENTE** — Dashboard |
 | `log_min_duration_statement = 2000ms` | ⏳ **PENDENTE** — Dashboard |
-| Auth Connection Strategy → Percentage | ⏳ **PENDENTE** — Dashboard |
+| Auth Connection Strategy → Percentage 15% | ⏳ **PENDENTE** — Dashboard |
+
+## Atualização 2026-06-01 (3ª sessão — `claude/confident-heisenberg-M03BW`)
+
+PR #574 mergeado. Pipeline Supabase deploiou `external-db-bridge` com o kill-switch ativo.
+Dois crons corrigidos via migration:
+- `external-db-bridge-keepalive` → **removido** (disparava a cada 4 min, falhava com NOT NULL violation na URL; 14+ falhas/h)
+- `connections-auto-test` → **recriado** com URL literal hardcoded em vez de GUC inexistente
+PR #572 auto-fechado pelo GitHub após rebase revelar que todos os commits já estavam em main.
+`cron_health_1h` transiente: última falha dos crons removidos foi às 13:40 UTC — auto-resolve às ~14:40 UTC.
 
 ## Atualização 2026-05-24 (2ª sessão — `claude/confident-heisenberg-M03BW`)
 
@@ -117,16 +132,20 @@ Deno.serve(async (req) => {
 
 ## Próximos passos cronológicos
 
-**Hoje:**
-- [ ] Deploy do `external-db-bridge` com checagem do kill-switch
-- [ ] Identificar clientes que ainda chamam `external-db-bridge` (logs de access)
+**Concluído (2026-06-01):**
+- [x] Deploy do `external-db-bridge` com checagem do kill-switch (PR #574 mergeado)
+- [x] Cron `external-db-bridge-keepalive` removido (migration `20260601140000`)
+- [x] Cron `connections-auto-test` corrigido com URL hardcoded (migration `20260601140100`)
+- [x] REVOKE SELECT `anon` em 27 tabelas internas de log/auditoria
+- [x] DROP de 67 índices ociosos
+- [x] `fn_run_schema_drift_check` hold reduzido para 15s
 
-**Esta semana:**
-- [ ] Dashboard: `idle_session_timeout=10min`, `idle_in_transaction=60s`, `log_min_duration=2s`
-- [ ] Dashboard: Auth Connection Strategy → Percentage 15%
-- [ ] Otimizar `fn_run_schema_drift_check()` (40-60s no momento)
+**Pendente — Dashboard (não executável via MCP):**
+- [ ] `idle_session_timeout = 600000ms` (10 min) — Project Settings → Database
+- [ ] `idle_in_transaction_session_timeout = 60000ms` (1 min) — idem
+- [ ] `log_min_duration_statement = 2000ms` — idem
+- [ ] Auth Connection Strategy → **Percentage 15%** — Auth → Settings
 
-**Próximas 4 semanas:**
-- [ ] Auditoria de exposição GraphQL (REVOKE em tabelas sensíveis)
-- [ ] DROP de índices não usados (535 advisors)
-- [ ] Reorganização de schemas (extrair `*_audit_log`, `*_telemetry`, `*_queue` de `public`)
+**Opcional:**
+- [ ] Identificar e comunicar clientes que ainda chamam `external-db-bridge` (retornam 410 agora)
+- [ ] Reorganização de schemas de longo prazo (`*_audit_log`, `*_telemetry` fora de `public`)
