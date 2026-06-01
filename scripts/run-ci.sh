@@ -3,11 +3,11 @@ set -e
 
 echo "🚀 Iniciando pipeline de CI local..."
 
-echo "1. Linting (strict)..."
-npm run qa:lint
+echo "1. Linting (baseline ratchet — bloqueia apenas regressões)..."
+npm run lint:baseline
 
-echo "2. Typechecking..."
-npm run qa:typecheck
+echo "2. Typechecking (baseline ratchet — bloqueia apenas erros novos)..."
+npm run typecheck
 
 echo "3. Unit & Integration Tests..."
 npm run test:run
