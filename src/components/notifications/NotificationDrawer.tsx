@@ -249,7 +249,8 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
       setPage,
       setSearch,
       setCategory,
-      markAsRead,
+      markAsRead: baseMarkAsRead,
+      undoMarkAsRead,
       markAllAsRead,
       clearAll,
       prefetch,
@@ -259,6 +260,7 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
     const [isOpen, setIsOpen] = useState(false);
     const [showPreferences, setShowPreferences] = useState(false);
     const [localSearch, setLocalSearch] = useState(search);
+    const [localCategory, setLocalCategory] = useState(category);
     const prevCountRef = React.useRef(unreadCount);
     const { announce } = useAriaLive();
     const prevRefetchingRef = useRef(false);
@@ -287,6 +289,55 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
       }
       prevRefetchingRef.current = isRefetching;
     }, [isRefetching, unreadCount, announce]);
+
+    // Debounced search and category update
+    useEffect(() => {
+      const timeout = setTimeout(() => {
+        setSearch(localSearch);
+        setCategory(localCategory);
+      }, 400);
+      return () => clearTimeout(timeout);
+    }, [localSearch, localCategory, setSearch, setCategory]);
+
+    const markAsRead = useCallback(async (id: string) => {
+      await baseMarkAsRead(id);
+      toast.success('Notificação marcada como lida', {
+        action: {
+          label: 'Desfazer',
+          onClick: () => undoMarkAsRead(id),
+        },
+      });
+    }, [baseMarkAsRead, undoMarkAsRead]);
+
+    const handleExportCSV = useCallback(() => {
+      if (notifications.length === 0) return;
+      
+      const headers = ['Data', 'Título', 'Mensagem', 'Tipo', 'Categoria', 'Lida'];
+      const rows = notifications.map(n => [
+        new Date(n.created_at).toLocaleString('pt-BR'),
+        n.title,
+        n.message,
+        n.type,
+        n.category,
+        n.is_read ? 'Sim' : 'Não'
+      ]);
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `notificacoes_${new Date().getTime()}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Exportação concluída');
+    }, [notifications]);
 
     const handleNavigate = (url: string) => {
       if (url.startsWith('/')) {
@@ -446,6 +497,21 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
                 <RefetchSpinner isRefetching={isRefetching} />
               </SheetTitle>
               <div className="flex items-center gap-1">
+                {!showPreferences && notifications.length > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={handleExportCSV}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Exportar CSV</TooltipContent>
+                  </Tooltip>
+                )}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -509,15 +575,10 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
                       placeholder="Buscar notificações..."
                       className="pl-9"
                       value={localSearch}
-                      onChange={(e) => {
-                        setLocalSearch(e.target.value);
-                        // Debounce search update
-                        const timeout = setTimeout(() => setSearch(e.target.value), 300);
-                        return () => clearTimeout(timeout);
-                      }}
+                      onChange={(e) => setLocalSearch(e.target.value)}
                     />
                   </div>
-                  <Tabs value={category} onValueChange={setCategory}>
+                  <Tabs value={localCategory} onValueChange={setLocalCategory}>
                     <TabsList className="grid w-full grid-cols-4">
                       <TabsTrigger value="all">Todas</TabsTrigger>
                       <TabsTrigger value="security">Segurança</TabsTrigger>
