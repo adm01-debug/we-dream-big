@@ -1,5 +1,5 @@
-import { test, expect } from './fixtures/test-base';
-import { loginAs } from './helpers/auth';
+import { test, expect } from '../fixtures/test-base';
+import { loginAs } from '../helpers/auth';
 
 test.describe('Sidebar Navigation Reorganization', () => {
   test.beforeEach(async ({ page }) => {
