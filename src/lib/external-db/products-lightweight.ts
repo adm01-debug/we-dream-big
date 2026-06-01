@@ -53,16 +53,24 @@ async function fetchPage(params: {
   offset: number;
   countMode?: 'exact' | 'planned' | 'estimated' | 'none';
 }): Promise<InvokeResult<LightweightProduct>> {
-  return dbInvoke<LightweightProduct>({
-    table: 'products',
-    operation: 'select',
-    filters: params.filters,
-    select: PRODUCT_SELECT_LIGHTWEIGHT,
-    orderBy: params.orderBy,
-    limit: params.limit,
-    offset: params.offset,
-    countMode: params.countMode ?? 'none',
-  });
+  try {
+    return await dbInvoke<LightweightProduct>({
+      table: 'products',
+      operation: 'select',
+      filters: params.filters,
+      select: PRODUCT_SELECT_LIGHTWEIGHT,
+      orderBy: params.orderBy,
+      limit: params.limit,
+      offset: params.offset,
+      countMode: params.countMode ?? 'none',
+    });
+  } catch (err) {
+    if (err instanceof Error && (err.message.includes('410') || err.message.includes('Gone'))) {
+      logger.warn('[lightweight] Bridge deprecated (410) for products');
+      return { records: [], count: 0 };
+    }
+    throw err;
+  }
 }
 
 async function fetchPageResilient(params: {

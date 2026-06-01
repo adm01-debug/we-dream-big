@@ -534,7 +534,11 @@ export async function fetchPromobrindCategories(): Promise<{ id: string; name: s
       if (c?.id && c?.name) putInCacheSafe('categories', { id: c.id, name: c.name });
     }
     return result.records;
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && (err.message.includes('410') || err.message.includes('Gone'))) {
+      logger.warn('[products-detail] Bridge deprecated (410) for categories');
+      return [];
+    }
     const result = await dbInvoke<{ category_id: string; main_category_id: string }>({
       table: 'products',
       operation: 'select',
@@ -577,6 +581,10 @@ export async function fetchPromobrindColors(): Promise<
     });
     return Array.from(uniqueColors.values()).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
   } catch (err) {
+    if (err instanceof Error && (err.message.includes('410') || err.message.includes('Gone'))) {
+      logger.warn('[products-detail] Bridge deprecated (410) for colors');
+      return [];
+    }
     logger.warn('Erro ao buscar cores das variantes:', err);
     return [];
   }
