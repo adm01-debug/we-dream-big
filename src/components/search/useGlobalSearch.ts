@@ -2,6 +2,7 @@
  * useGlobalSearch — Hook that encapsulates all search logic for GlobalSearchPalette.
  */
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchStore } from '@/stores/useSearchStore';
 import { useOracleVoiceBridge } from '@/stores/oracleVoiceBridge';
 import Fuse from 'fuse.js';
@@ -18,6 +19,7 @@ import {
 } from '@/hooks/intelligence';
 import { useSlashCommands } from '@/hooks/ui/useSlashCommands';
 import type { VoiceAgentAction } from '@/hooks/voice/types';
+
 
 import { createProductFuseOptions, rankProductSearchResults } from '@/utils/product-search';
 import type { PromobrindProduct } from '@/lib/external-db';
