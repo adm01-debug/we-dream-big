@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { dbInvoke } from '@/lib/db/postgrest';
 import { toTitleCase } from '@/lib/textUtils';
 
 // Categorias ocultas que não devem aparecer na navegação
@@ -70,21 +71,16 @@ export function useCategoriesTree() {
     setError(null);
 
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'categories_tree_visual',
-          operation: 'select',
-          select: '*',
-          orderBy: { column: 'sort_path', ascending: true },
-          limit: 500,
-        },
+      const result = await dbInvoke<CategoryTreeItem>({
+        table: 'categories_tree_visual',
+        operation: 'select',
+        select: '*',
+        orderBy: { column: 'sort_path', ascending: true },
+        limit: 500,
       });
 
-      if (invokeError) throw new Error(invokeError.message);
-      if (!data.success) throw new Error(data.error || 'Erro ao buscar categorias');
-
       // Aplicar Title Case nos nomes das categorias
-      const formattedCategories = (data.data.records || [])
+      const formattedCategories = (result.records || [])
         .filter((cat: CategoryTreeItem) => !HIDDEN_CATEGORIES.includes(cat.name.toUpperCase()))
         .map((cat: CategoryTreeItem) => ({
           ...cat,

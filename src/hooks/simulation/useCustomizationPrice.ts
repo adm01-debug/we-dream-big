@@ -54,7 +54,17 @@ export function useCustomizationPriceCalculator() {
         }
         validateRpcPayload(PRICE_CONTRACT, result as unknown as Record<string, unknown>);
         return result;
-      } catch (err) {
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('410') || msg.includes('Gone')) {
+          const { reportSilentEmpty } = await import('@/lib/external-db/silent-empty-report');
+          reportSilentEmpty({
+            reason: 'gone_410',
+            table: 'fn_get_customization_price',
+            operation: 'rpc',
+            message: err.message,
+          });
+        }
         const message = err instanceof Error ? err.message : 'Erro ao calcular preço';
         setError(message);
         setLoading(false);
@@ -125,7 +135,17 @@ export function useCustomizationPriceReactive(
           setError(result?.error || 'Erro no cálculo');
           setPrice(null);
         }
-      } catch (err) {
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('410') || msg.includes('Gone')) {
+          const { reportSilentEmpty } = await import('@/lib/external-db/silent-empty-report');
+          reportSilentEmpty({
+            reason: 'gone_410',
+            table: 'fn_get_customization_price',
+            operation: 'rpc',
+            message: err.message,
+          });
+        }
         setError(err instanceof Error ? err.message : 'Erro ao calcular preço');
         setPrice(null);
       } finally {

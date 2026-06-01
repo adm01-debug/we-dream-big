@@ -3,7 +3,7 @@
  * Consulta o banco externo Promobrind via external-db-bridge (SSOT).
  */
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { dbInvoke } from '@/lib/db/postgrest';
 
 export interface ProdutoRamo {
   ramo_id: string;
@@ -17,15 +17,12 @@ export function useProdutoRamoAtividade(productId: string | null | undefined) {
     queryKey: ['produto-ramo-atividade', productId],
     enabled: !!productId,
     queryFn: async (): Promise<ProdutoRamo[]> => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          operation: 'select',
-          table: 'produto_ramo_atividade',
-          filters: { product_id: productId },
-        },
+      const result = await dbInvoke<ProdutoRamo>({
+        operation: 'select',
+        table: 'produto_ramo_atividade',
+        filters: { product_id: productId },
       });
-      if (error) throw error;
-      return (data?.rows || []) as ProdutoRamo[];
+      return result.records;
     },
     staleTime: 5 * 60 * 1000,
   });

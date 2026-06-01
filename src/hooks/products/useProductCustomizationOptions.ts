@@ -20,12 +20,27 @@ export function useProductCustomizationOptions(productId: string | null) {
     queryFn: async (): Promise<CustomizationOptionsResponse | null> => {
       if (!productId) return null;
 
-      const result = await invokeExternalRpc<Record<string, unknown>>(
-        'fn_get_product_customization_options',
-        { p_product_id: productId },
-      );
+      try {
+        const result = await invokeExternalRpc<Record<string, unknown>>(
+          'fn_get_product_customization_options',
+          { p_product_id: productId },
+        );
 
-      return adaptCustomizationOptions(result);
+        return adaptCustomizationOptions(result);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('410') || msg.includes('Gone')) {
+          const { reportSilentEmpty } = await import('@/lib/external-db/silent-empty-report');
+          reportSilentEmpty({
+            reason: 'gone_410',
+            table: 'fn_get_product_customization_options',
+            operation: 'rpc',
+            message: err.message,
+          });
+          return null;
+        }
+        throw err;
+      }
     },
     enabled: !!productId,
     staleTime: 5 * 60 * 1000,
