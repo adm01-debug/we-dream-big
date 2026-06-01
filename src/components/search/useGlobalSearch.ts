@@ -668,7 +668,30 @@ export function useGlobalSearch() {
 
       if (controller.signal.aborted) return;
 
+      // Include matching slash commands in general results if they match keywords
+      if (searchQuery.length >= 3) {
+        const lowerQuery = searchQuery.toLowerCase();
+        const matchedCmds = commands
+          .filter(
+            (c) =>
+              c.command.toLowerCase().includes(lowerQuery) ||
+              c.label.toLowerCase().includes(lowerQuery) ||
+              c.keywords?.some((k) => k.toLowerCase().includes(lowerQuery)),
+          )
+          .slice(0, 3)
+          .map((c) => ({
+            id: `cmd-${c.id}`,
+            title: c.label,
+            subtitle: c.description,
+            type: 'command' as const,
+            href: `command:${c.id}`,
+            metadata: { iconName: c.icon },
+          }));
+        allResults.push(...matchedCmds);
+      }
+
       const RERANK_TYPES: SearchResultType[] = ['quote', 'conversation', 'reminder'];
+
       const candidates = allResults
         .filter((r) => RERANK_TYPES.includes(r.type))
         .map((r) => ({ id: r.id, label: r.title, sublabel: r.subtitle ?? '' }));
