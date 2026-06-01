@@ -6,7 +6,6 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { logger } from '@/lib/logger';
 
 // Re-export types & helpers for backward compat
 export type {
@@ -35,14 +34,6 @@ import type {
   CustomizationPriceV2,
   PrintAreaWithTechniques,
 } from '@/hooks/gravacao/gravacao-types';
-
-// Row shape returned by 'tabela_preco_gravacao_oficial' table queries.
-type TecnicaRow = {
-  id: string;
-  nome: string;
-  codigo_curto: string | null;
-  codigo_tabela: string | null;
-};
 
 // Shape returned by RPC fn_get_customization_price.
 type RpcCustomizationPriceResult = {
@@ -198,7 +189,11 @@ export function useCustomizationPriceLegacy() {
       try {
         // Placeholder: RPC call logic would go here if migrated, but plan says PostgREST calls
         // For now using supabase.rpc if defined or keep as is if RPC is still supported
-        const { data: rawResult, error: rpcError } = await (supabase.rpc as any)('fn_get_customization_price', {
+        const rpc = supabase.rpc as unknown as (
+          fn: string,
+          args: Record<string, unknown>,
+        ) => Promise<{ data: RpcCustomizationPriceResult | null; error: { message: string } | null }>;
+        const { data: rawResult, error: rpcError } = await rpc('fn_get_customization_price', {
             p_area_id: areaId,
             p_quantidade: quantidade,
             p_num_cores: numCores,
