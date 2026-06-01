@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase, resolveTable, handleQueryError } from '@/lib/supabase-direct';
+import { supabase, resolveTable, handleQueryError, isGoneError } from '@/lib/supabase-direct';
+import { logger } from '@/lib/logger';
 
 export interface ColorGroup {
   id: string;
@@ -88,7 +89,14 @@ export function useColorSystem() {
         .order('sort_order');
 
       if (nuancesError) {
-        handleQueryError('useColorSystem', 'color_nuances', nuancesError);
+        if (isGoneError(nuancesError)) {
+          logger.warn('[useColorSystem] color_nuances 410 — degrading gracefully');
+        } else {
+          logger.warn(
+            '[useColorSystem] color_nuances query failed — degrading gracefully',
+            nuancesError,
+          );
+        }
       }
 
       return {

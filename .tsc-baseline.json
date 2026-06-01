@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-01T01:16:01.681Z",
-  "totalErrors": 432,
+  "generatedAt": "2026-06-01T04:14:52.521Z",
+  "totalErrors": 429,
   "counts": {
     "src/components/admin/security/HardeningHealthCard.tsx": {
       "TS2304": 1
@@ -37,9 +37,6 @@
     },
     "src/components/novelties/NoveltyStatsCards.tsx": {
       "TS2339": 8
-    },
-    "src/components/replenishments/ReplenishmentStatsCards.tsx": {
-      "TS2322": 1
     },
     "src/components/search/AdvancedSearch.tsx": {
       "TS2345": 1
@@ -125,7 +122,7 @@
     "src/hooks/products/useReplenishments.ts": {
       "TS2345": 5,
       "TS2352": 3,
-      "TS2769": 9
+      "TS2769": 7
     },
     "src/hooks/products/useSimilarProducts.ts": {
       "TS2339": 3,
@@ -181,8 +178,8 @@
       "TS2769": 5
     },
     "src/hooks/tecnicas/useTecnicaMutations.ts": {
-      "TS2322": 1,
       "TS2345": 5,
+      "TS2353": 1,
       "TS2769": 4
     },
     "src/lib/cloud-status.ts": {

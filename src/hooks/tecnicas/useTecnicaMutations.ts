@@ -22,7 +22,7 @@ export function useTecnicaMutations() {
     mutationFn: async ({ id, ativo }: { id: string; ativo: boolean }) => {
       const { error } = await supabase
         .from(resolveTable(TABLE))
-        .update({ is_active: ativo })
+        .update({ ativo })
         .eq('id', id)
         .select()
         .single();

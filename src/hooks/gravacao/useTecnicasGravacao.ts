@@ -190,18 +190,14 @@ export function useTecnicaGravacao(id: string | undefined) {
           .order('ordem_exibicao', { ascending: true }),
       ]);
 
-      if (tecnicaRes.error)
-        return handleQueryError(
-          'useTecnicaGravacao',
-          'tecnica_gravacao',
-          tecnicaRes.error,
-        ) as unknown as null;
-      if (variantesRes.error)
-        return handleQueryError(
-          'useTecnicaGravacao',
-          'tecnica_gravacao_variante',
-          variantesRes.error,
-        ) as unknown as null;
+      if (tecnicaRes.error) {
+        handleQueryError('useTecnicaGravacao', 'tecnica_gravacao', tecnicaRes.error);
+        return null;
+      }
+      if (variantesRes.error) {
+        handleQueryError('useTecnicaGravacao', 'tecnica_gravacao_variante', variantesRes.error);
+        return null;
+      }
 
       const tecnica = (tecnicaRes.data ?? [])[0] as TecnicaGravacao | undefined;
       if (!tecnica) return null;

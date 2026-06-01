@@ -97,12 +97,10 @@ export function useTabelaPorCodigo(codigoOpcao: string | undefined) {
         .select('*')
         .eq('table_code_option', codigoOpcao)
         .limit(1);
-      if (error)
-        return handleQueryError(
-          'useTabelasPreco',
-          'customization_price_tables',
-          error,
-        ) as unknown as null;
+      if (error) {
+        handleQueryError('useTabelasPreco', 'customization_price_tables', error);
+        return null;
+      }
       const records = (data ?? []) as CustomizationPriceTableRaw[];
 
       const tabela = records[0];
@@ -124,12 +122,10 @@ export function useNomesTecnicasPreco() {
         .from(resolveTable('customization_price_tables'))
         .select('customization_type_name')
         .eq('is_active', true);
-      if (error)
-        return handleQueryError(
-          'useTabelasPreco',
-          'customization_price_tables',
-          error,
-        ) as unknown as string[];
+      if (error) {
+        handleQueryError('useTabelasPreco', 'customization_price_tables', error);
+        return [];
+      }
       const records = (data ?? []) as { customization_type_name: string }[];
 
       const nomes = [...new Set(records.map((r) => r.customization_type_name))];

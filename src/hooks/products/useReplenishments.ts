@@ -269,10 +269,36 @@ export function useReplenishmentStats() {
           .range(0, 0),
       ]);
 
-      if (repResponse.error)
-        return handleQueryError('useReplenishments', 'products', repResponse.error);
-      if (totalResponse.error)
-        return handleQueryError('useReplenishments', 'products', totalResponse.error);
+      if (repResponse.error) {
+        handleQueryError('useReplenishments', 'products', repResponse.error);
+        return {
+          totalReplenishments: 0,
+          activeReplenishments: 0,
+          expiringSoon: 0,
+          totalProducts: 0,
+          replenishmentRate: 0,
+          restockedToday: 0,
+          restockedThisWeek: 0,
+          restockedLast15Days: 0,
+          topSupplierName: null,
+          topSupplierCount: 0,
+        };
+      }
+      if (totalResponse.error) {
+        handleQueryError('useReplenishments', 'products', totalResponse.error);
+        return {
+          totalReplenishments: 0,
+          activeReplenishments: 0,
+          expiringSoon: 0,
+          totalProducts: 0,
+          replenishmentRate: 0,
+          restockedToday: 0,
+          restockedThisWeek: 0,
+          restockedLast15Days: 0,
+          topSupplierName: null,
+          topSupplierCount: 0,
+        };
+      }
 
       const repRecords = (repResponse.data ?? []) as unknown as RawProduct[];
 
@@ -358,7 +384,10 @@ export function useReplenishmentCount() {
         .eq('is_active', true)
         .gte('updated_at', cutoff)
         .range(0, 499);
-      if (error) return handleQueryError('useReplenishments', 'products', error);
+      if (error) {
+        handleQueryError('useReplenishments', 'products', error);
+        return 0;
+      }
       const records = (data ?? []) as unknown as RawProduct[];
 
       return records.filter(isReplenishment).length;

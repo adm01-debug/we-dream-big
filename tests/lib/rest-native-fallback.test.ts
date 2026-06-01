@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { resolveTable, handleQueryError, isGoneError } from '@/lib/supabase-direct';
+import { resolveTable, handleQueryError } from '@/lib/supabase-direct';
 
 vi.mock('@/lib/logger', () => ({
   logger: { warn: vi.fn(), debug: vi.fn(), error: vi.fn(), log: vi.fn() },
