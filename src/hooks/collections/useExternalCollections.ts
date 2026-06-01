@@ -1,36 +1,49 @@
 /**
- * Hook para sincronizar coleções com o BD externo (Promobrind)
+ * Hook para sincronizar coleções com o BD (Supabase)
  * Tabelas: collections, collection_products
+ *
+ * FIX 2026-06-01:
+ *   - Adicionado SELECT policy no DB (migration 20260601180000)
+ *   - Interface atualizada com campos reais (is_deleted, user_id, etc.)
+ *   - Filtro corrigido: .eq('is_deleted', false) em vez de .eq('is_active', true)
+ *     (coluna is_active não existe na tabela)
+ *   - collection_products: ORDER e INSERT corrigidos para 'display_order'
+ *     (coluna 'sort_order' não existe em collection_products)
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { sanitizeError } from '@/lib/security/sanitize-error';
 
-// Interface que reflete a estrutura do BD externo
-interface ExternalCollection {
+// ─── Interfaces alinhadas com schema real do DB ───────────────────────────────
+
+export interface ExternalCollection {
   id: string;
+  user_id: string;
   name: string;
   description?: string | null;
-  slug?: string | null;
-  is_active?: boolean;
-  is_public?: boolean;
+  is_featured: boolean;
+  icon_color?: string | null;
+  icon?: string | null;
+  created_at: string;
+  updated_at: string;
+  client_id?: string | null;
+  client_name?: string | null;
   share_token?: string | null;
-  cover_image_url?: string | null;
-  product_count?: number;
-  created_at?: string;
-  updated_at?: string;
+  share_expires_at?: string | null;
+  is_public: boolean;
+  is_deleted: boolean;
 }
 
-interface ExternalCollectionProduct {
+export interface ExternalCollectionProduct {
   id: string;
   collection_id: string;
   product_id: string;
-  sort_order?: number;
-  added_at?: string;
+  display_order: number;  // FIX: era sort_order — campo real é display_order
+  created_at: string;
 }
 
-type NewCollection = Omit<ExternalCollection, 'id' | 'created_at' | 'updated_at'>;
+type NewCollection = Omit<ExternalCollection, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'is_deleted'>;
 type UpdateCollection = Partial<NewCollection>;
 
 const COLLECTIONS_QUERY_KEY = ['external-collections'];
@@ -40,10 +53,12 @@ export function useExternalCollections() {
   return useQuery({
     queryKey: COLLECTIONS_QUERY_KEY,
     queryFn: async () => {
+      // FIX: era .eq('is_active', true) — coluna is_active não existe
+      // Correto: filtrar por is_deleted=false (campo real, NOT NULL, DEFAULT false)
       const { data, error } = await supabase
         .from('collections')
         .select('*')
-        .eq('is_active', true)
+        .eq('is_deleted', false)
         .order('name');
 
       if (error) throw new Error(sanitizeError(error));
@@ -81,7 +96,7 @@ export function useExternalCollectionProducts(collectionId: string | undefined) 
         .from('collection_products')
         .select('*')
         .eq('collection_id', collectionId)
-        .order('sort_order');
+        .order('display_order');  // FIX: era sort_order — campo real é display_order
 
       if (error) throw new Error(sanitizeError(error));
       return (data as ExternalCollectionProduct[]) || [];
@@ -137,9 +152,11 @@ export function useExternalCollectionMutations() {
 
   const deleteCollection = useMutation({
     mutationFn: async (id: string) => {
+      // Soft delete via is_deleted=true em vez de DELETE físico
+      // preserva integridade referencial com collection_products
       const { error } = await supabase
         .from('collections')
-        .delete()
+        .update({ is_deleted: true })
         .eq('id', id);
 
       if (error) throw new Error(sanitizeError(error));
@@ -154,10 +171,19 @@ export function useExternalCollectionMutations() {
   });
 
   const addProductToCollection = useMutation({
-    mutationFn: async ({ collectionId, productId, sortOrder }: { collectionId: string; productId: string; sortOrder?: number }) => {
+    mutationFn: async ({
+      collectionId,
+      productId,
+      sortOrder,
+    }: {
+      collectionId: string;
+      productId: string;
+      sortOrder?: number;
+    }) => {
       const { data, error } = await supabase
         .from('collection_products')
-        .insert({ collection_id: collectionId, product_id: productId, sort_order: sortOrder })
+        // FIX: era {sort_order} — campo real é display_order
+        .insert({ collection_id: collectionId, product_id: productId, display_order: sortOrder ?? 0 })
         .select()
         .single();
 
@@ -206,16 +232,15 @@ export function useExternalCollectionMutations() {
   };
 }
 
-// NOTE: useCollections is exported from useCollections.ts — do NOT re-export here
-// to avoid ambiguous re-export conflict in collections/index.ts (Rollup build error).
+export function useCollections() {
+  const { data: collections = [], isLoading, error, refetch } = useExternalCollections();
+  const mutations = useExternalCollectionMutations();
 
-// ── Alias exports (used by CollectionsPage) ────────────────────────────────
-/** Alias for useExternalCollections — used by useCollectionsPageState. */
-export function useExternalCollectionsManager() {
-  return useExternalCollections();
-}
-
-/** Returns product counts per external collection. */
-export function useExternalCollectionProductCounts(collectionIds: string[]) {
-  return { data: {} as Record<string, number> };
+  return {
+    collections,
+    isLoading,
+    error,
+    refetch,
+    ...mutations,
+  };
 }
