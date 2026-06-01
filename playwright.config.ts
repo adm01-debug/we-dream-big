@@ -45,6 +45,10 @@ const RETRIES = process.env.E2E_RETRIES
     ? 2
     : 1;
 
+const QUARANTINE_LIST = fs.existsSync(path.resolve(__dirname, 'quarantine-list.json'))
+  ? JSON.parse(fs.readFileSync(path.resolve(__dirname, 'quarantine-list.json'), 'utf-8'))
+  : [];
+
 export default defineConfig({
   testDir: './e2e',
   // Restrict to *.spec.ts only — prevents Playwright from loading vitest
