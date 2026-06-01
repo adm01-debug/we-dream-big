@@ -26,6 +26,15 @@ jobs:
         run: npm ci
       - name: Run Global Search component tests with coverage
         run: npx vitest run src/components/search/__tests__ --coverage
+      - name: Coverage Summary
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "### Vitest Coverage Summary" >> $GITHUB_STEP_SUMMARY
+            echo "| Category | Percentage |" >> $GITHUB_STEP_SUMMARY
+            echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+            cat coverage/coverage-summary.json | jq -r '.total | to_entries | .[] | "| \(.key) | \(.value.pct)% |"' >> $GITHUB_STEP_SUMMARY
+          fi
       - name: Upload Search coverage
         if: always()
         uses: actions/upload-artifact@v4
@@ -56,6 +65,13 @@ jobs:
           E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
           E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
           CI: true
+      - name: Upload Playwright Traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: e2e-artifacts/
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
         with:
