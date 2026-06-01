@@ -23,9 +23,9 @@ A edge function `external-db-bridge` (aposentada no Caminho B) ainda recebia **3
 | DROP de 67 índices ociosos | ✅ **FEITO** (2ª sessão) |
 | `fn_run_schema_drift_check` hold 30s→15s | ✅ **FEITO** (2ª sessão) |
 | FK index + policy consolidation `system_kill_switches` | ✅ **FEITO** (2ª sessão) |
-| `idle_session_timeout` / `idle_in_transaction` | ⏳ **PENDENTE** — Dashboard |
-| `log_min_duration_statement = 2000ms` | ⏳ **PENDENTE** — Dashboard |
-| Auth Connection Strategy → Percentage 15% | ⏳ **PENDENTE** — Dashboard |
+| `idle_session_timeout` / `idle_in_transaction` | ✅ **APLICADO** — verificado em pg_settings (600000ms / 60000ms) |
+| `log_min_duration_statement = 2000ms` | ✅ **APLICADO** — verificado em pg_settings |
+| Auth Connection Strategy → Percentage 15% | ⏳ **PENDENTE** — só Dashboard (não é GUC Postgres) |
 
 ## Atualização 2026-06-01 (3ª sessão — `claude/confident-heisenberg-M03BW`)
 
@@ -140,11 +140,13 @@ Deno.serve(async (req) => {
 - [x] DROP de 67 índices ociosos
 - [x] `fn_run_schema_drift_check` hold reduzido para 15s
 
-**Pendente — Dashboard (não executável via MCP):**
-- [ ] `idle_session_timeout = 600000ms` (10 min) — Project Settings → Database
-- [ ] `idle_in_transaction_session_timeout = 60000ms` (1 min) — idem
-- [ ] `log_min_duration_statement = 2000ms` — idem
-- [ ] Auth Connection Strategy → **Percentage 15%** — Auth → Settings
+**Aplicado (verificado em pg_settings — sessão 2026-06-01):**
+- [x] `idle_session_timeout = 600000ms` (10 min)
+- [x] `idle_in_transaction_session_timeout = 60000ms` (1 min)
+- [x] `log_min_duration_statement = 2000ms`
+
+**Pendente — só Dashboard (não executável via MCP/SQL):**
+- [ ] Auth Connection Strategy → **Percentage 15%** — Auth → Settings (resolve advisor `auth_db_connections_absolute`)
 
 **Opcional:**
 - [ ] Identificar e comunicar clientes que ainda chamam `external-db-bridge` (retornam 410 agora)

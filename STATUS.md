@@ -16,10 +16,12 @@
 
 **Estado atual**: kill-switch `external-db-bridge` ativo (410 Gone, sem abrir conexão); REVOKE SELECT `anon` em 27 tabelas internas; 67 índices ociosos removidos; `fn_run_and_persist_smoke_tests` sem SECURITY DEFINER (cron funciona); crons corrigidos; FK index + consolidação de policies em `system_kill_switches`; `fn_run_schema_drift_check` com hold máximo de 15s. Smoke tests: 13/14 PASS (o único FAIL é `cron_health_1h` — transiente, auto-resolve até 14:40 UTC hoje).
 
-**Pendências Dashboard-only** (não executáveis via MCP — requer ação manual):
-- `idle_session_timeout = 600000ms` (10 min)
-- `idle_in_transaction_session_timeout = 60000ms` (1 min)
-- `log_min_duration_statement = 2000ms`
+**Settings de Postgres aplicados** (verificados em `pg_settings`):
+- `idle_session_timeout = 600000ms` ✅
+- `idle_in_transaction_session_timeout = 60000ms` ✅
+- `log_min_duration_statement = 2000ms` ✅
+
+**Única pendência** (não é GUC Postgres — só Dashboard ou Management API):
 - Auth → Connection Strategy → **Percentage 15%** (advisor `auth_db_connections_absolute`)
 
 **Sessão anterior**: 2026-05-27 — **Auditoria exaustiva do módulo `mockup-generator` (rodada 2)** (`claude/mockup-generator-audit-KlHz3`). Aprofundou a auditoria T1‑T10 anterior cobrindo 12 gaps remanescentes (G1‑G12) e reconciliando o contrato real frontend↔edge↔testes. Destaques: (1) **edge `generate-mockup`** — rejeição de SVG com `errorCode:SVG_NOT_SUPPORTED`, fetch produto+logo em paralelo, `ai_generation_timeout`→`composition_timeout` (não há IA — é compositor canvas), allowlist de host opt-in p/ SSRF; (2) **service** — tradução robusta de erro da edge (lê `error.context`), remoção do payload morto `areas[]`, `layout_url`+`area_config` no select do histórico; (3) **rotação/escala** agora persistidas em `area_config` (sem migration) e restauradas no `loadFromHistory`; (4) **guards de input** no cliente (logo SVG, imagem de produto relativa/`placeholder.svg`); (5) **delete unificado** (fonte única no hook, removido estado duplicado da página) + histórico "carregar" agora usa o `loadFromHistory` rico; (6) **testes** — suíte grep substituída por testes comportamentais reais (service + storage), integração reescrita p/ contrato real, `MockupDeletion` atualizado, fixtures e2e migradas de SVG→PNG. Gates: build ✅, baseline TSC ✅ (zero regressão), 62 testes do módulo ✅, ESLint sem novos problemas nos arquivos tocados. _Nota: composição via `OffscreenCanvas` mantida por decisão (assumida funcional em prod); migração do motor fica para sessão dedicada se surgir `canvas_runtime_unavailable`._
