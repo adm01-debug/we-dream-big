@@ -1,12 +1,29 @@
 -- Audit and fix critical SECURITY DEFINER functions with correct signatures
-ALTER FUNCTION public.get_unread_count() SET search_path = public;
-ALTER FUNCTION public.acquire_ai_quota(uuid, text, text) SET search_path = public;
-ALTER FUNCTION public.check_auth_throttling(text, text) SET search_path = public;
-ALTER FUNCTION public.check_ip_access(text) SET search_path = public;
-ALTER FUNCTION public.get_auto_test_job_status(integer) SET search_path = public;
-ALTER FUNCTION public.claim_next_optimization() SET search_path = public;
-ALTER FUNCTION public.complete_optimization(uuid, text, text, text, jsonb, text) SET search_path = public;
-ALTER FUNCTION public.enqueue_optimization(text, text, text, integer) SET search_path = public;
-ALTER FUNCTION public.generate_secure_token() SET search_path = public;
-ALTER FUNCTION public.check_hardening_status() SET search_path = public;
-ALTER FUNCTION public.audit_security_definer_acl() SET search_path = public;
+-- Guard: cada função pode não existir em preview snapshots; skip silently.
+
+DO $$
+DECLARE
+  fns text[] := ARRAY[
+    'get_unread_count()',
+    'acquire_ai_quota(uuid, text, text)',
+    'check_auth_throttling(text, text)',
+    'check_ip_access(text)',
+    'get_auto_test_job_status(integer)',
+    'claim_next_optimization()',
+    'complete_optimization(uuid, text, text, text, jsonb, text)',
+    'enqueue_optimization(text, text, text, integer)',
+    'generate_secure_token()',
+    'check_hardening_status()',
+    'audit_security_definer_acl()'
+  ];
+  f text;
+BEGIN
+  FOREACH f IN ARRAY fns LOOP
+    BEGIN
+      EXECUTE format('ALTER FUNCTION public.%s SET search_path = public', f);
+    EXCEPTION
+      WHEN undefined_function THEN
+        RAISE NOTICE 'function public.% ausente em preview — skipping', f;
+    END;
+  END LOOP;
+END $$;

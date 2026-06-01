@@ -154,12 +154,13 @@ export function useExternalCollectionMutations() {
           ?.toLowerCase()
           .replace(/\s+/g, '-')
           .replace(/[^a-z0-9-]/g, '') || `col-${Date.now()}`;
+      const { is_active: _ignored, ...payload } = data;
       const { data: inserted, error } = await supabase
         .from('collections')
         .insert({
-          ...data,
+          ...payload,
           slug,
-          is_active: true,
+          is_deleted: false,
         })
         .select()
         .single();

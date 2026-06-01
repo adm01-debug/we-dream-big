@@ -5,6 +5,17 @@
 -- Essas falhas derrubavam o smoke test cron_health_1h (conta qualquer falha na última hora).
 --
 -- Solução: remover o job. A bridge não receberá deploy — não há razão para mantê-la ativa.
--- Idempotente: SELECT cron.unschedule retorna false se o job não existir.
+-- Guard: cron.unschedule(text) lança 'could not find valid entry' se o job não existir
+-- em preview snapshots; verificamos cron.job primeiro.
 
-SELECT cron.unschedule('external-db-bridge-keepalive');
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON c.relnamespace = n.oid
+    WHERE n.nspname = 'cron' AND c.relname = 'job'
+  ) AND EXISTS (
+    SELECT 1 FROM cron.job WHERE jobname = 'external-db-bridge-keepalive'
+  ) THEN
+    PERFORM cron.unschedule('external-db-bridge-keepalive');
+  END IF;
+END $$;
