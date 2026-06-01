@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/test-base';
 import { loginAs } from '../helpers/auth';
 
-test.describe('Global Search Comprehensive @smoke', () => {
+test.describe('Global Search Comprehensive', () => {
   test.beforeEach(async ({ page }) => {
     await loginAs(page);
     await page.goto('/');
