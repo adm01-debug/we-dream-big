@@ -1,0 +1,96 @@
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { GlobalSearchIdleState } from '../GlobalSearchIdleState';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { BrowserRouter } from 'react-router-dom';
+
+describe('GlobalSearchIdleState Rendering', () => {
+  const mockProps = {
+    history: [],
+    popularProducts: [
+      {
+        id: '1',
+        name: 'Caneca Top',
+        sku: 'CAN-001',
+        view_count: 100,
+        image_url: 'https://example.com/image.jpg',
+        category_name: 'Cozinha'
+      },
+      {
+        id: '2',
+        name: 'Caneca Mid',
+        sku: 'CAN-002',
+        view_count: 50,
+        // No image to test RankBadge fallback
+      }
+    ],
+    contextualSuggestions: [],
+    quickSuggestions: [],
+    routeContext: { section: '' },
+    quickActionsData: [],
+    onSuggestionClick: vi.fn(),
+    onSelect: vi.fn(),
+    onRemoveFromHistory: vi.fn(),
+  };
+
+  it('renders thumbnails for popular products', () => {
+    render(
+      <BrowserRouter>
+        <TooltipProvider>
+          <GlobalSearchIdleState {...mockProps} />
+        </TooltipProvider>
+      </BrowserRouter>
+    );
+
+    const img = screen.getByAltText('Caneca Top');
+    expect(img).toBeDefined();
+    expect(img.getAttribute('src')).toBe('https://example.com/image.jpg');
+  });
+
+  it('renders TOP 1 badge for the first item', () => {
+    render(
+      <BrowserRouter>
+        <TooltipProvider>
+          <GlobalSearchIdleState {...mockProps} />
+        </TooltipProvider>
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText(/TOP 1/i)).toBeDefined();
+  });
+
+  it('renders RankBadge when image is missing', () => {
+    render(
+      <BrowserRouter>
+        <TooltipProvider>
+          <GlobalSearchIdleState {...mockProps} />
+        </TooltipProvider>
+      </BrowserRouter>
+    );
+
+    // Second item (Caneca Mid) has no image, so it should render "2º" or Medal icon
+    // In our implementation, idx 1 renders Medal icon
+    // Actually RankBadge(1) renders Medal.
+    // Let's check if the text "2º" is NOT there but the medal container is.
+    // Or check for "3º" if we had 3 items.
+    
+    // If I add a 3rd item:
+    const propsWith3 = {
+      ...mockProps,
+      popularProducts: [
+        ...mockProps.popularProducts,
+        { id: '3', name: 'Caneca Low', sku: 'CAN-003', view_count: 10 }
+      ]
+    };
+    
+    render(
+      <BrowserRouter>
+        <TooltipProvider>
+          <GlobalSearchIdleState {...propsWith3} />
+        </TooltipProvider>
+      </BrowserRouter>
+    );
+    
+    expect(screen.getByText('3º')).toBeDefined();
+  });
+});
