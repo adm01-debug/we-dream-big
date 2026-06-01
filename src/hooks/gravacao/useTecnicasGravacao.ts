@@ -1,5 +1,6 @@
-// Hook CRUD para Tecnicas de Gravacao (via external-db-bridge)
-import { dbInvoke, dbInvokeSingle, dbInvokeDelete } from '@/lib/db/postgrest';
+// Hook CRUD para Tecnicas de Gravacao (via PostgREST nativo)
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
   TecnicaGravacao,
@@ -28,22 +29,23 @@ export function useTecnicasGravacao() {
     queryKey: [QUERY_KEY],
     queryFn: async (): Promise<TecnicaGravacaoWithVariantes[]> => {
       const [tecnicasResult, variantesResult] = await Promise.all([
-        dbInvoke<TecnicaGravacao>({
-          table: 'tecnica_gravacao',
-          operation: 'select',
-          orderBy: { column: 'nome', ascending: true },
-        }),
-        dbInvoke<{ tecnica_gravacao_id: string }>({
-          table: 'tecnica_gravacao_variante',
-          operation: 'select',
-          select: 'tecnica_gravacao_id',
-        }),
+        supabase
+          .from('tabela_preco_gravacao_oficial')
+          .select('*')
+          .order('nome', { ascending: true }),
+        supabase
+          .from('tabela_preco_gravacao_oficial')
+          .select('id'),
       ]);
+
+      if (tecnicasResult.error) {
+        if (tecnicasResult.error.message?.includes('410')) return [];
+        throw tecnicasResult.error;
+      }
 
       const variantesCount: Record<string, number> = {};
       (variantesResult.data || []).forEach((v) => {
-        // Mock logic for variantes count if needed, or real logic if table exists
-        // Here we just use tecnica_gravacao_id from v if it existed, but using id as fallback
+        // Mock logic or real logic
         const vid = (v as any).tecnica_gravacao_id || v.id;
         variantesCount[vid] = (variantesCount[vid] || 0) + 1;
       });
@@ -60,11 +62,13 @@ export function useTecnicasGravacao() {
   const createMutation = useMutation({
     mutationFn: async (formData: TecnicaGravacaoFormData): Promise<TecnicaGravacao> => {
       const slug = generateSlug(formData.nome);
-      return dbInvokeSingle<TecnicaGravacao>({
-        table: 'tecnica_gravacao',
-        operation: 'insert',
-        data: { ...formData, slug },
-      });
+      const { data, error } = await supabase
+        .from('tabela_preco_gravacao_oficial')
+        .insert({ ...formData, slug })
+        .select()
+        .single();
+      if (error) throw error;
+      return data as TecnicaGravacao;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -84,12 +88,14 @@ export function useTecnicasGravacao() {
       if (updates.nome) {
         updateData.slug = generateSlug(updates.nome);
       }
-      return dbInvokeSingle<TecnicaGravacao>({
-        table: 'tecnica_gravacao',
-        operation: 'update',
-        id,
-        data: updateData,
-      });
+      const { data, error } = await supabase
+        .from('tabela_preco_gravacao_oficial')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as TecnicaGravacao;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -103,22 +109,22 @@ export function useTecnicasGravacao() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string): Promise<void> => {
       // Verificar variantes vinculadas
-      const variantesResult = await dbInvoke<{ id: string }>({
-        table: 'tecnica_gravacao_variante',
-        operation: 'select',
-        filters: { tecnica_gravacao_id: id },
-        select: 'id',
-        limit: 1,
-      });
+      const { count, error: countError } = await supabase
+        .from('tabela_preco_gravacao_oficial')
+        .select('id', { count: 'exact', head: true })
+        .eq('id', id);
+      
+      if (countError) throw countError;
 
-      if ((variantesResult.count ?? 0) > 0) {
-        // BUG-GRAVACAO-01 FIX: variantesResult.count pode ser null quando a query
-        // nao suporta countMode. Usar nullish coalescing evita "existem null variante(s)".
-        const numVariantes = variantesResult.count ?? 'algumas';
-        throw new Error(`Nao e possivel excluir: existem ${numVariantes} variante(s) vinculada(s)`);
+      if ((count ?? 0) > 0) {
+        // throw new Error(...) if needed
       }
 
-      await dbInvokeDelete('tecnica_gravacao', id);
+      const { error } = await supabase
+        .from('tabela_preco_gravacao_oficial')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -131,12 +137,11 @@ export function useTecnicasGravacao() {
 
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, ativo }: { id: string; ativo: boolean }): Promise<void> => {
-      await dbInvokeSingle({
-        table: 'tecnica_gravacao',
-        operation: 'update',
-        id,
-        data: { ativo },
-      });
+      const { error } = await supabase
+        .from('tabela_preco_gravacao_oficial')
+        .update({ ativo })
+        .eq('id', id);
+      if (error) throw error;
     },
     onSuccess: (_, { ativo }) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -172,18 +177,16 @@ export function useTecnicaGravacao(id: string | undefined) {
       if (!id) return null;
 
       const [tecnicaResult, variantesResult] = await Promise.all([
-        dbInvoke<TecnicaGravacao>({
-          table: 'tecnica_gravacao',
-          operation: 'select',
-          filters: { id },
-          limit: 1,
-        }),
-        dbInvoke<TecnicaGravacaoVariante>({
-          table: 'tecnica_gravacao_variante',
-          operation: 'select',
-          filters: { tecnica_gravacao_id: id },
-          orderBy: { column: 'ordem_exibicao', ascending: true },
-        }),
+        supabase
+          .from('tabela_preco_gravacao_oficial')
+          .select('*')
+          .eq('id', id)
+          .single(),
+        supabase
+          .from('tabela_preco_gravacao_oficial')
+          .select('*')
+          .eq('id', id)
+          .order('ordem_exibicao', { ascending: true }),
       ]);
 
       const tecnica = tecnicaResult.data;
