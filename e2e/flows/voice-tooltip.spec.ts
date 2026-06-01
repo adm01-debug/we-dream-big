@@ -41,7 +41,7 @@ test.describe('Global Search Voice Tooltip @smoke', () => {
   test('Tooltip shows and disappears on Mobile @mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     
-    const micButton = page.locator('button[aria-label="Microfone"]');
+    const micButton = page.locator('button[aria-label="Fale com o Flow"]');
     
     // On mobile, tap/focus usually triggers the tooltip
     await micButton.focus();
