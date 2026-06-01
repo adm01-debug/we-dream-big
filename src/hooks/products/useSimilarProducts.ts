@@ -8,7 +8,7 @@
  *
  * All levels use lightweight batch queries (no individual product detail fetches).
  */
-import { dbInvoke } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import type { Product } from '@/types/product-catalog';
 import { logger } from '@/lib/logger';
@@ -61,15 +61,17 @@ function mapLightweightToSimilarItem(p: LightweightProduct): SimilarProductItem 
 async function fetchProductsByIds(ids: string[]): Promise<SimilarProductItem[]> {
   if (ids.length === 0) return [];
 
-  const { records } = await dbInvoke<LightweightProduct>({
-    table: 'products',
-    operation: 'select',
-    select: SIMILAR_PRODUCT_SELECT,
-    filters: { id: ids, active: true },
-    limit: ids.length,
-  });
+  const { data, error } = await supabase
+    .from('v_products_public')
+    .select(SIMILAR_PRODUCT_SELECT)
+    .in('id', ids)
+    .eq('active', true)
+    .limit(ids.length);
 
-  return (records || []).filter((p) => p.sale_price > 0).map(mapLightweightToSimilarItem);
+  if (error) throw error;
+  const records = data || [];
+
+  return (records as unknown as LightweightProduct[] || []).filter((p) => p.sale_price > 0).map(mapLightweightToSimilarItem);
 }
 
 export function useSimilarProducts(product: Product | null | undefined) {
@@ -84,18 +86,14 @@ export function useSimilarProducts(product: Product | null | undefined) {
 
       // 1. Try product_relationships (direct pairs — fastest, 107k+ records)
       try {
-        const { records: relationships } = await dbInvoke<{
-          related_product_id: string;
-        }>({
-          table: 'product_relationships',
-          operation: 'select',
-          select: 'related_product_id',
-          filters: {
-            product_id: productId,
-            relationship_type: 'similar',
-          },
-          limit: 50,
-        });
+        const { data: relationships, error } = await supabase
+          .from('product_relationships')
+          .select('related_product_id')
+          .eq('product_id', productId)
+          .eq('relationship_type', 'similar')
+          .limit(50);
+
+        if (error) throw error;
 
         if (relationships && relationships.length > 0) {
           const relatedIds = relationships.map((r) => r.related_product_id);
@@ -109,31 +107,25 @@ export function useSimilarProducts(product: Product | null | undefined) {
       // 2. Try product_group_members (group-based siblings)
       // NOTE: a coluna correta no BD externo é `product_group_id` (não `group_id`).
       try {
-        const { records: memberships } = await dbInvoke<{
-          product_group_id: string;
-        }>({
-          table: 'product_group_members',
-          operation: 'select',
-          select: 'product_group_id',
-          filters: { product_id: productId },
-          limit: 10,
-        });
+        const { data: memberships, error } = await supabase
+          .from('product_group_members')
+          .select('product_group_id')
+          .eq('product_id', productId)
+          .limit(10);
+
+        if (error) throw error;
 
         if (memberships && memberships.length > 0) {
           const groupIds = [...new Set(memberships.map((m) => m.product_group_id))].filter(Boolean);
           if (groupIds.length === 0) throw new Error('No valid group IDs');
 
-          const { records: allMembers } = await dbInvoke<{
-            product_id: string;
-          }>({
-            table: 'product_group_members',
-            operation: 'select',
-            select: 'product_id',
-            filters: {
-              product_group_id: `in.(${groupIds.join(',')})`,
-            },
-            limit: 100,
-          });
+          const { data: allMembers, error: membersError } = await supabase
+            .from('product_group_members')
+            .select('product_id')
+            .in('product_group_id', groupIds)
+            .limit(100);
+
+          if (membersError) throw membersError;
 
           const siblingIds = [
             ...new Set(
@@ -155,23 +147,24 @@ export function useSimilarProducts(product: Product | null | undefined) {
 
       // 3. Fallback: fetch related products from same supplier or category (lightweight)
       try {
-        const fallbackFilters: Record<string, unknown> = { active: true };
+        let query = supabase
+          .from('v_products_public')
+          .select(SIMILAR_PRODUCT_SELECT)
+          .eq('active', true);
+
         if (supplierId && supplierId !== 'unknown') {
-          fallbackFilters.supplier_id = supplierId;
+          query = query.eq('supplier_id', supplierId);
         } else if (categoryId) {
-          fallbackFilters.main_category_id = categoryId;
+          query = query.eq('main_category_id', categoryId);
         }
 
-        const { records: fallbackProducts } = await dbInvoke<LightweightProduct>({
-          table: 'products',
-          operation: 'select',
-          select: SIMILAR_PRODUCT_SELECT,
-          filters: fallbackFilters,
-          limit: 30,
-          orderBy: { column: 'name', ascending: true },
-        });
+        const { data: fallbackProducts, error } = await query
+          .order('name', { ascending: true })
+          .limit(30);
 
-        return (fallbackProducts || [])
+        if (error) throw error;
+
+        return ((fallbackProducts as unknown as LightweightProduct[]) || [])
           .filter((p) => p.id !== productId && p.sale_price > 0)
           .map(mapLightweightToSimilarItem);
       } catch (err) {

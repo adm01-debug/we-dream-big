@@ -13,7 +13,7 @@
  * - is_active: Se está ativa
  */
 
-import { dbInvoke } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
 
@@ -56,20 +56,17 @@ export interface ProductImageForDisplay {
  */
 export async function fetchProductImages(productId: string): Promise<ProductImage[]> {
   try {
-    const result = await dbInvoke<ProductImage>({
-      table: 'product_images',
-      operation: 'select',
-      select:
-        'id, product_id, variant_id, color_id, supplier_code, url_cdn, url_original, image_type, is_primary, is_og_image, display_order, is_active, alt_text, title_text',
-      filters: {
-        product_id: productId,
-        is_active: true,
-      },
-      orderBy: { column: 'display_order', ascending: true },
-      limit: 100,
-    });
+    const { data, error } = await supabase
+      .from('product_images')
+      .select('id, product_id, variant_id, color_id, supplier_code, url_cdn, url_original, image_type, is_primary, is_og_image, display_order, is_active, alt_text, title_text')
+      .eq('product_id', productId)
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+      .limit(100);
 
-    return result.records;
+    if (error) throw error;
+
+    return data || [];
   } catch (err) {
     logger.warn('Erro ao buscar imagens do produto:', productId, err);
     return [];
@@ -85,23 +82,21 @@ export async function fetchProductImagesBatch(
   if (productIds.length === 0) return new Map();
 
   try {
-    // Buscar todas as imagens ativas
-    // Nota: O bridge não suporta IN() diretamente, então buscamos todas e filtramos
-    const result = await dbInvoke<ProductImage>({
-      table: 'product_images',
-      operation: 'select',
-      select:
-        'id, product_id, variant_id, color_id, supplier_code, url_cdn, url_original, image_type, is_primary, is_og_image, display_order, is_active, alt_text, title_text',
-      filters: { is_active: true },
-      orderBy: { column: 'display_order', ascending: true },
-      limit: 5000,
-    });
+    const { data, error } = await supabase
+      .from('product_images')
+      .select('id, product_id, variant_id, color_id, supplier_code, url_cdn, url_original, image_type, is_primary, is_og_image, display_order, is_active, alt_text, title_text')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+      .limit(5000);
+
+    if (error) throw error;
+    const records = data || [];
 
     // Agrupar por product_id
     const imagesByProduct = new Map<string, ProductImage[]>();
     const productIdSet = new Set(productIds);
 
-    result.records.forEach((image) => {
+    records.forEach((image) => {
       if (!productIdSet.has(image.product_id)) return;
 
       const productImages = imagesByProduct.get(image.product_id) ?? [];
@@ -121,19 +116,17 @@ export async function fetchProductImagesBatch(
  */
 export async function fetchPrimaryImage(productId: string): Promise<string | null> {
   try {
-    const result = await dbInvoke<ProductImage>({
-      table: 'product_images',
-      operation: 'select',
-      select: 'url_cdn, alt_text',
-      filters: {
-        product_id: productId,
-        is_primary: true,
-        is_active: true,
-      },
-      limit: 1,
-    });
+    const { data, error } = await supabase
+      .from('product_images')
+      .select('url_cdn, alt_text')
+      .eq('product_id', productId)
+      .eq('is_primary', true)
+      .eq('is_active', true)
+      .limit(1)
+      .maybeSingle();
 
-    return result.records[0]?.url_cdn || null;
+    if (error) throw error;
+    return data?.url_cdn || null;
   } catch (err) {
     logger.warn('Erro ao buscar imagem principal:', productId, err);
     return null;
