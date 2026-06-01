@@ -154,13 +154,13 @@ export function GlobalSearchPalette() {
               size="icon"
               onClick={s.handleOpenVoiceOverlay}
               className="h-11 w-11 shrink-0 rounded-2xl border-primary/20 bg-primary/5 shadow-sm transition-all hover:border-primary/40 hover:bg-primary/15 hover:text-primary"
-              aria-label="Microfone"
+              aria-label="Fale com o Flow"
             >
               <Mic className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            Assistente de voz IA <kbd className="ml-1 text-[9px] opacity-60">Ctrl+Shift+V</kbd>
+            Fale com o Flow <kbd className="ml-1 text-[9px] opacity-60">Ctrl+Shift+V</kbd>
           </TooltipContent>
         </Tooltip>
       </div>
