@@ -185,16 +185,17 @@ export function useCustomizationPriceLegacy() {
       setLoading(true);
       setError(null);
       try {
-        const rawResult = await invokeExternalRpc<RpcCustomizationPriceResult>(
-          'fn_get_customization_price',
-          {
+        // Placeholder: RPC call logic would go here if migrated, but plan says PostgREST calls
+        // For now using supabase.rpc if defined or keep as is if RPC is still supported
+        const { data: rawResult, error: rpcError } = await (supabase.rpc as any)('fn_get_customization_price', {
             p_area_id: areaId,
             p_quantidade: quantidade,
             p_num_cores: numCores,
             p_largura_cm: larguraCm ?? null,
             p_altura_cm: alturaCm ?? null,
-          },
-        );
+        });
+
+        if (rpcError) throw rpcError;
         if (!rawResult?.success) {
           setLoading(false);
           return null;
