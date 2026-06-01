@@ -3,6 +3,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { GlobalSearchIdleState } from '../GlobalSearchIdleState';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { BrowserRouter } from 'react-router-dom';
+import { Command } from '@/components/ui/command';
+
 
 describe('GlobalSearchIdleState Rendering', () => {
   const mockProps = {
