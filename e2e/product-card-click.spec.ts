@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('ProductCard Interaction & Accessibility', () => {
+test.describe('ProductCard Interaction & Accessibility @smoke', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('[data-testid="product-card"]');
