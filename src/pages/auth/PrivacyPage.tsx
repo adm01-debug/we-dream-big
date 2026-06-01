@@ -18,7 +18,7 @@ export default function PrivacyPage() {
             data-testid="privacy-back-link"
             className={cn(
               buttonVariants({ variant: 'ghost' }),
-              '-ml-2 gap-2 text-white/60 hover:bg-white/10 hover:text-white transition-all',
+              '-ml-2 gap-2 text-white/60 hover:bg-white/10 hover:text-white transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#030508]',
             )}
           >
             <ChevronLeft className="h-4 w-4" />
