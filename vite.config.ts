@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
   const uploadSourcemaps = isProd && !!process.env.SENTRY_AUTH_TOKEN;
 
-  const config: UserConfig = {
+  const config: UserConfig & { test?: any } = {
     plugins: [
       react(),
       mode === 'development' && componentTagger(),
@@ -121,6 +121,8 @@ export default defineConfig(({ mode }) => {
         'react-hook-form',
         '@hookform/resolvers/zod',
       ],
+    },
+
     test: {
       globals: true,
       environment: 'jsdom',
