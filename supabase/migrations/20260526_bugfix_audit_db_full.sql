@@ -169,36 +169,28 @@ END $$;
 
 -- -------------------------------------------------------
 -- DOCUMENTACAO B03: Tabelas duplicadas — comentários COMMENTS
+-- COMMENT ON ... IS requer string literal único (não permite || concat).
 -- -------------------------------------------------------
-COMMENT ON TABLE public.smoke_test_runs IS 
-  'DEPRECADA: use smoke_tests_runs. Esta tabela esta vazia (0 registros). ' ||
-  'smoke_tests_runs tem 28 registros. Ver PR fix/db-audit-20260526.';
+COMMENT ON TABLE public.smoke_test_runs IS
+  'DEPRECADA: use smoke_tests_runs. Esta tabela esta vazia (0 registros). smoke_tests_runs tem 28 registros. Ver PR fix/db-audit-20260526.';
 
-COMMENT ON TABLE public.smoke_tests_runs IS 
-  'Tabela ATIVA de smoke tests. smoke_test_runs esta deprecada e vazia. ' ||
-  'Ver PR fix/db-audit-20260526.';
+COMMENT ON TABLE public.smoke_tests_runs IS
+  'Tabela ATIVA de smoke tests. smoke_test_runs esta deprecada e vazia. Ver PR fix/db-audit-20260526.';
 
-COMMENT ON TABLE public.login_attempts IS 
-  'Tabela legada com 203 registros. auth_login_attempts e a versao mais nova ' ||
-  '(campo metadata adicional) mas esta vazia. Consolidacao pendente.';
+COMMENT ON TABLE public.login_attempts IS
+  'Tabela legada com 203 registros. auth_login_attempts e a versao mais nova (campo metadata adicional) mas esta vazia. Consolidacao pendente.';
 
-COMMENT ON TABLE public.auth_login_attempts IS 
-  'Versao mais recente de login_attempts (com metadata). Atualmente vazia. ' ||
-  'login_attempts e a tabela populada (203 registros). Consolidacao pendente.';
+COMMENT ON TABLE public.auth_login_attempts IS
+  'Versao mais recente de login_attempts (com metadata). Atualmente vazia. login_attempts e a tabela populada (203 registros). Consolidacao pendente.';
 
-COMMENT ON TABLE public.audit_log IS 
-  'Tabela de auditoria legada (3 registros). admin_audit_log e a principal (18k+). ' ||
-  'audit_logs (estrutura diferente, vazia) pode ser descontinuada.';
+COMMENT ON TABLE public.audit_log IS
+  'Tabela de auditoria legada (3 registros). admin_audit_log e a principal (18k+). audit_logs (estrutura diferente, vazia) pode ser descontinuada.';
 
-COMMENT ON COLUMN public.products.category_id IS 
-  'Subcategoria especifica do produto (folha da arvore de categorias). ' ||
-  'Ex: "Canetas | Plastico". ATENCAO: 136 produtos divergem de main_category_id ' ||
-  '(comportamento esperado para hierarquias). Ver BUG_AUDIT_20260526.md.';
+COMMENT ON COLUMN public.products.category_id IS
+  'Subcategoria especifica do produto (folha da arvore de categorias). Ex: "Canetas | Plastico". ATENCAO: 136 produtos divergem de main_category_id (comportamento esperado para hierarquias). Ver BUG_AUDIT_20260526.md.';
 
-COMMENT ON COLUMN public.products.main_category_id IS 
-  'Categoria raiz/principal para navegacao (ex: "Canetas"). ' ||
-  'Pode ser diferente de category_id para produtos em subcategorias. ' ||
-  'Semantica oficial: category_id=folha, main_category_id=raiz.';
+COMMENT ON COLUMN public.products.main_category_id IS
+  'Categoria raiz/principal para navegacao (ex: "Canetas"). Pode ser diferente de category_id para produtos em subcategorias. Semantica oficial: category_id=folha, main_category_id=raiz.';
 
 -- -------------------------------------------------------
 -- VIEW DE MONITORAMENTO CONTÍNUO — v_db_health_audit
