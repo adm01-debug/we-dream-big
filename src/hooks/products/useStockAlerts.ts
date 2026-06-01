@@ -1,4 +1,4 @@
-import { dbInvoke } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { getProductImageUrl, type PromobrindProduct } from '@/lib/external-db/product-types';
 
@@ -22,19 +22,18 @@ export function useStockAlerts(lowStockThreshold = 50, criticalStockThreshold = 
   return useQuery<StockAlert[], Error>({
     queryKey: ['stock-alerts', lowStockThreshold, criticalStockThreshold],
     queryFn: async () => {
-      const result = await dbInvoke<PromobrindProduct>({
-        table: 'products',
-        operation: 'select',
-        select: STOCK_ALERT_SELECT,
-        filters: {
-          is_active: true,
-          stock_quantity: `lt.${lowStockThreshold}`,
-        },
-        orderBy: { column: 'stock_quantity', ascending: true },
-        limit: 50,
-      });
+      const { data, error } = await supabase
+        .from('v_products_public')
+        .select(STOCK_ALERT_SELECT)
+        .eq('is_active', true)
+        .lt('stock_quantity', lowStockThreshold)
+        .order('stock_quantity', { ascending: true })
+        .limit(50);
 
-      return result.records.map((p) => {
+      if (error) throw error;
+      const records = data || [];
+
+      return records.map((p) => {
         const stock = p.stock_quantity ?? 0;
         let alertLevel: AlertLevel = 'low';
         if (stock === 0) alertLevel = 'out';

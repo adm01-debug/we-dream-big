@@ -3,7 +3,7 @@
  *
  * Responsável por: CRUD operations (create, update, delete, toggle)
  */
-import { dbInvokeSingle } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { TECNICAS_QUERY_KEYS } from '@/hooks/tecnicas/keys';
 import type { PersonalizationTechniqueRaw } from '@/types/tecnica-unificada';
@@ -18,12 +18,11 @@ export function useTecnicaMutations() {
   // Toggle status
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, ativo }: { id: string; ativo: boolean }) => {
-      await dbInvokeSingle({
-        table: 'personalization_techniques',
-        operation: 'update',
-        id,
-        data: { is_active: ativo },
-      });
+      const { error } = await supabase
+        .from('tecnicas_gravacao')
+        .update({ ativo: ativo })
+        .eq('codigo', id);
+      if (error) throw error;
     },
     onSuccess: (_, { ativo }) => {
       queryClient.invalidateQueries({ queryKey: TECNICAS_QUERY_KEYS.all });
@@ -37,11 +36,10 @@ export function useTecnicaMutations() {
   // Create
   const createMutation = useMutation({
     mutationFn: async (data: Partial<PersonalizationTechniqueRaw>) => {
-      await dbInvokeSingle({
-        table: 'personalization_techniques',
-        operation: 'insert',
-        data,
-      });
+      const { error } = await supabase
+        .from('tecnicas_gravacao')
+        .insert(data);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TECNICAS_QUERY_KEYS.all });
@@ -55,12 +53,11 @@ export function useTecnicaMutations() {
   // Update
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...data }: { id: string } & Partial<PersonalizationTechniqueRaw>) => {
-      await dbInvokeSingle({
-        table: 'personalization_techniques',
-        operation: 'update',
-        id,
-        data,
-      });
+      const { error } = await supabase
+        .from('tecnicas_gravacao')
+        .update(data)
+        .eq('codigo', id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TECNICAS_QUERY_KEYS.all });
@@ -74,11 +71,11 @@ export function useTecnicaMutations() {
   // Delete
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await dbInvokeSingle({
-        table: 'personalization_techniques',
-        operation: 'delete',
-        id,
-      });
+      const { error } = await supabase
+        .from('tecnicas_gravacao')
+        .delete()
+        .eq('codigo', id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TECNICAS_QUERY_KEYS.all });

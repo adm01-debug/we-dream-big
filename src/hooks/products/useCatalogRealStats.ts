@@ -2,7 +2,7 @@
  * useCatalogRealStats — Fetches real aggregate counts from the external DB.
  * Uses individual queries (not batch) because batch doesn't support countMode.
  */
-import { dbInvoke } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
 export interface CatalogRealStats {
@@ -32,40 +32,25 @@ export function useCatalogRealStats() {
     queryFn: async () => {
       // Run 3 parallel queries with countMode: exact
       const [variantsResult, categoriesResult, suppliersResult] = await Promise.all([
-        dbInvoke<{ id: string }>({
-          table: 'product_variants',
-          operation: 'select',
-          select: 'id',
-          filters: {},
-          limit: 1,
-          offset: 0,
-          countMode: 'exact',
-        }),
-        dbInvoke<{ id: string; name: string }>({
-          table: 'categories',
-          operation: 'select',
-          select: 'id,name',
-          filters: { active: true },
-          limit: 1000,
-          offset: 0,
-          countMode: 'exact',
-        }),
-        dbInvoke<{ id: string }>({
-          table: 'suppliers',
-          operation: 'select',
-          select: 'id',
-          filters: { active: true },
-          limit: 1,
-          offset: 0,
-          countMode: 'exact',
-        }),
+        supabase
+          .from('product_variants')
+          .select('id', { count: 'exact', head: true }),
+        supabase
+          .from('categories')
+          .select('id,name', { count: 'exact' })
+          .eq('active', true)
+          .limit(1000),
+        supabase
+          .from('v_suppliers_public')
+          .select('id', { count: 'exact', head: true })
+          .eq('active', true),
       ]);
 
       // Variants: use count from countMode
       const totalVariants = variantsResult.count ?? 0;
 
       // Categories: filter hidden ones from records
-      const visible = categoriesResult.records.filter((c) => !isHiddenCategory(c.name || ''));
+      const visible = (categoriesResult.data || []).filter((c) => !isHiddenCategory(c.name || ''));
       const totalCategories = visible.length;
 
       // Suppliers: use count from countMode

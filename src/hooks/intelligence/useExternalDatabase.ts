@@ -8,7 +8,7 @@
  *
  * Este arquivo contém o hook principal e re-exporta tudo para compatibilidade.
  */
-import { dbInvoke } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
@@ -142,17 +142,15 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
             ? { ...(options?.filters ?? {}), ...(idFilter ?? {}) }
             : undefined;
 
-        const result = await dbInvoke<T>({
-          table: tableName,
-          operation,
-          data: options?.data as Record<string, unknown> | undefined,
-          filters: mergedFilters,
-          id: options?.id,
-          select: options?.select,
-          orderBy: options?.orderBy,
-          limit: options?.limit,
-          offset: options?.offset,
-        });
+        const { data: records, error, count } = await (supabase.from(TABLE_ALIASES[tableName] ?? tableName) as any)
+          .select(options?.select || '*', { count: options?.countMode || 'none' })
+          .match(mergedFilters || {})
+          .order(options?.orderBy?.column || 'id', { ascending: options?.orderBy?.ascending ?? true })
+          .range(options?.offset || 0, (options?.offset || 0) + (options?.limit || 100) - 1);
+
+        if (error) throw error;
+        
+        const result = { records: records || [], count: count || 0 };
 
         // dbInvoke já devolve { records, count } desempacotado.
         if (operation === 'select') {

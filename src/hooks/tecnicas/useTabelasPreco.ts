@@ -3,7 +3,7 @@
  *
  * Responsável por: Busca e filtragem de tabelas de preço
  */
-import { dbInvoke } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { TABELAS_PRECO_QUERY_OPTIONS } from '@/lib/query-config';
 import { rawToTabelaPrecoTecnica, transformRawToTabelas } from '@/lib/personalization';
@@ -37,13 +37,15 @@ export function useTabelasPreco(filtros?: TabelaPrecoFiltros) {
         filters.customization_type_name = filtros.nomeTecnica;
       }
 
-      const result = await dbInvoke<CustomizationPriceTableRaw>({
-        table: 'customization_price_tables',
-        operation: 'select',
-        filters: Object.keys(filters).length > 0 ? filters : undefined,
-        orderBy: { column: 'table_code', ascending: true },
-        limit: 500,
-      });
+      const { data, error } = await supabase
+        .from('tabela_preco_gravacao_oficial')
+        .select('*')
+        .match(filters)
+        .order('codigo_tabela', { ascending: true })
+        .limit(500);
+
+      if (error) throw error;
+      const result = { records: data || [] };
 
       let tabelas = transformRawToTabelas(result.records);
 
@@ -67,12 +69,15 @@ export function useTabelasPorTecnica(nomeTecnica: string | undefined) {
     queryFn: async (): Promise<TabelaPrecoTecnica[]> => {
       if (!nomeTecnica) return [];
 
-      const result = await dbInvoke<CustomizationPriceTableRaw>({
-        table: 'customization_price_tables',
-        operation: 'select',
-        filters: { customization_type_name: nomeTecnica, is_active: true },
-        orderBy: { column: 'max_colors', ascending: true },
-      });
+      const { data, error } = await supabase
+        .from('tabela_preco_gravacao_oficial')
+        .select('*')
+        .eq('grupo_tecnica', nomeTecnica)
+        .eq('ativo', true)
+        .order('max_cores', { ascending: true });
+
+      if (error) throw error;
+      const result = { records: data || [] };
 
       return transformRawToTabelas(result.records);
     },
@@ -90,12 +95,14 @@ export function useTabelaPorCodigo(codigoOpcao: string | undefined) {
     queryFn: async (): Promise<TabelaPrecoTecnica | null> => {
       if (!codigoOpcao) return null;
 
-      const result = await dbInvoke<CustomizationPriceTableRaw>({
-        table: 'customization_price_tables',
-        operation: 'select',
-        filters: { table_code_option: codigoOpcao },
-        limit: 1,
-      });
+      const { data, error } = await supabase
+        .from('tabela_preco_gravacao_oficial')
+        .select('*')
+        .eq('codigo_tabela', codigoOpcao)
+        .limit(1);
+
+      if (error) throw error;
+      const result = { records: data || [] };
 
       const tabela = result.records[0];
       return tabela ? rawToTabelaPrecoTecnica(tabela) : null;
@@ -112,14 +119,15 @@ export function useNomesTecnicasPreco() {
   return useQuery({
     queryKey: TECNICAS_QUERY_KEYS.nomesTecnicas(),
     queryFn: async (): Promise<string[]> => {
-      const result = await dbInvoke<{ customization_type_name: string }>({
-        table: 'customization_price_tables',
-        operation: 'select',
-        select: 'customization_type_name',
-        filters: { is_active: true },
-      });
+      const { data, error } = await supabase
+        .from('tabela_preco_gravacao_oficial')
+        .select('grupo_tecnica')
+        .eq('ativo', true);
 
-      const nomes = [...new Set(result.records.map((r) => r.customization_type_name))];
+      if (error) throw error;
+      const result = { records: data || [] };
+
+      const nomes = [...new Set(result.records.map((r) => r.grupo_tecnica))];
       return nomes.sort();
     },
     staleTime: 10 * 60 * 1000,
@@ -135,12 +143,15 @@ export async function buscarTabelaAdequada(
   larguraCm?: number,
   alturaCm?: number,
 ): Promise<TabelaPrecoTecnica | null> {
-  const result = await dbInvoke<CustomizationPriceTableRaw>({
-    table: 'customization_price_tables',
-    operation: 'select',
-    filters: { customization_type_name: nomeTecnica, is_active: true },
-    orderBy: { column: 'max_colors', ascending: true },
-  });
+  const { data, error } = await supabase
+    .from('tabela_preco_gravacao_oficial')
+    .select('*')
+    .eq('grupo_tecnica', nomeTecnica)
+    .eq('ativo', true)
+    .order('max_cores', { ascending: true });
+
+  if (error) throw error;
+  const result = { records: data || [] };
 
   const tabelas = transformRawToTabelas(result.records);
 

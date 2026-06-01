@@ -217,9 +217,8 @@ export function useReplenishmentsWithDetails(options: UseReplenishmentsOptions =
         .range(0, limit - 1);
 
       if (error) {
-        if (error.message?.includes('410')) {
-          const { reportSilentEmpty } = await import('@/lib/external-db/silent-empty-report');
-          reportSilentEmpty({ reason: 'gone_410', table: 'v_products_public', operation: 'select', message: error.message });
+        if (error.message?.includes('410') || error.message?.includes('Gone')) {
+          logger.warn(`[useReplenishments] Bridge deprecated (410) for v_products_public`);
           return [];
         }
         throw error;

@@ -1,6 +1,6 @@
-import { dbInvoke } from '@/lib/db/postgrest';
-import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+// ... keep existing imports
 import { logger } from '@/lib/logger';
 
 export interface ColorGroup {
@@ -35,21 +35,19 @@ export interface ColorFilters {
 // Migrated from supabase.functions.invoke('external-db-bridge') to dbInvoke
 // (2026-05-30) — uses REST native PostgREST path, zero Edge Function calls.
 async function fetchExternalColors() {
-  const groupsResult = await dbInvoke<Record<string, string>>({
-    table: 'color_groups',
-    operation: 'select',
-    filters: { is_active: true },
-    orderBy: { column: 'sort_order', ascending: true },
-  });
-  const groups = groupsResult.records || [];
+  const groupsResult = await supabase
+    .from('color_groups')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
+  const groups = groupsResult.data || [];
 
-  const variationsResult = await dbInvoke<Record<string, string>>({
-    table: 'color_variations',
-    operation: 'select',
-    filters: { is_active: true },
-    orderBy: { column: 'sort_order', ascending: true },
-  });
-  const variations = variationsResult.records || [];
+  const variationsResult = await supabase
+    .from('color_variations')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
+  const variations = variationsResult.data || [];
 
   const groupsWithVariations: ColorGroup[] = groups.map((group) => ({
     id: group.id,

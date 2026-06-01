@@ -3,7 +3,7 @@
  *
  * Loads ~10x faster than useProducts (no color/variant enrichment).
  */
-import { dbBatch, dbInvoke } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import {
   fetchPromobrindProductsLightweight,
@@ -159,78 +159,36 @@ async function fetchCatalogPage(
 
   const categoriesPromise = loadCategoriesMap();
 
-  let batchResults;
-  try {
-    batchResults = await dbBatch(batchQueries);
-  } catch {
-    // BUG-LOAD-01 FIX: O fallback anterior usava fetchPromobrindProductsLightweight
-    // com limit=500, que faz short-circuit para UMA única query REST quando `limit`
-    // é especificado — retornando apenas 500 produtos e totalEstimate=null.
-    // Resultado: UI exibia "500 itens" mesmo com 6000+ no banco.
-    //
-    // Novo fallback: replicar o mesmo comportamento do batch bridge usando
-    // dbInvoke em paralelo (que roteia para REST nativo quando o
-    // kill-switch 'edge_external_db_bridge' está OFF). Assim:
-    //   - Primeiro carregamento: 4 × 500 = 2000 produtos em paralelo
-    //   - Carregamentos seguintes: 1 × 500 = 500 produtos
-    //   - totalEstimate correto via countMode:'exact' na primeira página
-    const restQueries = Array.from({ length: pagesToFetch }, (_, i) =>
-      dbInvoke<LightweightProduct>({
-        table: 'products',
-        operation: 'select',
-        select: PRODUCT_SELECT_LIGHTWEIGHT,
-        filters,
-        orderBy,
-        limit: CATALOG_PAGE_SIZE,
-        offset: offset + i * CATALOG_PAGE_SIZE,
-        ...(i === 0 && isFirstLoad ? { countMode: 'exact' } : {}),
-      }).catch(() => ({ records: [] as LightweightProduct[], count: null as number | null })),
-    );
-
-    const [pageResults, categoriesById] = await Promise.all([
-      Promise.all(restQueries),
-      categoriesPromise,
-    ]);
-
-    const fallbackProducts: Product[] = [];
-    let fallbackTotalEstimate: number | null = null;
-    let fallbackLastPageSize = 0;
-
-    for (const result of pageResults) {
-      fallbackProducts.push(
-        ...result.records.map((p) => mapLightweightToProduct(p, categoriesById)),
-      );
-      fallbackLastPageSize = result.records.length;
-      if (result.count !== null && fallbackTotalEstimate === null) {
-        fallbackTotalEstimate = result.count;
-      }
-    }
-
-    const fallbackFetchedUpTo = offset + pagesToFetch * CATALOG_PAGE_SIZE;
-    const fallbackHasMore = fallbackLastPageSize === CATALOG_PAGE_SIZE;
-
-    return {
-      products: fallbackProducts,
-      nextOffset: fallbackHasMore ? fallbackFetchedUpTo : null,
-      totalEstimate: fallbackTotalEstimate,
-    };
-  }
-
   const categoriesById = await categoriesPromise;
+  
+  const restQueries = Array.from({ length: pagesToFetch }, (_, i) =>
+    supabase
+      .from('v_products_public')
+      .select(PRODUCT_SELECT_LIGHTWEIGHT, { count: i === 0 && isFirstLoad ? 'exact' : undefined })
+      .eq('active', true)
+      .match(filters)
+      .order('name', { ascending: true })
+      .range(offset + i * CATALOG_PAGE_SIZE, offset + (i + 1) * CATALOG_PAGE_SIZE - 1)
+  );
+
+  const pageResults = await Promise.all(restQueries);
+
   const products: Product[] = [];
   let totalEstimate: number | null = null;
   let lastPageSize = 0;
 
-  for (const result of batchResults) {
-    if (result.success && result.data?.records) {
-      const mapped = (result.data.records as LightweightProduct[]).map((p) =>
-        mapLightweightToProduct(p, categoriesById),
-      );
-      products.push(...mapped);
-      lastPageSize = result.data.records.length;
-      if (result.data.count !== null && totalEstimate === null) {
-        totalEstimate = result.data.count as number;
-      }
+  for (const result of pageResults) {
+    if (result.error) {
+      if (result.error.message?.includes('410')) continue;
+      throw result.error;
+    }
+    const mapped = ((result.data as unknown as LightweightProduct[]) || []).map((p) =>
+      mapLightweightToProduct(p, categoriesById),
+    );
+    products.push(...mapped);
+    lastPageSize = result.data?.length || 0;
+    if (result.count !== null && totalEstimate === null) {
+      totalEstimate = result.count;
     }
   }
 

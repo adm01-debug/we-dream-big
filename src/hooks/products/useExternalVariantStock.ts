@@ -1,4 +1,4 @@
-import { dbInvoke } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
 export interface ExternalVariantStock {
@@ -31,50 +31,31 @@ export function useExternalVariantStock(productId: string | undefined) {
 
       // Buscar variantes e imagens em paralelo
       const [variantsResult, imagesResult] = await Promise.all([
-        dbInvoke<{
-          id: string;
-          product_id: string;
-          sku: string;
-          supplier_sku: string | null;
-          color_code: string | null;
-          color_name: string | null;
-          color_hex: string | null;
-          size_code: string | null;
-          stock_quantity: number | null;
-          selected_thumbnail: string | null;
-          images: string[] | null;
-          bitrix_product_id: string | number | null;
-        }>({
-          table: 'product_variants',
-          operation: 'select',
-          select:
-            'id, product_id, sku, supplier_sku, color_code, color_name, color_hex, size_code, stock_quantity, selected_thumbnail, images, bitrix_product_id',
-          filters: { product_id: productId, is_active: true },
-          limit: 100,
-        }),
-        dbInvoke<{
-          id: string;
-          variant_id: string | null;
-          supplier_code: string | null;
-          url_cdn: string | null;
-          is_og_image: boolean | null;
-          is_primary: boolean | null;
-          image_type: string | null;
-        }>({
-          table: 'product_images',
-          operation: 'select',
-          select: 'id, variant_id, supplier_code, url_cdn, is_og_image, is_primary, image_type',
-          filters: { product_id: productId },
-          limit: 200,
-        }),
+        supabase
+          .from('product_variants')
+          .select('id, product_id, sku, supplier_sku, color_code, color_name, color_hex, size_code, stock_quantity, selected_thumbnail, images, bitrix_product_id')
+          .eq('product_id', productId)
+          .eq('is_active', true)
+          .limit(100),
+        supabase
+          .from('product_images')
+          .select('id, variant_id, supplier_code, url_cdn, is_og_image, is_primary, image_type')
+          .eq('product_id', productId)
+          .limit(200),
       ]);
+
+      if (variantsResult.error) throw variantsResult.error;
+      if (imagesResult.error) throw imagesResult.error;
+
+      const variantRecords = (variantsResult.data as any[]) || [];
+      const imageRecords = (imagesResult.data as any[]) || [];
 
       // Indexar imagens por supplier_code para lookup rápido
       // Priorizar is_og_image (MAIN), excluir tipo 'box'
       const imagesByCode = new Map<string, string>();
       // Indexar imagens por variant_id para lookup direto (XBZ e outros sem color_code)
       const imagesByVariantId = new Map<string, string>();
-      for (const img of imagesResult.records) {
+      for (const img of imageRecords) {
         if (!img.url_cdn) continue;
         if (img.image_type === 'box') continue;
 
@@ -96,13 +77,13 @@ export function useExternalVariantStock(productId: string | undefined) {
 
       // Detectar imagem principal do produto para evitar usá-la como fallback de variante
       const primaryImages = new Set<string>();
-      for (const img of imagesResult.records) {
+      for (const img of imageRecords) {
         if ((img.is_primary || img.is_og_image) && img.url_cdn) {
           primaryImages.add(img.url_cdn);
         }
       }
 
-      return variantsResult.records.map((v) => {
+      return variantRecords.map((v) => {
         // 1) Vínculo direto por variant_id (mais confiável — XBZ e outros)
         const variantImage = imagesByVariantId.get(v.id) || null;
         // 2) Vínculo por color_code → supplier_code (Stricker, Asia, etc.)
