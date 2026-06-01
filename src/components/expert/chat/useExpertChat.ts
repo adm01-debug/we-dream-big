@@ -193,50 +193,12 @@ export function useExpertChat({
     const fetchFilters = async () => {
       try {
         const [cat, sup, tec, tag, col, mat] = await Promise.all([
-          dbInvoke<{ name: string }>({
-            table: 'categories',
-            operation: 'select',
-            select: 'name',
-            filters: { is_active: true },
-            orderBy: { column: 'name', ascending: true },
-            limit: 500,
-          }),
-          dbInvoke<{ name: string }>({
-            table: 'suppliers',
-            operation: 'select',
-            select: 'name',
-            orderBy: { column: 'name', ascending: true },
-            limit: 200,
-          }),
-          dbInvoke<{ nome: string }>({
-            table: 'tecnicas_gravacao',
-            operation: 'select',
-            select: 'nome',
-            filters: { ativo: true },
-            orderBy: { column: 'nome', ascending: true },
-            limit: 100,
-          }),
-          dbInvoke<{ name: string }>({
-            table: 'tags',
-            operation: 'select',
-            select: 'name',
-            orderBy: { column: 'name', ascending: true },
-            limit: 200,
-          }),
-          dbInvoke<{ name: string }>({
-            table: 'color_groups',
-            operation: 'select',
-            select: 'name',
-            orderBy: { column: 'name', ascending: true },
-            limit: 200,
-          }),
-          dbInvoke<{ name: string }>({
-            table: 'material_groups',
-            operation: 'select',
-            select: 'name',
-            orderBy: { column: 'name', ascending: true },
-            limit: 200,
-          }),
+          supabase.from('categories').select('name').eq('is_active', true).order('name').limit(500).then(r => ({ records: r.data || [] })),
+          supabase.from('v_suppliers_public').select('name').order('name').limit(200).then(r => ({ records: r.data || [] })),
+          supabase.from('tecnicas_gravacao').select('nome').eq('ativo', true).order('nome').limit(100).then(r => ({ records: r.data || [] })),
+          supabase.from('tags').select('name').order('name').limit(200).then(r => ({ records: r.data || [] })),
+          supabase.from('color_groups').select('name').order('name').limit(200).then(r => ({ records: r.data || [] })),
+          supabase.from('material_groups').select('name').order('name').limit(200).then(r => ({ records: r.data || [] })),
         ]);
         if (cancelled) return;
         setFilterOptions({
@@ -253,13 +215,7 @@ export function useExpertChat({
         });
         try {
           const [ramos] = await Promise.all([
-            dbInvoke<{ nome: string }>({
-              table: 'ramo_atividade',
-              operation: 'select',
-              select: 'nome',
-              orderBy: { column: 'nome', ascending: true },
-              limit: 200,
-            }),
+            supabase.from('ramo_atividade').select('nome').order('nome').limit(200).then(r => ({ records: r.data || [] })),
           ]);
           if (!cancelled && ramos.records?.length) {
             setFilterOptions((prev) => ({

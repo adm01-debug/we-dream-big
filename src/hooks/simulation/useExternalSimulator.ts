@@ -88,9 +88,9 @@ interface ProductImageRecord {
 // FUNÇÕES AUXILIARES
 // ============================================
 
-async function dbInvoke<T>(
+async function dbInvokePostgrest<T>(
   table: string,
-  operation: 'select',
+  _operation: 'select',
   options?: {
     filters?: Record<string, unknown>;
     select?: string;
@@ -98,18 +98,35 @@ async function dbInvoke<T>(
     limit?: number;
   },
 ): Promise<{ records: T[]; count: number }> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table,
-      operation,
-      ...options,
-    },
-  });
+  const resolvedTable = table === 'products' ? 'v_products_public' : table;
+  let query = supabase.from(resolvedTable).select(options?.select || '*');
 
-  if (error) throw new Error(error.message);
-  if (!data.success) throw new Error(data.error || 'Erro desconhecido');
+  if (options?.filters) {
+    for (const [col, val] of Object.entries(options.filters)) {
+      if (col.startsWith('_search')) {
+        query = query.ilike('name', `%${val}%`);
+      } else if (col.startsWith('_name_prefix')) {
+        query = query.ilike('name', `${val}%`);
+      } else if (Array.isArray(val)) {
+        query = query.in(col, val);
+      } else {
+        query = query.eq(col, val);
+      }
+    }
+  }
 
-  return data.data as { records: T[]; count: number };
+  if (options?.orderBy) {
+    query = query.order(options.orderBy.column, { ascending: options.orderBy.ascending ?? true });
+  }
+
+  if (options?.limit) {
+    query = query.limit(options.limit);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return { records: (data as unknown as T[]) || [], count: (data || []).length };
 }
 
 // ============================================
@@ -131,7 +148,7 @@ export function useExternalProductSearch(searchQuery: string) {
       if (!normalizedSearch || normalizedSearch.length < 2) return [];
 
       const [prefixResult, broadResult] = await Promise.all([
-        dbInvoke<ExternalProduct>('products', 'select', {
+        dbInvokePostgrest<ExternalProduct>('products', 'select', {
           filters: {
             _name_prefix: normalizedSearch,
             active: true,
@@ -140,7 +157,7 @@ export function useExternalProductSearch(searchQuery: string) {
           limit: 200,
           orderBy: { column: 'name', ascending: true },
         }),
-        dbInvoke<ExternalProduct>('products', 'select', {
+        dbInvokePostgrest<ExternalProduct>('products', 'select', {
           filters: {
             _search: normalizedSearch,
             active: true,
@@ -160,7 +177,7 @@ export function useExternalProductSearch(searchQuery: string) {
         const productIds = products.map((p) => p.id);
 
         try {
-          const imagesResult = await dbInvoke<ProductImageRecord>('product_images', 'select', {
+          const imagesResult = await dbInvokePostgrest<ProductImageRecord>('product_images', 'select', {
             filters: { product_id: productIds, is_active: true },
             select: 'product_id, url_cdn, image_type, is_primary, display_order',
             orderBy: { column: 'display_order', ascending: true },
@@ -215,7 +232,7 @@ export function useExternalProduct(productId: string | null) {
     queryFn: async () => {
       if (!productId) return null;
 
-      const result = await dbInvoke<ExternalProduct>('products', 'select', {
+      const result = await dbInvokePostgrest<ExternalProduct>('products', 'select', {
         filters: { id: productId },
         select: PRODUCT_SELECT,
         limit: 1,
@@ -226,7 +243,7 @@ export function useExternalProduct(productId: string | null) {
       // Buscar imagens da nova tabela product_images
       if (product) {
         try {
-          const imagesResult = await dbInvoke<ProductImageRecord>('product_images', 'select', {
+          const imagesResult = await dbInvokePostgrest<ProductImageRecord>('product_images', 'select', {
             filters: { product_id: productId, is_active: true },
             select: 'product_id, url_cdn, image_type, is_primary, display_order',
             orderBy: { column: 'display_order', ascending: true },
@@ -330,7 +347,7 @@ export function useExternalProductsList(options?: {
   return useQuery({
     queryKey: ['external-products-list', options],
     queryFn: async () => {
-      const result = await dbInvoke<ExternalProduct>('products', 'select', {
+      const result = await dbInvokePostgrest<ExternalProduct>('products', 'select', {
         filters: {
           active: true,
         },
@@ -346,7 +363,7 @@ export function useExternalProductsList(options?: {
         const productIds = products.map((p) => p.id);
 
         try {
-          const imagesResult = await dbInvoke<ProductImageRecord>('product_images', 'select', {
+          const imagesResult = await dbInvokePostgrest<ProductImageRecord>('product_images', 'select', {
             filters: { is_active: true },
             select: 'product_id, url_cdn, image_type, is_primary, display_order',
             orderBy: { column: 'display_order', ascending: true },
