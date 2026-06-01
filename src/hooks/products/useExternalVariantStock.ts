@@ -49,7 +49,6 @@ export function useExternalVariantStock(productId: string | undefined) {
 
       const variantRecords = (variantsResult.data as any[]) || [];
       const imageRecords = (imagesResult.data as any[]) || [];
-      ]);
 
       // Indexar imagens por supplier_code para lookup rápido
       // Priorizar is_og_image (MAIN), excluir tipo 'box'
