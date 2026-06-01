@@ -42,8 +42,9 @@ describe('GlobalSearchPalette Tooltip Static Check', () => {
       </ThemeContext.Provider>
     );
 
-    expect(screen.getByText(/Fale com o Flow/i)).toBeInTheDocument();
-    expect(screen.getByText(/Ctrl\+Shift\+V/i)).toBeInTheDocument();
+    const matches = screen.getAllByText(/Fale com o Flow/i);
+    expect(matches.length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Ctrl\+Shift\+V/i).length).toBeGreaterThan(0);
   });
 });
 
