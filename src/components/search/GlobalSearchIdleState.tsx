@@ -54,7 +54,9 @@ export function GlobalSearchIdleState({
             label="Recentes"
             count={history.length}
             gradient="[background-color:hsl(var(--command-accent))]"
+            iconColor="[color:hsl(var(--command-text-subtle))]"
           />
+
           <div className="space-y-0.5 px-2">
             {history.slice(0, 4).map((term, i) => (
               <CommandItem
@@ -94,8 +96,10 @@ export function GlobalSearchIdleState({
             icon={<Flame />}
             label="Mais Populares"
             count={popularProducts.length}
-            gradient="bg-gradient-to-br from-brand-primary/15 to-brand-primary/5"
+            gradient="bg-gradient-to-br from-orange-500/15 to-orange-500/5"
+            iconColor="text-orange-500"
           />
+
           <div className="space-y-1 px-2">
             {popularProducts.map((product, idx) => (
               <CommandItem
