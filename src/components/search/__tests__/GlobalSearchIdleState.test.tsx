@@ -68,20 +68,6 @@ describe('GlobalSearchIdleState Rendering', () => {
   });
 
   it('renders RankBadge when image is missing', () => {
-    render(
-      <BrowserRouter>
-        <TooltipProvider>
-          <GlobalSearchIdleState {...mockProps} />
-        </TooltipProvider>
-      </BrowserRouter>
-    );
-
-    // Second item (Caneca Mid) has no image, so it should render "2º" or Medal icon
-    // In our implementation, idx 1 renders Medal icon
-    // Actually RankBadge(1) renders Medal.
-    // Let's check if the text "2º" is NOT there but the medal container is.
-    // Or check for "3º" if we had 3 items.
-    
     // If I add a 3rd item:
     const propsWith3 = {
       ...mockProps,
@@ -100,8 +86,8 @@ describe('GlobalSearchIdleState Rendering', () => {
         </TooltipProvider>
       </BrowserRouter>
     );
-
     
     expect(screen.getByText('3º')).toBeDefined();
   });
+
 });
