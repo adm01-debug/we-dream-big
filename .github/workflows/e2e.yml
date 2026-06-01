@@ -329,6 +329,7 @@ jobs:
         run: |
           npx playwright test \
             e2e/flows/22-header-sticky.spec.ts \
+            --project=chromium-authed \
             --max-failures=1 \
             --reporter=github,list \
             && touch playwright-report/.header-sticky-passed
