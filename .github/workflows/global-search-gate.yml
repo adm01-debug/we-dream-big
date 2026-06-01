@@ -25,7 +25,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run Global Search component tests with coverage
-        run: npx vitest run src/components/search/__tests__ --coverage
+        run: npx vitest run src/components/search/__tests__ --coverage --reporter=default --reporter=json --outputFile=vitest-report.json
+      - name: Detect Vitest Flaky
+        if: always()
+        run: node src/test/detect-flaky-vitest.mjs
       - name: Coverage Summary
         if: always()
         run: |
