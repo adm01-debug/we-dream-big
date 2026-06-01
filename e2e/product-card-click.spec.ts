@@ -6,7 +6,7 @@ test.describe('ProductCard Interaction & Accessibility @smoke', () => {
     await page.waitForSelector('[data-testid="product-card"]');
   });
 
-  test('should not show pressed state (scale/opacity) on click - Light & Dark', async ({ page }) => {
+  test('should not show pressed state (scale/opacity) on click - Light & Dark @smoke', async ({ page }) => {
     const themes = ['light', 'dark'];
     
     for (const theme of themes) {
