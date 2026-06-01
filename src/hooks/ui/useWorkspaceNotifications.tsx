@@ -256,12 +256,14 @@ export function useWorkspaceNotifications() {
     [user], // FIX: removido notifications.length - agora usa notificationsLengthRef
   );
 
-  // Initial fetch (always, but in background if cache hydrated)
+  // Fetch notifications when filters or page changes
   useEffect(() => {
     if (!user) return;
-    fetchNotifications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    
+    // Use a small delay for search to avoid too many requests if not handled by caller
+    // but the Drawer already has a 400ms debounce.
+    fetchNotifications({ source: 'filter-change' });
+  }, [user, page, search, category, unreadOnly, dateRange.from, dateRange.to, fetchNotifications]);
 
   // Polling every 30s - agora estavel: fetchNotifications nao recria com notifications.length
   useEffect(() => {
