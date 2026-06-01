@@ -168,16 +168,6 @@ interface RawProduct {
   min_quantity: number | null;
 }
 
-interface CategoryRecord {
-  id: string;
-  name: string;
-}
-interface SupplierRecord {
-  id: string;
-  name: string;
-  code?: string;
-}
-
 /**
  * Enriquece novidades com nomes de categoria e fornecedor
  */

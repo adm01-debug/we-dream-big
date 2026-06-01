@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
 
 /** Window in days for considering a product as "replenished" */
 const REPLENISHMENT_WINDOW_DAYS = 30;
@@ -87,17 +86,6 @@ interface RawProduct {
   readonly updated_at: string;
   readonly stock_quantity: number | null;
   readonly min_quantity: number | null;
-}
-
-interface CategoryRecord {
-  readonly id: string;
-  readonly name: string;
-}
-
-interface SupplierRecord {
-  readonly id: string;
-  readonly name: string;
-  readonly code?: string;
 }
 
 // ─── Data Logic ──────────────────────────────────────────────────
