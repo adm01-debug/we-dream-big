@@ -104,6 +104,11 @@ const BreakerStatusCard = lazy(() =>
     default: m.BreakerStatusCard,
   })),
 );
+const Gone410TelemetryPanel = lazy(() =>
+  import('@/components/admin/telemetry/Gone410TelemetryPanel').then((m) => ({
+    default: m.Gone410TelemetryPanel,
+  })),
+);
 const getSeverityBadge = (severity: string) => {
   switch (severity) {
     case 'very_slow':
@@ -281,6 +286,11 @@ export default function AdminTelemetriaPage() {
         {/* Estado do circuit-breaker do crm-db-bridge (poll ?op=breaker_status) */}
         <Suspense fallback={<CardSkeleton height={200} label="Carregando estado do breaker" />}>
           <BreakerStatusCard />
+        </Suspense>
+
+        {/* Monitoramento de 410 Gone (migration fallout) */}
+        <Suspense fallback={<GridCardsSkeleton count={3} height={100} />}>
+          <Gone410TelemetryPanel />
         </Suspense>
 
         {/* Métricas das otimizações Onda 2 (cache hit rate + retries evitados) */}
