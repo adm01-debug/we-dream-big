@@ -3,7 +3,7 @@
  * Sources: variant_supplier_sources (lead_time_days) + suppliers (active flag).
  * Falls back to deterministic mock when no real data is available.
  */
-import { dbInvoke } from '@/lib/db/postgrest';
+import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { type SupplierTrustData, getMockSupplierTrust } from '@/components/common/SocialProof';
 import { logger } from '@/lib/logger';
@@ -34,14 +34,12 @@ export function useSupplierTrust(productId?: string) {
 
       try {
         // 1. Get variant IDs for this product first
-        const variantResult = await dbInvoke<{ id: string }>({
-          table: 'product_variants',
-          operation: 'select',
-          select: 'id',
-          filters: { product_id: productId, is_active: true },
-          limit: 10,
-          countMode: 'none',
-        });
+        const variantResult = await supabase
+          .from('product_variants')
+          .select('id')
+          .eq('product_id', productId)
+          .eq('is_active', true)
+          .limit(10);
 
         const variantIds = variantResult.records.map((v) => v.id);
         if (!variantIds.length) {
@@ -49,17 +47,15 @@ export function useSupplierTrust(productId?: string) {
         }
 
         // 2. Get preferred supplier source using variant_id
-        const vssResult = await dbInvoke<VSSRecord>({
-          table: 'variant_supplier_sources',
-          operation: 'select',
-          select: 'id,supplier_id,lead_time_days,is_preferred,is_active',
-          filters: { variant_id: variantIds[0], is_active: true },
-          orderBy: { column: 'is_preferred', ascending: false },
-          limit: 5,
-          countMode: 'none',
-        });
+        const vssResult = await supabase
+          .from('variant_supplier_sources')
+          .select('id,supplier_id,lead_time_days,is_preferred,is_active')
+          .eq('variant_id', variantIds[0])
+          .eq('is_active', true)
+          .order('is_preferred', { ascending: false })
+          .limit(5);
 
-        const sources = vssResult.records;
+        const sources = vssResult.data || [];
         if (!sources.length) {
           // No real data — fallback to mock
           return getMockSupplierTrust(productId);
@@ -73,16 +69,13 @@ export function useSupplierTrust(productId?: string) {
         let isVerified = false;
         if (preferred.supplier_id) {
           try {
-            const supplierResult = await dbInvoke<SupplierRecord>({
-              table: 'suppliers',
-              operation: 'select',
-              select: 'id,name,active',
-              filters: { id: preferred.supplier_id },
-              limit: 1,
-              countMode: 'none',
-            });
-            if (supplierResult.records.length) {
-              isVerified = supplierResult.records[0].active !== false;
+            const supplierResult = await supabase
+              .from('v_suppliers_public')
+              .select('id,name,active')
+              .eq('id', preferred.supplier_id)
+              .limit(1);
+            if (supplierResult.data?.length) {
+              isVerified = supplierResult.data[0].active !== false;
             }
           } catch {
             // Supplier lookup failed — mark as not verified
