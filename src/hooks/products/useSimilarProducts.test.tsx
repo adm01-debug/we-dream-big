@@ -28,7 +28,7 @@ const createChain = (table: string) => {
 const mockFrom = vi.fn((table: string) => createChain(table));
 
 vi.mock('@/lib/supabase-direct', () => ({
-  supabase: { from: (...args: any[]) => mockFrom(...args) },
+  supabase: { from: (table: string) => mockFrom(table) },
   resolveTable: (t: string) => t,
   handleQueryError: (_hook: string, _table: string, _err: any) => [],
 }));

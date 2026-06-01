@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useStockAlerts } from './useStockAlerts';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
 
 let mockData: any[] = [];
 let mockError: any = null;
@@ -20,10 +21,10 @@ chain.select = vi.fn((sel: string) => {
 chain.then = (resolve: any) => resolve({ data: mockData, error: mockError });
 chain.catch = () => chain;
 
-const mockFrom = vi.fn(() => chain);
+const mockFrom = vi.fn((_table: string) => chain);
 
 vi.mock('@/lib/supabase-direct', () => ({
-  supabase: { from: (...args: any[]) => mockFrom(...args) },
+  supabase: { from: (table: string) => mockFrom(table) },
   resolveTable: (t: string) => t,
   handleQueryError: () => [],
 }));
