@@ -9,6 +9,9 @@ import {
   XCircle,
   ExternalLink,
   Loader2,
+  Search,
+  Settings2,
+  ArrowLeft,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -16,6 +19,9 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useNotifications, type WorkspaceNotification } from '@/hooks/ui';
 import { useAriaLive } from '@/components/a11y/AriaLive';
 import { formatDistanceToNow } from 'date-fns';
@@ -24,6 +30,7 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { notificationsMetrics, type TriggerSource } from '@/lib/notifications-metrics';
 import { NotificationsBadgeStatsPanel } from './NotificationsBadgeStatsPanel';
+import { NotificationPreferences } from './NotificationPreferences';
 
 const typeConfig = {
   info: { icon: Info, color: 'text-primary', bg: 'bg-primary/10' },
@@ -232,17 +239,26 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
     const {
       notifications,
       unreadCount,
+      totalCount,
       isLoading,
       isRefetching,
       isMutationRehydrating,
+      page,
+      search,
+      category,
+      setPage,
+      setSearch,
+      setCategory,
       markAsRead,
       markAllAsRead,
       clearAll,
       prefetch,
-    } = useNotifications();
+    } = useNotifications() as any; // Cast for extended props
     const navigate = useNavigate();
     const [shouldShake, setShouldShake] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const [showPreferences, setShowPreferences] = useState(false);
+    const [localSearch, setLocalSearch] = useState(search);
     const prevCountRef = React.useRef(unreadCount);
     const { announce } = useAriaLive();
     const prevRefetchingRef = useRef(false);
@@ -343,10 +359,14 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
         onOpenChange={(open) => {
           setIsOpen(open);
           if (open) {
-            // If a debounce was already pending, fold its burst into the drawer-open
-            // sample (so the timing represents the user's intent end-to-end).
+            // BUG-NOTIF-11: Marcação automática como lida ao abrir
+            if (unreadCount > 0) {
+              markAllAsRead();
+            }
+            setShowPreferences(false);
+            
             const burstStart = burstStartRef.current ?? performance.now();
-            const coalesced = burstCountRef.current; // may be 0 for direct clicks
+            const coalesced = burstCountRef.current;
             if (prefetchDebounceRef.current) {
               clearTimeout(prefetchDebounceRef.current);
               prefetchDebounceRef.current = null;
@@ -405,11 +425,41 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
           <SheetHeader className="border-b border-border px-4 pb-3 pt-4">
             <div className="flex items-center justify-between">
               <SheetTitle className="flex items-center gap-2 text-lg">
-                <DrawerHeaderTitle unreadCount={unreadCount} />
+                {showPreferences ? (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8" 
+                    onClick={() => setShowPreferences(false)}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Bell className="h-5 w-5 text-primary" />
+                )}
+                {showPreferences ? 'Preferências' : 'Notificações'}
+                {!showPreferences && unreadCount > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {unreadCount} nova{unreadCount > 1 ? 's' : ''}
+                  </Badge>
+                )}
                 <RefetchSpinner isRefetching={isRefetching} />
               </SheetTitle>
               <div className="flex items-center gap-1">
-                {unreadCount > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn("h-8 w-8", showPreferences && "bg-primary/10 text-primary")}
+                      onClick={() => setShowPreferences(!showPreferences)}
+                    >
+                      <Settings2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Configurações</TooltipContent>
+                </Tooltip>
+                {!showPreferences && unreadCount > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -446,19 +496,50 @@ export const NotificationBell = React.forwardRef<HTMLDivElement, NotificationBel
           </SheetHeader>
 
           <ScrollArea className="flex-1">
-            {isLoading && notifications.length === 0 ? (
-              <div className="space-y-3 p-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="flex animate-pulse gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-muted" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-3 w-3/4 rounded bg-muted" />
-                      <div className="h-3 w-1/2 rounded bg-muted" />
-                    </div>
-                  </div>
-                ))}
+            {showPreferences ? (
+              <div className="p-4">
+                <NotificationPreferences />
               </div>
-            ) : notifications.length === 0 ? (
+            ) : (
+              <>
+                <div className="sticky top-0 z-10 space-y-3 border-b bg-background p-4">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar notificações..."
+                      className="pl-9"
+                      value={localSearch}
+                      onChange={(e) => {
+                        setLocalSearch(e.target.value);
+                        // Debounce search update
+                        const timeout = setTimeout(() => setSearch(e.target.value), 300);
+                        return () => clearTimeout(timeout);
+                      }}
+                    />
+                  </div>
+                  <Tabs value={category} onValueChange={setCategory}>
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="all">Todas</TabsTrigger>
+                      <TabsTrigger value="security">Segurança</TabsTrigger>
+                      <TabsTrigger value="system">Sistema</TabsTrigger>
+                      <TabsTrigger value="marketing">Marketing</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+
+                {isLoading && notifications.length === 0 ? (
+                  <div className="space-y-3 p-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="flex animate-pulse gap-3">
+                        <div className="h-9 w-9 rounded-lg bg-muted" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 w-3/4 rounded bg-muted" />
+                          <div className="h-3 w-1/2 rounded bg-muted" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
                 <div className="mb-4 rounded-full bg-muted/50 p-4">
                   <Bell className="h-8 w-8 text-muted-foreground" />

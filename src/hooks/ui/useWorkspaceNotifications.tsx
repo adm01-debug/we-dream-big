@@ -65,10 +65,15 @@ function debugLog(event: string, payload: Record<string, unknown>) {
 export function useWorkspaceNotifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<WorkspaceNotification[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
   const [isMutationRehydrating, setIsMutationRehydrating] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('all');
+  const [page, setPage] = useState(1);
+  const limit = 20;
   const lastFetchAtRef = useRef<number>(0);
   const hydratedRef = useRef<string | null>(null);
   const mountAtRef = useRef<number>(
@@ -136,9 +141,14 @@ export function useWorkspaceNotifications() {
 
   // BUG-08 FIX: deps agora so [user] - sem notifications.length
   const fetchNotifications = useCallback(
-    async (opts: { silent?: boolean; source?: FetchSource } = {}) => {
+    async (opts: { silent?: boolean; source?: FetchSource; page?: number; search?: string; category?: string } = {}) => {
       if (!user) return;
-      // FIX: le via ref estavel em vez de closure sobre notifications
+      
+      const targetPage = opts.page ?? page;
+      const targetSearch = opts.search ?? search;
+      const targetCategory = opts.category ?? category;
+      const offset = (targetPage - 1) * limit;
+
       const hasData = notificationsLengthRef.current > 0;
       const silent = opts.silent ?? hasData;
 
@@ -148,17 +158,36 @@ export function useWorkspaceNotifications() {
       notificationsMetrics.recordFetch(opts.source ?? 'initial');
       const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('workspace_notifications')
-          .select('*')
+          .select('*', { count: 'exact' })
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(50);
+          .range(offset, offset + limit - 1);
+
+        if (targetCategory && targetCategory !== 'all') {
+          query = query.eq('category', targetCategory);
+        }
+
+        if (targetSearch) {
+          query = query.ilike('title', `%${targetSearch}%`); // Simplified for frontend ilike search
+        }
+
+        const { data, error, count } = await query;
 
         if (error) throw error;
         const items = (data || []) as WorkspaceNotification[];
         setNotifications(items);
-        setUnreadCount(items.filter((n) => !n.is_read).length);
+        setTotalCount(count ?? 0);
+        
+        // Also fetch unread count separately to keep badge sync
+        const { count: unread } = await supabase
+          .from('workspace_notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_read', false);
+          
+        setUnreadCount(unread ?? 0);
         lastFetchAtRef.current = Date.now();
         writeCache(user.id, items);
         if (badgeSourceRef.current !== 'cache') {
@@ -318,9 +347,16 @@ export function useWorkspaceNotifications() {
   return {
     notifications,
     unreadCount,
+    totalCount,
     isLoading,
     isRefetching,
     isMutationRehydrating,
+    page,
+    search,
+    category,
+    setPage,
+    setSearch,
+    setCategory,
     markAsRead,
     markAllAsRead,
     clearAll,
