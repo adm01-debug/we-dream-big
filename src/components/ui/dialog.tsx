@@ -1,1 +1,247 @@
-aW1wb3J0ICogYXMgUmVhY3QgZnJvbSAncmVhY3QnOwppbXBvcnQgKiBhcyBEaWFsb2dQcmltaXRpdmUgZnJvbSAnQHJhZGl4LXVpL3JlYWN0LWRpYWxvZyc7CmltcG9ydCB7IFggfSBmcm9tICdsdWNpZGUtcmVhY3QnOwoKaW1wb3J0IHsgY24gfSBmcm9tICdAL2xpYi91dGlscyc7CmltcG9ydCB7IHJlbGVhc2VTY3JvbGxMb2NrSWZJZGxlIH0gZnJvbSAnQC9saWIvZG9tL3Njcm9sbC1sb2NrJzsKCmNvbnN0IERpYWxvZyA9IERpYWxvZ1ByaW1pdGl2ZS5Sb290OwoKY29uc3QgRGlhbG9nVHJpZ2dlciA9IERpYWxvZ1ByaW1pdGl2ZS5UcmlnZ2VyOwoKY29uc3QgRGlhbG9nUG9ydGFsID0gRGlhbG9nUHJpbWl0aXZlLlBvcnRhbDsKCmNvbnN0IERpYWxvZ0Nsb3NlID0gRGlhbG9nUHJpbWl0aXZlLkNsb3NlOwoKY29uc3QgRGlhbG9nT3ZlcmxheSA9IFJlYWN0LmZvcndhcmRSZWY8CiAgUmVhY3QuRWxlbWVudFJlZjx0eXBlb2YgRGlhbG9nUHJpbWl0aXZlLk92ZXJsYXk+LAogIFJlYWN0LkNvbXBvbmVudFByb3BzV2l0aG91dFJlZjx0eXBlb2YgRGlhbG9nUHJpbWl0aXZlLk92ZXJsYXk+Cj4oKHsgY2xhc3NOYW1lLCAuLi5wcm9wcyB9LCByZWYpID0+ICgKICA8RGlhbG9nUHJpbWl0aXZlLk92ZXJsYXkKICAgIHJlZj17cmVmfQogICAgY2xhc3NOYW1lPXtjbigKICAgICAgJ2ZpeGVkIGluc2V0LTAgei01MCBiZy1baHNsKHZhcigtLW92ZXJsYXktY29sb3IpL3ZhcigtLW92ZXJsYXktb3BhY2l0eSkpXSBiYWNrZHJvcC1ibHVyLVt2YXIoLS1vdmVybGF5LWJsdXIpXSBkYXRhLVtzdGF0ZT1vcGVuXTphbmltYXRlLWluIGRhdGEtW3N0YXRlPWNsb3NlZF06YW5pbWF0ZS1vdXQgZGF0YS1bc3RhdGU9Y2xvc2VkXTpmYWRlLW91dC0wIGRhdGEtW3N0YXRlPW9wZW5dOmZhZGUtaW4tMCcsCiAgICAgIGNsYXNzTmFtZSwKICAgICl9CiAgICB7Li4ucHJvcHN9CiAgLz4KKSk7CkRpYWxvZ092ZXJsYXkuZGlzcGxheU5hbWUgPSBEaWFsb2dQcmltaXRpdmUuT3ZlcmxheS5kaXNwbGF5TmFtZTsKCi8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQovLyBBMTF5IGhlbHBlcnMKLy8gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgovKioKICogV2Fsa3MgYSBSZWFjdCBjaGlsZHJlbiB0cmVlIChzaGFsbG93ICsgMSBsZXZlbCBkZWVwKSBsb29raW5nIGZvciBhIG5vZGUKICogd2hvc2UgdHlwZSBtYXRjaGVzIGFueSBvZiB0aGUgZ2l2ZW4gZGlzcGxheSBuYW1lcyBvciBjb21wb25lbnQgcmVmZXJlbmNlcy4KICogUmV0dXJucyB0cnVlIGFzIHNvb24gYXMgdGhlIGZpcnN0IG1hdGNoIGlzIGZvdW5kLgogKi8KZnVuY3Rpb24gY2hpbGRyZW5IYXZlVHlwZSgKICBjaGlsZHJlbjogUmVhY3QuUmVhY3ROb2RlLAogIHR5cGVzOiBBcnJheTxSZWFjdC5FbGVtZW50VHlwZSB8IHN0cmluZz4sCik6IGJvb2xlYW4gewogIGxldCBmb3VuZCA9IGZhbHNlOwogIFJlYWN0LkNoaWxkcmVuLmZvckVhY2goY2hpbGRyZW4sIChjaGlsZCkgPT4gewogICAgaWYgKGZvdW5kKSByZXR1cm47CiAgICBpZiAoIVJlYWN0LmlzVmFsaWRFbGVtZW50KGNoaWxkKSkgcmV0dXJuOwogICAgY29uc3QgdCA9IGNoaWxkLnR5cGUgYXMgUmVhY3QuRWxlbWVudFR5cGU7CiAgICBpZiAodHlwZXMuc29tZSgobWF0Y2gpID0+IG1hdGNoID09PSB0IHx8ICh0IGFzIHsgZGlzcGxheU5hbWU/OiBzdHJpbmcgfSkuZGlzcGxheU5hbWUgPT09IG1hdGNoKSkgewogICAgICBmb3VuZCA9IHRydWU7CiAgICAgIHJldHVybjsKICAgIH0KICAgIC8vIE9uZSBsZXZlbCBkZWVwZXIgKGUuZy4gRGlhbG9nSGVhZGVyIHdyYXBwaW5nIERpYWxvZ1RpdGxlKQogICAgY29uc3QgbmVzdGVkID0gKGNoaWxkLnByb3BzIGFzIHsgY2hpbGRyZW4/OiBSZWFjdC5SZWFjdE5vZGUgfSkuY2hpbGRyZW47CiAgICBpZiAobmVzdGVkKSB7CiAgICAgIFJlYWN0LkNoaWxkcmVuLmZvckVhY2gobmVzdGVkLCAoZ3JhbmRjaGlsZCkgPT4gewogICAgICAgIGlmIChmb3VuZCkgcmV0dXJuOwogICAgICAgIGlmICghUmVhY3QuaXNWYWxpZEVsZW1lbnQoZ3JhbmRjaGlsZCkpIHJldHVybjsKICAgICAgICBjb25zdCBndCA9IGdyYW5kY2hpbGQudHlwZSBhcyBSZWFjdC5FbGVtZW50VHlwZTsKICAgICAgICBpZiAodHlwZXMuc29tZSgobSkgPT4gbSA9PT0gZ3QgfHwgKGd0IGFzIHsgZGlzcGxheU5hbWU/OiBzdHJpbmcgfSkuZGlzcGxheU5hbWUgPT09IG0pKSB7CiAgICAgICAgICBmb3VuZCA9IHRydWU7CiAgICAgICAgfQogICAgICB9KTsKICAgIH0KICB9KTsKICByZXR1cm4gZm91bmQ7Cn0KCi8vIERpc3BsYXkgbmFtZXMgUmFkaXggbG9va3MgZm9yIGludGVybmFsbHkKY29uc3QgVElUTEVfVFlQRVM6IEFycmF5PFJlYWN0LkVsZW1lbnRUeXBlIHwgc3RyaW5nPiA9IFsKICBEaWFsb2dQcmltaXRpdmUuVGl0bGUsCiAgJ0RpYWxvZ1RpdGxlJywKXTsKY29uc3QgREVTQ1JJUFRJT05fVFlQRVM6IEFycmF5PFJlYWN0LkVsZW1lbnRUeXBlIHwgc3RyaW5nPiA9IFsKICBEaWFsb2dQcmltaXRpdmUuRGVzY3JpcHRpb24sCiAgJ0RpYWxvZ0Rlc2NyaXB0aW9uJywKXTsKCi8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKaW50ZXJmYWNlIERpYWxvZ0NvbnRlbnRQcm9wcyBleHRlbmRzIFJlYWN0LkNvbXBvbmVudFByb3BzV2l0aG91dFJlZjwKICB0eXBlb2YgRGlhbG9nUHJpbWl0aXZlLkNvbnRlbnQKPiB7CiAgLyoqIFNob3cgY2xvc2UgYnV0dG9uICovCiAgc2hvd0Nsb3NlQnV0dG9uPzogYm9vbGVhbjsKfQoKY29uc3QgRGlhbG9nQ29udGVudCA9IFJlYWN0LmZvcndhcmRSZWY8CiAgUmVhY3QuRWxlbWVudFJlZjx0eXBlb2YgRGlhbG9nUHJpbWl0aXZlLkNvbnRlbnQ+LAogIERpYWxvZ0NvbnRlbnRQcm9wcwo+KCh7IGNsYXNzTmFtZSwgY2hpbGRyZW4sIHNob3dDbG9zZUJ1dHRvbiA9IHRydWUsIG9uQ2xvc2VBdXRvRm9jdXMsIC4uLnByb3BzIH0sIHJlZikgPT4gewogIC8vIC0tIEExMXk6IHNpbGVuY2UgUmFkaXggd2FybmluZ3MgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICAvLwogIC8vIFJhZGl4IGVtaXRzIHR3byB3YXJuaW5ncyB3aGVuIERpYWxvZ0NvbnRlbnQgcmVuZGVycyB3aXRob3V0IHRoZQogIC8vIHJlcXVpcmVkIGFjY2Vzc2liaWxpdHkgcHJpbWl0aXZlczoKICAvLwogIC8vICAgMS4gIkRpYWxvZ0NvbnRlbnQgcmVxdWlyZXMgYSBEaWFsb2dUaXRsZSBmb3Igc2NyZWVuIHJlYWRlciB1c2Vycy4iCiAgLy8gICAgICBGaXg6IGluamVjdCBhIHZpc3VhbGx5LWhpZGRlbiBEaWFsb2dUaXRsZSBhcyBhIGZhbGxiYWNrIHdoZW4gdGhlCiAgLy8gICAgICBjYWxsZXIgaGFzIG5vdCBpbmNsdWRlZCBvbmUuIEdpdmVzIHNjcmVlbiByZWFkZXJzIGFuIGFjY2Vzc2libGUKICAvLyAgICAgIG5hbWUgd2l0aG91dCBjaGFuZ2luZyB2aXN1YWwgbGF5b3V0LgogIC8vCiAgLy8gICAyLiAiTWlzc2luZyBEZXNjcmlwdGlvbiBvciBhcmlhLWRlc2NyaWJlZGJ5PXt1bmRlZmluZWR9IGZvciBEaWFsb2dDb250ZW50IgogIC8vICAgICAgRml4OiBpbmplY3QgYSB2aXN1YWxseS1oaWRkZW4gRGlhbG9nRGVzY3JpcHRpb24gd2hlbiBubyBkZXNjcmlwdGlvbgogIC8vICAgICAgaXMgcHJlc2VudC4gUmFkaXggY2hlY2tzIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKGRlc2NyaXB0aW9uSWQpIHRvCiAgLy8gICAgICBkZXRlcm1pbmUgaWYgYSBkZXNjcmlwdGlvbiBleGlzdHMuIFBhc3NpbmcgYXJpYS1kZXNjcmliZWRieT17dW5kZWZpbmVkfQogIC8vICAgICAgZG9lcyBOT1Qgc3VwcHJlc3MgdGhpcyB3YXJuaW5nOiBSYWRpeCdzIGludGVybmFsIGNoZWNrIGlzIGEgdHJ1dGh5CiAgLy8gICAgICBndWFyZCDigJQgYGlmIChkZXNjcmlwdGlvbkFyaWFBdHRyKSByZXR1cm47YCDigJQgc28gdW5kZWZpbmVkIChmYWxzeSkKICAvLyAgICAgIGRvZXMgbm90IHNraXAgdGhlIHdhcm5pbmcuIEluamVjdGluZyBhIHJlYWwgaGlkZGVuIGVsZW1lbnQgaXMgdGhlCiAgLy8gICAgICBvbmx5IHJlbGlhYmxlIGZpeC4KICAvLwogIC8vIEJvdGggY2hlY2tzIHdhbGsgY2hpbGRyZW4gc2hhbGxvd2x5ICsgb25lIGxldmVsIGRlZXAsIGNvdmVyaW5nIHRoZQogIC8vIGNvbW1vbiBwYXR0ZXJuIG9mIHdyYXBwaW5nIHRpdGxlL2Rlc2NyaXB0aW9uIGluc2lkZSBEaWFsb2dIZWFkZXIuCiAgLy8gRGlhbG9ncyB0aGF0IGFscmVhZHkgaGF2ZSBEaWFsb2dUaXRsZSArIERpYWxvZ0Rlc2NyaXB0aW9uIGFyZSB1bmFmZmVjdGVkCiAgLy8gKHRoZSBzY2FuIHNob3J0LWNpcmN1aXRzIG9uIHRoZSBmaXJzdCBtYXRjaCkuCgogIGNvbnN0IGhhc1RpdGxlICAgICAgID0gY2hpbGRyZW5IYXZlVHlwZShjaGlsZHJlbiwgVElUTEVfVFlQRVMpOwogIGNvbnN0IGhhc0Rlc2NyaXB0aW9uID0gY2hpbGRyZW5IYXZlVHlwZShjaGlsZHJlbiwgREVTQ1JJUFRJT05fVFlQRVMpOwoKICAvLyBSYWRpeCBEaWFsb2cgbmF0aXZlbHkgaGFuZGxlczogZm9jdXMgdHJhcCwgZXNjYXBlIGtleSwgc2Nyb2xsIGxvY2suCiAgLy8gV2Ugb25seSBhZGQgYSBsaWdodHdlaWdodCBjbGVhbnVwIG9uIGNsb3NlIHRvIHByZXZlbnQgc3RhbGUgc2Nyb2xsIGxvY2tzLgogIHJldHVybiAoCiAgICA8RGlhbG9nUG9ydGFsPgogICAgICA8RGlhbG9nT3ZlcmxheSAvPgogICAgICA8RGlhbG9nUHJpbWl0aXZlLkNvbnRlbnQKICAgICAgICByZWY9e3JlZn0KICAgICAgICBvbkNsb3NlQXV0b0ZvY3VzPXsoZXZlbnQpID0+IHsKICAgICAgICAgIG9uQ2xvc2VBdXRvRm9jdXM/LihldmVudCk7CiAgICAgICAgICAvLyBFbnN1cmUgc2Nyb2xsICsgaW50ZXJhY3Rpdml0eSBhcmUgcmVzdG9yZWQgYWZ0ZXIgdGhlIGRpYWxvZyBjbG9zZXMuCiAgICAgICAgICByZXF1ZXN0QW5pbWF0aW9uRnJhbWUocmVsZWFzZVNjcm9sbExvY2tJZklkbGUpOwogICAgICAgIH19CiAgICAgICAgY2xhc3NOYW1lPXtjbigKICAgICAgICAgICdkdXJhdGlvbi1ub3JtYWwgZml4ZWQgbGVmdC1bNTAlXSB0b3AtWzUwJV0gei01MCBncmlkIHctZnVsbCBtYXgtdy1sZyB0cmFuc2xhdGUteC1bLTUwJV0gdHJhbnNsYXRlLXktWy01MCVdIGdhcC00IGJvcmRlci0yIGJvcmRlci1ib3JkZXIgYmctYmFja2dyb3VuZCBwLTYgc2hhZG93LXhsIGVhc2Utb3V0JywKICAgICAgICAgICdkYXRhLVtzdGF0ZT1vcGVuXTphbmltYXRlLWluIGRhdGEtW3N0YXRlPWNsb3NlZF06YW5pbWF0ZS1vdXQnLAogICAgICAgICAgJ2RhdGEtW3N0YXRlPWNsb3NlZF06ZmFkZS1vdXQtMCBkYXRhLVtzdGF0ZT1vcGVuXTpmYWRlLWluLTAnLAogICAgICAgICAgJ2RhdGEtW3N0YXRlPWNsb3NlZF06em9vbS1vdXQtOTUgZGF0YS1bc3RhdGU9b3Blbl06em9vbS1pbi05NScsCiAgICAgICAgICAnZGF0YS1bc3RhdGU9Y2xvc2VkXTpzbGlkZS1vdXQtdG8tbGVmdC0xLzIgZGF0YS1bc3RhdGU9Y2xvc2VkXTpzbGlkZS1vdXQtdG8tdG9wLVs0OCVdJywKICAgICAgICAgICdkYXRhLVtzdGF0ZT1vcGVuXTpzbGlkZS1pbi1mcm9tLWxlZnQtMS8yIGRhdGEtW3N0YXRlPW9wZW5dOnNsaWRlLWluLWZyb20tdG9wLVs0OCVdJywKICAgICAgICAgICdyb3VuZGVkLXhsJywKICAgICAgICAgICdmb2N1czpvdXRsaW5lLW5vbmUgZm9jdXMtdmlzaWJsZTpvdXRsaW5lLW5vbmUgZm9jdXMtdmlzaWJsZTpyaW5nLTAnLAogICAgICAgICAgY2xhc3NOYW1lLAogICAgICAgICl9CiAgICAgICAgYXJpYS1tb2RhbD0idHJ1ZSIKICAgICAgICByb2xlPSJkaWFsb2ciCiAgICAgICAgey4uLnByb3BzfQogICAgICA+CiAgICAgICAgey8qIEZhbGxiYWNrIHZpc3VhbGx5LWhpZGRlbiB0aXRsZSAtLSBvbmx5IHJlbmRlcmVkIHdoZW4gbm8gRGlhbG9nVGl0bGUKICAgICAgICAgICAgaXMgcHJlc2VudC4gU2F0aXNmaWVzIFJhZGl4J3MgcnVudGltZSBhc3NlcnRpb24gYW5kIGdpdmVzIHNjcmVlbgogICAgICAgICAgICByZWFkZXJzIGFuIGFjY2Vzc2libGUgZGlhbG9nIG5hbWUuICovfQogICAgICAgIHshaGFzVGl0bGUgJiYgKAogICAgICAgICAgPERpYWxvZ1ByaW1pdGl2ZS5UaXRsZSBjbGFzc05hbWU9InNyLW9ubHkiIGFyaWEtaGlkZGVuPXtmYWxzZX0+CiAgICAgICAgICAgIERpw6Fsb2dvCiAgICAgICAgICA8L0RpYWxvZ1ByaW1pdGl2ZS5UaXRsZT4KICAgICAgICApfQogICAgICAgIHsvKiBGYWxsYmFjayB2aXN1YWxseS1oaWRkZW4gZGVzY3JpcHRpb24gLS0gb25seSByZW5kZXJlZCB3aGVuIG5vCiAgICAgICAgICAgIERpYWxvZ0Rlc2NyaXB0aW9uIGlzIHByZXNlbnQuIFJhZGl4IGxvb2tzIGZvciB0aGUgZGVzY3JpcHRpb25JZAogICAgICAgICAgICBlbGVtZW50IGluIHRoZSBET00gKGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKTsgaW5qZWN0aW5nIGEgcmVhbAogICAgICAgICAgICBlbGVtZW50IGlzIHRoZSBvbmx5IHdheSB0byByZWxpYWJseSBwYXNzIHRoYXQgY2hlY2suICovfQogICAgICAgIHshaGFzRGVzY3JpcHRpb24gJiYgKAogICAgICAgICAgPERpYWxvZ1ByaW1pdGl2ZS5EZXNjcmlwdGlvbiBjbGFzc05hbWU9InNyLW9ubHkiPgogICAgICAgICAgICB7Lyogc2VtIGRlc2NyaWNhbyBhZGljaW9uYWwgKi99CiAgICAgICAgICA8L0RpYWxvZ1ByaW1pdGl2ZS5EZXNjcmlwdGlvbj4KICAgICAgICApfQogICAgICAgIHtjaGlsZHJlbn0KICAgICAgICB7c2hvd0Nsb3NlQnV0dG9uICYmICgKICAgICAgICAgIDxEaWFsb2dQcmltaXRpdmUuQ2xvc2UKICAgICAgICAgICAgY2xhc3NOYW1lPSJhYnNvbHV0ZSByaWdodC00IHRvcC00IHJvdW5kZWQtc20gcC0xIG9wYWNpdHktNzAgcmluZy1vZmZzZXQtYmFja2dyb3VuZCB0cmFuc2l0aW9uLWFsbCBob3ZlcjpiZy1hY2NlbnQgaG92ZXI6dGV4dC1hY2NlbnQtZm9yZWdyb3VuZCBob3ZlcjpvcGFjaXR5LTEwMCBmb2N1czpvdXRsaW5lLW5vbmUgZm9jdXM6cmluZy0yIGZvY3VzOnJpbmctcmluZyBmb2N1czpyaW5nLW9mZnNldC0yIGRpc2FibGVkOnBvaW50ZXItZXZlbnRzLW5vbmUiCiAgICAgICAgICAgIGFyaWEtbGFiZWw9IkZlY2hhciBkacOhbG9nbyIKICAgICAgICAgID4KICAgICAgICAgICAgPFggY2xhc3NOYW1lPSJoLTQgdy00IiAvPgogICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9InNyLW9ubHkiPkZlY2hhcjwvc3Bhbj4KICAgICAgICAgIDwvRGlhbG9nUHJpbWl0aXZlLkNsb3NlPgogICAgICAgICl9CiAgICAgIDwvRGlhbG9nUHJpbWl0aXZlLkNvbnRlbnQ+CiAgICA8L0RpYWxvZ1BvcnRhbD4KICApOwp9KTsKRGlhbG9nQ29udGVudC5kaXNwbGF5TmFtZSA9IERpYWxvZ1ByaW1pdGl2ZS5Db250ZW50LmRpc3BsYXlOYW1lOwoKY29uc3QgRGlhbG9nSGVhZGVyID0gKHsgY2xhc3NOYW1lLCAuLi5wcm9wcyB9OiBSZWFjdC5IVE1MQXR0cmlidXRlczxIVE1MRGl2RWxlbWVudD4pID0+ICgKICA8ZGl2IGNsYXNzTmFtZT17Y24oJ2ZsZXggZmxleC1jb2wgc3BhY2UteS0xLjUgdGV4dC1jZW50ZXIgc206dGV4dC1sZWZ0JywgY2xhc3NOYW1lKX0gey4uLnByb3BzfSAvPgopOwpEaWFsb2dIZWFkZXIuZGlzcGxheU5hbWUgPSAnRGlhbG9nSGVhZGVyJzsKCmNvbnN0IERpYWxvZ0Zvb3RlciA9ICh7IGNsYXNzTmFtZSwgLi4ucHJvcHMgfTogUmVhY3QuSFRNTEF0dHJpYnV0ZXM8SFRNTERpdkVsZW1lbnQ+KSA9PiAoCiAgPGRpdgogICAgY2xhc3NOYW1lPXtjbignZmxleCBmbGV4LWNvbC1yZXZlcnNlIHNtOmZsZXgtcm93IHNtOmp1c3RpZnktZW5kIHNtOnNwYWNlLXgtMicsIGNsYXNzTmFtZSl9CiAgICB7Li4ucHJvcHN9CiAgLz4KKTsKRGlhbG9nRm9vdGVyLmRpc3BsYXlOYW1lID0gJ0RpYWxvZ0Zvb3Rlcic7Cgpjb25zdCBEaWFsb2dUaXRsZSA9IFJlYWN0LmZvcndhcmRSZWY8CiAgUmVhY3QuRWxlbWVudFJlZjx0eXBlb2YgRGlhbG9nUHJpbWl0aXZlLlRpdGxlPiwKICBSZWFjdC5Db21wb25lbnRQcm9wc1dpdGhvdXRSZWY8dHlwZW9mIERpYWxvZ1ByaW1pdGl2ZS5UaXRsZT4KPigoeyBjbGFzc05hbWUsIC4uLnByb3BzIH0sIHJlZikgPT4gKAogIDxEaWFsb2dQcmltaXRpdmUuVGl0bGUKICAgIHJlZj17cmVmfQogICAgY2xhc3NOYW1lPXtjbigndGV4dC1sZyBmb250LXNlbWlib2xkIGxlYWRpbmctbm9uZSB0cmFja2luZy10aWdodCcsIGNsYXNzTmFtZSl9CiAgICB7Li4ucHJvcHN9CiAgLz4KKSk7CkRpYWxvZ1RpdGxlLmRpc3BsYXlOYW1lID0gRGlhbG9nUHJpbWl0aXZlLlRpdGxlLmRpc3BsYXlOYW1lOwoKY29uc3QgRGlhbG9nRGVzY3JpcHRpb24gPSBSZWFjdC5mb3J3YXJkUmVmPAogIFJlYWN0LkVsZW1lbnRSZWY8dHlwZW9mIERpYWxvZ1ByaW1pdGl2ZS5EZXNjcmlwdGlvbj4sCiAgUmVhY3QuQ29tcG9uZW50UHJvcHNXaXRob3V0UmVmPHR5cGVvZiBEaWFsb2dQcmltaXRpdmUuRGVzY3JpcHRpb24+Cj4oKHsgY2xhc3NOYW1lLCAuLi5wcm9wcyB9LCByZWYpID0+ICgKICA8RGlhbG9nUHJpbWl0aXZlLkRlc2NyaXB0aW9uCiAgICByZWY9e3JlZn0KICAgIGNsYXNzTmFtZT17Y24oJ3RleHQtc20gdGV4dC1tdXRlZC1mb3JlZ3JvdW5kJywgY2xhc3NOYW1lKX0KICAgIHsuLi5wcm9wc30KICAvPgopKTsKRGlhbG9nRGVzY3JpcHRpb24uZGlzcGxheU5hbWUgPSBEaWFsb2dQcmltaXRpdmUuRGVzY3JpcHRpb24uZGlzcGxheU5hbWU7CgovKioKICogVmlzdWFsbHkgaGlkZGVuIHdyYXBwZXIgLS0gdXNlIHRoaXMgdG8gYWRkIGFuIGFjY2Vzc2libGUgdGl0bGUgb3IgZGVzY3JpcHRpb24KICogdG8gYSBkaWFsb2cgd2l0aG91dCBhZmZlY3RpbmcgdGhlIHZpc2libGUgbGF5b3V0LgogKgogKiBAZXhhbXBsZQogKiA8RGlhbG9nQ29udGVudD4KICogICA8RGlhbG9nVmlzdWFsbHlIaWRkZW4+CiAqICAgICA8RGlhbG9nVGl0bGU+VXBsb2FkIGRlIGltYWdlbnM8L0RpYWxvZ1RpdGxlPgogKiAgIDwvRGlhbG9nVmlzdWFsbHlIaWRkZW4+CiAqICAgdmlzaWJsZSBjb250ZW50IGhlcmUKICogPC9EaWFsb2dDb250ZW50PgogKi8KY29uc3QgRGlhbG9nVmlzdWFsbHlIaWRkZW4gPSAoeyBjaGlsZHJlbiB9OiB7IGNoaWxkcmVuOiBSZWFjdC5SZWFjdE5vZGUgfSkgPT4gKAogIDxzcGFuIGNsYXNzTmFtZT0ic3Itb25seSI+e2NoaWxkcmVufTwvc3Bhbj4KKTsKRGlhbG9nVmlzdWFsbHlIaWRkZW4uZGlzcGxheU5hbWUgPSAnRGlhbG9nVmlzdWFsbHlIaWRkZW4nOwoKZXhwb3J0IHsKICBEaWFsb2csCiAgRGlhbG9nUG9ydGFsLAogIERpYWxvZ092ZXJsYXksCiAgRGlhbG9nQ2xvc2UsCiAgRGlhbG9nVHJpZ2dlciwKICBEaWFsb2dDb250ZW50LAogIERpYWxvZ0hlYWRlciwKICBEaWFsb2dGb290ZXIsCiAgRGlhbG9nVGl0bGUsCiAgRGlhbG9nRGVzY3JpcHRpb24sCiAgRGlhbG9nVmlzdWFsbHlIaWRkZW4sCn07Cg==
+import * as React from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { X } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+import { releaseScrollLockIfIdle } from '@/lib/dom/scroll-lock';
+
+const Dialog = DialogPrimitive.Root;
+
+const DialogTrigger = DialogPrimitive.Trigger;
+
+const DialogPortal = DialogPrimitive.Portal;
+
+const DialogClose = DialogPrimitive.Close;
+
+const DialogOverlay = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={cn(
+      'fixed inset-0 z-50 bg-[hsl(var(--overlay-color)/var(--overlay-opacity))] backdrop-blur-[var(--overlay-blur)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      className,
+    )}
+    {...props}
+  />
+));
+DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
+
+// ---------------------------------------------------------------------------
+// A11y helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Walks a React children tree (shallow + 1 level deep) looking for a node
+ * whose type matches any of the given display names or component references.
+ * Returns true as soon as the first match is found.
+ */
+function childrenHaveType(
+  children: React.ReactNode,
+  types: Array<React.ElementType | string>,
+): boolean {
+  let found = false;
+  React.Children.forEach(children, (child) => {
+    if (found) return;
+    if (!React.isValidElement(child)) return;
+    const t = child.type as React.ElementType;
+    if (types.some((match) => match === t || (t as { displayName?: string }).displayName === match)) {
+      found = true;
+      return;
+    }
+    // One level deeper (e.g. DialogHeader wrapping DialogTitle)
+    const nested = (child.props as { children?: React.ReactNode }).children;
+    if (nested) {
+      React.Children.forEach(nested, (grandchild) => {
+        if (found) return;
+        if (!React.isValidElement(grandchild)) return;
+        const gt = grandchild.type as React.ElementType;
+        if (types.some((m) => m === gt || (gt as { displayName?: string }).displayName === m)) {
+          found = true;
+        }
+      });
+    }
+  });
+  return found;
+}
+
+// Display names Radix looks for internally
+const TITLE_TYPES: Array<React.ElementType | string> = [
+  DialogPrimitive.Title,
+  'DialogTitle',
+];
+const DESCRIPTION_TYPES: Array<React.ElementType | string> = [
+  DialogPrimitive.Description,
+  'DialogDescription',
+];
+
+// ---------------------------------------------------------------------------
+
+interface DialogContentProps extends React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> {
+  /** Show close button */
+  showCloseButton?: boolean;
+}
+
+const DialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  DialogContentProps
+>(({ className, children, showCloseButton = true, onCloseAutoFocus, ...props }, ref) => {
+  // -- A11y: silence Radix warnings -----------------------------------------
+  //
+  // Radix emits two warnings when DialogContent renders without the
+  // required accessibility primitives:
+  //
+  //   1. "DialogContent requires a DialogTitle for screen reader users."
+  //      Fix: inject a visually-hidden DialogTitle as a fallback when the
+  //      caller has not included one. Gives screen readers an accessible
+  //      name without changing visual layout.
+  //
+  //   2. "Missing Description or aria-describedby={undefined} for DialogContent"
+  //      Fix: inject a visually-hidden DialogDescription when no description
+  //      is present. Radix checks document.getElementById(descriptionId) to
+  //      determine if a description exists. Passing aria-describedby={undefined}
+  //      does NOT suppress this warning: Radix's internal check is a truthy
+  //      guard — `if (descriptionAriaAttr) return;` — so undefined (falsy)
+  //      does not skip the warning. Injecting a real hidden element is the
+  //      only reliable fix.
+  //
+  // Both checks walk children shallowly + one level deep, covering the
+  // common pattern of wrapping title/description inside DialogHeader.
+  // Dialogs that already have DialogTitle + DialogDescription are unaffected
+  // (the scan short-circuits on the first match).
+
+  const hasTitle       = childrenHaveType(children, TITLE_TYPES);
+  const hasDescription = childrenHaveType(children, DESCRIPTION_TYPES);
+
+  // Radix Dialog natively handles: focus trap, escape key, scroll lock.
+  // We only add a lightweight cleanup on close to prevent stale scroll locks.
+  return (
+    <DialogPortal>
+      <DialogOverlay />
+      <DialogPrimitive.Content
+        ref={ref}
+        onCloseAutoFocus={(event) => {
+          onCloseAutoFocus?.(event);
+          // Ensure scroll + interactivity are restored after the dialog closes.
+          requestAnimationFrame(releaseScrollLockIfIdle);
+        }}
+        className={cn(
+          'duration-normal fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border-2 border-border bg-background p-6 shadow-xl ease-out',
+          'data-[state=open]:animate-in data-[state=closed]:animate-out',
+          'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+          'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+          'data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]',
+          'data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
+          'rounded-xl',
+          'focus:outline-none focus-visible:outline-none focus-visible:ring-0',
+          className,
+        )}
+        aria-modal="true"
+        role="dialog"
+        {...props}
+      >
+        {/* Fallback visually-hidden title -- only rendered when no DialogTitle
+            is present. Satisfies Radix's runtime assertion and gives screen
+            readers an accessible dialog name. */}
+        {!hasTitle && (
+          <DialogPrimitive.Title className="sr-only" aria-hidden={false}>
+            Diálogo
+          </DialogPrimitive.Title>
+        )}
+        {/* Fallback visually-hidden description -- only rendered when no
+            DialogDescription is present. Radix looks for the descriptionId
+            element in the DOM (document.getElementById); injecting a real
+            element is the only way to reliably pass that check.
+            Note: aria-describedby={undefined} does NOT suppress the warning
+            because Radix's guard is truthy: `if (ariaAttr) return;` */}
+        {!hasDescription && (
+          <DialogPrimitive.Description className="sr-only">
+            {/* sem descricao adicional */}
+          </DialogPrimitive.Description>
+        )}
+        {children}
+        {showCloseButton && (
+          <DialogPrimitive.Close
+            className="absolute right-4 top-4 rounded-sm p-1 opacity-70 ring-offset-background transition-all hover:bg-accent hover:text-accent-foreground hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+            aria-label="Fechar diálogo"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Fechar</span>
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Content>
+    </DialogPortal>
+  );
+});
+DialogContent.displayName = DialogPrimitive.Content.displayName;
+
+const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />
+);
+DialogHeader.displayName = 'DialogHeader';
+
+const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
+    {...props}
+  />
+);
+DialogFooter.displayName = 'DialogFooter';
+
+const DialogTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={cn('text-lg font-semibold leading-none tracking-tight', className)}
+    {...props}
+  />
+));
+DialogTitle.displayName = DialogPrimitive.Title.displayName;
+
+const DialogDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={cn('text-sm text-muted-foreground', className)}
+    {...props}
+  />
+));
+DialogDescription.displayName = DialogPrimitive.Description.displayName;
+
+/**
+ * Visually hidden wrapper -- use this to add an accessible title or description
+ * to a dialog without affecting the visible layout.
+ *
+ * @example
+ * <DialogContent>
+ *   <DialogVisuallyHidden>
+ *     <DialogTitle>Upload de imagens</DialogTitle>
+ *   </DialogVisuallyHidden>
+ *   visible content here
+ * </DialogContent>
+ */
+const DialogVisuallyHidden = ({ children }: { children: React.ReactNode }) => (
+  <span className="sr-only">{children}</span>
+);
+DialogVisuallyHidden.displayName = 'DialogVisuallyHidden';
+
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogVisuallyHidden,
+};
