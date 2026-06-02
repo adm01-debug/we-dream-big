@@ -152,24 +152,9 @@ export function NoveltyProductGrid() {
       filtered = filtered.filter((p) => p.supplier_id === selectedSupplier);
     if (selectedCategory !== 'all')
       filtered = filtered.filter((p) => p.category_id === selectedCategory);
-    filtered.sort((a, b) => {
-      switch (sortMode) {
-        case 'name':
-          return (a.product_name || '').localeCompare(b.product_name || '', 'pt-BR');
-        case 'price-asc':
-          return (a.base_price || 0) - (b.base_price || 0);
-        case 'price-desc':
-          return (b.base_price || 0) - (a.base_price || 0);
-        case 'newest':
-        default:
-          return new Date(b.detected_at).getTime() - new Date(a.detected_at).getTime();
-        case 'stock':
-        case 'best-seller-supplier':
-        case 'best-seller-promo':
-          return 0;
-      }
-    });
+    sortProducts(filtered as unknown as any[], sortMode);
     return filtered;
+
   }, [products, selectedSupplier, selectedCategory, sortMode, searchQuery]);
 
   // Reset to first page when filters change
