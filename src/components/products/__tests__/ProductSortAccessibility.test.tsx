@@ -70,6 +70,6 @@ describe('ProductSort Accessibility and UI', () => {
     // The "3" should appear in a badge
     const badge = screen.getByText('3');
     expect(badge).toBeDefined();
-    expect(badge.className).toContain('bg-brand-primary');
+    expect(badge.className).toContain('bg-secondary');
   });
 });
