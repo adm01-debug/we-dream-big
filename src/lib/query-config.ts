@@ -114,6 +114,8 @@ const defaultQueryOptions: DefaultOptions = {
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
     refetchOnMount: true,
+    // Use cached data while offline instead of erroring immediately
+    networkMode: 'offlineFirst',
   },
   mutations: {
     retry: false,

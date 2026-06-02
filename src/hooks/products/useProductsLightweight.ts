@@ -92,13 +92,19 @@ interface CatalogPage {
   totalEstimate: number | null;
 }
 
+// Module-level singleton: fetched once per session, shared across all catalog pages.
+let categoriesMapPromise: Promise<ReadonlyMap<string, string>> | null = null;
+
 async function loadCategoriesMap(): Promise<ReadonlyMap<string, string>> {
-  try {
-    const categories = await fetchPromobrindCategories();
-    return new Map(categories.map((c) => [String(c.id), c.name]));
-  } catch {
-    return new Map();
+  if (!categoriesMapPromise) {
+    categoriesMapPromise = fetchPromobrindCategories()
+      .then((categories) => new Map(categories.map((c) => [String(c.id), c.name])) as ReadonlyMap<string, string>)
+      .catch(() => {
+        categoriesMapPromise = null; // allow retry on next request
+        return new Map() as ReadonlyMap<string, string>;
+      });
   }
+  return categoriesMapPromise;
 }
 
 async function fetchCatalogPage(

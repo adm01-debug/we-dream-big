@@ -514,7 +514,7 @@ export default function FiltersPage() {
                       onToggleSelect={sel.toggleSelect}
                     />
                   ) : state.viewMode === 'list' ? (
-                    <div className="scrollbar-products h-[calc(100vh-280px)] min-h-[500px] overflow-y-auto rounded-xl border border-border/40 bg-gradient-to-b from-background/80 to-background/40 p-4 shadow-inner backdrop-blur-sm">
+                    <div className="scrollbar-products h-[calc(100vh-280px)] min-h-[500px] overflow-y-auto rounded-xl border border-border/40 bg-background p-4 shadow-sm">
                       <ProductList
                         products={state.filteredProducts}
                         isLoading={state.isLoadingProducts}
@@ -544,7 +544,7 @@ export default function FiltersPage() {
                       />
                     </div>
                   ) : (
-                    <div className="h-[calc(100vh-280px)] min-h-[500px] overflow-y-auto rounded-xl border border-border/40 bg-gradient-to-b from-background/80 to-background/40 shadow-inner backdrop-blur-sm">
+                    <div className="h-[calc(100vh-280px)] min-h-[500px] overflow-y-auto rounded-xl border border-border/40 bg-background shadow-sm">
                       <ProductTableView
                         products={state.filteredProducts}
                         isLoading={state.isLoadingProducts}
