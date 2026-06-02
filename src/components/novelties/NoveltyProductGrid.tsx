@@ -47,15 +47,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { NoveltyTableView } from './NoveltyCards';
 import { VirtualizedNoveltyGrid } from './VirtualizedNoveltyGrid';
 
+import { SORT_OPTIONS } from '@/constants/filters';
+
 type ViewMode = 'grid' | 'list' | 'table';
-type SortMode =
-  | 'name'
-  | 'price-asc'
-  | 'price-desc'
-  | 'newest'
-  | 'stock'
-  | 'best-seller-supplier'
-  | 'best-seller-promo';
+
 
 function getGridColsClass(cols: ColumnCount): string {
   switch (cols) {
@@ -84,7 +79,7 @@ export function NoveltyProductGrid() {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [gridColumns, setGridColumns] = useState<ColumnCount>(getDefaultColumns);
-  const [sortMode, setSortMode] = useState<SortMode>('newest');
+  const [sortMode, setSortMode] = useState<string>('newest');
   const [selectedSupplier, setSelectedSupplier] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -512,21 +507,20 @@ export function NoveltyProductGrid() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={sortMode} onValueChange={(v) => setSortMode(v as SortMode)}>
+          <Select value={sortMode} onValueChange={(v) => setSortMode(v)}>
             <SelectTrigger className="h-7 w-[180px] gap-1 text-[11px]">
               <ArrowUpDown className="h-3 w-3" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="name">Nome (A-Z)</SelectItem>
-              <SelectItem value="price-asc">Preço (Menor → Maior)</SelectItem>
-              <SelectItem value="price-desc">Preço (Maior → Menor)</SelectItem>
-              <SelectItem value="newest">Mais Recentes</SelectItem>
-              <SelectItem value="stock">Maior Estoque</SelectItem>
-              <SelectItem value="best-seller-supplier">+ Vendidos Fornecedores</SelectItem>
-              <SelectItem value="best-seller-promo">+ Vendidos Promo Brindes</SelectItem>
+              {SORT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
+
           {hasActiveFilters && (
             <Button
               variant="ghost"

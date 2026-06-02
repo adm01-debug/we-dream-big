@@ -180,7 +180,9 @@ export interface ProductFilters {
   maxPrice?: number;
   inStock?: boolean;
   limit?: number;
+  sortBy?: string;
 }
+
 
 export interface ProductLightweight {
   id: string;
