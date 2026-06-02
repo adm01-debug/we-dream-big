@@ -97,8 +97,6 @@ describe('Catalog Sorting and Edge Cases', () => {
     expect(result.current.filters.search).toBe('test query');
     expect(result.current.filters.sortBy).toBe('price-asc');
     
-    // Note: useFiltersPageState uses a debounced serverSearchTerm for the hook
-    // We check that sortBy is correctly propagated.
     expect(useProductsCatalog).toHaveBeenCalledWith(expect.objectContaining({
       sortBy: 'price-asc'
     }));
@@ -140,7 +138,6 @@ describe('Catalog Sorting and Edge Cases', () => {
 
     const { result } = renderHook(() => useFiltersPageState(), { wrapper });
 
-    // Should not crash even with null fields
     expect(result.current.filteredProducts.length).toBe(2);
   });
 
@@ -153,15 +150,6 @@ describe('Catalog Sorting and Edge Cases', () => {
       isLoading: false,
       hasNextPage: false,
       fetchNextPage: vi.fn(),
-  it('should not duplicate items when sort changes with existing results', () => {
-    const p1 = { id: '1', name: 'A', price: 10 };
-    const p2 = { id: '2', name: 'B', price: 20 };
-
-    (useProductsCatalog as any).mockReturnValue({
-      data: { pages: [{ products: [p1, p2], totalEstimate: 2 }] },
-      isLoading: false,
-      hasNextPage: false,
-      fetchNextPage: vi.fn(),
     });
 
     const { result } = renderHook(() => useFiltersPageState(), { wrapper });
@@ -170,21 +158,6 @@ describe('Catalog Sorting and Edge Cases', () => {
       result.current.setSortBy('price-desc');
     });
 
-    // filteredProducts should still be unique
-    const ids = result.current.filteredProducts.map(p => p.id);
-    const uniqueIds = new Set(ids);
-    expect(ids.length).toBe(uniqueIds.size);
-    expect(ids.length).toBe(2);
-  });
-});
-
-    const { result } = renderHook(() => useFiltersPageState(), { wrapper });
-
-    act(() => {
-      result.current.setSortBy('price-desc');
-    });
-
-    // filteredProducts should still be unique
     const ids = result.current.filteredProducts.map(p => p.id);
     const uniqueIds = new Set(ids);
     expect(ids.length).toBe(uniqueIds.size);
