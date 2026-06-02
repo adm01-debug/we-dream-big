@@ -5,6 +5,9 @@ import { StickyFilterBar } from '@/components/filters/StickyFilterBar';
 import { NoveltyProductGrid } from '@/components/novelties/NoveltyProductGrid';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from 'sonner';
+
 
 // Mock dependencies
 vi.mock('@/hooks/products', () => ({
@@ -42,9 +45,15 @@ const queryClient = new QueryClient();
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        {children}
+        <Toaster />
+      </TooltipProvider>
+    </QueryClientProvider>
   </BrowserRouter>
 );
+
 
 describe('Product Sort Standardization', () => {
   it('StickyFilterBar should use labels from SORT_OPTIONS', () => {
