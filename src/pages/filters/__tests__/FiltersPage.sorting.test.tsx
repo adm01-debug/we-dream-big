@@ -1,0 +1,146 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { useFiltersPageState } from '../useFiltersPageState';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import * as React from 'react';
+import { useProductsCatalog } from '@/hooks/products/useProductsLightweight';
+import { SORT_OPTIONS } from '@/constants/filters';
+
+// Mock dependencies
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useSearchParams: () => [new URLSearchParams(), vi.fn()],
+  };
+});
+
+vi.mock('@/hooks/products/useProductsLightweight', () => ({
+  useProductsCatalog: vi.fn(),
+}));
+
+vi.mock('@/hooks/products/useProductsByCategory', () => ({
+  useProductsByCategory: vi.fn(() => ({
+    productIds: new Set(),
+    hasFilter: false,
+    isLoading: false,
+  })),
+}));
+
+vi.mock('@/hooks/products/useProductsByColor', () => ({
+  useProductsByColor: vi.fn(() => ({
+    productIds: new Set(),
+    hasFilter: false,
+    isLoading: false,
+  })),
+}));
+
+vi.mock('@/hooks/products/useProductsByMaterial', () => ({
+  useProductsByMaterial: vi.fn(() => ({
+    productIds: new Set(),
+    hasFilter: false,
+    isLoading: false,
+  })),
+}));
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>{children}</BrowserRouter>
+  </QueryClientProvider>
+);
+
+describe('Catalog Sorting and Edge Cases', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should handle empty result set gracefully when sorting returns nothing', () => {
+    (useProductsCatalog as any).mockReturnValue({
+      data: { pages: [{ products: [], totalEstimate: 0 }] },
+      isLoading: false,
+      hasNextPage: false,
+      fetchNextPage: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useFiltersPageState(), { wrapper });
+
+    expect(result.current.filteredProducts.length).toBe(0);
+    expect(result.current.totalEstimate).toBe(0);
+  });
+
+  it('should maintain filters when switching sort', () => {
+    (useProductsCatalog as any).mockReturnValue({
+      data: { pages: [{ products: [], totalEstimate: 0 }] },
+      isLoading: false,
+      hasNextPage: false,
+      fetchNextPage: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useFiltersPageState(), { wrapper });
+
+    act(() => {
+      result.current.handleFilterChange({ ...result.current.filters, search: 'test query' });
+    });
+
+    act(() => {
+      result.current.setSortBy('price-asc');
+    });
+
+    expect(result.current.filters.search).toBe('test query');
+    expect(result.current.filters.sortBy).toBe('price-asc');
+    
+    // Verify parameters passed to the catalog hook
+    expect(useProductsCatalog).toHaveBeenLastCalledWith(expect.objectContaining({
+      search: 'test query',
+      sortBy: 'price-asc'
+    }));
+  });
+
+  it('should validate that UI sort labels correspond to productService parameters', () => {
+    // This is a contract test ensuring SORT_OPTIONS values match what switch/case expects
+    // in productService (we can't directly test productService's private logic here but we can check the hook call)
+    
+    (useProductsCatalog as any).mockReturnValue({
+      data: { pages: [{ products: [], totalEstimate: 0 }] },
+      isLoading: false,
+      hasNextPage: false,
+      fetchNextPage: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useFiltersPageState(), { wrapper });
+
+    SORT_OPTIONS.forEach(option => {
+      act(() => {
+        result.current.setSortBy(option.value);
+      });
+      
+      expect(useProductsCatalog).toHaveBeenLastCalledWith(expect.objectContaining({
+        sortBy: option.value
+      }));
+    });
+  });
+
+  it('should handle products with null/missing fields during sorting without crashing', () => {
+    const productsWithNulls = [
+      { id: '1', name: 'Product A', price: null, stock: null },
+      { id: '2', name: null, price: 10, stock: 5 }
+    ];
+
+    (useProductsCatalog as any).mockReturnValue({
+      data: { pages: [{ products: productsWithNulls, totalEstimate: 2 }] },
+      isLoading: false,
+      hasNextPage: false,
+      fetchNextPage: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useFiltersPageState(), { wrapper });
+
+    // Should not crash even with null fields
+    expect(result.current.filteredProducts.length).toBe(2);
+  });
+});
