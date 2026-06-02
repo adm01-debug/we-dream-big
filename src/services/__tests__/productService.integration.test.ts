@@ -3,9 +3,10 @@ import { productService } from '@/services/productService';
 import { fetchPromobrindProducts } from '@/lib/external-db';
 
 vi.mock('@/lib/external-db', () => ({
-  fetchPromobrindProducts: vi.fn(),
+  fetchPromobrindProducts: vi.fn(() => Promise.resolve([])),
   fetchPromobrindProductById: vi.fn(),
 }));
+
 
 describe('Catalog Integration - Sort Contracts', () => {
   it('maps "price-asc" to sale_price ascending', async () => {
